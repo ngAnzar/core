@@ -1,5 +1,6 @@
 import { ApplicationRef, enableProdMode, ViewEncapsulation } from "@angular/core"
 import { enableDebugTools, platformBrowser } from "@angular/platform-browser"
+import { platformBrowserDynamic } from "@angular/platform-browser-dynamic"
 import { hmrModule } from "@angularclass/hmr"
 
 
@@ -23,7 +24,7 @@ function _bootstrap(moduleClass: any) {
     if (__AOT__) {
         return platformBrowser().bootstrapModuleFactory(moduleClass)
     } else {
-        return platformBrowser().bootstrapModule(moduleClass, {
+        return platformBrowserDynamic().bootstrapModule(moduleClass, {
             defaultEncapsulation: ViewEncapsulation.None
         })
     }
