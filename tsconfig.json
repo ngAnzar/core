@@ -1,0 +1,6 @@
+{
+    "extends": "./node_modules/@anzar/build/src/config/browser/tsconfig.json",
+    "include": [
+        "src/**/*.ts"
+    ]
+}
