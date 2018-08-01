@@ -1,4 +1,5 @@
-declare var __dirname: string
+declare const __dirname: string
+declare const require: any
 
 declare const __DEBUG__: boolean
 declare const __HMR__: boolean

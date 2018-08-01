@@ -1,3 +1,5 @@
+/// <reference path="./custom-typings.d.ts" />
+
 import { ApplicationRef, enableProdMode, ViewEncapsulation } from "@angular/core"
 import { enableDebugTools, platformBrowser } from "@angular/platform-browser"
 import { platformBrowserDynamic } from "@angular/platform-browser-dynamic"
@@ -13,10 +15,12 @@ function initModule(modRef: any): any {
     if (__DEBUG__) {
         const appRef = modRef.injector.get(ApplicationRef)
         const cmpRef = appRef.components[0]
+        console.log(enableDebugTools)
         enableDebugTools(cmpRef)
     }
 
-    return __HMR__ ? hmrModule(modRef, module) : modRef
+    // return __HMR__ ? hmrModule(modRef, module) : modRef
+    return modRef
 }
 
 

@@ -1,5 +1,8 @@
 {
-    "extends": "./node_modules/@anzar/build/src/config/browser/tsconfig.json",
+    "extends": "./node_modules/@anzar/build/tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "src"
+    },
     "include": [
         "src/**/*.ts"
     ]
