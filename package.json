@@ -11,7 +11,7 @@
     "name": "Vetési Zoltán"
   },
   "license": "ISC",
-  "peerDependencies": {
+  "dependencies": {
     "@angular/common": "^6.1.0",
     "@angular/compiler": "^6.1.0",
     "@angular/compiler-cli": "^6.1.0",
