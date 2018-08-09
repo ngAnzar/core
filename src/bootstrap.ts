@@ -3,7 +3,7 @@
 import { ApplicationRef, enableProdMode, ViewEncapsulation } from "@angular/core"
 import { enableDebugTools, platformBrowser } from "@angular/platform-browser"
 import { platformBrowserDynamic } from "@angular/platform-browser-dynamic"
-import { hmrModule } from "@angularclass/hmr"
+// import { hmrModule } from "@angularclass/hmr"
 
 
 if (__ENV__ === "production") {
@@ -15,7 +15,6 @@ function initModule(modRef: any): any {
     if (__DEBUG__) {
         const appRef = modRef.injector.get(ApplicationRef)
         const cmpRef = appRef.components[0]
-        console.log(enableDebugTools)
         enableDebugTools(cmpRef)
     }
 
