@@ -2,6 +2,12 @@
 # yarn lockfile v1
 
 
+"@angular/cdk@^6.4.6":
+  version "6.4.6"
+  resolved "https://registry.yarnpkg.com/@angular/cdk/-/cdk-6.4.6.tgz#478ec4010b193a0fb4c246768af4ab6854799a49"
+  dependencies:
+    tslib "^1.7.1"
+
 "@angular/common@^6.1.0":
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/@angular/common/-/common-6.1.0.tgz#7666c385409cd8d313cc66eade2f8a7410a12256"
@@ -56,23 +62,24 @@
   resolved "https://codeload.github.com/ngAnzar/build/tar.gz/efd5452f795a2d5aec62fb8e5b4c08a8e414807b"
   dependencies:
     "@anzar/style" "github:ngAnzar/style"
+    "@babel/core" "^7.0.0-beta.55"
+    "@babel/preset-env" "^7.0.0-beta.55"
     angular2-template-loader "^0.6.2"
-    babel "^6.23.0"
-    babel-preset-env "^1.6.1"
-    babel-register "^6.26.0"
+    argparse "^1.0.10"
+    awesome-typescript-loader "^5.2.0"
     find-package-json "^1.0.0"
-    html-webpack-plugin "^3.2.0"
+    is-plain-object "^2.0.4"
     loader-utils "^1.1.0"
     minimist "^1.2.0"
     pug "^2.0.3"
     resolve "^1.7.1"
-    stylus "^0.54.5"
-    ts-loader "^4.1.0"
     tsconfig-paths-webpack-plugin "^3.0.3"
-    typescript "^2.8.1"
+    tslint "^5.10.0"
+    typescript "^3.0.1"
     webpack "^4.5.0"
-    webpack-cli "^2.0.14"
+    webpack-hot-client "^4.1.1"
     webpack-merge "^4.1.2"
+    webpack-serve "^2.0.2"
 
 "@anzar/style@github:ngAnzar/style":
   version "1.0.0"
@@ -4925,7 +4932,7 @@ tsickle@^0.30.0:
     source-map "^0.6.0"
     source-map-support "^0.5.0"
 
-tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
+tslib@^1.7.1, tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
   version "1.9.3"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
 

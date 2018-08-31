@@ -1,0 +1,71 @@
+@require "../../style/shape"
+@require "../../style/elevation"
+@require "../../style/layout"
+
+
+$nz-card-padding ?= nz-local-grid-size(4)
+$nz-card-part-margin ?= nz-local-grid-size(2)
+
+
+.nz-card
+  nz-elevation: 2
+  nz-rounded-rect: auto, auto, medium
+  overflow: hidden
+
+  &[variant~="raised"]
+    nz-elevation: 8
+
+  &[variant~="stroked"]
+    box-shadow: none
+    border: 2px solid $theme.contrast
+
+  for color, value in nz-theme-colors($theme)
+    &{'[color="' + color + '"]'}
+      color: value.darker
+
+      &[variant~="flat"]
+        background-color: value.default
+        color: value.on.default
+
+.nz-card-content
+  margin: 0
+
+.nz-card-header, .nz-card-content, .nz-card-footer, .nz-card-actions
+  padding-bottom: $nz-card-part-margin
+
+  &:first-child
+    padding-top: $nz-card-part-margin
+
+.nz-card-header, .nz-card-content, .nz-card-footer
+  padding-left: $nz-card-padding
+  padding-right: $nz-card-padding
+
+.nz-card-media
+  display: block
+
+  &:not(:last-child)
+    margin-bottom: $nz-card-part-margin
+
+.nz-card-header
+  position: relative
+
+  .nz-avatar
+    width: nz-local-grid-size(10)
+    height: nz-local-grid-size(10)
+    position: absolute
+    left: $nz-card-padding
+
+    + .nz-card-header-content
+      padding-left: nz-local-grid-size(12)
+
+.nz-card-actions
+  position: relative
+
+.nz-card-icon-buttons
+  position: absolute
+  top: 50%
+  right: $nz-card-padding
+  transform: translateY(-50%)
+
+
+// .nz-card-header

@@ -1,0 +1,425 @@
+$nz-palette-dark-color ?= #000
+$nz-palette-light-color ?= #FFF
+
+
+$nz-palette-red = {
+  "50":   { "color": #FFEBEE, "on": "dark" },
+  "100":  { "color": #FFCDD2, "on": "dark" },
+  "200":  { "color": #EF9A9A, "on": "dark" },
+  "300":  { "color": #E57373, "on": "dark" },
+  "400":  { "color": #EF5350, "on": "light" },
+  "500":  { "color": #F44336, "on": "light" },
+  "600":  { "color": #E53935, "on": "light" },
+  "700":  { "color": #D32F2F, "on": "light" },
+  "800":  { "color": #C62828, "on": "light" },
+  "900":  { "color": #B71C1C, "on": "light" },
+  "A100": { "color": #FF8A80, "on": "dark" },
+  "A200": { "color": #FF5252, "on": "light" },
+  "A400": { "color": #FF1744, "on": "light" },
+  "A700": { "color": #D50000, "on": "light" }
+}
+
+$nz-palette-pink = {
+  "50":   { "color": #FCE4EC, "on": "dark" },
+  "100":  { "color": #F8BBD0, "on": "dark" },
+  "200":  { "color": #F48FB1, "on": "dark" },
+  "300":  { "color": #F06292, "on": "dark" },
+  "400":  { "color": #EC407A, "on": "light" },
+  "500":  { "color": #E91E63, "on": "light" },
+  "600":  { "color": #D81B60, "on": "light" },
+  "700":  { "color": #C2185B, "on": "light" },
+  "800":  { "color": #AD1457, "on": "light" },
+  "900":  { "color": #880E4F, "on": "light" },
+  "A100": { "color": #FF80AB, "on": "dark" },
+  "A200": { "color": #FF4081, "on": "light" },
+  "A400": { "color": #F50057, "on": "light" },
+  "A700": { "color": #C51162, "on": "light" }
+}
+
+$nz-palette-purple = {
+  "50":   { "color": #F3E5F5, "on": "dark" },
+  "100":  { "color": #E1BEE7, "on": "dark" },
+  "200":  { "color": #CE93D8, "on": "dark" },
+  "300":  { "color": #BA68C8, "on": "light" },
+  "400":  { "color": #AB47BC, "on": "light" },
+  "500":  { "color": #9C27B0, "on": "light" },
+  "600":  { "color": #8E24AA, "on": "light" },
+  "700":  { "color": #7B1FA2, "on": "light" },
+  "800":  { "color": #6A1B9A, "on": "light" },
+  "900":  { "color": #4A148C, "on": "light" },
+  "A100": { "color": #EA80FC, "on": "dark" },
+  "A200": { "color": #E040FB, "on": "light" },
+  "A400": { "color": #D500F9, "on": "light" },
+  "A700": { "color": #AA00FF, "on": "light" }
+}
+
+$nz-palette-deep-purple = {
+  "50":   { "color": #EDE7F6, "on": "dark" },
+  "100":  { "color": #D1C4E9, "on": "dark" },
+  "200":  { "color": #B39DDB, "on": "dark" },
+  "300":  { "color": #9575CD, "on": "light" },
+  "400":  { "color": #7E57C2, "on": "light" },
+  "500":  { "color": #673AB7, "on": "light" },
+  "600":  { "color": #5E35B1, "on": "light" },
+  "700":  { "color": #512DA8, "on": "light" },
+  "800":  { "color": #4527A0, "on": "light" },
+  "900":  { "color": #311B92, "on": "light" },
+  "A100": { "color": #B388FF, "on": "dark" },
+  "A200": { "color": #7C4DFF, "on": "light" },
+  "A400": { "color": #651FFF, "on": "light" },
+  "A700": { "color": #6200EA, "on": "light" }
+}
+
+$nz-palette-indigo = {
+  "50":   { "color": #E8EAF6, "on": "dark" },
+  "100":  { "color": #C5CAE9, "on": "dark" },
+  "200":  { "color": #9FA8DA, "on": "dark" },
+  "300":  { "color": #7986CB, "on": "light" },
+  "400":  { "color": #5C6BC0, "on": "light" },
+  "500":  { "color": #3F51B5, "on": "light" },
+  "600":  { "color": #3949AB, "on": "light" },
+  "700":  { "color": #303F9F, "on": "light" },
+  "800":  { "color": #283593, "on": "light" },
+  "900":  { "color": #1A237E, "on": "light" },
+  "A100": { "color": #8C9EFF, "on": "dark" },
+  "A200": { "color": #536DFE, "on": "light" },
+  "A400": { "color": #3D5AFE, "on": "light" },
+  "A700": { "color": #304FFE, "on": "light" }
+}
+
+$nz-palette-blue = {
+  "50":   { "color": #E3F2FD, "on": "dark" },
+  "100":  { "color": #BBDEFB, "on": "dark" },
+  "200":  { "color": #90CAF9, "on": "dark" },
+  "300":  { "color": #64B5F6, "on": "dark" },
+  "400":  { "color": #42A5F5, "on": "dark" },
+  "500":  { "color": #2196F3, "on": "dark" },
+  "600":  { "color": #1E88E5, "on": "light" },
+  "700":  { "color": #1976D2, "on": "light" },
+  "800":  { "color": #1565C0, "on": "light" },
+  "900":  { "color": #0D47A1, "on": "light" },
+  "A100": { "color": #82B1FF, "on": "dark" },
+  "A200": { "color": #448AFF, "on": "light" },
+  "A400": { "color": #2979FF, "on": "light" },
+  "A700": { "color": #2962FF, "on": "light" }
+}
+
+$nz-palette-light-blue = {
+  "50":   { "color": #E1F5FE, "on": "dark" },
+  "100":  { "color": #B3E5FC, "on": "dark" },
+  "200":  { "color": #81D4FA, "on": "dark" },
+  "300":  { "color": #4FC3F7, "on": "dark" },
+  "400":  { "color": #29B6F6, "on": "dark" },
+  "500":  { "color": #03A9F4, "on": "dark" },
+  "600":  { "color": #039BE5, "on": "dark" },
+  "700":  { "color": #0288D1, "on": "light" },
+  "800":  { "color": #0277BD, "on": "light" },
+  "900":  { "color": #01579B, "on": "light" },
+  "A100": { "color": #80D8FF, "on": "dark" },
+  "A200": { "color": #40C4FF, "on": "dark" },
+  "A400": { "color": #00B0FF, "on": "dark" },
+  "A700": { "color": #0091EA, "on": "light" }
+}
+
+$nz-palette-cyan = {
+  "50":   { "color": #E0F7FA, "on": "dark" },
+  "100":  { "color": #B2EBF2, "on": "dark" },
+  "200":  { "color": #80DEEA, "on": "dark" },
+  "300":  { "color": #4DD0E1, "on": "dark" },
+  "400":  { "color": #26C6DA, "on": "dark" },
+  "500":  { "color": #00BCD4, "on": "dark" },
+  "600":  { "color": #00ACC1, "on": "dark" },
+  "700":  { "color": #0097A7, "on": "light" },
+  "800":  { "color": #00838F, "on": "light" },
+  "900":  { "color": #006064, "on": "light" },
+  "A100": { "color": #84FFFF, "on": "dark" },
+  "A200": { "color": #18FFFF, "on": "dark" },
+  "A400": { "color": #00E5FF, "on": "dark" },
+  "A700": { "color": #00B8D4, "on": "dark" }
+}
+
+$nz-palette-teal = {
+  "50":   { "color": #E0F2F1, "on": "dark" },
+  "100":  { "color": #B2DFDB, "on": "dark" },
+  "200":  { "color": #80CBC4, "on": "dark" },
+  "300":  { "color": #4DB6AC, "on": "dark" },
+  "400":  { "color": #26A69A, "on": "dark" },
+  "500":  { "color": #009688, "on": "light" },
+  "600":  { "color": #00897B, "on": "light" },
+  "700":  { "color": #00796B, "on": "light" },
+  "800":  { "color": #00695C, "on": "light" },
+  "900":  { "color": #004D40, "on": "light" },
+  "A100": { "color": #A7FFEB, "on": "dark" },
+  "A200": { "color": #64FFDA, "on": "dark" },
+  "A400": { "color": #1DE9B6, "on": "dark" },
+  "A700": { "color": #00BFA5, "on": "dark" }
+}
+
+$nz-palette-green = {
+  "50":   { "color": #E8F5E9, "on": "dark" },
+  "100":  { "color": #C8E6C9, "on": "dark" },
+  "200":  { "color": #A5D6A7, "on": "dark" },
+  "300":  { "color": #81C784, "on": "dark" },
+  "400":  { "color": #66BB6A, "on": "dark" },
+  "500":  { "color": #4CAF50, "on": "dark" },
+  "600":  { "color": #43A047, "on": "light" },
+  "700":  { "color": #388E3C, "on": "light" },
+  "800":  { "color": #2E7D32, "on": "light" },
+  "900":  { "color": #1B5E20, "on": "light" },
+  "A100": { "color": #B9F6CA, "on": "dark" },
+  "A200": { "color": #69F0AE, "on": "dark" },
+  "A400": { "color": #00E676, "on": "dark" },
+  "A700": { "color": #00C853, "on": "dark" }
+}
+
+$nz-palette-light-green = {
+  "50":   { "color": #F1F8E9, "on": "dark" },
+  "100":  { "color": #DCEDC8, "on": "dark" },
+  "200":  { "color": #C5E1A5, "on": "dark" },
+  "300":  { "color": #AED581, "on": "dark" },
+  "400":  { "color": #9CCC65, "on": "dark" },
+  "500":  { "color": #8BC34A, "on": "dark" },
+  "600":  { "color": #7CB342, "on": "dark" },
+  "700":  { "color": #689F38, "on": "dark" },
+  "800":  { "color": #558B2F, "on": "light" },
+  "900":  { "color": #33691E, "on": "light" },
+  "A100": { "color": #CCFF90, "on": "dark" },
+  "A200": { "color": #B2FF59, "on": "dark" },
+  "A400": { "color": #76FF03, "on": "dark" },
+  "A700": { "color": #64DD17, "on": "dark" }
+}
+
+$nz-palette-lime = {
+  "50":   { "color": #F9FBE7, "on": "dark" },
+  "100":  { "color": #F0F4C3, "on": "dark" },
+  "200":  { "color": #E6EE9C, "on": "dark" },
+  "300":  { "color": #DCE775, "on": "dark" },
+  "400":  { "color": #D4E157, "on": "dark" },
+  "500":  { "color": #CDDC39, "on": "dark" },
+  "600":  { "color": #C0CA33, "on": "dark" },
+  "700":  { "color": #AFB42B, "on": "dark" },
+  "800":  { "color": #9E9D24, "on": "dark" },
+  "900":  { "color": #827717, "on": "light" },
+  "A100": { "color": #F4FF81, "on": "dark" },
+  "A200": { "color": #EEFF41, "on": "dark" },
+  "A400": { "color": #C6FF00, "on": "dark" },
+  "A700": { "color": #AEEA00, "on": "dark" }
+}
+
+$nz-palette-yellow = {
+  "50":   { "color": #FFFDE7, "on": "dark" },
+  "100":  { "color": #FFF9C4, "on": "dark" },
+  "200":  { "color": #FFF59D, "on": "dark" },
+  "300":  { "color": #FFF176, "on": "dark" },
+  "400":  { "color": #FFEE58, "on": "dark" },
+  "500":  { "color": #FFEB3B, "on": "dark" },
+  "600":  { "color": #FDD835, "on": "dark" },
+  "700":  { "color": #FBC02D, "on": "dark" },
+  "800":  { "color": #F9A825, "on": "dark" },
+  "900":  { "color": #F57F17, "on": "dark" },
+  "A100": { "color": #FFFF8D, "on": "dark" },
+  "A200": { "color": #FFFF00, "on": "dark" },
+  "A400": { "color": #FFEA00, "on": "dark" },
+  "A700": { "color": #FFD600, "on": "dark" }
+}
+
+$nz-palette-amber = {
+  "50":   { "color": #FFF8E1, "on": "dark" },
+  "100":  { "color": #FFECB3, "on": "dark" },
+  "200":  { "color": #FFE082, "on": "dark" },
+  "300":  { "color": #FFD54F, "on": "dark" },
+  "400":  { "color": #FFCA28, "on": "dark" },
+  "500":  { "color": #FFC107, "on": "dark" },
+  "600":  { "color": #FFB300, "on": "dark" },
+  "700":  { "color": #FFA000, "on": "dark" },
+  "800":  { "color": #FF8F00, "on": "dark" },
+  "900":  { "color": #FF6F00, "on": "dark" },
+  "A100": { "color": #FFE57F, "on": "dark" },
+  "A200": { "color": #FFD740, "on": "dark" },
+  "A400": { "color": #FFC400, "on": "dark" },
+  "A700": { "color": #FFAB00, "on": "dark" }
+}
+
+$nz-palette-orange = {
+  "50":   { "color": #FFF3E0, "on": "dark" },
+  "100":  { "color": #FFE0B2, "on": "dark" },
+  "200":  { "color": #FFCC80, "on": "dark" },
+  "300":  { "color": #FFB74D, "on": "dark" },
+  "400":  { "color": #FFA726, "on": "dark" },
+  "500":  { "color": #FF9800, "on": "dark" },
+  "600":  { "color": #FB8C00, "on": "dark" },
+  "700":  { "color": #F57C00, "on": "dark" },
+  "800":  { "color": #EF6C00, "on": "dark" },
+  "900":  { "color": #E65100, "on": "light" },
+  "A100": { "color": #FFD180, "on": "dark" },
+  "A200": { "color": #FFAB40, "on": "dark" },
+  "A400": { "color": #FF9100, "on": "dark" },
+  "A700": { "color": #FF6D00, "on": "dark" }
+}
+
+$nz-palette-deep-orange = {
+  "50":   { "color": #FBE9E7, "on": "dark" },
+  "100":  { "color": #FFCCBC, "on": "dark" },
+  "200":  { "color": #FFAB91, "on": "dark" },
+  "300":  { "color": #FF8A65, "on": "dark" },
+  "400":  { "color": #FF7043, "on": "dark" },
+  "500":  { "color": #FF5722, "on": "dark" },
+  "600":  { "color": #F4511E, "on": "light" },
+  "700":  { "color": #E64A19, "on": "light" },
+  "800":  { "color": #D84315, "on": "light" },
+  "900":  { "color": #BF360C, "on": "light" },
+  "A100": { "color": #FF9E80, "on": "dark" },
+  "A200": { "color": #FF6E40, "on": "dark" },
+  "A400": { "color": #FF3D00, "on": "light" },
+  "A700": { "color": #DD2C00, "on": "light" }
+}
+
+$nz-palette-brown = {
+  "50":   { "color": #EFEBE9, "on": "dark" },
+  "100":  { "color": #D7CCC8, "on": "dark" },
+  "200":  { "color": #BCAAA4, "on": "dark" },
+  "300":  { "color": #A1887F, "on": "light" },
+  "400":  { "color": #8D6E63, "on": "light" },
+  "500":  { "color": #795548, "on": "light" },
+  "600":  { "color": #6D4C41, "on": "light" },
+  "700":  { "color": #5D4037, "on": "light" },
+  "800":  { "color": #4E342E, "on": "light" },
+  "900":  { "color": #3E2723, "on": "light" }
+}
+
+$nz-palette-gray = {
+  "50":   { "color": #FAFAFA, "on": "dark" },
+  "100":  { "color": #F5F5F5, "on": "dark" },
+  "200":  { "color": #EEEEEE, "on": "dark" },
+  "300":  { "color": #E0E0E0, "on": "dark" },
+  "400":  { "color": #BDBDBD, "on": "dark" },
+  "500":  { "color": #9E9E9E, "on": "dark" },
+  "600":  { "color": #757575, "on": "light" },
+  "700":  { "color": #616161, "on": "light" },
+  "800":  { "color": #424242, "on": "light" },
+  "900":  { "color": #212121, "on": "light" }
+}
+
+$nz-palette-blue-gray = {
+  "50":   { "color": #ECEFF1, "on": "dark" },
+  "100":  { "color": #CFD8DC, "on": "dark" },
+  "200":  { "color": #B0BEC5, "on": "dark" },
+  "300":  { "color": #90A4AE, "on": "dark" },
+  "400":  { "color": #78909C, "on": "light" },
+  "500":  { "color": #607D8B, "on": "light" },
+  "600":  { "color": #546E7A, "on": "light" },
+  "700":  { "color": #455A64, "on": "light" },
+  "800":  { "color": #37474F, "on": "light" },
+  "900":  { "color": #263238, "on": "light" }
+}
+
+nz-palette-color(name, variant, contrast = false, dark = $nz-palette-dark-color, light = $nz-palette-light-color)
+  if red == name or name == "red"
+    map = $nz-palette-red
+  else if pink == name or name == "pink"
+    map = $nz-palette-pink
+  else if purple == name or name == "purple"
+    map = $nz-palette-purple
+  else if deep-purple == name or name == "deep-purple"
+    map = $nz-palette-deep-purple
+  else if indigo == name or name == "indigo"
+    map = $nz-palette-indigo
+  else if blue == name or name == "blue"
+    map = $nz-palette-blue
+  else if light-blue == name or name == "light-blue"
+    map = $nz-palette-light-blue
+  else if cyan == name or name == "cyan"
+    map = $nz-palette-cyan
+  else if teal == name or name == "teal"
+    map = $nz-palette-teal
+  else if green == name or name == "green"
+    map = $nz-palette-green
+  else if light-green == name or name == "light-green"
+    map = $nz-palette-light-green
+  else if yellow == name or name == "yellow"
+    map = $nz-palette-yellow
+  else if amber == name or name == "amber"
+    map = $nz-palette-amber
+  else if orange == name or name == "orange"
+    map = $nz-palette-orange
+  else if deep-orange == name or name == "deep-orange"
+    map = $nz-palette-deep-orange
+  else if brown == name or name == "brown"
+    map = $nz-palette-brown
+  else if gray == name or name == "gray"
+    map = $nz-palette-gray
+  else if blue-gray == name or name == "blue-gray"
+    map = $nz-palette-blue-gray
+  else
+    error("Undefined palette name: '" + name + "'")
+
+  map-variant = map[s("%s", variant)]
+  if not map-variant
+    error("Undefined color variant: '" + variant + "'")
+
+  if contrast
+    if map-variant["on"] == "dark"
+      return dark
+    else
+      return light
+  else
+    return map-variant["color"]
+
+
+/**
+ * .something
+ *   nz-color: red 500
+ */
+nz-color(name, variant)
+  color: nz-palette-color(name, variant, true)
+
+nz-background-color(name, variant)
+  background-color: nz-palette-color(name, variant, false)
+
+nz-palette(name, default, lighter, darker, dark = $nz-palette-dark-color, light = $nz-palette-light-color)
+  return {
+    "id": id,
+    "default": nz-palette-color(name, default, false),
+    "lighter": nz-palette-color(name, lighter, false),
+    "darker": nz-palette-color(name, darker, false),
+    "dark": dark,
+    "light": light,
+    "on": {
+      "default": nz-palette-color(name, default, true, dark, light),
+      "lighter": nz-palette-color(name, lighter, true, dark, light),
+      "darker": nz-palette-color(name, darker, true, dark, light),
+    }
+  }
+
+nz-theme(primary, accent, warn, critical, confirm, info, isLight)
+  return {
+    "primary": primary,
+    "accent": accent,
+    "warn": warn,
+    "critical": critical,
+    "confirm": confirm,
+    "info": info,
+    "contrast": $nz-palette-dark-color,
+    "background": $nz-palette-light-color,
+    "isLight": isLight
+  }
+
+
+nz-color-names(theme)
+  result = ()
+  for k, v in theme
+    if k != "isLight" and k != "contrast" and k != "background"
+      push(result, k)
+  return result
+
+
+nz-theme-colors(theme)
+  result = {}
+  for k in nz-color-names(theme)
+    result[k] = theme[k]
+  return result
+
+
+nz-each-color(theme, cb)
+  for k in nz-color-names(theme)
+    cb(k, theme[k])

@@ -1,0 +1,70 @@
+@require "../../style/vendor-specific"
+@require "../../style/shape"
+@require "../../style/elevation"
+@require "../../style/layout"
+
+$nz-button-padding ?= 0 nz-local-grid-size(4)
+$nz-button-min-width ?= nz-local-grid-size(22)
+$nz-button-height ?= nz-local-grid-size(9)
+
+
+.nz-button, .nz-fab, .nz-icon-button
+  cursor: pointer
+  outline: none
+  border: none
+  user-select: none
+  -webkit-tap-highlight-color: transparent
+
+  &::-moz-focus-inner
+    border: 0
+    padding: 0
+
+  nz-typo: $typo.button
+
+  box-sizing: border-box
+  position: relative
+
+  display: inline-block
+  white-space: nowrap
+  text-decoration: none
+  vertical-align: baseline
+  text-align: center
+
+  margin: 0
+  overflow: hidden
+
+  background-color: transparent
+  color: $theme.primary.dark
+
+
+// themes + variants
+.nz-button, .nz-fab
+  &[variant~="raised"]:not([disabled])
+    nz-elevation: 2
+
+  for color, value in nz-theme-colors($theme)
+    &{'[color="' + color + '"]'}
+      color: value.darker
+
+      &[variant~="flat"]
+        background-color: value.default
+        color: value.on.default
+
+.nz-button
+  min-width: $nz-button-min-width
+  padding: $nz-button-padding
+
+  nz-rounded-rect: auto, $nz-button-height, small
+
+.nz-fab
+  padding: 0
+
+  &[variant~="small"], &
+    nz-circle: (nz-local-grid-size(9) / 2)
+
+  &[variant~="medium"]
+    nz-circle: (nz-local-grid-size(12) / 2)
+
+  &[variant~="large"]
+    nz-circle: (nz-local-grid-size(15) / 2)
+

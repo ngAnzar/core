@@ -1,0 +1,11 @@
+$nz-spacing-global-grid ?= 8px
+$nz-spacing-local-grid ?= 4px
+
+
+nz-global-grid-size(amount)
+  u = unit($nz-spacing-global-grid)
+  return unit($nz-spacing-global-grid * amount, u)
+
+nz-local-grid-size(amount)
+  u = unit($nz-spacing-local-grid)
+  return unit($nz-spacing-local-grid * amount, u)

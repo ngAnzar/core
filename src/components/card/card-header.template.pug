@@ -1,0 +1,10 @@
+:stylus
+  @require "./card"
+
+ng-content(select=".nz-avatar")
+
+.nz-card-header-content
+  ng-content
+
+.nz-card-icon-buttons
+  ng-content(select=".nz-icon-button")

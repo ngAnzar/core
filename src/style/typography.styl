@@ -1,0 +1,79 @@
+$nz-root-element-font-size ?= 16px
+
+nz-remify(value)
+  u = unit(value)
+
+  if u is "px"
+    return unit(value / $nz-root-element-font-size, "rem")
+  else
+    return unit(value, u)
+
+
+nz-font(family, light = 300, regular = 400, medium = 500)
+  return {
+    "family": family,
+    "light": light,
+    "regular": regular,
+    "medium": medium
+  }
+
+
+nz-typo-level(font, size, weight, case, spacing)
+  return {
+    "font": font,
+    "font-size": nz-remify(size),
+    "font-weight": weight,
+    "letter-spacing": nz-remify(spacing),
+    "text-transform": case
+  }
+
+
+nz-typo-levels(font)
+  return {
+    "h1": nz-typo-level(font, 96px, font.light, none, -1.5px),
+    "h2": nz-typo-level(font, 60px, font.light, none, -0.5px),
+    "h3": nz-typo-level(font, 48px, font.regular, none, 0px),
+    "h4": nz-typo-level(font, 34px, font.regular, none, 0.25px),
+    "h5": nz-typo-level(font, 24px, font.regular, none, 0px),
+    "h6": nz-typo-level(font, 20px, font.medium, none, 0.15px),
+    "subtitle1": nz-typo-level(font, 16px, font.regular, none, 0.15px),
+    "subtitle2": nz-typo-level(font, 14px, font.medium, none, 0.1px),
+    "body1": nz-typo-level(font, 16px, font.regular, none, 0.5px),
+    "body2": nz-typo-level(font, 14px, font.regular, none, 0.25px),
+    "button": nz-typo-level(font, 14px, font.medium, "uppercase", 0.75px),
+    "caption": nz-typo-level(font, 12px, font.regular, none, 0.4px),
+    "overline": nz-typo-level(font, 10px, font.regular, "uppercase", 1.5px)
+  }
+
+
+nz-typo(level)
+  font: level.font-weight level.font-size level.font.family
+  letter-spacing: level.letter-spacing
+  if level.text-transform != none
+    text-transform: level.text-transform
+
+
+nz-basic-typo(typo)
+  h1
+    nz-typo: typo.h1
+  h2
+    nz-typo: typo.h2
+  h3
+    nz-typo: typo.h3
+  h4
+    nz-typo: typo.h4
+  h5
+    nz-typo: typo.h5
+  h6
+    nz-typo: typo.h6
+  .nz-title
+    nz-typo: typo.subtitle1
+  .nz-subtitle
+    nz-typo: typo.subtitle2
+  body
+    nz-typo: typo.body1
+  p
+    nz-typo: typo.body2
+  caption
+    nz-typo: typo.caption
+

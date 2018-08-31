@@ -1,0 +1,61 @@
+
+
+.nz-input
+  font: inherit
+  background: transparent
+  border: none
+  outline: none
+  padding: 0
+  margin: 0
+  width: 100%
+  max-width: 100%
+  vertical-align: bottom
+  text-align: inherit
+
+  // Undo the red box-shadow glow added by Firefox on invalid inputs.
+  // See https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid
+  &:-moz-ui-invalid {
+    box-shadow: none;
+  }
+
+  // Remove IE's default clear and reveal icons.
+  &::-ms-clear,
+  &::-ms-reveal {
+    display: none;
+  }
+
+  // Clear Safari's decorations for search fields.
+  &,
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-decoration,
+  &::-webkit-search-results-button,
+  &::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+
+  // Also clear Safari's autofill icons. Note that this can't be in the
+  // same selector as the IE ones, otherwise Safari will ignore it.
+  &::-webkit-contacts-auto-fill-button,
+  &::-webkit-caps-lock-indicator,
+  &::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+  }
+
+  // Fixes an issue on iOS where the following input types will collapse to 1px,
+  // if they're empty, because we've overridden their background color.
+  // See: https://stackoverflow.com/questions/18381594/input-type-date-appearance-in-safari-on-ios
+  &[type='date'],
+  &[type='datetime'],
+  &[type='datetime-local'],
+  &[type='month'],
+  &[type='week'],
+  &[type='time'] {
+    &::after {
+      content: ' ';
+      white-space: pre;
+      width: 1px;
+    }
+  }
+
+  +placeholder()
+    color: red
