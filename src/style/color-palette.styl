@@ -313,7 +313,7 @@ $nz-palette-blue-gray = {
   "900":  { "color": #263238, "on": "light" }
 }
 
-nz-palette-color(name, variant, contrast = false, dark = $nz-palette-dark-color, light = $nz-palette-light-color)
+nz-palette-color(name, variant, contrast = false)
   if red == name or name == "red"
     map = $nz-palette-red
   else if pink == name or name == "pink"
@@ -359,9 +359,9 @@ nz-palette-color(name, variant, contrast = false, dark = $nz-palette-dark-color,
 
   if contrast
     if map-variant["on"] == "dark"
-      return dark
+      return $nz-palette-dark-color
     else
-      return light
+      return $nz-palette-light-color
   else
     return map-variant["color"]
 
@@ -376,31 +376,68 @@ nz-color(name, variant)
 nz-background-color(name, variant)
   background-color: nz-palette-color(name, variant, false)
 
-nz-palette(name, default, lighter, darker, dark = $nz-palette-dark-color, light = $nz-palette-light-color)
+nz-palette(name, default, lighter, darker)
   return {
-    "id": id,
+    "id": name,
     "default": nz-palette-color(name, default, false),
     "lighter": nz-palette-color(name, lighter, false),
     "darker": nz-palette-color(name, darker, false),
-    "dark": dark,
-    "light": light,
     "on": {
-      "default": nz-palette-color(name, default, true, dark, light),
-      "lighter": nz-palette-color(name, lighter, true, dark, light),
-      "darker": nz-palette-color(name, darker, true, dark, light),
+      "default": nz-palette-color(name, default, true),
+      "lighter": nz-palette-color(name, lighter, true),
+      "darker": nz-palette-color(name, darker, true),
     }
   }
 
-nz-theme(primary, accent, warn, critical, confirm, info, isLight)
+_nz-palette-on-color(bg, dark=$nz-palette-dark-color, light=$nz-palette-light-color)
+  r1 = contrast(dark, bg).ratio
+  r2 = contrast(light, bg).ratio
+  if r1 > r2
+    return dark
+  else
+    return light
+
+nz-palette-like(default, lighter, darker, onColor = null)
+  if onColor is null
+    onColor = {
+      "default": _nz-palette-on-color(default),
+      "lighter": _nz-palette-on-color(lighter),
+      "darker": _nz-palette-on-color(darker)
+    }
+
   return {
-    "primary": primary,
-    "accent": accent,
-    "warn": warn,
-    "critical": critical,
-    "confirm": confirm,
-    "info": info,
-    "contrast": $nz-palette-dark-color,
-    "background": $nz-palette-light-color,
+    "default": default,
+    "lighter": lighter,
+    "darker": darker,
+    "on": onColor
+  }
+
+
+_nz-palette-set(palette)
+  hoverBg = lightness(palette.default, 93%)
+  hoverFg = _nz-palette-on-color(hoverBg, palette.darker, palette.on.lighter)
+
+  selectedBg = lightness(palette.default, 97%)
+  selectedFg = _nz-palette-on-color(selectedBg, palette.darker, palette.on.lighter)
+
+  palette.tri-state = {
+    "normal": { "fg": palette.darker, "bg": transparent },
+    "hover": { "fg": hoverFg, "bg": hoverBg },
+    "selected": { "fg": selectedFg, "bg": selectedBg }
+  }
+  return palette
+
+nz-theme(primary, accent, warn, critical, confirm, info, foreground, background, disabled, isLight)
+  return {
+    "primary": _nz-palette-set(primary),
+    "accent": _nz-palette-set(accent),
+    "warn": _nz-palette-set(warn),
+    "critical": _nz-palette-set(critical),
+    "confirm": _nz-palette-set(confirm),
+    "info": _nz-palette-set(info),
+    "disabled": _nz-palette-set(disabled),
+    "foreground": _nz-palette-set(foreground),
+    "background": _nz-palette-set(background),
     "isLight": isLight
   }
 
@@ -408,7 +445,7 @@ nz-theme(primary, accent, warn, critical, confirm, info, isLight)
 nz-color-names(theme)
   result = ()
   for k, v in theme
-    if k != "isLight" and k != "contrast" and k != "background"
+    if k != "isLight" and k != "foreground" and k != "background" and k != "disabled"
       push(result, k)
   return result
 

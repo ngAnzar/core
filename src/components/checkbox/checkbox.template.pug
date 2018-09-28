@@ -1,0 +1,39 @@
+:stylus
+  @require "./checkbox.styl"
+
+
+  .nz-checkbox-input
+    position: relative
+    width: $nz-checkbox-size
+    height: $nz-checkbox-size
+    flex-shrink: 0
+    flex-grow: 0
+
+  .border
+    box-sizing: border-box
+    position: absolute
+    top: 0
+    left: 0
+    nz-rounded-rect: $nz-checkbox-size, $nz-checkbox-size, small
+    border: 2px solid $theme.foreground.lighter
+
+  .label
+    flex-grow: 1
+
+
+label.nz-checkbox-label(for="{{id}}-chk")
+  .nz-checkbox-input
+    input.cdk-visually-hidden("#input" id="{{id}}-chk" type="checkbox"
+      bind-attr.name="name"
+      bind-disabled="disabled"
+      bind-tabindex="tabIndex"
+      bind-checked="checked"
+      bind-indeterminate="indeterminate"
+      on-focus="_handleFocus(true)"
+      on-blur="_handleFocus(false)"
+      on-change="_changeHandler($event)")
+    .border
+    .nz-checkbox-indicator
+      .nz-checkbox-checkmark
+  span.label
+    ng-content

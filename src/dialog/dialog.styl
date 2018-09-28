@@ -1,0 +1,26 @@
+@require "../style/elevation"
+@require "../style/layout"
+@require "../style/typography"
+
+$nz-dialog-padding-top-bottom ?= nz-local-grid-size(4)
+$nz-dialog-padding-side ?= nz-local-grid-size(2)
+$nz-dialog-inner-margin ?= nz-local-grid-size(2)
+
+.nz-dialog
+  box-sizing: border-box
+  display: inline-flex
+  flex-direction: column
+  min-width: nz-local-grid-size(80)
+  background-color: #FFF // TODO: ez így nagyon rossz
+
+.nz-dialog-content
+  padding: $nz-dialog-inner-margin ($nz-dialog-padding-side + $nz-dialog-padding-top-bottom)
+  // nz-typo: $typo.body2
+
+
+  // > .nz-dialog-title
+  //   margin: nz-local-grid-size(2) nz-local-grid-size(4)
+
+  // > .nz-dialog-content
+
+  // > .nz-dialog-buttons

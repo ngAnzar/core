@@ -1,3 +1,14 @@
-.az-ripple
-    position: absolute
-    border-radius: 50%
+.nz-ripple
+  display: block
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  overflow: hidden
+  pointer-events: none
+
+  for color, value in nz-theme-colors($theme)
+    &{'[color="' + color + '"]'}
+      .nz-ripple
+        background-color: value.default

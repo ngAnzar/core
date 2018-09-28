@@ -1,0 +1,54 @@
+@require "../../style/animation"
+@require "../../style/typography"
+
+$nz-form-field-input-padding ?= 4px
+$nz-form-field-top-caption-height ?= 16px
+$nz-form-field-bottom-caption-height ?= 20px
+
+// variant=underlined
+// variant=filled
+// variant=stroked
+
+.nz-form-field
+  display: inline-block
+  width: auto
+  padding-top: $nz-form-field-top-caption-height
+
+  .nz-label
+    position: absolute
+    top: 0px
+    left: 0px
+    right: 0px
+    bottom: 0px
+    cursor: text
+    color: $theme.foreground.lighter
+    transition: all $nz-input-focus-transition-duration
+    user-select: none
+    pointer-events: none
+
+  &.nz-focused, &.nz-has-value
+    .nz-label
+      nz-typo: $typo.caption
+      color: $theme.primary.default
+      top: -($nz-form-field-top-caption-height + 2px)
+
+  caption
+    height: $nz-form-field-bottom-caption-height
+    line-height: $nz-form-field-bottom-caption-height
+
+    white-space: nowrap
+    text-overflow: ellipsis
+    overflow: hidden
+
+    color: $theme.foreground.lighter
+
+
+caption
+  box-sizing: border-box
+  // margin: 0
+
+
+
+
+// .nz-label
+//   color: $theme.disabled.darker

@@ -2,6 +2,7 @@
 @require "../../style/shape"
 @require "../../style/elevation"
 @require "../../style/layout"
+@require "../../style/animation"
 
 $nz-button-padding ?= 0 nz-local-grid-size(4)
 $nz-button-min-width ?= nz-local-grid-size(22)
@@ -32,29 +33,68 @@ $nz-button-height ?= nz-local-grid-size(9)
 
   margin: 0
   overflow: hidden
-
-  background-color: transparent
-  color: $theme.primary.dark
+  transition: background-color $nz-button-transition-duration,
+              box-shadow $nz-button-transition-duration
 
 
 // themes + variants
-.nz-button, .nz-fab
-  &[variant~="raised"]:not([disabled])
+.nz-button:not([disabled]), .nz-fab:not([disabled])
+  background-color: transparent
+
+  &[variant~="raised"]
     nz-elevation: 2
+
+  &.cdk-keyboard-focused, &.cdk-program-focused
+    nz-elevation: 5
+
+  &:not([color])
+
+    &[variant~="filled"]
+      color: $theme.background.tri-state.normal.fg
+      background-color: $theme.foreground.tri-state.normal.bg
+
+      &:hover
+        color: $theme.background.tri-state.hover.fg
+        background-color: $theme.background.tri-state.hover.bg
+
+      .nz-ripple
+        background-color: $theme.background.default
+
+    &:not([variant~="filled"])
+      color: $theme.foreground.tri-state.normal.fg
+
+      &:hover
+        color: $theme.foreground.tri-state.hover.fg
+        background-color: $theme.foreground.tri-state.hover.bg
+
+      .nz-ripple
+        background-color: $theme.foreground.default
 
   for color, value in nz-theme-colors($theme)
     &{'[color="' + color + '"]'}
-      color: value.darker
+      color: value.tri-state.normal.fg
 
-      &[variant~="flat"]
-        background-color: value.default
+      &[variant~="filled"]
         color: value.on.default
+        background-color: value.default
+
+        .nz-ripple
+          background-color: #FFF
+
+      &:not([variant~="filled"])
+        &:hover
+          color: value.tri-state.hover.fg
+          background-color: value.tri-state.hover.bg
+
+        .nz-ripple
+          background-color: value.default
 
 .nz-button
   min-width: $nz-button-min-width
   padding: $nz-button-padding
 
   nz-rounded-rect: auto, $nz-button-height, small
+  line-height: $nz-button-height
 
 .nz-fab
   padding: 0

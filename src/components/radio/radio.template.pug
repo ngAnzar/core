@@ -1,0 +1,16 @@
+:stylus
+  @require "./radio"
+
+  .label
+    flex-grow: 1
+
+
+label.nz-radio-label(for="{{id}}-rad")
+  .nz-radio-input
+    input.cdk-visually-hidden("#input" id="{{id}}-rad" type="radio"
+      bind-attr.name="name"
+      bind-checked="checked"
+      on-input="_handleInputChange($event)")
+    .nz-radio-indicator
+  span.label
+    ng-content

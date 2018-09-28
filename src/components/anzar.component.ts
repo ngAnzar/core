@@ -6,7 +6,7 @@ export type ColorOptions = "primary" | "accent" | "warn" | "error" | "success" |
 
 
 export abstract class AnzarComponent {
-    constructor(protected el: ElementRef) {
+    constructor(protected el: ElementRef<HTMLElement>) {
     }
 
     // @Input()

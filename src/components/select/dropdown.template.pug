@@ -1,0 +1,14 @@
+:stylus
+  @require "../list/list"
+
+  .item
+    cursor: pointer
+    user-select: none
+
+.nz-scroller
+  .nz-list
+    ng-template(nzVirtualFor, [nzVirtualForOf]="dataView" let-virtual bind-fixedItemHeight="_rowHeight")
+      .nz-list-item.item(selectable)
+        ng-template(
+          bind-ngTemplateOutlet="itemTpl"
+          bind-ngTemplateOutletContext="{$implicit:virtual}")

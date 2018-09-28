@@ -1,4 +1,4 @@
-
+@require "../../style/vendor-specific"
 
 .nz-input
   font: inherit
@@ -58,4 +58,7 @@
   }
 
   +placeholder()
-    color: red
+    color: transparent !important
+    -webkit-text-fill-color: transparent
+    transition: none
+

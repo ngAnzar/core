@@ -1,0 +1,29 @@
+:stylus
+  @require "./select"
+
+  .select-dropdown
+    background-color: $theme.background.default
+    nz-elevation: 6
+
+  .list-item
+    cursor: pointer
+    height: auto
+    white-space: nowrap
+
+
+div.select-input
+  span &nbsp;
+  ng-template(ngFor bind-ngForOf="selection.items" let-item)
+    ng-template(
+      bind-ngTemplateOutlet="selectedTpl"
+      bind-ngTemplateOutletContext="{$implicit:item}")
+
+
+ng-template(#default_selected_single)
+  span Default Single {{ item.name }}
+
+ng-template(#default_selected_multi)
+  span Default Multi {{ item.name }}
+
+ng-template(#default_item let-item)
+  span Default Item {{ item.name }}

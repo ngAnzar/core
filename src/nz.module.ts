@@ -1,0 +1,49 @@
+import { NgModule } from "@angular/core"
+import { CommonModule } from "@angular/common"
+
+import { ButtonModule } from "./button.module"
+import { CardModule } from "./card.module"
+import { CheckboxModule } from "./checkbox.module"
+import { CoreModule } from "./core.module"
+import { DataGridModule } from "./data-grid.module"
+import { DialogModule } from "./dialog.module"
+import { DirectivesModule } from "./directives.module"
+import { FormFieldModule } from "./form-field.module"
+import { InputModule } from "./input.module"
+import { LayerModule } from "./layer.module"
+import { ListModule } from "./list.module"
+import { PanelModule } from "./panel.module"
+import { RadioModule } from "./radio.module"
+import { SelectModule } from "./select.module"
+import { SelectionModule } from "./selection.module"
+
+
+const content = [
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    CoreModule,
+    DataGridModule,
+    DialogModule,
+    DirectivesModule,
+    FormFieldModule,
+    InputModule,
+    LayerModule,
+    ListModule,
+    PanelModule,
+    RadioModule,
+    SelectModule,
+    SelectionModule
+]
+
+
+@NgModule({
+    imports: [
+        CommonModule,
+        ...content
+    ],
+    exports: content
+})
+export class NzModule {
+
+}
