@@ -35,11 +35,15 @@ $nz-card-part-margin ?= nz-local-grid-size(2)
   padding-bottom: $nz-card-part-margin
 
   &:first-child
-    padding-top: $nz-card-part-margin
+    padding-top: $nz-card-padding
+
+.nz-card-actions
+  padding-left: $nz-card-part-margin
+  padding-right: $nz-card-part-margin
 
 .nz-card-header, .nz-card-content, .nz-card-footer
-  padding-left: $nz-card-padding
-  padding-right: $nz-card-padding
+  padding-left: $nz-card-padding + $nz-card-part-margin
+  padding-right: $nz-card-padding + $nz-card-part-margin
 
 .nz-card-media
   display: block

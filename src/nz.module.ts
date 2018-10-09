@@ -12,8 +12,10 @@ import { FormFieldModule } from "./form-field.module"
 import { InputModule } from "./input.module"
 import { LayerModule } from "./layer.module"
 import { ListModule } from "./list.module"
+import { NavbarModule } from "./navbar.module"
 import { PanelModule } from "./panel.module"
 import { RadioModule } from "./radio.module"
+import { RpcModule } from "./rpc.module"
 import { SelectModule } from "./select.module"
 import { SelectionModule } from "./selection.module"
 
@@ -30,8 +32,10 @@ const content = [
     InputModule,
     LayerModule,
     ListModule,
+    NavbarModule,
     PanelModule,
     RadioModule,
+    RpcModule,
     SelectModule,
     SelectionModule
 ]

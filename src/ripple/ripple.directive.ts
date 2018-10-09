@@ -23,7 +23,6 @@ export class RippleDirective implements OnInit, OnDestroy {
     }
 
     public ngOnInit() {
-        console.log("ngOnInit")
         this.boundRipple = this.rippleService.attach(
             { nativeElement: this.el.nativeElement.parentElement },
             this.el)

@@ -44,6 +44,15 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
             return this._value
         }
     }
+    public set value(val: T) {
+        if (this.control) {
+            (this.control as any).viewToModelUpdate(val)
+        } else {
+            this._value = val
+        }
+        this.writeValue(val)
+        this._handleInput(val)
+    }
     protected _value: T
 
     @Input()

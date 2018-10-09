@@ -59,7 +59,7 @@ export class DrawerSide {
 })
 export class DrawerComponent implements AfterContentInit, OnDestroy {
     @ContentChildren(PanelComponent) readonly panels: QueryList<PanelComponent>
-    @ViewChild("content") readonly content: ElementRef<HTMLElement>
+    // @ViewChild("content") readonly content: ElementRef<HTMLElement>
     @ViewChild("overlay") readonly overlay: ElementRef<HTMLElement>
 
     @Input()

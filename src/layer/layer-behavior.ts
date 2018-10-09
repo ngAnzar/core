@@ -17,9 +17,22 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> {
     public constructor(public readonly options: O = {} as any) {
     }
 
+    public initShow(layer: LayerRef): void {
+        if (this.options.minWidth) {
+            layer.container.style.minWidth = `${this.options.minWidth}px`
+        }
+        if (this.options.minHeight) {
+            layer.container.style.minHeight = `${this.options.minHeight}px`
+        }
+    }
+
     public animateShow(layer: LayerRef): Promise<void> {
         layer.container.style.visibility = "visible"
         return Promise.resolve()
+    }
+
+    public initHide(layer: LayerRef): void {
+
     }
 
     public animateHide(layer: LayerRef): Promise<void> {
@@ -56,6 +69,7 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> {
         })
     }
 
+    // TODO: refactor a backdrop kezelje az eseményeket
     private _backdropListeners: any[] = []
     public showBackdrop(layer: LayerRef): Promise<void> {
         if (this.options.backdrop) {
@@ -148,7 +162,6 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
             finalWidth: `${layer.container.offsetWidth}px`,
             finalHeight: `${layer.container.offsetHeight}px`
         }
-        console.log(params)
         return this.playAnimation(layer, ddAnimation.show, { params })
             .then(() => super.animateShow(layer))
     }

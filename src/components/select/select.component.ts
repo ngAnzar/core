@@ -1,15 +1,17 @@
 import {
     Component, ContentChild, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
-    ViewChild, AfterContentInit, AfterViewInit, ViewContainerRef
+    ViewChild, AfterContentInit, AfterViewInit, ViewContainerRef,
+    ChangeDetectionStrategy, ChangeDetectorRef, Attribute
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 
-import { SelectionModel, SingleSelection } from "../../selection.module"
-import { DataSource, DataView, Range } from "../../data"
+import { SelectionModel, SingleSelection, SelectionEvent } from "../../selection.module"
+import { DataSource, DataStorage, Range, Model } from "../../data"
 import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
 import { LayerService, LayerRef, DropdownLayer, DropdownLayerOptions } from "../../layer.module"
 import { FormFieldComponent } from "../form-field/form-field.component"
 import { DropdownComponent, DROPDOWN_ITEM_TPL } from "./dropdown.component"
+import { Subscriptions } from "../../util/subscriptions"
 
 
 export class SelectTplContext<T> {
@@ -30,65 +32,80 @@ export type SelectTemplateRef<T> = TemplateRef<SelectTplContext<T>>
         "(blur)": "_handleFocus(false)",
         "(click)": "_handleClick($event)"
     },
+    changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
         LayerService,
         { provide: InputComponent, useExisting: SelectComponent },
         INPUT_VALUE_ACCESSOR
     ]
 })
-export class SelectComponent<T> extends InputComponent<T> implements AfterContentInit, AfterViewInit {
+export class SelectComponent<T extends Model> extends InputComponent<T[]> implements AfterContentInit, AfterViewInit {
     public get type(): string { return "select" }
 
     @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<T>
     @ContentChild("item", { read: TemplateRef }) public readonly itemTpl: SelectTemplateRef<T>
 
+    @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLElement>
     @ViewChild("default_selected_single", { read: TemplateRef }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
     @ViewChild("default_selected_multi", { read: TemplateRef }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
     @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
 
     @Input("data-source") public readonly dataSource: DataSource<T>
-    public readonly dataView: DataView<T>
+    public readonly storage: DataStorage<T>
 
     @Input()
     public set opened(val: boolean) {
-        console.log("set opened", val)
         if (this._opened !== val) {
             this._opened = val
             this._updateDropDown()
+            this.cdr.markForCheck()
         }
     }
     public get opened(): boolean { return this._opened }
     protected _opened: boolean = false
 
+    public get submitValue(): string {
+        return this.selection.items.map(item => item.id).join(",")
+    }
+
     protected ddLayer: LayerRef
+    protected s = new Subscriptions()
 
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
         @Inject(Renderer2) _renderer: Renderer2,
         @Inject(ElementRef) el: ElementRef,
-        @Inject(SelectionModel) @Optional() protected readonly selection: SelectionModel,
+        @Inject(SelectionModel) @Optional() protected readonly selection: SelectionModel<T>,
         @Inject(LayerService) protected readonly layer: LayerService,
-        @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent) {
+        @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
+        @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
+        @Attribute("display-field") public displayField: string = "label") {
         super(ngControl, ngModel, _renderer, el)
 
         if (!selection) {
             this.selection = new SingleSelection()
         }
+
+        this.selection.maintainSelection = true
+        this.s.add(this.selection.changes).subscribe(selected => {
+            if (this.selection.type !== "multi") {
+                this.opened = false
+            }
+            this.cdr.markForCheck()
+            this.value = selected
+        })
     }
 
-    public writeValue(obj: T): void {
-        throw new Error("Method not implemented.")
+    public writeValue(obj: T[]): void {
+        if (this.hidden) {
+            this._renderer.setAttribute(this.hidden.nativeElement, "value", this.submitValue)
+        }
     }
 
     public ngAfterContentInit() {
-        (this as any).dataView = new DataView(this.dataSource)
-        this.dataView.itemsChanged.subscribe(event => {
-            if (this.dataView.items.length && this.ddLayer) {
-                this.ddLayer.show()
-            }
-        })
+        (this as any).storage = new DataStorage(this.dataSource)
     }
 
     public ngAfterViewInit() {
@@ -125,7 +142,7 @@ export class SelectComponent<T> extends InputComponent<T> implements AfterConten
                         type: "empty",
                         hideOnClick: true
                     },
-                    minWidth: targetEl.offsetWidth,
+                    minWidth: targetEl.offsetWidth + 32,
                     minHeight: targetEl.offsetHeight,
                     initialWidth: targetEl.offsetWidth + 32,
                     initialHeight: targetEl.offsetHeight
@@ -136,13 +153,18 @@ export class SelectComponent<T> extends InputComponent<T> implements AfterConten
                     null,
                     [
                         { provide: SelectionModel, useValue: this.selection },
-                        { provide: DataView, useValue: this.dataView },
+                        { provide: DataStorage, useValue: this.storage },
                         { provide: DROPDOWN_ITEM_TPL, useValue: this.itemTpl }
                     ])
-            }
 
-            console.log("request...")
-            this.dataView.requestRange(new Range(0, 20))
+                let s = this.ddLayer.output.subscribe(event => {
+                    if (event.type === "hiding") {
+                        this.opened = false
+                        s.unsubscribe()
+                    }
+                })
+            }
+            this.ddLayer.show()
         } else if (this.ddLayer) {
             this.ddLayer.hide()
             this.ddLayer = null
@@ -150,12 +172,10 @@ export class SelectComponent<T> extends InputComponent<T> implements AfterConten
     }
 
     protected _handleClick() {
-        console.log("click")
         this.opened = !this.opened
     }
 
     protected _handleFocus(f: boolean) {
         super._handleFocus(f)
-        console.log({ _handleFocus: f })
     }
 }

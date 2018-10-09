@@ -20,6 +20,7 @@ export const BUTTON_CANCEL: ButtonOption = { role: "cancel", label: "Mégse" }
 export const BUTTON_OK: ButtonOption = { role: "ok", label: "OK", color: "confirm" }
 export const BUTTON_DELETE: ButtonOption = { role: "delete", label: "Törlés", color: "critical" }
 export const BUTTON_SEPARATOR: ButtonOption = { role: "spacer" }
+export const BUTTON_ERROR: ButtonOption = { role: "ok", label: "OK", color: "critical" }
 
 
 export class DialogEvent<D = any> extends LayerEvent<D> {
@@ -44,6 +45,13 @@ export class DialogService {
     public alert(title: string, message: string, options?: LayerOptions): DialogRef {
         return this._show(
             this._getProvides(title, message, [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_OK], MessageDialog),
+            options
+        )
+    }
+
+    public error(title: string, message: string, options?: LayerOptions): DialogRef {
+        return this._show(
+            this._getProvides(title, message, [BUTTON_SEPARATOR, BUTTON_ERROR], MessageDialog),
             options
         )
     }

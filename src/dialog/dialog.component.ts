@@ -1,4 +1,4 @@
-import { Component, Inject, InjectionToken, Optional } from "@angular/core"
+import { Component, Inject, InjectionToken, Optional, AfterViewChecked } from "@angular/core"
 import { Portal } from "@angular/cdk/portal"
 
 import { DialogEvent } from "./dialog.service"
@@ -31,8 +31,7 @@ export const DIALOG_CONTENT = new InjectionToken<Portal<any>>("dialog.content")
     selector: ".nz-dialog",
     templateUrl: "./dialog.template.pug"
 })
-export class DialogComponent {
-
+export class DialogComponent implements AfterViewChecked {
     public constructor(
         @Inject(LayerRef) protected layerRef: LayerRef<DialogEvent>,
         @Inject(LayerService) protected layerSvc: LayerService,
@@ -46,11 +45,17 @@ export class DialogComponent {
     }
 
     public _handleButtonClick(event: Event, role: string) {
-        let e = new DialogEvent("button-action", role)
+        let e = new DialogEvent("button", role)
         this.layerRef.emit(e)
 
         if (!e.isDefaultPrevented()) {
             this.close()
         }
+    }
+
+    public ngAfterViewChecked() {
+        // if (this.layerRef.behavior) {
+        //     this.layerRef.behavior.levitate.update()
+        // }
     }
 }

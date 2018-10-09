@@ -16,7 +16,7 @@ import { InputComponent } from "../input/input.component"
     templateUrl: "./form-field.template.pug",
     host: {
         "[class.nz-focused]": "_input.focused",
-        "[class.nz-has-value]": "_input.value != null",
+        "[class.nz-has-value]": "!_inputIsEmpty()",
         "[class.ng-untouched]": "_input.untouched",
         "[class.ng-touched]": "_input.touched",
         "[class.ng-pristine]": "_input.pristine",
@@ -67,5 +67,17 @@ export class FormFieldComponent implements AfterContentInit {
             }
             this._changeDetector.markForCheck()
         })
+    }
+
+    public _inputIsEmpty() {
+        let val: any = this._input.value
+        if (typeof val === "string") {
+            return val.length === 0
+        } else if (typeof val === "number" || typeof val === "boolean") {
+            return false
+        } else if (Array.isArray(val)) {
+            return val.length === 0
+        }
+        return !val
     }
 }

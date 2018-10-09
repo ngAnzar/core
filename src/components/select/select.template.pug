@@ -10,20 +10,27 @@
     height: auto
     white-space: nowrap
 
+  .spacer
+    overflow: hidden
+    width: 0px
+    display: inline-block
+
+
+input(#hidden type="hidden")
 
 div.select-input
-  span &nbsp;
+  span.spacer &nbsp;
   ng-template(ngFor bind-ngForOf="selection.items" let-item)
     ng-template(
       bind-ngTemplateOutlet="selectedTpl"
       bind-ngTemplateOutletContext="{$implicit:item}")
 
 
-ng-template(#default_selected_single)
-  span Default Single {{ item.name }}
+ng-template(#default_selected_single let-item)
+  span {{ item[displayField] }}
 
-ng-template(#default_selected_multi)
-  span Default Multi {{ item.name }}
+ng-template(#default_selected_multi let-item)
+  span {{ item[displayField] }}
 
 ng-template(#default_item let-item)
-  span Default Item {{ item.name }}
+  span {{ item[displayField] }}

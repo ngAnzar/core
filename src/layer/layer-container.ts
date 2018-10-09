@@ -90,6 +90,7 @@ export class LayerOutlet extends ElementRef<HTMLElement> {
             this.onDestroy()
             delete this.onDestroy
 
+            this.portal.dispose()
             if (this.nativeElement.parentNode) {
                 this.nativeElement.parentNode.removeChild(this.nativeElement)
             }

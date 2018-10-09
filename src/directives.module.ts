@@ -1,6 +1,7 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 
+import { AvatarDirective } from "./directives/avatar.directive"
 import { CaptionDirective } from "./directives/caption.directive"
 import { ContentDirective } from "./directives/content.directive"
 import { IconDirective } from "./directives/icon.directive"
@@ -10,6 +11,7 @@ import { PrefixDirective } from "./directives/prefix.directive"
 // import { VirtualForDirective } from "./directives/virtual-for.directive"
 
 export {
+    AvatarDirective,
     CaptionDirective,
     ContentDirective,
     IconDirective,
@@ -19,6 +21,7 @@ export {
 }
 
 const content = [
+    AvatarDirective,
     CaptionDirective,
     ContentDirective,
     IconDirective,

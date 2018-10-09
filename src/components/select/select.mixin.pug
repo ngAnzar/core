@@ -1,0 +1,8 @@
+
+
+mixin nz-select-field(label, source, width)
+  .nz-form-field(style="width: 250px")&attributes()
+    label= label
+    .nz-select(bind-data-source=source #select)
+    .nz-postfix
+      i.nz-arrow-down(on-click="select.opened=!select.opened")

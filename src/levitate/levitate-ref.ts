@@ -17,7 +17,7 @@ export class LevitateRef {
 
     public apply(pos: Readonly<LevitatingPosition>) {
         (this as any).position = pos
-        console.log(this, "apply", pos)
+        console.log({ apply: pos })
         // TODO: renderer vagy valami
         let levitate = this.levitate.ref
 
@@ -33,8 +33,14 @@ export class LevitateRef {
 
     public update(): Readonly<LevitatingPosition> {
         let pos = this.compute()
-        this.apply(this.compute())
-        return pos
+        if (!this.position
+            || this.position.left !== pos.left
+            || this.position.top !== pos.top
+            || this.position.maxWidth !== pos.maxWidth
+            || this.position.maxHeight !== pos.maxHeight) {
+            this.apply(pos)
+        }
+        return this.position
     }
 
     public dispose(): void {

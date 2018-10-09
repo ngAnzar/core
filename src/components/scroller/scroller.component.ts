@@ -82,6 +82,11 @@ export class ScrollerComponent implements OnInit, OnDestroy {
     public get orient(): ScrollOrient { return this._orient }
     protected _orient: ScrollOrient = "vertical"
 
+    public get overflowX(): number { return Math.max(0, this.el.nativeElement.scrollWidth - this.el.nativeElement.offsetWidth) }
+    public get overflowY(): number { return Math.max(0, this.el.nativeElement.scrollHeight - this.el.nativeElement.offsetHeight) }
+    public get overflowPrimary(): number { return this.orient === "horizontal" ? this.overflowX : this.overflowY }
+    public get overflowSecondary(): number { return this.orient === "horizontal" ? this.overflowY : this.overflowX }
+
     public set primaryScroll(value: number) {
         if (this.orient === "horizontal") {
             this.el.nativeElement.scrollLeft = value

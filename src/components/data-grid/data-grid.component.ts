@@ -3,9 +3,7 @@ import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 import { ColumnsComponent } from "./columns.component"
 
-import { DataSource } from "../../data/data-source"
-import { DataView } from "../../data/data-view"
-import { Range } from "../../data/range"
+import { DataSource, DataStorage, Range } from "../../data"
 import { Subscriptions } from "../../util"
 
 
@@ -15,8 +13,9 @@ import { Subscriptions } from "../../util"
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataGridComponent implements OnInit, AfterContentInit {
-    @Input("data-source") public source: DataSource<any>
-    protected dataView: DataView<any>
+    @Input("data-source")
+    public source: DataSource<any>
+    protected storage: DataStorage<any>
 
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
 
@@ -44,11 +43,11 @@ export class DataGridComponent implements OnInit, AfterContentInit {
     }
 
     public ngOnInit() {
-        this.dataView = new DataView(this.source)
-        this.subscriptions.add(this.dataView.itemsChanged).subscribe(() => {
+        this.storage = new DataStorage(this.source)
+        this.subscriptions.add(this.storage.items).subscribe(() => {
             this.updateGridTemplate()
         })
-        this.dataView.requestRange(new Range(0, 40))
+        this.storage.getRange(new Range(0, 40))
     }
 
     public ngAfterContentInit() {
@@ -70,9 +69,9 @@ export class DataGridComponent implements OnInit, AfterContentInit {
 
         let colTemplate = col.join(" ")
 
-        if (this.dataView) {
+        if (this.storage) {
             this._rowsGridTemplate["grid-template-columns"] = colTemplate
-            this._rowsGridTemplate["grid-template-rows"] = `repeat(${this.dataView.lastIndex}, ${this._rowHeight}px)`
+            this._rowsGridTemplate["grid-template-rows"] = `repeat(${this.storage.lastIndex}, ${this._rowHeight}px)`
         }
 
         this.columns.gridTemplate = {

@@ -45,7 +45,7 @@ export const ddAnimation: AnimationSet = {
     show: [
         query(":self, .nz-layer-content", style({
             "visibility": "visible",
-            "opacity": "0",
+            "opacity": 0,
             "width": "{{ initialWidth }}",
             "height": "{{ initialHeight }}",
         })),
@@ -57,7 +57,7 @@ export const ddAnimation: AnimationSet = {
         // }),
 
         animate(`200ms ease-in`, style({
-            "opacity": "1"
+            "opacity": 1
         })),
 
         query(":self, .nz-layer-content", animate(`50ms ease-in`, style({
@@ -65,8 +65,8 @@ export const ddAnimation: AnimationSet = {
             "width": "{{ finalWidth }}"
         }))),
 
-        query(":self, .nz-layer-content", animate(`300ms ease-in`, style({
-            "height": "{{ finalWidth }}"
+        query(":self, .nz-layer-content", animate(`200ms ease-in`, style({
+            "height": "{{ finalHeight }}"
         })))
     ],
     hide: fadeAnimation.hide

@@ -1,14 +1,22 @@
 :stylus
   @require "../list/list"
 
+  .list
+    display: inline-grid
+    grid-template-columns: 1fr
+
   .item
     cursor: pointer
     user-select: none
+    grid-column: 1
 
-.nz-scroller
-  .nz-list
-    ng-template(nzVirtualFor, [nzVirtualForOf]="dataView" let-virtual bind-fixedItemHeight="_rowHeight")
-      .nz-list-item.item(selectable)
+  .scroller
+    display: inline-grid
+
+.nz-scroller.scroller
+  .nz-list.list(bind-style.gridTemplateRows="gridTemplateRows")
+    ng-template(nzVirtualFor, [nzVirtualForOf]="storage" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
+      .nz-list-item.item(bind-style.gridRow="index + 1" bind-model="virtual" selectable)
         ng-template(
           bind-ngTemplateOutlet="itemTpl"
           bind-ngTemplateOutletContext="{$implicit:virtual}")

@@ -1,6 +1,7 @@
-import { Component, Inject, InjectionToken, TemplateRef } from "@angular/core"
+import { Component, Inject, InjectionToken, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 
-import { DataView } from "../../data"
+import { DataStorage, Model } from "../../data"
 
 
 export const DROPDOWN_ITEM_TPL = new InjectionToken<TemplateRef<any>>("dropdown.itemTpl")
@@ -25,11 +26,21 @@ export class DDContext<T> {
             justify-content: stretch;
             align-content: stretch;
         }`
-    ]
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DropdownComponent<T = any> {
+export class DropdownComponent<T extends Model<any>> {
+    public get gridTemplateRows(): SafeStyle {
+        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex}, 48px)`)
+    }
+
     public constructor(
-        @Inject(DataView) public readonly dataView: DataView<T>,
-        @Inject(DROPDOWN_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>) {
+        @Inject(DataStorage) public readonly storage: DataStorage<T>,
+        @Inject(DROPDOWN_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
+        @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
+        @Inject(DomSanitizer) protected sanitizer: DomSanitizer) {
+        storage.items.subscribe(event => {
+            this.cdr.markForCheck()
+        })
     }
 }

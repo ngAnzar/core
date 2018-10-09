@@ -1,56 +1,45 @@
-import { DataSource, Filter, FilterValue, PositionQuery } from "./data-source"
+import { Observable, of } from "rxjs"
+// import { of } from "rxjs/operators"
+
+import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
+import { Model, ID, ModelClass, RawData } from "./model"
 import { Range } from "./range"
-import { Subscriptions } from "../util"
 
 
-export class StaticSource<T extends Object, F extends Filter = Filter> extends DataSource<T, F> {
-    public readonly isRemote: boolean = false
-    public readonly isBusy: boolean = false
-
-    public get range(): Range { return this._range }
-    protected _range: Range
-
-    protected subscriptions: Subscriptions = new Subscriptions()
-
-    public set items(val: T[]) {
-        this._data = val
-        this._applyModifications()
-        this.emitChanged(this._data, this._modifiedData)
-    }
-
-    public get items(): T[] {
-        return this._data
-    }
-
-    private _modifiedData: T[]
-
-    public constructor(protected _data: T[]) {
+export class StaticSource<T extends Model> extends DataSource<T> {
+    public constructor(
+        public readonly model: ModelClass<T>,
+        public readonly data: Array<Readonly<RawData<T>>>) {
         super()
-        this._modifiedData = _data.slice(0)
-        this._range = new Range(0, _data.length)
-
-        this.subscriptions.add(this.filter.changed).subscribe(() => {
-            this._applyModifications()
-        })
-
-        this.subscriptions.add(this.position.changed).subscribe(() => {
-            this._applyModifications()
-        })
     }
 
-    protected _applyModifications() {
-        let filter = this.filter.get()
-        let oldData: T[] = this._modifiedData
-        let data: T[] = this._data
+    public determinePosition(id: ID): Observable<number> {
+        let pos = -1
+        for (let i = 0, l = this.data.length; i < l; i++) {
+            if (this.data[i].id === id) {
+                return of(i)
+            }
+        }
+        return of(pos)
+    }
+
+    public save(model: T): Observable<boolean> {
+        throw new Error("StaticSource not supports save")
+    }
+
+    public delete(model: T): Observable<boolean> {
+        throw new Error("StaticSource not supports delete")
+    }
+
+    protected _search(filter?: Filter<T>, sorter?: Sorter<T>, range?: Range): Observable<any[]> {
+        let result: any[] = this.data.slice(0)
 
         if (filter) {
-            data = data.filter(v => this._applyFilter(filter, v))
-            this._range = new Range(0, data.length)
+            result = result.filter(v => this._testFilters(filter, v))
         }
 
-        let sorter = this.sorter.get()
         if (sorter) {
-            data = data.sort((a: any, b: any) => {
+            result = result.sort((a: any, b: any) => {
                 for (let field in sorter) {
                     if (typeof a[field] === "string") {
                         let r = a[field].localeCompare(b[field])
@@ -69,24 +58,19 @@ export class StaticSource<T extends Object, F extends Filter = Filter> extends D
             })
         }
 
-        let range = this.position.get()
         if (range) {
-            if (range.kind === "range") {
-                this._range = new Range(Math.max(0, range.begin), Math.min(data.length, range.end))
-            } else if (range.kind === "position") {
-                let pos = this.getIndex(range.elementId)
-                this._range = pos !== -1
-                    ? new Range(Math.max(0, pos - range.before), Math.min(data.length, pos + range.after))
-                    : new Range(0, Math.min(data.length, range.before + range.after))
-            }
-
-            data = data.slice(this._range.begin, this._range.end)
+            result = result.slice(range.begin, range.end)
         }
 
-        this.emitChanged(oldData, this._modifiedData = data)
+        // console.log("result...", result, { filter, sorter, range })
+        return of(result)
     }
 
-    protected _applyFilter(filter: Filter, value: { [key: string]: any }) {
+    protected _getById(id: ID): Observable<T> {
+        return null
+    }
+
+    protected _testFilters(filter: Filter<T>, value: { [key: string]: any }) {
         for (const k in filter) {
             if (!this._testFilter(filter[k], value[k])) {
                 return false
@@ -95,7 +79,7 @@ export class StaticSource<T extends Object, F extends Filter = Filter> extends D
         return true
     }
 
-    protected _testFilter(filter: FilterValue, value: any): boolean {
+    protected _testFilter(filter: FilterValue<any>, value: any): boolean {
         if (filter === null) {
             return value === null
         } else if (typeof filter === "boolean") {
@@ -125,17 +109,11 @@ export class StaticSource<T extends Object, F extends Filter = Filter> extends D
         } else if ("lte" in filter) {
             return filter.lte <= value
         } else if ("or" in filter && filter.or.length > 0) {
-            return filter.or.filter(f => this._testFilter(f, value)).length > 0
+            return filter.or.filter((f: Filter_Exp<any>) => this._testFilter(f, value)).length > 0
         } else if ("and" in filter && filter.and.length > 0) {
-            return filter.and.filter(f => this._testFilter(f, value)).length === filter.and.length
+            return filter.and.filter((f: Filter_Exp<any>) => this._testFilter(f, value)).length === filter.and.length
         } else {
             throw new Error("Unexpected filter: " + filter)
         }
-    }
-
-    public dispose() {
-        this.subscriptions.unsubscribe()
-        delete this._data
-        delete this._modifiedData
     }
 }

@@ -14,7 +14,7 @@ export class LayerEvent<D> extends AnzarEvent {
     public readonly layer: LayerRef<this>
 
     public constructor(
-        public readonly type: string,
+        public readonly type: "showing" | "hiding" | "destroy" | "button" | string,
         public data?: D) {
         super()
     }
@@ -76,11 +76,17 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
         } else {
             (this as any).isVisible = true
             this.attach()
+            this.behavior.initShow(this)
             this.behavior.levitate.update()
-            return Promise.all([
-                this.behavior.showBackdrop(this),
-                this.behavior.animateShow(this)
-            ])
+            this.emit(new LayerEvent("showing") as E)
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    Promise.all([
+                        this.behavior.showBackdrop(this),
+                        this.behavior.animateShow(this)
+                    ]).then(resolve)
+                }, 300)
+            })
         }
     }
 
@@ -89,6 +95,8 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
     public hide(): Promise<any> {
         if (this.isVisible) {
             (this as any).isVisible = false
+            this.behavior.initHide(this)
+            this.emit(new LayerEvent("hiding") as E)
             return Promise.all([
                 this.behavior.hideBackdrop(this),
                 this.behavior.animateHide(this).then(() => this.dispose())

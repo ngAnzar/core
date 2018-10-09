@@ -2,8 +2,9 @@ import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 
 
-export { DataSource } from "./data/data-source"
-export { StaticSource } from "./data/static-source"
+export * from "./data"
+import { ResizeObserver } from "./observers/resize-observer"
+export { ResizeObserver }
 // import { DataSourceDirective } from "./data/data-source.directive"
 // import { ScrollerComponent } from "./components/scroller/scroller.component"
 
@@ -19,7 +20,8 @@ const content: any[] = [
         CommonModule
     ],
     declarations: content,
-    exports: content
+    exports: content,
+    providers: [ResizeObserver]
 })
 export class CoreModule {
 

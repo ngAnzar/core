@@ -1,9 +1,78 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, Subject } from "rxjs"
-import * as DeepDiff from "deep-diff"
+import { Observable } from "rxjs"
+import { map } from "rxjs/operators"
 
-import { Collection, CollectionItemId } from "./collection"
 import { Range } from "./range"
+import { Model, ID, ModelClass } from "./model"
+import { Items } from "./collection"
+
+
+export type Filter_MinMax = { min: number, max: number }
+export type Filter_Eq<T> = { eq: T }
+export type Filter_Neq<T> = { neq: T }
+export type Filter_Gt<T> = { gt: T }
+export type Filter_Gte<T> = { gte: T }
+export type Filter_Lt<T> = { lt: T }
+export type Filter_Lte<T> = { lte: T }
+export type Filter_In<T> = { in: T[] }
+export type Filter_Or<T> = { or: Filter_Exp<T>[] }
+export type Filter_And<T> = { and: Filter_Exp<T>[] }
+export type Filter_Exp<T> = Filter_MinMax | Filter_In<T> |
+    Filter_Eq<T> | Filter_Neq<T> |
+    Filter_Gt<T> | Filter_Gte<T> |
+    Filter_Lt<T> | Filter_Lte<T> |
+    Filter_Or<T> | Filter_And<T>
+export type FilterValue<T> = T | Filter_Exp<T>
+
+export type Filter<T> = {
+    [K in keyof T]?: FilterValue<T[K]>
+}
+export type Sorter<T> = { [K in keyof T]?: "asc" | "desc" }
+
+
+export abstract class DataSource<T extends Model> {
+    public readonly busy: boolean = false
+    public readonly busyChanged: Observable<boolean> = new EventEmitter()
+    public readonly model: ModelClass<T>
+
+    public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
+        return this._search(f, s, r).pipe(map(value => this.makeModels(value, r))) as any
+    }
+
+    public getById(id: ID): Observable<T> {
+        return this._getById(id).pipe(map(value => this.makeModel(value))) as any
+    }
+
+    public abstract determinePosition(id: ID): Observable<number>
+
+    public abstract save(model: T): Observable<boolean>
+
+    public abstract delete(model: T): Observable<boolean>
+
+    protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]>
+
+    protected abstract _getById(id: ID): Observable<T>
+
+    protected setBusy(busy: boolean) {
+        if (this.busy !== busy) {
+            (this as any).busy = busy;
+            (this.busyChanged as EventEmitter<boolean>).emit(busy)
+        }
+    }
+
+    protected makeModel(item: any): T {
+        if (item instanceof this.model) {
+            return item
+        } else {
+            return new this.model(item)
+        }
+    }
+
+    protected makeModels(items: any[], range: Range): T[] {
+        return new Items(items.map(this.makeModel.bind(this)), range)
+    }
+
+}
 
 
 export interface DiffKindNew {
@@ -49,101 +118,4 @@ export interface MappingChangingEvent<F> {
     diff: Diff
     old: F
     pending: F
-}
-
-
-export type Filter_Literal = string | number | boolean | null
-export type Filter_MinMax = { min: number, max: number }
-export type Filter_Eq = { eq: Filter_Literal }
-export type Filter_Neq = { neq: Filter_Literal }
-export type Filter_Gt = { gt: Filter_Literal }
-export type Filter_Gte = { gte: Filter_Literal }
-export type Filter_Lt = { lt: Filter_Literal }
-export type Filter_Lte = { lte: Filter_Literal }
-export type Filter_Or = { or: FilterValue[] }
-export type Filter_And = { and: FilterValue[] }
-export type FilterValue = Filter_Literal | Filter_MinMax |
-    Filter_Eq | Filter_Neq |
-    Filter_Gt | Filter_Gte |
-    Filter_Lt | Filter_Lte |
-    Filter_Or | Filter_And
-
-export type Filter = {
-    [key: string]: FilterValue
-}
-export type Sorter = { [key: string]: "asc" | "desc" }
-export type RangeQuery = { kind: "range", begin: number, end: number }
-export type PositionQuery = { kind: "position", elementId: CollectionItemId, before: number, after: number }
-export type Position = RangeQuery | PositionQuery
-
-
-export class MappingField<E> {
-    public readonly changed: Observable<MappingChangedEvent<E>> = new EventEmitter()
-    public readonly changing: Observable<MappingChangingEvent<E>> = new EventEmitter()
-
-    public get(): E {
-        return deepClone(this._value)
-    }
-    public set(value: E) {
-        this._tryChanging(this._value, value)
-    }
-    private _value: E
-
-    public isEq(other: E): boolean {
-        let diff = DeepDiff.diff(this._value, other)
-        return !diff || diff.length === 0
-    }
-
-    private _tryChanging(current: E, pending: E, recursion: number = 0) {
-        if (recursion >= 10) {
-            throw new Error("Filter changing is not possible (max recursion reached)")
-        }
-        let diff: Diff = DeepDiff.diff(current, pending) as any
-
-        if (diff && diff.length) {
-            let pendingRequest = deepClone(pending)
-            let event: MappingChangingEvent<E> = {
-                old: deepClone(current),
-                pending: pendingRequest,
-                diff: diff
-            };
-
-            (this.changing as EventEmitter<MappingChangingEvent<E>>).emit(event)
-
-            let changing = this._tryChanging(pending, event.pending, recursion + 1)
-            if (changing !== true) {
-                let d: Diff = recursion === 0 ? diff : DeepDiff.diff(this._value, pendingRequest) as any
-                this._value = pendingRequest;
-                (this.changed as EventEmitter<MappingChangedEvent<E>>).emit({
-                    diff: d,
-                    value: this.get()
-                })
-            }
-
-            return true
-        }
-
-        return false
-    }
-}
-
-
-export abstract class DataSource<T extends Object, F extends Filter = Filter> extends Collection<T> {
-    public readonly filter = new MappingField<F>()
-    public readonly sorter = new MappingField<Sorter>()
-    public readonly position = new MappingField<Position>()
-    public abstract readonly range: Range
-
-    public abstract readonly isRemote: boolean
-    public abstract readonly isBusy: boolean
-}
-
-
-function deepClone<T>(any: T): T {
-    if (any !== undefined) {
-        let s = JSON.stringify(any)
-        return JSON.parse(s)
-    } else {
-        return undefined
-    }
 }

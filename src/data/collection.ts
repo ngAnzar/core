@@ -1,130 +1,117 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, Subject } from "rxjs"
+import { Observable } from "rxjs"
+import { switchMap } from "rxjs/operators"
+
+import { Model, ID } from "./model"
+import { Range } from "./range"
+import { DataSource } from "./data-source"
 
 
-export interface CCEItem<T> {
-    index: number
-    prevIndex?: number
+export class Items<T extends Model> extends Array<T> {
+    public readonly range: Range
+
+    public constructor(items: T[], range: Range) {
+        switch (items.length) {
+            case 0:
+                super()
+                break
+            case 1:
+                super(1)
+                this[0] = items[0]
+                break
+            default:
+                super(...items)
+        }
+        this.range = range
+    }
+
+    public compare(other: Items<T>): ListDiff<T> {
+        let oldIndexBegin = other instanceof Items ? other.range.begin : this.range.begin
+        // console.log(this.range, "<=>", other && other.range)
+        return listDiff(other, this, oldIndexBegin, this.range.begin)
+    }
+}
+
+
+export class ItemsWithChanges<T extends Model> extends Items<T> {
+    private _changes: ListDiff<T>
+    public get changes(): ListDiff<T> {
+        if (this._changes == null) {
+            // console.log("AAAAA", this._old, this._old ? this._old.range : "NO_RANGE")
+            // this._changes = diff(this._old, this, this._old.range.begin, this.range.begin)
+            this._changes = this.compare(this._old)
+            delete this._old
+        }
+        return this._changes
+    }
+
+    public constructor(items: T[], range: Range, private _old: Items<T>) {
+        super(items, range)
+    }
+}
+
+
+export abstract class Collection<T extends Model<any>> {
+    // public readonly items: T[]
+    // public readonly itemsChanged: Observable<ItemsWithChanges<T>> = new EventEmitter()
+
+    public getRangeById(id: ID, before: number, after: number): Observable<ItemsWithChanges<T>> {
+        return this.determinePosition(id)
+            .pipe(switchMap(pos => this.getRange(
+                new Range(Math.max(0, pos - before), pos + after)
+            )))
+    }
+
+    public abstract getRange(r: Range): Observable<ItemsWithChanges<T>>
+
+    public abstract determinePosition(id: ID): Observable<number>
+
+    // public abstract getIndex(id: ID): number
+
+
+}
+
+
+export const enum ListDiffKind {
+    DELETE = 1,
+    UPDATE = 2,
+    CREATE = 3
+}
+
+export interface ListDiffItem<T> {
+    kind: ListDiffKind
     item: T
+    index: number
 }
 
-export type CollectionChangeItem<T> = { kind: "D", index: number, item: T } |
-{ kind: "U", index: number, newIndex: number, item: T } |
-{ kind: "A", index: number, item: T }
+export type ListDiff<T> = Array<ListDiffItem<T>>
 
+export function listDiff<T extends Model>(oldList: T[], newList: T[], oldIndexBegin: number = 0, newIndexBegin: number = 0): ListDiff<T> {
+    let result: ListDiff<T> = []
+    let begin = Math.min(oldIndexBegin, newIndexBegin)
+    let end = Math.max(oldIndexBegin + oldList.length, newIndexBegin + newList.length)
 
-
-export interface CollectionChangeEvent<T> {
-    changes: Array<CollectionChangeItem<T>>
-    items: T[]
-}
-
-
-export type CollectionItemId = string | number | Array<string | number>
-
-
-export abstract class Collection<T> {
-    public idField: string | string[] = "id"
-    public abstract items: T[]
-    public readonly itemsChanged: Observable<CollectionChangeEvent<T>> = new EventEmitter()
-
-    protected emitChanged(oldItems: T[], newItems: T[], oldIndexStart: number = 0, newIndexStart: number = 0): boolean {
-        let event = this.diff(oldItems, newItems, oldIndexStart, newIndexStart)
-        if (event.changes.length) {
-            (this.itemsChanged as EventEmitter<CollectionChangeEvent<T>>).emit(event)
-            return true
-        }
-        return false
+    let offsetOld = 0, offsetNew = 0
+    if (oldIndexBegin < newIndexBegin) {
+        offsetNew = oldIndexBegin - newIndexBegin
+    } else {
+        offsetOld = newIndexBegin - oldIndexBegin
     }
 
-    public forEach(cb: (item: T, index: number) => void) {
-        this.items.forEach(cb)
-    }
+    for (let i = begin; i < end; i++) {
+        let oldItem = oldList[i - begin + offsetOld]
+        let newItem = newList[i - begin + offsetNew]
 
-    public itemIsEq(a: T, b: T) {
-        return a === b || (this.idField && this.testIdMatch(a, this._getItemId(b)))
-    }
-
-    public get(index: number): T | null {
-        return this.items[index]
-    }
-
-    public getById(id: CollectionItemId): T | null {
-        for (let item of this.items) {
-            if (this.testIdMatch(item, id)) {
-                return item
-            }
-        }
-        return null
-    }
-
-    public getIndex(id: CollectionItemId): number {
-        for (let i = 0, items = this.items, l = items.length; i < l; i++) {
-            if (this.testIdMatch(items[i], id)) {
-                return i
-            }
-        }
-        return -1
-    }
-
-    protected testIdMatch(item: any, id: CollectionItemId): boolean {
-        const idField = this.idField
-        if (typeof idField === "string") {
-            if (typeof id === "string" || typeof id === "number") {
-                return item[idField] === id
-            } else if (Array.isArray(id)) {
-                if (id.length === 1) {
-                    return item[idField] === id[0]
-                } else {
-                    throw new Error(`Invalid id value: ${id}`)
-                }
-            }
-        } else if (idField.length > 0) {
-            if (Array.isArray(id) && idField.length === id.length) {
-                for (let i = idField.length, l = idField.length; i < l; i++) {
-                    if (item[idField[i]] !== id[i]) {
-                        return false
-                    }
-                }
-                return true
-            } else {
-                throw new Error(`Invalid id value: ${id}`)
-            }
-        }
-        return false
-    }
-
-    protected _getItemId(item: any): CollectionItemId {
-        if (typeof this.idField === "string") {
-            return item[this.idField]
-        } else {
-            let id: CollectionItemId = []
-            for (let f of this.idField) {
-                id.push(item[f])
-            }
-            return id
+        if (newItem === undefined) {
+            result[result.length] = { kind: ListDiffKind.DELETE, item: oldItem, index: i }
+        } else if (oldItem === undefined) {
+            result[result.length] = { kind: ListDiffKind.CREATE, item: newItem, index: i }
+        } else if (!Model.isEq(oldItem, newItem)) {
+            result[result.length] = { kind: ListDiffKind.UPDATE, item: newItem, index: i }
         }
     }
 
-    protected diff(oldItems: T[], newItems: T[], oldIndexStart: number = 0, newIndexStart: number = 0): CollectionChangeEvent<T> {
-        let changes: CollectionChangeItem<T>[] = []
-
-        for (let i = 0, l = oldItems.length; i < l; i++) {
-            let bIndex = newItems.findIndex(b => this.itemIsEq(oldItems[i], b))
-            if (bIndex === -1) {
-                changes.push({ kind: "D", index: i + oldIndexStart, item: oldItems[i] })
-            } else if (bIndex !== i || oldItems[i] !== newItems[bIndex]) {
-                changes.push({ kind: "U", index: i + oldIndexStart, newIndex: bIndex + newIndexStart, item: newItems[bIndex] })
-            }
-        }
-
-        for (let i = 0, l = newItems.length; i < l; i++) {
-            let aIndex = oldItems.findIndex(a => this.itemIsEq(newItems[i], a))
-            if (aIndex === -1) {
-                changes.push({ kind: "A", index: i + newIndexStart, item: newItems[i] })
-            }
-        }
-
-        return { items: newItems, changes: changes.sort((a, b) => a.index - b.index) }
-    }
+    return result.sort((a, b) => {
+        return a.kind - b.kind
+    })
 }

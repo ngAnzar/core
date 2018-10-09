@@ -2,8 +2,8 @@ import { Directive, OnDestroy, EventEmitter, Input, Output, Attribute, SkipSelf 
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
+import { Model, ID, Field } from "../data"
 import { Selectable } from "./selectable.directive"
-
 
 
 export interface SelectionEvent<T> extends Array<T> {
@@ -12,18 +12,28 @@ export interface SelectionEvent<T> extends Array<T> {
 }
 
 
+export class PlaceholderModel extends Model {
+    @Field() public id: string
+    $placeholder = true
+}
+
+
 export type SelectedDict<T> = { [key: string]: T }
+export type Update = { [key: string]: boolean }
 
-
-function remove<T>(list: T[], item: T) {
-    let idx = list.indexOf(item)
-    if (idx !== -1) {
-        list.splice(idx, 1)
+function removeEntries<T extends Model>(list: T[], remove: T[]) {
+    for (let r of remove) {
+        let l = list.length
+        while (l-- > 0) {
+            if (Model.isEq(r, list[l])) {
+                list.splice(l, 1)
+            }
+        }
     }
 }
 
 
-export abstract class SelectionModel<T extends Selectable = Selectable> implements OnDestroy {
+export abstract class SelectionModel<T extends Model = Model> implements OnDestroy {
     public readonly items: T[] = []
     public abstract readonly type: string
 
@@ -40,98 +50,96 @@ export abstract class SelectionModel<T extends Selectable = Selectable> implemen
     protected _maintainSelection: boolean = false
 
     protected _selected: SelectedDict<T> = {}
-    protected _destroyed: SelectedDict<T> = {}
-    protected _pending: SelectedDict<T> = {}
+    protected _selectables: { [key: string]: Selectable<T> } = {}
 
-    public update(selection: { [key: string]: boolean }): void {
+    protected _suspended: boolean
+    protected _pending: Update = {}
+
+    public update(update: Update): void {
+        if (this._suspended) {
+            this._pending = Object.assign(this._pending, update)
+            return
+        }
+        this._suspended = true
+
         let selected: T[] = []
         let removed: T[] = []
 
-        for (let k in selection) {
-            let old = this.isSelected(k)
-            if (old !== selection[k]) {
-                let cmp = this._selectableComponent(k)
+        for (let k in update) {
+            if (update[k]) {
+                let cmp = this._selectables[k]
                 if (cmp) {
-                    if (old) {
-                        removed.push(this._selectableComponent(k))
-                    } else if (selection[k]) {
-                        selected.push(this._selectableComponent(k))
-                    }
-                } else {
-                    throw new Error("Can't find component for selectionId: " + k)
+                    cmp.selected = true
+                }
+                if (!this._selected.hasOwnProperty(k)) {
+                    this._selected[k] = (cmp ? cmp.model : new PlaceholderModel({ id: k })) as any
+                    selected.push(this._selected[k])
+                }
+            } else {
+                let cmp = this._selectables[k]
+                if (cmp) {
+                    cmp.selected = false
+                }
+                if (this._selected.hasOwnProperty(k)) {
+                    removed.push(this._selected[k])
+                    delete this._selected[k]
                 }
             }
-            delete this._pending[k]
         }
 
-        for (let r of removed) {
-            remove(this.items, r)
-            remove(this.items, this._destroyed[r.selectionId])
-            remove(this.items, this._selected[r.selectionId])
-            delete this._selected[r.selectionId]
-            delete this._destroyed[r.selectionId]
+        removeEntries(this.items, removed)
+        for (let a of selected) {
+            this.items.push(a)
+        }
+        this._suspended = false
+        if (Object.keys(this._pending).length) {
+            let pending = this._pending
+            this._pending = {}
+            this.update(pending)
         }
 
-        if (selected.length !== 0) {
-            for (let s of selected) {
-                let i = this.items.indexOf(this._destroyed[s.selectionId])
-                if (i !== -1) {
-                    this.items[i] = s
-                }
-
-                i = this.items.indexOf(s)
-                if (i === -1) {
-                    this.items.push(s)
-                }
-                this._selected[s.selectionId] = s
-                delete this._destroyed[s.selectionId]
-            }
-        }
-
-        if (selected.length !== 0 || removed.length !== 0) {
-            let evt: SelectionEvent<T> = this.items.slice(0) as any
-            evt.removed = removed
-            evt.selected = selected;
-            (this.changes as EventEmitter<SelectionEvent<T>>).emit(evt)
+        if (removed.length || selected.length) {
+            let event = this.items.slice(0) as SelectionEvent<T>
+            event.selected = selected
+            event.removed = removed;
+            (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
         }
     }
 
-    public isSelected(what: T | string): boolean {
-        if (typeof what === "string") {
-            return this._selected.hasOwnProperty(what)
-        } else {
-            return what.selected
-        }
+    public isSelected(what: ID): boolean {
+        return this._selected.hasOwnProperty(what)
     }
 
-    public _handleOnDestroy(cmp: T): void {
-        if (this.maintainSelection) {
-            // TODO: develop only
-            if (/^nz-selectable/.test(cmp.selectionId)) {
-                throw new Error("Maintain selection is not working with dynamic selectionId")
-            }
-            this._destroyed[cmp.selectionId] = cmp
-        } else {
+    public _handleOnDestroy(cmp: Selectable<T>): void {
+        if (!this.maintainSelection) {
             this.update({ [cmp.selectionId]: false })
         }
+        delete this._selectables[cmp.selectionId]
     }
 
-    public _handleSelectedChange(cmp: T) {
-        this._pending[cmp.selectionId] = cmp
+    public _handleSelectedChange(cmp: Selectable<T>) {
         this.update({ [cmp.selectionId]: cmp.selected })
     }
 
-    public _canChangeSelected(cmp: T, newValue: boolean): boolean {
+    public _handleModelChange(cmp: Selectable<T>, oldModel: T, newModel: T): void {
+        for (let k in this._selectables) {
+            let selectable = this._selectables[k]
+            if (selectable === cmp && k !== cmp.selectionId) {
+                delete this._selectables[k]
+                break
+            }
+        }
+        this._selectables[cmp.selectionId] = cmp
+        this.update({ [cmp.selectionId]: this.isSelected(cmp.selectionId) })
+    }
+
+    public _canChangeSelected(cmp: Selectable<T>, newValue: boolean): boolean {
         return true
     }
 
-    protected _selectableComponent(id: string): T {
-        if (this.maintainSelection && this._destroyed.hasOwnProperty(id)) {
-            return this._destroyed[id]
-        } else {
-            return this._selected[id] || this._pending[id]
-        }
-    }
+    // protected _selectableComponent(id: string): T {
+    //     return this._selectables
+    // }
 
     // public abstract itemRemoved(item: Selectable): void
     // public abstract itemAdded(item: Selectable): void
@@ -149,8 +157,28 @@ export abstract class SelectionModel<T extends Selectable = Selectable> implemen
         { provide: SelectionModel, useExisting: SingleSelection },
     ]
 })
-export class SingleSelection<T extends Selectable> extends SelectionModel<T> {
+export class SingleSelection<T extends Model = Model> extends SelectionModel<T> {
     public readonly type = "single"
+
+    protected selectedId: ID
+
+    public update(update: Update): void {
+        let newSid = this.selectedId
+        for (let k in update) {
+            if (update[k]) {
+                newSid = k
+                break
+            }
+        }
+        if (this.selectedId) {
+            update[this.selectedId] = false
+        }
+        for (let k in update) {
+            update[k] = k === newSid
+        }
+        this.selectedId = newSid
+        super.update(update)
+    }
 }
 
 
@@ -161,7 +189,7 @@ export class SingleSelection<T extends Selectable> extends SelectionModel<T> {
         { provide: SelectionModel, useExisting: MultiSelection },
     ]
 })
-export class MultiSelection<T extends Selectable> extends SelectionModel<T> {
+export class MultiSelection<T extends Model = Model> extends SelectionModel<T> {
     public readonly type = "multi"
 }
 

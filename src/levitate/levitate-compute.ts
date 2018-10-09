@@ -285,8 +285,6 @@ export class MagicCarpet {
             }
         }
 
-        console.log(possibilities)
-
         let best = possibilities.sort((a, b) => {
             return b.rect.area - a.rect.area
         })[0]
@@ -318,7 +316,7 @@ type Calculators = { [key: string]: Calculator }
 
 
 function placementCalculator(levitateAlign: Align, targetAlign: Align, orient: "H" | "V", opposit?: Calculator): Calculator {
-    return function(levitate: Readonly<Rect>, target: Readonly<Rect>, constraint: Readonly<Rect>): Placement[] {
+    return function (levitate: Readonly<Rect>, target: Readonly<Rect>, constraint: Readonly<Rect>): Placement[] {
         let placement = constraint.copy()
         placement[levitateAlign] = target[targetAlign]
 
@@ -374,21 +372,12 @@ function getLevitatingPosition(pA: Placement, pV: Placement, levitate: Rect, con
     rect = constraint.constraint(rect)
 
     let res: LevitatingPosition & { [key: string]: number } = {
-        maxWidth: rect.width,
-        maxHeight: rect.height,
-        left: rect.left,
-        top: rect.top
+        maxWidth: Math.round(rect.width),
+        maxHeight: Math.round(rect.height),
+        left: Math.round(rect.left),
+        top: Math.round(rect.top)
     }
 
-
-
-    // if (connect) {
-    //     res.connection = {
-
-    //     }
-    // }
-
-    console.log("LLL", res)
     return res
 }
 
