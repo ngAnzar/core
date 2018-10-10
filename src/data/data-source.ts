@@ -43,33 +43,34 @@ export type SaveResponse<T> = T | ModelErrors<T> | GeneralError
 export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
-    public readonly model: ModelFactory<T>
+    public abstract readonly model: ModelFactory<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
         return this._search(f, s, r).pipe(map(value => this.makeModels(value, r))) as any
     }
 
-    public getById(id: ID): Observable<T> {
-        return this._getById(id).pipe(map(value => this.makeModel(value))) as any
+    public get(id: ID): Observable<T> {
+        return this._get(id).pipe(map(value => this.makeModel(value))) as any
     }
 
-    public abstract determinePosition(id: ID): Observable<number>
+    public abstract getPosition(id: ID): Observable<number>
 
     public save(model: T): Observable<T> {
         return this._save(model).pipe(map(value => this.makeModel(value)))
     }
 
-    public delete(model: T): Observable<boolean> {
-        return this._delete(model).pipe(map(value => !!value))
+    public delete(model: T | ID): Observable<boolean> {
+        return this._delete(model instanceof Model ? model.id : model)
+            .pipe(map(value => !!value))
     }
 
     protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]>
 
-    protected abstract _getById(id: ID): Observable<T>
+    protected abstract _get(id: ID): Observable<T>
 
     protected abstract _save(model: T): Observable<T>
 
-    protected abstract _delete(model: T): Observable<boolean>
+    protected abstract _delete(model: ID): Observable<boolean>
 
     protected setBusy(busy: boolean) {
         if (this.busy !== busy) {

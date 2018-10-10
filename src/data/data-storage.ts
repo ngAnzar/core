@@ -60,8 +60,8 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         }
     }
 
-    public determinePosition(id: ID): Observable<number> {
-        return this.source.determinePosition(id)
+    public getPosition(id: ID): Observable<number> {
+        return this.source.getPosition(id)
     }
 
     public reset() {

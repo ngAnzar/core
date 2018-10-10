@@ -2,7 +2,6 @@ import { InjectionToken, Inject, Provider, Optional } from "@angular/core"
 import { HttpClient } from "@angular/common/http"
 import { Observable, Observer, Subject } from "rxjs"
 
-import { ActionDef } from "./rpc-source"
 import { transition } from '@angular/animations';
 
 
@@ -17,6 +16,11 @@ export type MultiParams = Array<{
 }>
 
 export type MultiResult = Array<any>
+
+export interface Action {
+    group: string
+    action: string
+}
 
 
 export abstract class Transaction<T> {
@@ -43,7 +47,7 @@ export abstract class Transaction<T> {
 
 export type TransactionsDict = { [key: number]: Transaction<any> }
 
-export type TransactionFactory = (id: number, ns: string, def: ActionDef, args: any[]) => Transaction<any>
+export type TransactionFactory = (id: number, ns: string, def: Action, args: any[]) => Transaction<any>
 
 export type TransactionResultFn = (tid: number, result: any) => void
 
@@ -79,9 +83,9 @@ export abstract class RpcTransport {
     }
     protected _batch: Batch
 
-    public send(ns: string, def: ActionDef, args: any[]): Observable<any> {
+    public send(action: Action, args: any[]): Observable<any> {
         // console.log("rpc.send", { ns, def, args })
-        let transaction = this.createTransaction(counter[this.endpoint]++, ns, def, args)
+        let transaction = this.createTransaction(counter[this.endpoint]++, action, args)
         if (this.batchInterval) {
             return this.batch.send(transaction)
         } else {
@@ -91,7 +95,7 @@ export abstract class RpcTransport {
     // protected abstract _sendSingle(trans: Transaction): Observable<any>
 
     // public abstract sendBatch(batch: Batch): Observable<MultiResult>
-    public abstract createTransaction(id: number, ns: string, def: ActionDef, args: any[]): Transaction<any>
+    public abstract createTransaction(id: number, action: Action, args: any[]): Transaction<any>
 
     protected _sendSingle(transaction: Transaction<any>): Observable<any> {
         return Observable.create((observer: Observer<any>) => {

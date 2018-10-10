@@ -1,8 +1,10 @@
 import { Observable, Subject, Observer } from "rxjs"
 import { RpcTransport } from "./rpc-transport"
 
-import { ActionDef } from "./rpc-source"
-import { Transaction, TransactionsDict, TransactionResultFn } from "./rpc-transport"
+import { Transaction, TransactionsDict, TransactionResultFn, Action } from "./rpc-transport"
+
+
+
 
 
 let counter = 1
@@ -33,8 +35,8 @@ export class ExtjsTransaction extends Transaction<any> {
 export class ExtjsTransport extends RpcTransport {
     protected pending: { [key: number]: ExtjsTransaction } = {}
 
-    public createTransaction(id: number, ns: string, def: ActionDef, args: any[]): Transaction<any> {
-        return new ExtjsTransaction(id, ns, def.name, args)
+    public createTransaction(id: number, action: Action, args: any[]): Transaction<any> {
+        return new ExtjsTransaction(id, action.group, action.action, args)
     }
 
     protected _handleResponse(transactions: TransactionsDict, response: any[], success: TransactionResultFn, error: TransactionResultFn): void {

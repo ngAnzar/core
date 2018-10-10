@@ -56,7 +56,7 @@ export abstract class Collection<T extends Model> {
     // public readonly itemsChanged: Observable<ItemsWithChanges<T>> = new EventEmitter()
 
     public getRangeById(id: ID, before: number, after: number): Observable<ItemsWithChanges<T>> {
-        return this.determinePosition(id)
+        return this.getPosition(id)
             .pipe(switchMap(pos => this.getRange(
                 new Range(Math.max(0, pos - before), pos + after)
             )))
@@ -64,7 +64,7 @@ export abstract class Collection<T extends Model> {
 
     public abstract getRange(r: Range): Observable<ItemsWithChanges<T>>
 
-    public abstract determinePosition(id: ID): Observable<number>
+    public abstract getPosition(id: ID): Observable<number>
 
     // public abstract getIndex(id: ID): number
 

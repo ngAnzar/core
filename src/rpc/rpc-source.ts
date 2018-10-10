@@ -1,138 +1,107 @@
 import "reflect-metadata"
-import { Inject, Provider } from "@angular/core"
-import { Observable, Observer } from "rxjs"
+import { Inject } from "@angular/core"
+import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
-import { DataSource, Model, Filter, ID, Sorter, Range, ModelFactory } from "../data"
-import { RpcTransport } from "./rpc-transport"
+
+import { DataSource, Model, ModelFactory, ID, Filter, Sorter, Range } from "../data.module"
+import { RpcTransport, Action } from "./rpc-transport"
 
 
-export const RPC_META_NAMESPACE = Symbol("rpc.ns")
-export const RPC_META_METHODS = Symbol("rpc.methods")
+export type RpcMapper = (value: any) => any
 
-
-export const enum RpcFlags {
-    None = 0,
-    FORM_HANDLER = 1,
-    HAS_ACCESS = 2,
-    IS_EVENT = 4
+export interface RpcOptions {
+    action: string
+    group?: string
+    map?: RpcMapper
 }
 
 
-export interface Definition {
-    name: string
-    actions: ActionDef[]
-}
-
-export interface ActionDef {
-    name: string
-    callable?: string
-    flags: RpcFlags
-    argc?: number
-    map?: (value: any) => any
-}
+const RPC_GROUP = Symbol("@rpc.group")
 
 
-export interface Request {
-
-}
-
-
-export interface Response {
-
-}
-
-
-export function Rpc(def: Definition) {
-    return (constructor: Function) => {
-        for (let action of def.actions) {
-            constructor.prototype[action.callable || action.name] = function (...args: any[]) {
-                let res = this.transport.send(def.name, action, args)
-                if (action.map) {
-                    res = res.pipe(map(action.map))
-                }
-                return res
-            }
-        }
+export function RpcGroup(group: string) {
+    return (target: any) => {
+        Reflect.defineMetadata(RPC_GROUP, group, target)
     }
 }
 
 
-export type RpcMethod<A extends any[], R> = (...args: A) => Observable<R>
+export function RpcMethod(action: string | RpcOptions, group?: string) {
+    let options: RpcOptions
+    if (typeof action === "string") {
+        options = { action, group }
+    } else if (action) {
+        options = action
+    }
+
+    return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
+        const type = Reflect.getMetadata("design:type", target, propertyKey)
+        if (type !== Function) {
+            throw new Error("RpcMethod must be function type")
+        }
+
+        const action_ = options.action || propertyKey
+        const group_ = options.group || Reflect.getMetadata(RPC_GROUP, target)
+        const map_ = options.map
+        if (!group_) {
+            throw new Error("Missing RpcGroup")
+        }
+        const action: Action = { action: action_, group: group_ }
+
+        target.prototype[propertyKey] = map_
+            ? function (this: IRpcDataSource, ...args: any[]): any {
+                return this.transport.send(action, args)
+            }
+            : function (this: IRpcDataSource, ...args: any[]): any {
+                return this.transport.send(action, args).pipe(map(map_))
+            }
+
+    }
+}
 
 
-export interface IRpcService {
+export interface IRpcDataSource {
     readonly transport: RpcTransport
 }
 
 
-export interface MethodMapping<T> {
-    save?: keyof T
-    delete?: keyof T
-    search?: keyof T
-    getById?: keyof T
-}
-
-// export function Method(name?: string) {
-//     return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
-
-//     }
-// }
-
-
-// export type RpcMethod<X extends Array<any>, Y> = (...args: X) => Y
-
-
-export abstract class RpcSource<T extends Model> extends DataSource<T> implements IRpcService {
-    public static useModel<T extends Model>(model: ModelFactory<T>): Provider {
-        let cls: any = this
-        return {
-            provide: this,
-            deps: [RpcTransport],
-            useFactory: (transport: RpcTransport) => {
-                return new cls(model, transport)
-            }
-        }
-    }
-
-    protected readonly mm: Readonly<MethodMapping<this>>
-
+export abstract class RpcDataSource<T extends Model = Model> extends DataSource<T> implements IRpcDataSource {
     public constructor(
         @Inject(Model) public readonly model: ModelFactory<T>,
         @Inject(RpcTransport) public readonly transport: RpcTransport) {
         super()
     }
 
-    public determinePosition(id: ID): Observable<number> {
-        return
-    }
-
-    public reconfigure(mm: MethodMapping<this>): RpcSource<T> {
-        let source = new (RpcSource as any)(this.model, this.transport)
-        source.mm = { ...source.mm, ...mm }
-        return source
+    public getPosition(id: ID): Observable<number> {
+        throw new Error(`Not implemented ${this.constructor.name}::getPosition`)
     }
 
     protected _save(model: T): Observable<T> {
-        console.log(this)
-        return (this as any)[this.mm.save](model)
+        throw new Error(`Not implemented ${this.constructor.name}::_save`)
     }
 
-    protected _delete(model: T): Observable<boolean> {
-
-        return (this as any)[this.mm.delete](model)
+    protected _delete(model: ID): Observable<boolean> {
+        throw new Error(`Not implemented ${this.constructor.name}::_delete`)
     }
 
     protected _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]> {
-        return (this as any)[this.mm.delete](f, s, r)
+        throw new Error(`Not implemented ${this.constructor.name}::_search`)
     }
 
-    protected _getById(id: ID): Observable<T> {
-        return (this as any)[this.mm.getById](id)
+    protected _get(id: ID): Observable<T> {
+        throw new Error(`Not implemented ${this.constructor.name}::_get`)
     }
-
-    // protected _reconfigure(source: this, mm: MethodMapping<this>): this {
-    //     for (let k in mm) {
-    //         (source as any)[`_${k}`] = (source as any)[(mm as any)[k]].bind(source)
-    //     }
-    // }
 }
+
+
+// class User extends Model {
+
+// }
+
+
+// @RpcGroup("User")
+// class UserDataSource<T extends User = User> extends RpcDataSource<T> {
+//     @RpcMethod("load_item") protected _get: (id: ID) => Observable<T>
+//     @RpcMethod({ action: "sdsdsd", map(v) { return v } }) public valami: (s: any) => Observable<T>
+// }
+

@@ -16,7 +16,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         this.data = data.map(this.makeModel.bind(this))
     }
 
-    public determinePosition(id: ID): Observable<number> {
+    public getPosition(id: ID): Observable<number> {
         let pos = -1
         for (let i = 0, l = this.data.length; i < l; i++) {
             if (this.data[i].id === id) {
@@ -69,7 +69,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         return of(result)
     }
 
-    protected _getById(id: ID): Observable<T> {
+    protected _get(id: ID): Observable<T> {
         return null
     }
 
