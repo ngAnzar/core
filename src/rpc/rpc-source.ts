@@ -2,7 +2,7 @@ import "reflect-metadata"
 import { Inject, Provider } from "@angular/core"
 import { Observable, Observer } from "rxjs"
 import { map } from "rxjs/operators"
-import { DataSource, Model, Filter, ID, Sorter, Range, ModelClass } from "../data"
+import { DataSource, Model, Filter, ID, Sorter, Range, ModelFactory } from "../data"
 import { RpcTransport } from "./rpc-transport"
 
 
@@ -28,7 +28,7 @@ export interface ActionDef {
     callable?: string
     flags: RpcFlags
     argc?: number
-    transform?: (value: any) => any
+    map?: (value: any) => any
 }
 
 
@@ -47,8 +47,8 @@ export function Rpc(def: Definition) {
         for (let action of def.actions) {
             constructor.prototype[action.callable || action.name] = function (...args: any[]) {
                 let res = this.transport.send(def.name, action, args)
-                if (action.transform) {
-                    res = res.pipe(map(v => action.transform(v)))
+                if (action.map) {
+                    res = res.pipe(map(action.map))
                 }
                 return res
             }
@@ -64,6 +64,14 @@ export interface IRpcService {
     readonly transport: RpcTransport
 }
 
+
+export interface MethodMapping<T> {
+    save?: keyof T
+    delete?: keyof T
+    search?: keyof T
+    getById?: keyof T
+}
+
 // export function Method(name?: string) {
 //     return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
 
@@ -75,7 +83,7 @@ export interface IRpcService {
 
 
 export abstract class RpcSource<T extends Model> extends DataSource<T> implements IRpcService {
-    public static useModel<T extends Model>(model: ModelClass<T>): Provider {
+    public static useModel<T extends Model>(model: ModelFactory<T>): Provider {
         let cls: any = this
         return {
             provide: this,
@@ -86,8 +94,10 @@ export abstract class RpcSource<T extends Model> extends DataSource<T> implement
         }
     }
 
+    protected readonly mm: Readonly<MethodMapping<this>>
+
     public constructor(
-        @Inject(Model) public readonly model: ModelClass<T>,
+        @Inject(Model) public readonly model: ModelFactory<T>,
         @Inject(RpcTransport) public readonly transport: RpcTransport) {
         super()
     }
@@ -96,19 +106,33 @@ export abstract class RpcSource<T extends Model> extends DataSource<T> implement
         return
     }
 
-    public save(model: T): Observable<boolean> {
-        return
+    public reconfigure(mm: MethodMapping<this>): RpcSource<T> {
+        let source = new (RpcSource as any)(this.model, this.transport)
+        source.mm = { ...source.mm, ...mm }
+        return source
     }
 
-    public delete(model: T): Observable<boolean> {
-        return
+    protected _save(model: T): Observable<T> {
+        console.log(this)
+        return (this as any)[this.mm.save](model)
+    }
+
+    protected _delete(model: T): Observable<boolean> {
+
+        return (this as any)[this.mm.delete](model)
     }
 
     protected _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]> {
-        return
+        return (this as any)[this.mm.delete](f, s, r)
     }
 
     protected _getById(id: ID): Observable<T> {
-        return
+        return (this as any)[this.mm.getById](id)
     }
+
+    // protected _reconfigure(source: this, mm: MethodMapping<this>): this {
+    //     for (let k in mm) {
+    //         (source as any)[`_${k}`] = (source as any)[(mm as any)[k]].bind(source)
+    //     }
+    // }
 }

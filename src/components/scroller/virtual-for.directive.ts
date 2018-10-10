@@ -32,7 +32,7 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 @Directive({
     selector: "[nzVirtualFor][nzVirtualForOf]"
 })
-export class VirtualForDirective<T extends Model<any>> implements OnInit, OnDestroy, DoCheck {
+export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, DoCheck {
     @Input()
     public set nzVirtualForOf(value: DataStorage<T>) {
         this._nzVirtualForOf = value

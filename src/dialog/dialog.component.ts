@@ -11,6 +11,7 @@ export interface _ButtonOption {
     label: string
     color?: string
     variant?: string
+    type?: "submit"
 }
 
 

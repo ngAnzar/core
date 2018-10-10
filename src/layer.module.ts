@@ -6,7 +6,7 @@ import { LayerService } from "./layer/layer.service"
 import { LayerContainer } from "./layer/layer-container"
 
 export { LayerRef } from "./layer/layer-ref"
-export { ModalLayer, DropdownLayer } from "./layer/layer-behavior"
+export { ModalLayer, DropdownLayer, MenuLayer } from "./layer/layer-behavior"
 export { LayerOptions, DropdownLayerOptions } from "./layer/layer-options"
 export { LayerService }
 

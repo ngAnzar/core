@@ -12,6 +12,10 @@ import { DialogComponent } from "./dialog/dialog.component"
 import { MessageDialog } from "./dialog/message.dialog"
 
 export { DialogService }
+export {
+    BUTTON_OK, BUTTON_CANCEL, BUTTON_DELETE, BUTTON_ERROR, BUTTON_SEPARATOR, BUTTON_SAVE,
+    DialogEvent
+} from "./dialog/dialog.service"
 
 
 @NgModule({

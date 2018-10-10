@@ -29,7 +29,7 @@ export class DDContext<T> {
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DropdownComponent<T extends Model<any>> {
+export class DropdownComponent<T extends Model> {
     public get gridTemplateRows(): SafeStyle {
         return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex}, 48px)`)
     }

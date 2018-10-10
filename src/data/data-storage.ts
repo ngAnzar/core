@@ -13,7 +13,7 @@ import { Range, RangeList } from "./range"
 
 
 
-export class DataStorage<T extends Model<any>, F = Filter<T>> extends Collection<T> {
+export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     public readonly filter = new DictField<F>()
     public readonly sorter = new DictField<Sorter<T>>()
     public readonly range: Range = new Range(0, 0)

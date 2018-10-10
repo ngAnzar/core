@@ -34,7 +34,6 @@ export class LayerContainer implements OnDestroy {
     public getNewOutlet(): LayerOutlet {
         let el = this.doc.createElement("div")
         el.classList.add("nz-layer-container")
-        el.setAttribute("elevation", "10")
 
         this.doc.body.appendChild(el)
         let portal = new DomPortalOutlet(el, this.cmpResolver, this.appRef, this.injector)

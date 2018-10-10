@@ -2,15 +2,18 @@ import { Observable, of } from "rxjs"
 // import { of } from "rxjs/operators"
 
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
-import { Model, ID, ModelClass, RawData } from "./model"
+import { Model, ID, ModelFactory, RawData } from "./model"
 import { Range } from "./range"
 
 
 export class StaticSource<T extends Model> extends DataSource<T> {
+    public readonly data: Array<Readonly<T>>
+
     public constructor(
-        public readonly model: ModelClass<T>,
-        public readonly data: Array<Readonly<RawData<T>>>) {
+        public readonly model: ModelFactory<T>,
+        data: Array<Readonly<RawData<T>>>) {
         super()
+        this.data = data.map(this.makeModel.bind(this))
     }
 
     public determinePosition(id: ID): Observable<number> {
@@ -23,11 +26,11 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         return of(pos)
     }
 
-    public save(model: T): Observable<boolean> {
+    protected _save(model: T): Observable<T> {
         throw new Error("StaticSource not supports save")
     }
 
-    public delete(model: T): Observable<boolean> {
+    protected _delete(model: T): Observable<boolean> {
         throw new Error("StaticSource not supports delete")
     }
 

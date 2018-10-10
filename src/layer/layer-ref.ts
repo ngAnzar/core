@@ -9,7 +9,6 @@ import { LayerService } from "./layer.service"
 import { LayerBehavior } from "./layer-behavior"
 
 
-
 export class LayerEvent<D> extends AnzarEvent {
     public readonly layer: LayerRef<this>
 
@@ -41,18 +40,18 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
         return this.outlet.nativeElement
     }
 
-    public emit(out: E): void {
+    public emit(out: Partial<E>): void {
         (out as any).layer = this;
-        (this.output as EventEmitter<E>).emit(out)
+        (this.output as EventEmitter<E>).emit(out as E)
     }
 
     public subscribe(handler: (value: E) => void): Subscription {
         return this.s.add(this.output).subscribe(handler as any)
     }
 
-    public push(inp: E): void {
+    public push(inp: Partial<E>): void {
         (inp as any).layer = this;
-        (this.input as EventEmitter<E>).emit(inp)
+        (this.input as EventEmitter<E>).emit(inp as E)
     }
 
     public pull(handler: (value: E) => void): Subscription {

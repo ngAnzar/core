@@ -13,7 +13,6 @@ export interface SelectionEvent<T> extends Array<T> {
 
 
 export class PlaceholderModel extends Model {
-    @Field() public id: string
     $placeholder = true
 }
 

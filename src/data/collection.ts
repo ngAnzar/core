@@ -51,7 +51,7 @@ export class ItemsWithChanges<T extends Model> extends Items<T> {
 }
 
 
-export abstract class Collection<T extends Model<any>> {
+export abstract class Collection<T extends Model> {
     // public readonly items: T[]
     // public readonly itemsChanged: Observable<ItemsWithChanges<T>> = new EventEmitter()
 

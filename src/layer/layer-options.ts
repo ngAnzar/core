@@ -23,6 +23,7 @@ export interface LayerOptions {
     backdrop?: BackdropOptions
     minWidth?: number
     minHeight?: number
+    elevation?: number
 }
 
 

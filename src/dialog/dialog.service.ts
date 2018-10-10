@@ -21,6 +21,7 @@ export const BUTTON_OK: ButtonOption = { role: "ok", label: "OK", color: "confir
 export const BUTTON_DELETE: ButtonOption = { role: "delete", label: "Törlés", color: "critical" }
 export const BUTTON_SEPARATOR: ButtonOption = { role: "spacer" }
 export const BUTTON_ERROR: ButtonOption = { role: "ok", label: "OK", color: "critical" }
+export const BUTTON_SAVE: ButtonOption = { role: "save", color: "confirm", label: "Mentés", type: "submit" }
 
 
 export class DialogEvent<D = any> extends LayerEvent<D> {
@@ -40,6 +41,13 @@ export type DialogRef = ComponentLayerRef<DialogComponent, DialogEvent>
 export class DialogService {
     public constructor(
         @Inject(LayerService) protected layerService: LayerService) {
+    }
+
+    public show(title: string, buttons: ButtonOption[], component: ComponentType<any>, options?: LayerOptions, provides: StaticProvider[] = []) {
+        return this._show(
+            [...this._getProvides(title, null, buttons, component), ...provides],
+            options
+        )
     }
 
     public alert(title: string, message: string, options?: LayerOptions): DialogRef {
@@ -67,7 +75,10 @@ export class DialogService {
 
     }
 
-    private _show(provides: StaticProvider[], options?: LayerOptions): DialogRef {
+    private _show(provides: StaticProvider[], options: LayerOptions = {}): DialogRef {
+        if (!("elevation" in options)) {
+            options.elevation = 10
+        }
         let ref = this.layerService.createFromComponent(DialogComponent, new ModalLayer(options), null, provides) as DialogRef
         ref.show()
         return ref

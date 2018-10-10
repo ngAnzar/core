@@ -1,9 +1,11 @@
 import "reflect-metadata"
+import { InjectionToken } from "@angular/core"
 
 export type Converter<V=any, M=any> = (value: V, model: M) => V
-export type Factory = (value: any) => any
+export type ModelFactory<M=any> = { new(value: any): M } | ((value: any) => M)
 export type RawData<T> = Partial<T>
 
+export const MODEL_ID = new InjectionToken<ID>("MODEL_ID")
 export const EQ = Symbol("@eq")
 const RAW = Symbol("@raw")
 const CACHE = Symbol("@cache")
@@ -12,12 +14,13 @@ const FIELDS = Symbol("@fields")
 
 
 export type BasicOptions = { rawName?: string }
-export type ConverterOptions = { converter?: Converter }
-export type ListOfOptions = { listOf?: { new(value: any): any } | Factory }
-export type MapOfOptions = { mapOf?: { new(value: any): any } | Factory }
+export type MapperOptions = { map?: ModelFactory }
+export type ListOfOptions = { listOf?: ModelFactory }
+export type MapOfOptions = { mapOf?: ModelFactory }
+export type ID = string | number
 
 
-export type FieldOptions = BasicOptions & (ConverterOptions | ListOfOptions | MapOfOptions)
+export type FieldOptions = BasicOptions & (MapperOptions | ListOfOptions | MapOfOptions)
 
 
 function isPrimitiveType(t: any): boolean {
@@ -26,7 +29,7 @@ function isPrimitiveType(t: any): boolean {
 
 
 function isClass(t: any): boolean {
-    return typeof t === "function" && /^class\s/.test(t.toString())
+    return typeof t === "function" && t.__proto__ !== Function.prototype
 }
 
 
@@ -49,7 +52,7 @@ function createProperty(inpName: string, converter: Converter): PropertyDescript
 }
 
 
-function listFactory(itemConverter: Factory): Factory {
+function listFactory(itemConverter: (value: any) => any): ModelFactory {
     return (value: Array<any>): Array<any> => {
         if (Array.isArray(value)) {
             return value.map(itemConverter)
@@ -60,7 +63,7 @@ function listFactory(itemConverter: Factory): Factory {
 }
 
 
-function mapFactory(itemConverter: Factory): Factory {
+function mapFactory(itemConverter: (value: any) => any): ModelFactory {
     return (value: any) => {
         if (value && value.hasOwnProperty) {
             let res = {} as any
@@ -76,14 +79,14 @@ function mapFactory(itemConverter: Factory): Factory {
 }
 
 
-function typeFactory(type: { new(val: any): any }): Factory {
+function typeFactory(type: { new(val: any): any }): ModelFactory {
     return (value: any) => {
-        return isPrimitiveType(type) || !(value instanceof type) ? new type(value) : value
+        return !(value instanceof type) ? new type(value) : value
     }
 }
 
 
-function typeOrConverterFactory(t: any): Factory {
+function typeOrConverterFactory(t: any): ModelFactory {
     return isClass(t) || isPrimitiveType(t) ? typeFactory(t) : t
 }
 
@@ -99,7 +102,7 @@ export function Field(rawName: string | FieldOptions = {}) {
         let listOf
         let mapOf
         if (typeof rawName !== "string") {
-            converter = (rawName as any).converter
+            converter = (rawName as any).map
             listOf = (rawName as any).listOf
             mapOf = (rawName as any).mapOf
             rawName = rawName.rawName
@@ -108,9 +111,9 @@ export function Field(rawName: string | FieldOptions = {}) {
         if (!descriptor) {
             if (!converter) {
                 if (listOf) {
-                    converter = listFactory(typeOrConverterFactory(listOf))
+                    converter = listFactory(typeOrConverterFactory(listOf) as any)
                 } else if (mapOf) {
-                    converter = mapFactory(typeOrConverterFactory(mapOf))
+                    converter = mapFactory(typeOrConverterFactory(mapOf) as any)
                 } else {
                     converter = typeOrConverterFactory(type)
                 }
@@ -149,11 +152,19 @@ export function Field(rawName: string | FieldOptions = {}) {
 }
 
 
+function parseId(value: any): any {
+    if (typeof value !== "string" && typeof value !== "number") {
+        return String(value)
+    }
+    return value
+}
+
+
 export class Model {
     private [RAW]: any
     private [CACHE]: any
 
-    @Field() public id: number
+    @Field({ map: parseId }) public id: ID
 
     public static isEq(modelA: Model, modelB: Model): boolean {
         return modelA instanceof Model && modelA[EQ](modelB)
@@ -167,8 +178,16 @@ export class Model {
         return Reflect.getMetadata(FIELDS, modelClass.prototype)
     }
 
+    public static create<T=any>(factory: ModelFactory<T>, data: T): T {
+        return data instanceof Model
+            ? data
+            : isClass(factory)
+                ? new (factory as any)(data)
+                : (factory as any)(data)
+    }
+
     public constructor(data?: any) {
-        this[RAW] = data
+        this[RAW] = data || {}
         this[CACHE] = {}
         const initProps = Reflect.getMetadata(PROPERTY_FIELDS, this.constructor.prototype)
         for (const key in initProps) {
@@ -183,47 +202,7 @@ export class Model {
     }
 }
 
-export namespace Model {
-    (data?: any) => Model
-}
 
-
-export class Location extends Model {
-    @Field()
-    public city: string
-}
-
-
-function factoryTest(v: any) {
-    return `__Factoried(${v})__`
-}
-
-
-export class User extends Model {
-    @Field("inp_almafa")
-    public set almafa(value: number) {
-        this._almafa = value
-    }
-    public get almafa(): number {
-        return this._almafa
-    }
-    private _almafa: number
-
-    @Field({ listOf: String, rawName: "instituion_names" })
-    public instituionNames: string[]
-
-    @Field({ mapOf: Number })
-    public mapping: { [key: string]: number }
-
-    @Field()
-    public location: Location
-
-    @Field({ listOf: factoryTest })
-    public f: string[]
-
-    @Field()
-    public created_time: Date
-}
 
 
 /*

@@ -34,7 +34,7 @@ export interface Grow {
 
 
 export interface Anchor {
-    ref: HTMLElement | "viewport"
+    ref: HTMLElement | Rect | "viewport"
     align: Align
     valign: Align
     margin?: Margin
@@ -175,6 +175,26 @@ export class Rect {
         }
     }
 
+    public isEq(other: Rect): boolean {
+        return other instanceof Rect
+            && other.left === this.left
+            && other.top === this.top
+            && other.width === this.width
+            && other.height === this.height
+    }
+
+    public merge(other: Rect): Rect {
+        let r = new Rect(
+            Math.min(this.top, other.top),
+            Math.min(this.left, other.left),
+            0,
+            0
+        )
+        r.right = Math.max(this.right, other.right)
+        r.bottom = Math.max(this.bottom, other.bottom)
+        return r
+    }
+
     public copy(): Rect {
         return new Rect(this.top, this.left, this.width, this.height)
     }
@@ -184,7 +204,7 @@ export class Rect {
 function drawRect(rect: Rect, color: string) {
     let r = document.createElement("div")
     r.style.position = "absolute"
-    r.style.border = "1px solid " + color
+    r.style.border = `1px solid ${color}`
     r.style.top = `${rect.top}px`
     r.style.width = `${rect.width}px`
     r.style.height = `${rect.height}px`
@@ -244,8 +264,12 @@ export class MagicCarpet {
             let rect
             if (p.ref === "viewport") {
                 rect = new Rect(window.pageYOffset, window.pageXOffset, window.innerWidth, window.innerHeight)
-            } else {
+            } else if (p.ref instanceof HTMLElement) {
                 rect = Rect.from(p.ref)
+            } else if (p.ref instanceof Rect) {
+                rect = p.ref
+            } else {
+                throw new Error(`Invalid value of 'ref' in '${k}' config`)
             }
             if (p.margin) {
                 rect = rect.applyMargin(p.margin)

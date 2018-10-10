@@ -53,6 +53,7 @@ export class SelectComponent<T extends Model> extends InputComponent<T[]> implem
 
     @Input("data-source") public readonly dataSource: DataSource<T>
     public readonly storage: DataStorage<T>
+    public readonly displayField: string
 
     @Input()
     public set opened(val: boolean) {
@@ -81,7 +82,7 @@ export class SelectComponent<T extends Model> extends InputComponent<T[]> implem
         @Inject(LayerService) protected readonly layer: LayerService,
         @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Attribute("display-field") public displayField: string = "label") {
+        @Attribute("display-field") displayField: string) {
         super(ngControl, ngModel, _renderer, el)
 
         if (!selection) {
@@ -96,6 +97,8 @@ export class SelectComponent<T extends Model> extends InputComponent<T[]> implem
             this.cdr.markForCheck()
             this.value = selected
         })
+
+        this.displayField = displayField || "label"
     }
 
     public writeValue(obj: T[]): void {
@@ -145,7 +148,8 @@ export class SelectComponent<T extends Model> extends InputComponent<T[]> implem
                     minWidth: targetEl.offsetWidth + 32,
                     minHeight: targetEl.offsetHeight,
                     initialWidth: targetEl.offsetWidth + 32,
-                    initialHeight: targetEl.offsetHeight
+                    initialHeight: targetEl.offsetHeight,
+                    elevation: 10
                 }
                 this.ddLayer = this.layer.createFromComponent(
                     DropdownComponent,

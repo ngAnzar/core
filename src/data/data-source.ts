@@ -3,7 +3,7 @@ import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 
 import { Range } from "./range"
-import { Model, ID, ModelClass } from "./model"
+import { Model, ID, ModelFactory } from "./model"
 import { Items } from "./collection"
 
 
@@ -29,11 +29,21 @@ export type Filter<T> = {
 }
 export type Sorter<T> = { [K in keyof T]?: "asc" | "desc" }
 
+export interface GeneralError<T = any> {
+    success: false
+    msg?: string,
+    reason?: string,
+    data?: T
+}
+export type ModelError = any
+export type ModelErrors<T> = { [K in keyof T]?: ModelError }
+export type SaveResponse<T> = T | ModelErrors<T> | GeneralError
+
 
 export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
-    public readonly model: ModelClass<T>
+    public readonly model: ModelFactory<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
         return this._search(f, s, r).pipe(map(value => this.makeModels(value, r))) as any
@@ -45,13 +55,21 @@ export abstract class DataSource<T extends Model> {
 
     public abstract determinePosition(id: ID): Observable<number>
 
-    public abstract save(model: T): Observable<boolean>
+    public save(model: T): Observable<T> {
+        return this._save(model).pipe(map(value => this.makeModel(value)))
+    }
 
-    public abstract delete(model: T): Observable<boolean>
+    public delete(model: T): Observable<boolean> {
+        return this._delete(model).pipe(map(value => !!value))
+    }
 
     protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]>
 
     protected abstract _getById(id: ID): Observable<T>
+
+    protected abstract _save(model: T): Observable<T>
+
+    protected abstract _delete(model: T): Observable<boolean>
 
     protected setBusy(busy: boolean) {
         if (this.busy !== busy) {
@@ -60,12 +78,8 @@ export abstract class DataSource<T extends Model> {
         }
     }
 
-    protected makeModel(item: any): T {
-        if (item instanceof this.model) {
-            return item
-        } else {
-            return new this.model(item)
-        }
+    public makeModel(item: any): T {
+        return Model.create(this.model, item)
     }
 
     protected makeModels(items: any[], range: Range): T[] {

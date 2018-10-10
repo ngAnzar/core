@@ -4,7 +4,7 @@ import { LevitateRef } from "../levitate/levitate-ref"
 import { LayerOptions, DropdownLayerOptions } from "./layer-options"
 import { LayerRef } from "./layer-ref"
 import { fallAnimation, ddAnimation } from "./layer-animations"
-import { BackdropRef } from './layer-container';
+import { BackdropRef } from "./layer-container"
 
 
 export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> {
@@ -23,6 +23,9 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> {
         }
         if (this.options.minHeight) {
             layer.container.style.minHeight = `${this.options.minHeight}px`
+        }
+        if (this.options.elevation) {
+            layer.container.setAttribute("elevation", String(this.options.elevation))
         }
     }
 
