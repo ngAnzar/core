@@ -6,6 +6,7 @@ import { CardModule } from "./card.module"
 import { CheckboxModule } from "./checkbox.module"
 import { CoreModule } from "./core.module"
 import { DataGridModule } from "./data-grid.module"
+import { DateInputModule } from "./date-input.module"
 import { DialogModule } from "./dialog.module"
 import { DirectivesModule } from "./directives.module"
 import { FormFieldModule } from "./form-field.module"
@@ -26,6 +27,7 @@ const content = [
     CheckboxModule,
     CoreModule,
     DataGridModule,
+    DateInputModule,
     DialogModule,
     DirectivesModule,
     FormFieldModule,

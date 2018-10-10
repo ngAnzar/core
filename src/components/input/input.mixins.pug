@@ -1,0 +1,8 @@
+
+//- +input-field("name", "Csoda label")
+
+mixin nz-input-field(name, label, type="text")
+  .nz-form-field(style=(attributes.width ? `width:${attributes.width}px` : null))
+    label= label
+    input.nz-input(formControlName=name type=type)
+    block

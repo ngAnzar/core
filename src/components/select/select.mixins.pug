@@ -1,0 +1,14 @@
+
+//- +select-field("name", "Csoda label", "dataSource")
+
+mixin nz-select-field(name, label, data)
+  -
+    let selectAttrs = {}
+    let selectId = `select_${Math.random().toString(36).substring(3)}`
+    selectAttrs[`#${selectId}`] = ""
+  .nz-form-field(style=(attributes.width ? `width:${attributes.width}px` : null))
+    label= label
+    .nz-select(bind-data-source=data)&attributes(selectAttrs)
+    .nz-postfix
+      i.nz-arrow-down(on-click=`${selectId}.opened=!${selectId}.opened`)
+    block
