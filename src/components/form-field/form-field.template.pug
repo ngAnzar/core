@@ -5,8 +5,8 @@
     width: 100%
     max-width: 100%
     box-sizing: border-box
-    display: inline-flex
-    align-items: baseline
+    //- display: inline-flex
+    //- align-items: baseline
     padding: $nz-form-field-input-padding 0
 
   .before-input, .after-input
@@ -15,7 +15,6 @@
     cursor: default
 
   .input-component
-    flex: auto
     position: relative
     cursor: text
 
@@ -45,11 +44,13 @@
   .caption
     height: $nz-form-field-bottom-caption-height
 
-.input-container
+- var x = style("nz-label")
+
+.nz-inline-hbox.input-container
   .before-input(*ngIf="_prefixDirectives.length")
     ng-content(select=".nz-prefix")
 
-  .input-component
+  .input-component(flex=1)
     ng-content
     ng-content(select="label, .nz-label")
 

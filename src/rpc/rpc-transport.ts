@@ -2,7 +2,7 @@ import { InjectionToken, Inject, Provider, Optional } from "@angular/core"
 import { HttpClient } from "@angular/common/http"
 import { Observable, Observer, Subject } from "rxjs"
 
-import { transition } from '@angular/animations';
+import { LoadFields } from "../data/data-source"
 
 
 export const RPC_ENDPOINT: InjectionToken<string> = new InjectionToken("@rpc.endpoint")
@@ -83,9 +83,9 @@ export abstract class RpcTransport {
     }
     protected _batch: Batch
 
-    public send(action: Action, args: any[]): Observable<any> {
+    public send(action: Action, args: any[], loadFields: LoadFields | null): Observable<any> {
         // console.log("rpc.send", { ns, def, args })
-        let transaction = this.createTransaction(counter[this.endpoint]++, action, args)
+        let transaction = this.createTransaction(counter[this.endpoint]++, action, args, loadFields)
         if (this.batchInterval) {
             return this.batch.send(transaction)
         } else {
@@ -95,7 +95,8 @@ export abstract class RpcTransport {
     // protected abstract _sendSingle(trans: Transaction): Observable<any>
 
     // public abstract sendBatch(batch: Batch): Observable<MultiResult>
-    public abstract createTransaction(id: number, action: Action, args: any[]): Transaction<any>
+    public abstract createTransaction(
+        id: number, action: Action, args: any[], loadFields: LoadFields | null): Transaction<any>
 
     protected _sendSingle(transaction: Transaction<any>): Observable<any> {
         return Observable.create((observer: Observer<any>) => {

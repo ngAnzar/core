@@ -56,16 +56,13 @@ export const ddAnimation: AnimationSet = {
         //     "height": "{{ initialHeight }}",
         // }),
 
-        animate(`200ms ease-in`, style({
+        animate(`50ms ease-in`, style({
             "opacity": 1
         })),
 
-        query(":self, .nz-layer-content", animate(`50ms ease-in`, style({
-            "opacity": 1,
-            "width": "{{ finalWidth }}"
-        }))),
-
         query(":self, .nz-layer-content", animate(`200ms ease-in`, style({
+            "opacity": 1,
+            "width": "{{ finalWidth }}",
             "height": "{{ finalHeight }}"
         })))
     ],

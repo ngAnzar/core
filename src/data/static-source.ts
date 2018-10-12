@@ -2,7 +2,7 @@ import { Observable, of } from "rxjs"
 // import { of } from "rxjs/operators"
 
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
-import { Model, ID, ModelFactory, RawData } from "./model"
+import { Model, ID, ModelClass, RawData } from "./model"
 import { Range } from "./range"
 
 
@@ -10,7 +10,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly data: Array<Readonly<T>>
 
     public constructor(
-        public readonly model: ModelFactory<T>,
+        public readonly model: ModelClass<T>,
         data: Array<Readonly<RawData<T>>>) {
         super()
         this.data = data.map(this.makeModel.bind(this))
@@ -30,7 +30,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         throw new Error("StaticSource not supports save")
     }
 
-    protected _delete(model: T): Observable<boolean> {
+    protected _delete(id: ID): Observable<boolean> {
         throw new Error("StaticSource not supports delete")
     }
 

@@ -1,0 +1,36 @@
+
+
+.nz-vbox
+  display: flex
+  flex-direction: column
+
+.nz-inline-vbox
+  display: inline-flex
+  flex-direction: column
+
+.nz-hbox
+  display: flex
+  flex-direction: row
+
+.nz-inline-hbox
+  display: inline-flex
+  flex-direction: row
+
+.nz-vbox, .nz-hbox, .nz-inline-vbox, .nz-inline-hbox
+  &:not([align]), &[align="start"]
+    align-items: flex-start
+
+  &[align="stretch"]
+    align-items: stretch
+
+  &[align="baseline"]
+    align-items: baseline
+
+  &[align="center"]
+    align-items: center
+
+//   &[inline]
+//     display: inline-flex
+
+.nz-spacer
+  flex: 1

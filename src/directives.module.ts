@@ -8,6 +8,7 @@ import { IconDirective } from "./directives/icon.directive"
 import { LabelDirective } from "./directives/label.directive"
 import { PostfixDirective } from "./directives/postfix.directive"
 import { PrefixDirective } from "./directives/prefix.directive"
+import { VboxDirective, HboxDirective, FlexibleDirective } from "./directives/flex.directive"
 // import { VirtualForDirective } from "./directives/virtual-for.directive"
 
 export {
@@ -17,7 +18,10 @@ export {
     IconDirective,
     LabelDirective,
     PostfixDirective,
-    PrefixDirective
+    PrefixDirective,
+    VboxDirective,
+    HboxDirective,
+    FlexibleDirective
 }
 
 const content = [
@@ -27,7 +31,10 @@ const content = [
     IconDirective,
     LabelDirective,
     PostfixDirective,
-    PrefixDirective
+    PrefixDirective,
+    VboxDirective,
+    HboxDirective,
+    FlexibleDirective
 ]
 
 @NgModule({

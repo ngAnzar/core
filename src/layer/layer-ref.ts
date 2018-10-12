@@ -1,6 +1,7 @@
 import { EventEmitter, Injector, ComponentRef, TemplateRef, EmbeddedViewRef, ViewContainerRef } from "@angular/core"
 import { ComponentPortal, TemplatePortal, ComponentType } from "@angular/cdk/portal"
-import { Observable, Subscription } from "rxjs"
+import { Observable, Subscription, Observer } from "rxjs"
+import { filter, mapTo } from "rxjs/operators"
 
 import { Subscriptions } from "../util/subscriptions"
 import { AnzarEvent } from "../util/event"
@@ -35,6 +36,10 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
     public abstract readonly opener: LayerRef
     public abstract outlet: LayerOutlet
     protected abstract vcr: ViewContainerRef
+
+    public get onClose(): Observable<void> {
+        return this.output.pipe(filter(v => v.type === "destroy"), mapTo(null))
+    }
 
     public get container(): HTMLElement {
         return this.outlet.nativeElement

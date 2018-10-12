@@ -1,5 +1,6 @@
 :stylus
   @require "./select"
+  @require "../../style/layout"
 
   .select-dropdown
     background-color: $theme.background.default
@@ -10,21 +11,30 @@
     height: auto
     white-space: nowrap
 
-  .spacer
-    overflow: hidden
-    width: 0px
+  .select-input
+    height: nz-local-grid-size(5)
+    line-height: nz-local-grid-size(5)
+    flex: 1
+
+  .arrow-down
     display: inline-block
+    width: 0
+    height: 0
+    border-left: 8px solid transparent
+    border-right: 8px solid transparent
+    border-top: 8px solid $theme.foreground.lighter
+    flex: none
 
 
 input(#hidden type="hidden")
 
 div.select-input
-  span.spacer &nbsp;
   ng-template(ngFor bind-ngForOf="selection.items" let-item)
     ng-template(
       bind-ngTemplateOutlet="selectedTpl"
       bind-ngTemplateOutletContext="{$implicit:item}")
 
+i.arrow-down
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}

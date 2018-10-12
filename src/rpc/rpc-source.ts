@@ -1,16 +1,16 @@
 import "reflect-metadata"
-import { Inject } from "@angular/core"
+import { Inject, Optional, StaticProvider } from "@angular/core"
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { DataSource, Model, ModelFactory, ID, Filter, Sorter, Range } from "../data.module"
+import { DataSource, Model, ModelFactory, ModelClass, ID, Filter, Sorter, Range } from "../data.module"
 import { RpcTransport, Action } from "./rpc-transport"
 
 
 export type RpcMapper = (value: any) => any
 
 export interface RpcOptions {
-    action: string
+    name?: string
     group?: string
     map?: RpcMapper
 }
@@ -26,12 +26,14 @@ export function RpcGroup(group: string) {
 }
 
 
-export function RpcMethod(action: string | RpcOptions, group?: string) {
+export function RpcMethod(name?: string | RpcOptions, group?: string) {
     let options: RpcOptions
-    if (typeof action === "string") {
-        options = { action, group }
-    } else if (action) {
-        options = action
+    if (typeof name === "string") {
+        options = { name, group }
+    } else if (name) {
+        options = name
+    } else {
+        options = {} as any
     }
 
     return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
@@ -40,20 +42,27 @@ export function RpcMethod(action: string | RpcOptions, group?: string) {
             throw new Error("RpcMethod must be function type")
         }
 
-        const action_ = options.action || propertyKey
-        const group_ = options.group || Reflect.getMetadata(RPC_GROUP, target)
+        const action_ = options.name || propertyKey
         const map_ = options.map
-        if (!group_) {
-            throw new Error("Missing RpcGroup")
+        if (map_ && typeof map_ !== "function") {
+            throw new Error("'map' option must be a function")
         }
-        const action: Action = { action: action_, group: group_ }
 
-        target.prototype[propertyKey] = map_
+        function lf(src: any) {
+            if (typeof src.getLoadFields === "function") {
+                return src.getLoadFields()
+            }
+            return null
+        }
+
+        target[propertyKey] = map_
             ? function (this: IRpcDataSource, ...args: any[]): any {
-                return this.transport.send(action, args)
+                const group_ = options.group || Reflect.getMetadata(RPC_GROUP, target.constructor)
+                return this.transport.send({ action: action_, group: group_ }, args, lf(this)).pipe(map(map_))
             }
             : function (this: IRpcDataSource, ...args: any[]): any {
-                return this.transport.send(action, args).pipe(map(map_))
+                const group_ = options.group || Reflect.getMetadata(RPC_GROUP, target.constructor)
+                return this.transport.send({ action: action_, group: group_ }, args, lf(this))
             }
 
     }
@@ -66,8 +75,19 @@ export interface IRpcDataSource {
 
 
 export abstract class RpcDataSource<T extends Model = Model> extends DataSource<T> implements IRpcDataSource {
+    public static withModel(modelCls: ModelClass): StaticProvider {
+        const src = this as any
+        return {
+            provide: src,
+            deps: [RpcTransport],
+            useFactory(transport: RpcTransport) {
+                return new src(modelCls, transport)
+            }
+        }
+    }
+
     public constructor(
-        @Inject(Model) public readonly model: ModelFactory<T>,
+        @Inject(Model) @Optional() public readonly model: ModelClass<T>,
         @Inject(RpcTransport) public readonly transport: RpcTransport) {
         super()
     }

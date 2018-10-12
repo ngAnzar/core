@@ -17,7 +17,6 @@ export class LevitateRef {
 
     public apply(pos: Readonly<LevitatingPosition>) {
         (this as any).position = pos
-        console.log({ apply: pos })
         // TODO: renderer vagy valami
         let levitate = this.levitate.ref
 

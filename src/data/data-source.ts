@@ -3,7 +3,7 @@ import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 
 import { Range } from "./range"
-import { Model, ID, ModelFactory } from "./model"
+import { Model, ID, ModelFactory, ModelClass, Fields } from "./model"
 import { Items } from "./collection"
 
 
@@ -38,12 +38,14 @@ export interface GeneralError<T = any> {
 export type ModelError = any
 export type ModelErrors<T> = { [K in keyof T]?: ModelError }
 export type SaveResponse<T> = T | ModelErrors<T> | GeneralError
+export type LoadFields = Array<string | { [key: string]: LoadFields }>
+export type LoadFieldsArg = ModelClass | LoadFields
 
 
 export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
-    public abstract readonly model: ModelFactory<T>
+    public abstract readonly model: ModelClass<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
         return this._search(f, s, r).pipe(map(value => this.makeModels(value, r))) as any
@@ -70,7 +72,7 @@ export abstract class DataSource<T extends Model> {
 
     protected abstract _save(model: T): Observable<T>
 
-    protected abstract _delete(model: ID): Observable<boolean>
+    protected abstract _delete(id: ID): Observable<boolean>
 
     protected setBusy(busy: boolean) {
         if (this.busy !== busy) {
@@ -80,13 +82,61 @@ export abstract class DataSource<T extends Model> {
     }
 
     public makeModel(item: any): T {
-        return Model.create(this.model, item)
+        return this.model ? Model.create(this.model, item) : item
     }
 
     protected makeModels(items: any[], range: Range): T[] {
         return new Items(items.map(this.makeModel.bind(this)), range)
     }
 
+    protected getLoadFields(l?: LoadFieldsArg) {
+        if (Array.isArray(l)) {
+            return l
+        } else {
+            let model = l || this.model
+            if (model) {
+                let fields = Model.getFields(model)
+                let r: any[] = []
+                let f = {}
+                this._makeLoadFields(fields, f, r)
+                return this._flattenLoadFields(f)
+            }
+        }
+    }
+
+    private _makeLoadFields(fields: Fields, target: { [key: string]: any }, recursive: any[]) {
+        if (recursive.indexOf(fields) !== -1) {
+            return
+        }
+        recursive.push(fields)
+
+        for (const field of fields) {
+            if (field.fields.length) {
+                target[field.sourceName] = {}
+                for (const subF of field.fields) {
+                    this._makeLoadFields(subF, target[field.sourceName], recursive)
+                }
+            } else {
+                target[field.sourceName] = true
+            }
+        }
+
+        recursive.pop()
+    }
+
+    private _flattenLoadFields(f: { [key: string]: any }): LoadFields {
+        let result: LoadFields = []
+
+        for (const k in f) {
+            if (f[k] === true) {
+                result.push(k)
+            } else {
+                result.push({ [k]: this._flattenLoadFields(f[k]) })
+            }
+        }
+
+        return result
+    }
 }
 
 

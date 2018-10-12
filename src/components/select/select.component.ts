@@ -6,7 +6,7 @@ import {
 import { NgControl, NgModel } from "@angular/forms"
 
 import { SelectionModel, SingleSelection, SelectionEvent } from "../../selection.module"
-import { DataSource, DataStorage, Range, Model } from "../../data"
+import { DataSource, DataStorage, Range, Model, ID } from "../../data"
 import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
 import { LayerService, LayerRef, DropdownLayer, DropdownLayerOptions } from "../../layer.module"
 import { FormFieldComponent } from "../form-field/form-field.component"
@@ -39,7 +39,7 @@ export type SelectTemplateRef<T> = TemplateRef<SelectTplContext<T>>
         INPUT_VALUE_ACCESSOR
     ]
 })
-export class SelectComponent<T extends Model> extends InputComponent<T[]> implements AfterContentInit, AfterViewInit {
+export class SelectComponent<T extends Model> extends InputComponent<ID[]> implements AfterContentInit, AfterViewInit {
     public get type(): string { return "select" }
 
     @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<T>
@@ -66,8 +66,12 @@ export class SelectComponent<T extends Model> extends InputComponent<T[]> implem
     public get opened(): boolean { return this._opened }
     protected _opened: boolean = false
 
-    public get submitValue(): string {
-        return this.selection.items.map(item => item.id).join(",")
+    // public get submitValue(): string {
+    //     return
+    // }
+
+    public get selected(): T[] {
+        return this.selection.items
     }
 
     protected ddLayer: LayerRef
@@ -94,16 +98,21 @@ export class SelectComponent<T extends Model> extends InputComponent<T[]> implem
             if (this.selection.type !== "multi") {
                 this.opened = false
             }
+            this.value = selected.map(item => item.id)
             this.cdr.markForCheck()
-            this.value = selected
         })
 
         this.displayField = displayField || "label"
     }
 
-    public writeValue(obj: T[]): void {
+    public toggle() {
+        this.opened = !this.opened
+        this.cdr.markForCheck()
+    }
+
+    public writeValue(obj: ID[]): void {
         if (this.hidden) {
-            this._renderer.setAttribute(this.hidden.nativeElement, "value", this.submitValue)
+            this._renderer.setAttribute(this.hidden.nativeElement, "value", obj ? obj.join(",") : "")
         }
     }
 
