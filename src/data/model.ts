@@ -14,7 +14,7 @@ const FIELDS = Symbol("@fields")
 
 
 export type Type = { new(value: any): any }
-export type BasicOptions = { name?: string, json?: false, map?: ModelFactory }
+export type BasicOptions = { name?: string, save?: boolean, load?: boolean, map?: ModelFactory }
 export type TypeOptions = { type: Type | Type[] } & BasicOptions
 export type ListOfOptions = { listOf: Type | Type[] } & BasicOptions
 export type MapOfOptions = { mapOf: Type | Type[] } & BasicOptions
@@ -27,7 +27,8 @@ export type FieldType = { listOf: Type[] } | { mapOf: Type[] } | { single: Type[
 export interface FieldMeta {
     sourceName: string
     targetName: string
-    json: boolean
+    save: boolean
+    load: boolean
     type: FieldType
     fields?: Fields[]
     initEarly: boolean
@@ -36,26 +37,43 @@ export interface FieldMeta {
 
 export type Fields = FieldMeta[]
 
+const builtinTypes: any = {} as any
+builtinTypes[String as any] = String
+builtinTypes[Number as any] = Number
+builtinTypes[Boolean as any] = Boolean
+builtinTypes[Date as any] = (value: any): any => { return value instanceof Date ? value : (value != null ? new Date(value) : value) }
+builtinTypes[Function as any] = (value: any): any => { throw new Error("Function type is not supported") }
+builtinTypes[Object as any] = (value: any): any => { throw new Error("Please provide better type information") }
 
 function isPrimitiveType(t: any): boolean {
-    return t === String || t === Number || t === Boolean || t === Date || t === Object
+    return t === String || t === Number || t === Boolean || t === Date
 }
-
 
 function isClass(t: any): boolean {
     return typeof t === "function" && t.__proto__ !== Function.prototype
 }
 
 
-function createProperty(inpName: string, converter: Converter): PropertyDescriptor {
+function createProperty(modelName: string, inpName: string, altName: string, converter: Converter): PropertyDescriptor {
     return {
         get() {
             let data = this[CACHE]
             if (inpName in data) {
                 return data[inpName]
             }
-            let raw = (this[RAW] || {})[inpName]
-            return data[inpName] = raw == null ? raw : converter(raw, this)
+            let rawData = (this[RAW] || {})
+            let raw = inpName in rawData
+                ? rawData[inpName]
+                : altName in rawData
+                    ? rawData[altName]
+                    : null
+
+            // TODO: only development
+            try {
+                return data[inpName] = raw == null ? raw : converter(raw, this)
+            } catch (e) {
+                throw new Error(`Cannot convert '${modelName}.${inpName}' filed beacuse: ${e.message}`)
+            }
         },
         set(val) {
             this[CACHE][inpName] = val
@@ -99,9 +117,15 @@ function typeFactory(type: { new(val: any): any }): ModelFactory {
     }
 }
 
-
 function typeOrConverterFactory(t: any): ModelFactory {
-    return isClass(t) || isPrimitiveType(t) ? typeFactory(t) : t
+    const builtin = builtinTypes[t]
+    if (builtin) {
+        return builtin
+    } else if (isClass(t)) {
+        return typeFactory(t)
+    } else {
+        return t
+    }
 }
 
 
@@ -120,7 +144,6 @@ export function Field(name: string | FieldOptions = {}) {
         let typeList
         meta.targetName = propertyKey
         meta.sourceName = options.name || propertyKey
-        meta.json = options.json !== false
 
         if ("listOf" in options) {
             typeList = Array.isArray(options.listOf) ? options.listOf : [options.listOf]
@@ -157,12 +180,16 @@ export function Field(name: string | FieldOptions = {}) {
         }
 
         converter = converter || typeOrConverterFactory(options.map || type)
+        meta.save = options.save == null
+            ? typeList.length === typeList.filter(isPrimitiveType).length
+            : options.save !== false
+        meta.load = options.load !== false
         meta.fields = typeList.map(t => Model.getFields(t)).filter(v => !!v)
-        // console.log(meta)
 
         if (!descriptor) {
             meta.initEarly = false
-            Object.defineProperty(target, propertyKey, createProperty(meta.sourceName, converter as any))
+            Object.defineProperty(target, propertyKey,
+                createProperty(target.constructor.name, meta.sourceName, meta.targetName, converter as any))
         } else {
             meta.initEarly = true
             if (converter) {
@@ -175,13 +202,7 @@ export function Field(name: string | FieldOptions = {}) {
             fields = target[FIELDS] = target[FIELDS] ? target[FIELDS].slice(0) : []
 
             target.toJSON = function () {
-                let res = {} as any
-                for (const field of fields) {
-                    if (field.json) {
-                        res[field.sourceName] = this[field.targetName]
-                    }
-                }
-                return res
+                return Model.toObject(this, true)
             }
         } else {
             fields = target[FIELDS]
@@ -189,6 +210,11 @@ export function Field(name: string | FieldOptions = {}) {
 
         fields[fields.length] = meta
     }
+}
+
+
+export function IDField(name?: string) {
+    return Field({ name, type: [String, Number], map: parseId })
 }
 
 
@@ -201,11 +227,6 @@ function parseId(value: any): any {
 
 
 export class Model {
-    private [RAW]: any
-    private [CACHE]: any
-
-    @Field({ map: parseId, type: [String, Number] }) public id: ID
-
     public static isEq(modelA: Model, modelB: Model): boolean {
         return modelA instanceof Model && modelA[EQ](modelB)
     }
@@ -226,14 +247,36 @@ export class Model {
                 : (factory as any)(data)
     }
 
-    public constructor(data?: any) {
+    public static toObject(model: Model, forSave?: boolean): { [key: string]: any } {
+        const fields = (model as any)[FIELDS] as Fields
+        const res = {} as any
+
+        if (forSave) {
+            for (const field of fields) {
+                if (field.save) {
+                    res[field.sourceName] = (model as any)[field.targetName]
+                }
+            }
+        } else {
+            for (const field of fields) {
+                res[field.targetName] = (model as any)[field.targetName]
+            }
+        }
+        return res
+    }
+
+    @IDField() public id: ID
+
+    private [RAW]: { [key: string]: any }
+    private [CACHE]: { [key: string]: any }
+    private [FIELDS]: Fields
+
+    public constructor(data?: { [key: string]: any }) {
         this[RAW] = data || {}
         this[CACHE] = {}
-        const fields = (this as any)[FIELDS] as Fields
-        for (const field of fields) {
-            if (field.initEarly) {
-                (this as any)[field.targetName] = data[field.sourceName]
-            }
+
+        if (data) {
+            this.update(data)
         }
 
         return this
@@ -241,6 +284,28 @@ export class Model {
 
     public [EQ](other: Model) {
         return this === other || (other instanceof Model && other.id === this.id)
+    }
+
+    public update(data: { [key: string]: any } = {}) {
+        const fields = this[FIELDS]
+
+        for (const field of fields) {
+            const value = data.hasOwnProperty(field.sourceName)
+                ? data[field.sourceName]
+                : data.hasOwnProperty(field.targetName)
+                    ? data[field.targetName]
+                    : undefined
+            if (value === undefined) {
+                continue
+            }
+
+            this[RAW][field.sourceName] = value
+            delete this[CACHE][field.sourceName]
+
+            if (field.initEarly) {
+                (this as any)[field.targetName] = value
+            }
+        }
     }
 }
 

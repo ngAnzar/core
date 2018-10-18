@@ -1,8 +1,10 @@
-import { Model, Filter, Sorter, Range } from "../data.module"
+import { Observable } from "rxjs"
+import { map } from "rxjs/operators"
+
+import { Model, Filter, Sorter, Range, Items } from "../data.module"
 import { RpcDataSource } from "./rpc-source"
 import { RpcTransport, Transaction, TransactionsDict, TransactionResultFn, Action } from "./rpc-transport"
 import { LoadFields } from "../data/data-source"
-import { Observable } from 'rxjs';
 
 
 export class ExtjsTransaction extends Transaction<any> {
@@ -118,5 +120,11 @@ export abstract class ExtjsDataSource<T extends Model = Model> extends RpcDataSo
         params.required_fields = this.getLoadFields()
 
         return this.list_items(params)
+            .pipe(map((v: any) => {
+                if (v && Array.isArray(v.items)) {
+                    return new Items(v.items, null, v.total)
+                }
+                return v
+            }))
     }
 }

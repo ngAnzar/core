@@ -15,26 +15,59 @@
     height: nz-local-grid-size(5)
     line-height: nz-local-grid-size(5)
     flex: 1
+    margin-right: 8px
+    display: flex
+    flex-wrap: wrap
+    justify-content: flex-start
+    align-content: flex-start
+    align-items: center
+
+  .text-input
+    height: nz-local-grid-size(5)
+    line-height: nz-local-grid-size(5)
+    font: inherit
+    background: transparent
+    border: none
+    outline: none
+    padding: 0
+    margin: 0
+    text-align: inherit
+    display: inline-block
+    flex: 1
+    max-width: 100%
+    width: 100%
+    min-width: 30px
 
   .arrow-down
     display: inline-block
     width: 0
     height: 0
-    border-left: 8px solid transparent
-    border-right: 8px solid transparent
-    border-top: 8px solid $theme.foreground.lighter
+    border-left: 6px solid transparent
+    border-right: 6px solid transparent
+    border-top: 6px solid $theme.foreground.lighter
     flex: none
+    margin-right: 8px
 
 
 input(#hidden type="hidden")
 
 div.select-input
-  ng-template(ngFor bind-ngForOf="selection.items" let-item)
-    ng-template(
-      bind-ngTemplateOutlet="selectedTpl"
-      bind-ngTemplateOutletContext="{$implicit:item}")
+  //- ng-template(*ngIf="!editable || selection.type !== 'single'")
+  ng-template(bind-ngIf="!editable || selection.type !== 'single'")
+    ng-template(ngFor bind-ngForOf="selection.items" let-item)
+      ng-template(
+        bind-ngTemplateOutlet="selectedTpl"
+        bind-ngTemplateOutletContext="{$implicit:item}")
+  input.text-input(*ngIf="editable"
+    #input
+    bind-attr.tabindex="tabIndex"
+    on-input="_onInput($event)"
+    on-keypress="_onKeypress($event)"
+    on-keyup="_onKeyup($event)"
+    style="flex:1"
+    bind-style.marginLeft="selection.items.length && selection.type !== 'single' ? '8px' : '0px'")
 
-i.arrow-down
+i.arrow-down(*ngIf="!editable")
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}

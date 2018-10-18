@@ -1,15 +1,29 @@
-import { Component, Inject, Host, Input, OnInit, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import {
+    Component, Inject, Host, SkipSelf, Optional, Input, OnInit, NgZone,
+    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef
+} from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 import { ColumnsComponent } from "./columns.component"
 
-import { DataSource, DataStorage, Range } from "../../data"
+import { DataSource, DataStorage, Model } from "../../data"
 import { Subscriptions } from "../../util"
+import { SelectionModel, SingleSelection } from "../../selection.module"
 
 
 @Component({
     selector: ".nz-data-grid",
     templateUrl: "./data-grid.template.pug",
+    // providers: [
+    //     {
+    //         provide: SelectionModel,
+    //         // deps: [new Host(), new Optional(), new SkipSelf(), SingleSelection],
+    //         useFactory() {
+    //             return new SingleSelection()
+    //         },
+    //         useExisting: SelectionModel
+    //     }
+    // ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataGridComponent implements OnInit, AfterContentInit {
@@ -19,35 +33,32 @@ export class DataGridComponent implements OnInit, AfterContentInit {
 
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
 
-    public get headerGridTemplate(): { [key: string]: string } { return this._headerGridTemplate }
-    protected _headerGridTemplate: { [key: string]: string } = {}
+    public get gtRows(): SafeStyle { return this._gtRows }
+    protected _gtRows: SafeStyle = ""
 
-    public get rowsGridTemplate(): { [key: string]: string } { return this._rowsGridTemplate }
-    protected _rowsGridTemplate: { [key: string]: string } = {}
+    public get gtRow(): SafeStyle { return this._gtRow }
+    protected _gtRow: SafeStyle = ""
 
     protected subscriptions: Subscriptions = new Subscriptions()
     protected _rowHeight: number = 52
 
-    public set mouseOveredRow(val: number) {
-        this._mouseOveredRow = val
-    }
-    public get mouseOveredRow(): number {
-        return this._mouseOveredRow
-    }
-    protected _mouseOveredRow: number = -1
-
 
     // @Inject(DataSource) @Host() public readonly source: DataSource<any>
     public constructor(@Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Inject(DomSanitizer) protected snitizer: DomSanitizer) {
+        @Inject(DomSanitizer) protected snitizer: DomSanitizer,
+        @Inject(SelectionModel) @Host() public readonly selection: SelectionModel) {
+        selection.maintainSelection = true
+
+        this.subscriptions.add(selection.changes).subscribe(event => {
+            this.cdr.detectChanges()
+        })
     }
 
     public ngOnInit() {
         this.storage = new DataStorage(this.source)
-        this.subscriptions.add(this.storage.items).subscribe(() => {
+        this.subscriptions.add(this.storage.invalidated).subscribe(() => {
             this.updateGridTemplate()
         })
-        this.storage.getRange(new Range(0, 40))
     }
 
     public ngAfterContentInit() {
@@ -66,19 +77,16 @@ export class DataGridComponent implements OnInit, AfterContentInit {
                 col.push(`${l.width.number}${l.width.unit}`)
             }
         }
-
         let colTemplate = col.join(" ")
 
         if (this.storage) {
-            this._rowsGridTemplate["grid-template-columns"] = colTemplate
-            this._rowsGridTemplate["grid-template-rows"] = `repeat(${this.storage.lastIndex}, ${this._rowHeight}px)`
+            this._gtRows = this.snitizer.bypassSecurityTrustStyle("repeat(${this.storage.lastIndex}, ${this._rowHeight}px) / 1fr")
         }
 
-        this.columns.gridTemplate = {
-            "grid-template-columns": colTemplate,
-            "grid-template-rows": "40px"
-        }
+        this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${colTemplate}`)
 
-        this.cdr.markForCheck()
+        this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`40px / ${colTemplate}`)
+
+        this.cdr.detectChanges()
     }
 }

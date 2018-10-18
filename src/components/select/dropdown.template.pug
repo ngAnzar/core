@@ -14,7 +14,7 @@
     display: inline-grid
 
 .nz-scroller.scroller
-  .nz-list.list(bind-style.gridTemplateRows="gridTemplateRows")
+  .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
     ng-template(nzVirtualFor, [nzVirtualForOf]="storage" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
       .nz-list-item.item(bind-style.gridRow="index + 1" bind-model="virtual" selectable)
         ng-template(

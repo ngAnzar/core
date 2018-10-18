@@ -1,22 +1,21 @@
-import { Component, ContentChildren, QueryList, AfterContentInit, EventEmitter, ElementRef, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import {
+    Component, ContentChildren, QueryList, AfterContentInit,
+    EventEmitter, ElementRef, Inject, ChangeDetectionStrategy, ChangeDetectorRef
+} from "@angular/core"
+import { SafeStyle } from "@angular/platform-browser"
 import { Observable } from "rxjs"
 
 import { ColumnComponent, NumberWithUnit } from "./column.component"
 
 
 export type ColumnsLayout = Array<{ column: ColumnComponent, width: NumberWithUnit }>
-export interface GridTemplate {
-    "grid-template-columns": string
-    "grid-template-rows": string
-}
 
 
 @Component({
     selector: ".nz-columns",
     templateUrl: "./columns.template.pug",
     host: {
-        "[style.grid-template-columns]": "gridTemplate['grid-template-columns']",
-        "[style.grid-template-rows]": "gridTemplate['grid-template-rows']"
+        "[style.grid-template]": "gridTemplate"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -30,12 +29,12 @@ export class ColumnsComponent implements AfterContentInit {
     public readonly layoutChanged: Observable<ColumnsLayout> = new EventEmitter()
     public readonly layout: ColumnsLayout = []
 
-    public set gridTemplate(val: GridTemplate) {
+    public set gridTemplate(val: SafeStyle) {
         this._gridTemplate = val
         this.cdr.markForCheck()
     }
-    public get gridTemplate(): GridTemplate { return this._gridTemplate }
-    protected _gridTemplate: GridTemplate
+    public get gridTemplate(): SafeStyle { return this._gridTemplate }
+    protected _gridTemplate: SafeStyle
 
     public constructor(@Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {

@@ -9,8 +9,9 @@ import { DataSource } from "./data-source"
 
 export class Items<T extends Model> extends Array<T> {
     public readonly range: Range
+    public readonly total: number
 
-    public constructor(items: T[], range: Range) {
+    public constructor(items: T[], range: Range, total?: number) {
         switch (items.length) {
             case 0:
                 super()
@@ -23,6 +24,7 @@ export class Items<T extends Model> extends Array<T> {
                 super(...items)
         }
         this.range = range
+        this.total = total
     }
 
     public compare(other: Items<T>): ListDiff<T> {

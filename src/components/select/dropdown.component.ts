@@ -1,7 +1,11 @@
-import { Component, Inject, InjectionToken, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import {
+    Component, Inject, InjectionToken, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy,
+    ViewChild
+} from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 
 import { DataStorage, Model } from "../../data"
+import { ListDirective } from "../list/list.directive"
 
 
 export const DROPDOWN_ITEM_TPL = new InjectionToken<TemplateRef<any>>("dropdown.itemTpl")
@@ -29,10 +33,21 @@ export class DDContext<T> {
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DropdownComponent<T extends Model> {
+export class DropdownComponent<T extends Model> implements OnDestroy {
+    @ViewChild("list", { read: ListDirective }) protected readonly list: ListDirective
+
     public get gridTemplateRows(): SafeStyle {
         return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex}, 48px)`)
     }
+
+    public get focusedModel(): T {
+        let item = this.list.focusedItem
+        if (item && item.selectable) {
+            return item.selectable.model as T
+        }
+        return null
+    }
+
 
     public constructor(
         @Inject(DataStorage) public readonly storage: DataStorage<T>,
@@ -42,5 +57,17 @@ export class DropdownComponent<T extends Model> {
         storage.items.subscribe(event => {
             this.cdr.markForCheck()
         })
+    }
+
+    public focusNext() {
+        this.list.moveFocus(1)
+    }
+
+    public focusPrev() {
+        this.list.moveFocus(-1)
+    }
+
+    public ngOnDestroy() {
+        console.log("dd.destroy")
     }
 }

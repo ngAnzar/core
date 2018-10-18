@@ -9,14 +9,20 @@
 ng-content(select=".nz-columns")
 
 .nz-scroller
-  .rows([ngStyle]="rowsGridTemplate")
+  .nz-list.rows(bind-style.gridTemplate="gtRows")
     ng-template(nzVirtualFor, [nzVirtualForOf]="storage" let-virtual let-row="index" bind-fixedItemHeight="_rowHeight")
-      ng-template(ngFor, [ngForOf]="columns.items" let-column let-col="index" let-firstCell="first" let-lastCell="last")
-        .nz-data-grid-cell(
-          bind-row="row"
-          bind-col="col"
-          bind-column="column"
-          bind-data="virtual"
-          bind-class.first-cell="firstCell"
-          bind-class.last-cell="lastCell")
-      //- .cell(style="grid-row: {{row}};grid-column: {{col}};") {{row}} - {{col}}
+      .nz-data-grid-row(
+        bind-style.gridTemplate="gtRow"
+        bind-row="row"
+        bind-model="virtual"
+        selectable)
+
+        ng-template(ngFor, [ngForOf]="columns.items" let-column let-col="index" let-firstCell="first" let-lastCell="last")
+          .nz-data-grid-cell(
+            bind-row="row"
+            bind-col="col"
+            bind-column="column"
+            bind-data="virtual"
+            bind-class.first-cell="firstCell"
+            bind-class.last-cell="lastCell")
+        //- .cell(style="grid-row: {{row}};grid-column: {{col}};") {{row}} - {{col}}

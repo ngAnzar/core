@@ -5,6 +5,7 @@ import { DirectivesModule } from "./directives.module"
 import { PanelComponent } from "./components/panel/panel.component"
 import { DrawerComponent } from "./components/panel/drawer.component"
 
+export { PanelComponent, DrawerComponent }
 
 @NgModule({
     imports: [

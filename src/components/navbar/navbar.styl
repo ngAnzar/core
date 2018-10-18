@@ -1,5 +1,6 @@
 @require "../../style/layout"
 @require "../../style/typography"
+@require "../form-field/form-field.styl"
 
 $nz-navbar-height ?= nz-local-grid-size(14)
 
@@ -20,3 +21,17 @@ $nz-navbar-height ?= nz-local-grid-size(14)
 .nz-navbar .nz-button:not([color]):not([disabled]):not([variant~="filled"]),
 .nz-navbar .nz-fab:not([color]):not([disabled]):not([variant~="filled"])
   color: $theme.primary.on.default
+
+
+.nz-navbar-search
+  min-width: 100px
+  margin-right: 8px
+
+  .underline
+    display: none
+
+  caption
+    display: none
+
+  &.nz-focused, &.nz-has-value
+    background-color: #FFF

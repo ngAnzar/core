@@ -33,7 +33,27 @@ function removeEntries<T extends Model>(list: T[], remove: T[]) {
 
 
 export abstract class SelectionModel<T extends Model = Model> implements OnDestroy {
-    public readonly items: T[] = []
+    public set items(val: T[]) {
+        let fullUpdate: Update = {}
+        for (const k in this._selected) {
+            fullUpdate[k] = false
+        }
+
+        let models = {} as any
+        for (const item of val) {
+            fullUpdate[item.id] = true
+            models[item.id] = item
+        }
+
+        this._models = models
+        this.update(fullUpdate)
+        delete this._models
+    }
+    public get items(): T[] {
+        return this._items
+    }
+    protected _items: T[] = []
+
     public abstract readonly type: string
 
     @Output("selection")
@@ -50,6 +70,7 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
 
     protected _selected: SelectedDict<T> = {}
     protected _selectables: { [key: string]: Selectable<T> } = {}
+    protected _models: { [key: string]: T }
 
     protected _suspended: boolean
     protected _pending: Update = {}
@@ -71,7 +92,10 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
                     cmp.selected = true
                 }
                 if (!this._selected.hasOwnProperty(k)) {
-                    this._selected[k] = (cmp ? cmp.model : new PlaceholderModel({ id: k })) as any
+                    const model = (this._models ? this._models[k] : null)
+                        || (cmp ? cmp.model : null)
+                        || new PlaceholderModel({ id: k })
+                    this._selected[k] = model as any
                     selected.push(this._selected[k])
                 }
             } else {
@@ -109,6 +133,10 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         return this._selected.hasOwnProperty(what)
     }
 
+    public setSelected(what: ID, selected: boolean) {
+        this.update({ [what]: selected })
+    }
+
     public _handleOnDestroy(cmp: Selectable<T>): void {
         if (!this.maintainSelection) {
             this.update({ [cmp.selectionId]: false })
@@ -144,7 +172,10 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
     // public abstract itemAdded(item: Selectable): void
 
     public ngOnDestroy() {
-
+        delete this._suspended
+        delete this._models
+        delete this._selected
+        delete this._items
     }
 }
 
@@ -167,11 +198,15 @@ export class SingleSelection<T extends Model = Model> extends SelectionModel<T> 
             if (update[k]) {
                 newSid = k
                 break
+            } else if (k === newSid) {
+                newSid = null
             }
         }
+
         if (this.selectedId) {
             update[this.selectedId] = false
         }
+
         for (let k in update) {
             update[k] = k === newSid
         }

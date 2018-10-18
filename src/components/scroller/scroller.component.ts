@@ -25,6 +25,9 @@ export interface Viewport {
 @Component({
     selector: ".nz-scroller",
     template: "<ng-content></ng-content>",
+    host: {
+        "[style.overflow]": "orient === 'horizontal' ? 'auto' : 'auto'"
+    },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScrollerComponent implements OnInit, OnDestroy {
@@ -131,11 +134,11 @@ export class ScrollerComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit() {
-        this.perfectScrollbar = new PerfectScrollbar(this.el.nativeElement, {
-            wheelSpeed: this.wheelSpeed,
-            wheelPropagation: this.wheelPropagation,
-            minScrollbarLength: 50
-        });
+        // this.perfectScrollbar = new PerfectScrollbar(this.el.nativeElement, {
+        //     wheelSpeed: this.wheelSpeed,
+        //     wheelPropagation: this.wheelPropagation,
+        //     minScrollbarLength: 50
+        // })
 
         this.ngZone.runOutsideAngular(() => {
             (this as any).primaryScrolling =
@@ -146,7 +149,7 @@ export class ScrollerComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy() {
-        this.perfectScrollbar.destroy()
+        // this.perfectScrollbar.destroy()
         delete this.perfectScrollbar
     }
 

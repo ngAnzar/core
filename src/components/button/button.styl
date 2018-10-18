@@ -108,6 +108,15 @@ $nz-button-height ?= nz-local-grid-size(9)
   &[variant~="large"]
     nz-circle: (nz-local-grid-size(15) / 2)
 
+  &[position="BR"]
+    position: absolute
+    bottom: nz-local-grid-size(6)
+    right: nz-local-grid-size(6)
+  &[position="TR"]
+    position: absolute
+    top: nz-local-grid-size(6)
+    right: nz-local-grid-size(6)
+
 .nz-button-bar
   padding: nz-local-grid-size(2)
   display: flex

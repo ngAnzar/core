@@ -5,9 +5,9 @@ import { CommonModule } from "@angular/common"
 import { LayerService } from "./layer/layer.service"
 import { LayerContainer } from "./layer/layer-container"
 
-export { LayerRef } from "./layer/layer-ref"
+export { LayerRef, ComponentLayerRef, TemplateLayerRef, LayerEvent } from "./layer/layer-ref"
 export { ModalLayer, DropdownLayer, MenuLayer } from "./layer/layer-behavior"
-export { LayerOptions, DropdownLayerOptions } from "./layer/layer-options"
+export { LayerOptions, LevitateOptions, DropdownLayerOptions } from "./layer/layer-options"
 export { LayerService }
 
 

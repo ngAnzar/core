@@ -24,7 +24,7 @@ $nz-list-item-padding ?= 0 nz-local-grid-size(4)
   justify-content: space-between
   white-space: nowrap
 
-  transition: background-color 250ms, color 250ms
+  // transition: background-color 250ms, color 250ms
 
   &:not([disabled])
     &:not([color])
@@ -34,9 +34,18 @@ $nz-list-item-padding ?= 0 nz-local-grid-size(4)
         color: $theme.accent.tri-state.selected.fg
         background-color: $theme.accent.tri-state.selected.bg
 
-      &:hover
+      &:hover, &[focused]
         color: $theme.foreground.tri-state.hover.fg
         background-color: $theme.foreground.tri-state.hover.bg
+
+      &[focused]::before
+        content: ""
+        position: absolute
+        top: 0
+        bottom: 0
+        left: 0
+        width: 3px
+        background-color: $theme.accent.default
 
       .nz-ripple
         background-color: $theme.foreground.default
@@ -49,9 +58,18 @@ $nz-list-item-padding ?= 0 nz-local-grid-size(4)
           color: value.tri-state.selected.fg
           background-color: value.tri-state.selected.bg
 
-        &:hover
+        &:hover, &[focused]
           color: value.tri-state.hover.fg
           background-color: value.tri-state.hover.bg
+
+        &[focused]::before
+          content: ""
+          position: absolute
+          top: 0
+          bottom: 0
+          left: 0
+          width: 3px
+          background-color: value.darker
 
         .nz-ripple
           background-color: value.default

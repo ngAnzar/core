@@ -45,6 +45,7 @@ export type LoadFieldsArg = ModelClass | LoadFields
 export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
+    public abstract readonly async: boolean
     public abstract readonly model: ModelClass<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
@@ -86,7 +87,8 @@ export abstract class DataSource<T extends Model> {
     }
 
     protected makeModels(items: any[], range: Range): T[] {
-        return new Items(items.map(this.makeModel.bind(this)), range)
+        let total = items ? (items as any).total : null
+        return new Items(items.map(this.makeModel.bind(this)), range, total)
     }
 
     protected getLoadFields(l?: LoadFieldsArg) {

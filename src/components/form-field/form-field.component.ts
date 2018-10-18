@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, ContentChildren, QueryList,
-    AfterContentInit,
+    AfterContentInit, AfterViewChecked, NgZone,
     ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject,
     ViewChild
 } from "@angular/core"
@@ -23,7 +23,7 @@ import { InputComponent } from "../input/input.component"
         "[class.ng-dirty]": "_input.dirty",
         "[class.ng-valid]": "_input.valid",
         "[class.ng-invalid]": "_input.invalid",
-        "[class.ng-pending]": "_input.pending",
+        "[class.ng-pending]": "_input.pending"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -36,12 +36,13 @@ export class FormFieldComponent implements AfterContentInit {
     @ContentChild(CaptionDirective) protected _captionDirective: CaptionDirective
     @ContentChild(InputComponent) protected _input: InputComponent<any>
 
-    @ViewChild("underline") protected _underline: ElementRef<HTMLElement>
+    // @ViewChild("underline") protected _underline: ElementRef<HTMLElement>
 
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
-        @Inject(ChangeDetectorRef) private _changeDetector: ChangeDetectorRef) {
+        @Inject(ChangeDetectorRef) private _changeDetector: ChangeDetectorRef,
+        @Inject(NgZone) protected readonly zone: NgZone) {
     }
 
     public ngAfterContentInit(): void {
@@ -54,20 +55,27 @@ export class FormFieldComponent implements AfterContentInit {
             this._labelDirective.input = this._input
         }
 
-        const stChange = this._input.statusChanges.pipe(startWith())
-        const valChange = this._input.valueChanges.pipe(startWith(this._input.value))
+        const stChange = this._input.statusChanges
+        const valChange = this._input.valueChanges
 
-        merge(stChange, valChange).subscribe(reason => {
-            if (this._underline) {
-                if (this._input.focused) {
-                    this._underline.nativeElement.setAttribute("highlighted", "")
-                } else {
-                    this._underline.nativeElement.removeAttribute("highlighted")
-                }
-            }
-            this._changeDetector.markForCheck()
-        })
+        merge(stChange, valChange)
+            .pipe(startWith())
+            .subscribe(reason => {
+                this._changeDetector.markForCheck()
+                // force update host bindings
+                this.zone.run(_ => { })
+            })
     }
+
+    // public ngAfterViewChecked() {
+    //     if (this._underline) {
+    //         if (this._input.focused) {
+    //             this._underline.nativeElement.setAttribute("highlighted", "")
+    //         } else {
+    //             this._underline.nativeElement.removeAttribute("highlighted")
+    //         }
+    //     }
+    // }
 
     public _inputIsEmpty() {
         let val: any = this._input.value

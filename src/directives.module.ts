@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common"
 import { AvatarDirective } from "./directives/avatar.directive"
 import { CaptionDirective } from "./directives/caption.directive"
 import { ContentDirective } from "./directives/content.directive"
+import { DateDirective } from "./directives/date.directive"
 import { IconDirective } from "./directives/icon.directive"
 import { LabelDirective } from "./directives/label.directive"
 import { PostfixDirective } from "./directives/postfix.directive"
@@ -15,6 +16,7 @@ export {
     AvatarDirective,
     CaptionDirective,
     ContentDirective,
+    DateDirective,
     IconDirective,
     LabelDirective,
     PostfixDirective,
@@ -28,6 +30,7 @@ const content = [
     AvatarDirective,
     CaptionDirective,
     ContentDirective,
+    DateDirective,
     IconDirective,
     LabelDirective,
     PostfixDirective,

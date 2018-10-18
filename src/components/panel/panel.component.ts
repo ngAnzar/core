@@ -194,8 +194,10 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
             fromEvent<KeyboardEvent>(this.el.nativeElement, "keydown")
                 .pipe(filter(event => event.keyCode === ESCAPE))
                 .subscribe(event => this._ngZone.run(() => {
-                    this.opened = false
-                    event.stopPropagation()
+                    if (!event.defaultPrevented) {
+                        this.opened = false
+                        event.stopPropagation()
+                    }
                 }))
         })
     }

@@ -7,6 +7,7 @@ import { Range } from "./range"
 
 
 export class StaticSource<T extends Model> extends DataSource<T> {
+    public readonly async = false
     public readonly data: Array<Readonly<T>>
 
     public constructor(
@@ -118,5 +119,14 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         } else {
             throw new Error("Unexpected filter: " + filter)
         }
+    }
+
+    public getSync(id: ID): T {
+        for (let item of this.data) {
+            if (item.id === id) {
+                return item
+            }
+        }
+        return null
     }
 }

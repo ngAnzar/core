@@ -18,29 +18,6 @@
     position: relative
     cursor: text
 
-  .underline
-    height: 1px
-    background-color: $theme.foreground.lighter
-    position: relative
-
-    &[highlighted]
-      .nz-form-field-ripple
-        opacity: 1
-        transform: scaleX(1)
-
-  .nz-form-field-ripple
-    height: 2px
-    position: absolute
-    top: 0px
-    opacity: 0
-    background-color: $theme.primary.default
-    width: 100%
-
-    transform-origin: 50%
-    transform: scaleX(.5)
-
-    transition: transform $nz-input-focus-transition-duration, opacity $nz-input-focus-transition-duration
-
   .caption
     height: $nz-form-field-bottom-caption-height
 

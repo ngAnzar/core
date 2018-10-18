@@ -1,5 +1,5 @@
 import {
-    Component, ViewChild, ElementRef, AfterViewInit, Inject, Renderer2, Input, Attribute,
+    Component, ViewChild, ElementRef, AfterViewInit, Inject, Renderer2, Input, Attribute, NgZone,
     Optional, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SkipSelf, OnDestroy
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
@@ -60,14 +60,17 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._checked !== val) {
-            this._checked = val
-            this.cdr.markForCheck();
-            (this.change as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
-            (this.valueChanges as EventEmitter<T>).emit(this._value);
+            this.zone.run(_ => {
+                this._checked = val;
+                (this.change as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
+                (this.valueChanges as EventEmitter<T>).emit(this._value);
 
-            if (this.group) {
-                this.group.onCheckedChange()
-            }
+                if (this.group) {
+                    this.group.onCheckedChange()
+                }
+
+                this.cdr.markForCheck()
+            })
         }
     }
     public get checked(): boolean { return this._checked }
@@ -89,7 +92,8 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         @Inject(ElementRef) el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Attribute('tabindex') tabIndex: string,
-        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective) {
+        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective,
+        @Inject(NgZone) protected readonly zone: NgZone) {
         super(ngControl, ngModel, _renderer, el)
         this.tabIndex = parseInt(tabIndex, 10)
 
@@ -112,10 +116,12 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 
     protected _changeHandler(event: Event) {
         event.stopPropagation()
+        console.log("_changeHandler")
     }
 
     protected _handleClick(event: Event) {
         this.checked = !this.checked
+        console.log("_handleClick")
     }
 
     public ngOnDestroy() {

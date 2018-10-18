@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject } from "rxjs"
-import { map, takeUntil, take, startWith } from "rxjs/operators"
+import { map, takeUntil, take, startWith, debounceTime } from "rxjs/operators"
 import * as DeepDiff from "deep-diff"
 
 import { Subscriptions } from "../util"
@@ -8,9 +8,6 @@ import { DataSource, Filter, Sorter, Diff, MappingChangingEvent, MappingChangedE
 import { Model, ID } from "./model"
 import { Collection, ItemsWithChanges, Items } from "./collection"
 import { Range, RangeList } from "./range"
-
-
-
 
 
 export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
@@ -23,19 +20,32 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
     }
 
+    public readonly reseted: Observable<void> = new EventEmitter()
+
+    public get invalidated(): Observable<void> {
+        return Observable.create((observer: any) => {
+            let s1 = this.filter.changed.subscribe(observer)
+            let s2 = this.sorter.changed.subscribe(observer)
+            // let s3 = this.reseted.subscribe(observer)
+            return () => {
+                s1.unsubscribe()
+                s2.unsubscribe()
+                // s3.unsubscribe()
+            }
+        }).pipe(debounceTime(15))
+    }
+
     protected cache: { [key: number]: T } = {}
     protected cachedRanges: RangeList = new RangeList()
     protected s = new Subscriptions()
     protected cancel = new Subject()
     protected readonly _itemsStream: Observable<ItemsWithChanges<T>> = new EventEmitter()
 
+
     public constructor(protected readonly source: DataSource<T>) {
         super()
 
-        this.s.add(this.filter.changed).subscribe(() => {
-            this.reset()
-        })
-        this.s.add(this.sorter.changed).subscribe(() => {
+        this.s.add(this.invalidated).subscribe(x => {
             this.reset()
         })
     }
@@ -66,7 +76,10 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
 
     public reset() {
         this.cache = {}
-        this.cachedRanges = new RangeList()
+        this.cachedRanges = new RangeList();
+
+        (this as any).lastIndex = 0;
+        (this.reseted as EventEmitter<void>).emit()
     }
 
     protected _cacheItems(items: T[], r: Range, oldValues: ItemsWithChanges<T>): ItemsWithChanges<T> {

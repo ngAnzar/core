@@ -1,5 +1,5 @@
-import { Component, Inject, InjectionToken, Optional, AfterViewChecked } from "@angular/core"
-import { Portal } from "@angular/cdk/portal"
+import { Component, Inject, InjectionToken, Optional, AfterViewChecked, ComponentRef } from "@angular/core"
+import { Portal, ComponentPortal } from "@angular/cdk/portal"
 
 import { DialogEvent } from "./dialog.service"
 import { LayerRef } from "../layer/layer-ref"
@@ -11,7 +11,8 @@ export interface _ButtonOption {
     label: string
     color?: string
     variant?: string
-    type?: "submit"
+    type?: "submit",
+    disabled?: (component: any) => boolean
 }
 
 
@@ -42,6 +43,7 @@ export class DialogComponent implements AfterViewChecked {
     }
 
     public close() {
+        (this.content as ComponentPortal<DialogComponent>).component
         return this.layerRef.close()
     }
 
@@ -58,5 +60,10 @@ export class DialogComponent implements AfterViewChecked {
         // if (this.layerRef.behavior) {
         //     this.layerRef.behavior.levitate.update()
         // }
+    }
+
+    public buttonIsDisabled(options: _ButtonOption, comp: ComponentRef<any>) {
+        return false
+        // return !options.disabled || !(comp instanceof ComponentRef) || options.disabled(comp.instance)
     }
 }

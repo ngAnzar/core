@@ -80,7 +80,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     //     }
     // }
 
-    protected subscriptions: Subscriptions = new Subscriptions()
+    protected s: Subscriptions = new Subscriptions()
 
     protected reusable: EmbeddedView<T>[] = []
     private _visibleRange: Range
@@ -93,13 +93,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngOnInit() {
-        this._update()
+        this.s.add(this.nzVirtualForOf.invalidated).pipe(startWith(0)).subscribe(this._update)
 
         // let prevVisibleRange: Range = new Range(-1, -1)
         // let lastSuccessVisibleRange: Range = prevVisibleRange
         // let lastSuccessScrollPosition: number
 
-        this.subscriptions.add(this._scroller.primaryScrolling).subscribe(event => {
+        this.s.add(this._scroller.primaryScrolling).subscribe(event => {
             let vr = this._getVisibleRange()
             this._setVisibleRange(vr)
 
@@ -132,21 +132,17 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngOnDestroy() {
-        this.subscriptions.unsubscribe()
+        this.s.unsubscribe()
         this._clear()
     }
 
     public ngDoCheck() {
-        // this._updateNeede.next()
-
-        // this._updateRenderingRange(this._getVisibleRange())
-
-        // if (this.changes) {
-        //     this._updateContent(this.changes)
-        //     delete this.changes
-        // }
-
-        // this._fixRendering()
+        for (let i = 0, l = this._vcr.length; i < l; i++) {
+            let view = this._vcr.get(i) as EmbeddedView<T>
+            if (view && view.context && view.context.index !== -1) {
+                view.detectChanges()
+            }
+        }
     }
 
     protected _updateContent(range: Range, items: ItemsWithChanges<T>) {
@@ -155,15 +151,16 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         for (let change of changes) {
             if (change.kind === ListDiffKind.CREATE) {
                 let view = this._getViewForItem(change.index, change.item, range)
-                view.detectChanges()
+                // view.detectChanges()
             } else if (change.kind === ListDiffKind.UPDATE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
                 if (elIdx >= 0) {
                     let view: EmbeddedView<T> = this._vcr.get(elIdx) as EmbeddedView<T>
                     this._updateContext(view.context, change.index, change.item, range)
+                    // view.detectChanges()
                 } else {
                     let view = this._getViewForItem(change.index, change.item, range)
-                    view.detectChanges()
+                    // view.detectChanges()
                 }
             } else if (change.kind === ListDiffKind.DELETE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
@@ -178,19 +175,19 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         // this._updateRenderedRange()
         if (changes.length) {
-            this._cdr.markForCheck()
+            this._cdr.detectChanges()
             if (this._levitateRef) {
                 // if (this._scroller.overflowSecondary) {
                 //     this._levitateRef.update()
                 // }
 
                 // console.log("_levitateRef.update...")
-                // this._levitateRef.update()
+                this._levitateRef.update()
             }
         }
     }
 
-    protected _update() {
+    protected _update = () => {
         let r = this.renderingRange
         this.nzVirtualForOf.getRange(r).subscribe(items => {
             this._updateContent(r, items)

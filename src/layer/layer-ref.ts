@@ -83,14 +83,10 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
             this.behavior.initShow(this)
             this.behavior.levitate.update()
             this.emit(new LayerEvent("showing") as E)
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    Promise.all([
-                        this.behavior.showBackdrop(this),
-                        this.behavior.animateShow(this)
-                    ]).then(resolve)
-                }, 300)
-            })
+            return Promise.all([
+                this.behavior.showBackdrop(this),
+                this.behavior.animateShow(this)
+            ])
         }
     }
 

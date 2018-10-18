@@ -4,20 +4,20 @@
   .title
     margin: 0
     padding: $nz-dialog-padding-top-bottom ($nz-dialog-padding-side + $nz-dialog-padding-top-bottom) $nz-dialog-inner-margin ($nz-dialog-padding-side + $nz-dialog-padding-top-bottom)
-    flex: 0
+    flex: none
 
   .buttons
-    flex: 0
+    flex: none
     display: flex
     padding: $nz-dialog-inner-margin $nz-dialog-padding-side $nz-dialog-padding-side 0
 
     .nz-button
-      flex: 0
+      flex: none
       margin: 0 0 0 $nz-dialog-padding-side
-
 
   .content
     flex: 1
+    overflow: hidden
 
   .spacer
     flex: 1
@@ -33,5 +33,6 @@ h6.title(bind-innerHTML="title" "*ngIf"="title && title.length")
       bind-attr.color="button.color"
       bind-attr.variant="button.variant"
       bind-attr.type="button.type"
+      bind-disabled="buttonIsDisabled(button)"
       on-click="_handleButtonClick($event, button.role)") {{ button.label }}
     div.spacer(*ngIf="button.role === 'spacer'")
