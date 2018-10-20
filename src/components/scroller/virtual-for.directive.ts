@@ -1,4 +1,7 @@
-import { Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit, OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, Optional } from "@angular/core"
+import {
+    Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
+    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, Optional
+} from "@angular/core"
 import { Observable, Subject, timer } from "rxjs"
 import { startWith, take, debounce } from "rxjs/operators"
 
@@ -6,7 +9,7 @@ import { DataStorage, Range, Model, ItemsWithChanges, Items, ListDiffKind } from
 import { Subscriptions } from "../../util/subscriptions"
 import { LayerRef } from "../../layer.module"
 import { LevitateRef } from "../../levitate/levitate-ref"
-import { ScrollerComponent } from "./scroller.component"
+import { ScrollerDirective } from "./scroller.directive"
 
 
 
@@ -88,7 +91,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public constructor(@Inject(ViewContainerRef) protected _vcr: ViewContainerRef,
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
         @Inject(ChangeDetectorRef) protected _cdr: ChangeDetectorRef,
-        @Inject(ScrollerComponent) protected _scroller: ScrollerComponent,
+        @Inject(ScrollerDirective) protected _scroller: ScrollerDirective,
         @Inject(LevitateRef) @Optional() protected _levitateRef: LevitateRef) {
     }
 
@@ -143,6 +146,10 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
                 view.detectChanges()
             }
         }
+
+        // if (this._levitateRef) {
+        //     this._levitateRef.update()
+        // }
     }
 
     protected _updateContent(range: Range, items: ItemsWithChanges<T>) {
@@ -150,17 +157,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         for (let change of changes) {
             if (change.kind === ListDiffKind.CREATE) {
-                let view = this._getViewForItem(change.index, change.item, range)
-                // view.detectChanges()
+                this._getViewForItem(change.index, change.item, range)
             } else if (change.kind === ListDiffKind.UPDATE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
                 if (elIdx >= 0) {
                     let view: EmbeddedView<T> = this._vcr.get(elIdx) as EmbeddedView<T>
                     this._updateContext(view.context, change.index, change.item, range)
-                    // view.detectChanges()
                 } else {
-                    let view = this._getViewForItem(change.index, change.item, range)
-                    // view.detectChanges()
+                    this._getViewForItem(change.index, change.item, range)
                 }
             } else if (change.kind === ListDiffKind.DELETE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
@@ -176,14 +180,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         // this._updateRenderedRange()
         if (changes.length) {
             this._cdr.detectChanges()
-            if (this._levitateRef) {
-                // if (this._scroller.overflowSecondary) {
-                //     this._levitateRef.update()
-                // }
-
-                // console.log("_levitateRef.update...")
-                this._levitateRef.update()
-            }
         }
     }
 

@@ -1,4 +1,4 @@
-import { Component, Inject, ElementRef, Input, EventEmitter, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from "@angular/core"
+import { Directive, Inject, ElementRef, Input, EventEmitter, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, fromEvent, merge } from "rxjs"
 import { filter } from "rxjs/operators"
@@ -22,15 +22,13 @@ export interface Viewport {
 }
 
 
-@Component({
+@Directive({
     selector: ".nz-scroller",
-    template: "<ng-content></ng-content>",
     host: {
         "[style.overflow]": "orient === 'horizontal' ? 'auto' : 'auto'"
-    },
-    changeDetection: ChangeDetectionStrategy.OnPush
+    }
 })
-export class ScrollerComponent implements OnInit, OnDestroy {
+export class ScrollerDirective implements OnInit, OnDestroy {
     @Input("wheel-speed")
     public set wheelSpeed(val: number) {
         val = parseInt(`${val}`, 10)

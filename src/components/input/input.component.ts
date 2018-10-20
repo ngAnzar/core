@@ -158,7 +158,7 @@ export const INPUT_VALUE_ACCESSOR = {
 
 
 @Component({
-    selector: "input.nz-input, textarea.nz-input",
+    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input, textarea.nz-input",
     templateUrl: "./input.template.pug",
     host: {
         "[attr.id]": "id",

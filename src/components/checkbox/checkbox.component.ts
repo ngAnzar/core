@@ -63,7 +63,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this.zone.run(_ => {
                 this._checked = val;
                 (this.change as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
-                (this.valueChanges as EventEmitter<T>).emit(this._value);
+                this.value = (val ? (this.trueValue == null ? true : this.trueValue) : this.falseValue) as any
 
                 if (this.group) {
                     this.group.onCheckedChange()
@@ -105,9 +105,12 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public get type(): string { return "checkbox" }
 
 
-    public writeValue(obj: T): void {
-        this._value = obj
-        this.cdr.markForCheck()
+    public writeValue(obj: any): void {
+        if (obj === true || obj === "true") {
+            this.checked = true
+        } else if (obj === this.trueValue) {
+            this.checked = true
+        }
     }
 
     public ngAfterViewInit() {
@@ -116,12 +119,10 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 
     protected _changeHandler(event: Event) {
         event.stopPropagation()
-        console.log("_changeHandler")
     }
 
     protected _handleClick(event: Event) {
         this.checked = !this.checked
-        console.log("_handleClick")
     }
 
     public ngOnDestroy() {

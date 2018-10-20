@@ -81,7 +81,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
             (this as any).isVisible = true
             this.attach()
             this.behavior.initShow(this)
-            this.behavior.levitate.update()
+            this.behavior.levitate.begin()
             this.emit(new LayerEvent("showing") as E)
             return Promise.all([
                 this.behavior.showBackdrop(this),
@@ -96,6 +96,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
         if (this.isVisible) {
             (this as any).isVisible = false
             this.behavior.initHide(this)
+            this.behavior.levitate.suspend()
             this.emit(new LayerEvent("hiding") as E)
             return Promise.all([
                 this.behavior.hideBackdrop(this),

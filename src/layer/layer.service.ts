@@ -4,10 +4,13 @@ import { ComponentType } from "@angular/cdk/portal"
 
 import { LevitateRef } from "../levitate/levitate-ref"
 import { Levitating } from "../levitate/levitate-compute"
+import { LevitateService } from "../levitate/levitate.service"
+
 import { LayerRef, TemplateLayerRef, ComponentLayerRef } from "./layer-ref"
 import { LayerBehavior } from "./layer-behavior"
 import { LayerContainer } from "./layer-container"
 import { LevitateOptions } from "./layer-options"
+
 
 export class LayerService {
     public constructor(
@@ -15,7 +18,8 @@ export class LayerService {
         @Inject(LayerContainer) public readonly container: LayerContainer,
         @Inject(Injector) protected readonly injector: Injector,
         @Inject(LayerRef) @Optional() protected readonly layer: LayerRef,
-        @Inject(AnimationBuilder) protected readonly animation: AnimationBuilder) {
+        @Inject(AnimationBuilder) protected readonly animation: AnimationBuilder,
+        @Inject(LevitateService) protected readonly levitateSvc: LevitateService) {
     }
 
     public createFromTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, behavior: LayerBehavior, opener?: LayerRef, context?: T): TemplateLayerRef<T> {
@@ -40,7 +44,7 @@ export class LayerService {
                     LayerContainer
                 ],
                 useFactory: (container?: LayerContainer) => {
-                    return new LayerService(this, container || this.container, this.injector, ref as any, this.animation)
+                    return new LayerService(this, container || this.container, this.injector, ref as any, this.animation, this.levitateSvc)
                 }
             },
             ...provides
@@ -69,7 +73,7 @@ export class LayerService {
             }
         }
 
-        return new LevitateRef(base, opt.connect, opt.constraint)
+        return this.levitateSvc.levitate(base, opt.connect, opt.constraint)
     }
 
     // public createRef<T>(target: TemplateRef<T> | ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[]): LayerRef {

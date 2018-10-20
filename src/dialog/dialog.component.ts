@@ -1,4 +1,4 @@
-import { Component, Inject, InjectionToken, Optional, AfterViewChecked, ComponentRef } from "@angular/core"
+import { Component, Inject, InjectionToken, Optional, AfterViewChecked, ComponentRef, ElementRef } from "@angular/core"
 import { Portal, ComponentPortal } from "@angular/cdk/portal"
 
 import { DialogEvent } from "./dialog.service"
@@ -35,6 +35,7 @@ export const DIALOG_CONTENT = new InjectionToken<Portal<any>>("dialog.content")
 })
 export class DialogComponent implements AfterViewChecked {
     public constructor(
+        @Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(LayerRef) protected layerRef: LayerRef<DialogEvent>,
         @Inject(LayerService) protected layerSvc: LayerService,
         @Inject(DIALOG_TITLE) @Optional() public title: string,

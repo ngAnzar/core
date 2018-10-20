@@ -1,6 +1,7 @@
 @require "../../style/elevation"
+@require "../../style/typography"
 
-$nz-select-item-height ?= nz-local-grid-size(12)
+$nz-select-item-height ?= nz-local-grid-size(5)
 
 .nz-select
   position: relative
@@ -24,3 +25,19 @@ $nz-select-item-height ?= nz-local-grid-size(12)
 
   &:not([editable])
     cursor: pointer
+
+
+.nz-chip
+  display: flex
+  nz-typo: $typo.body2
+  border-radius: ($nz-select-item-height / 2)
+  height: $nz-select-item-height
+  flex-direction: row
+  align-items: center
+  background-color: $theme.background.lighter
+  padding: 0 nz-local-grid-size(1) 0 nz-local-grid-size(3)
+  cursor: default
+
+  &[selected]
+    background-color: $theme.accent.default
+    color: $theme.accent.on.default

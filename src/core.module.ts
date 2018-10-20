@@ -3,10 +3,6 @@ import { CommonModule } from "@angular/common"
 
 
 export * from "./data"
-import { ResizeObserver } from "./observers/resize-observer"
-export { ResizeObserver }
-// import { DataSourceDirective } from "./data/data-source.directive"
-// import { ScrollerComponent } from "./components/scroller/scroller.component"
 
 
 const content: any[] = [
@@ -21,7 +17,7 @@ const content: any[] = [
     ],
     declarations: content,
     exports: content,
-    providers: [ResizeObserver]
+    providers: []
 })
 export class CoreModule {
 

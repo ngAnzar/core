@@ -5,6 +5,7 @@ import { PortalModule } from "@angular/cdk/portal"
 
 import { LayerModule } from "./layer.module"
 import { ButtonModule } from "./button.module"
+import { ServicesModule } from "./services.module"
 
 import { DialogService } from "./dialog/dialog.service"
 
@@ -23,7 +24,8 @@ export {
         CommonModule,
         LayerModule,
         PortalModule,
-        ButtonModule
+        ButtonModule,
+        ServicesModule
     ],
     declarations: [
         DialogComponent,
@@ -33,7 +35,8 @@ export {
         DialogComponent,
         LayerModule,
         PortalModule,
-        ButtonModule
+        ButtonModule,
+        ServicesModule
     ],
     providers: [
         DialogService

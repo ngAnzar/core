@@ -12,7 +12,7 @@
     white-space: nowrap
 
   .select-input
-    height: nz-local-grid-size(5)
+    min-height: nz-local-grid-size(5)
     line-height: nz-local-grid-size(5)
     flex: 1
     margin-right: 8px
@@ -48,32 +48,35 @@
     flex: none
     margin-right: 8px
 
+  .chip-item
+    margin-right: 8px
+    margin-bottom: 8px
+
 
 input(#hidden type="hidden")
 
 div.select-input
   //- ng-template(*ngIf="!editable || selection.type !== 'single'")
   ng-template(bind-ngIf="!editable || selection.type !== 'single'")
-    ng-template(ngFor bind-ngForOf="selection.items" let-item)
+    ng-template(ngFor bind-ngForOf="selection.items" let-item let-first="first" let-last="last")
       ng-template(
         bind-ngTemplateOutlet="selectedTpl"
-        bind-ngTemplateOutletContext="{$implicit:item}")
+        bind-ngTemplateOutletContext="{$implicit:item,first:first,last:last}")
   input.text-input(*ngIf="editable"
     #input
     bind-attr.tabindex="tabIndex"
     on-input="_onInput($event)"
     on-keypress="_onKeypress($event)"
     on-keyup="_onKeyup($event)"
-    style="flex:1"
-    bind-style.marginLeft="selection.items.length && selection.type !== 'single' ? '8px' : '0px'")
+    style="flex:1")
 
 i.arrow-down(*ngIf="!editable")
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}
 
-ng-template(#default_selected_multi let-item)
-  span {{ item[displayField] }}
+ng-template(#default_selected_multi let-item let-first="first")
+  span.nz-chip.chip-item(bind-model="item" bind-class.first="first" selectable bind-selection="chipSelection") {{ item[displayField] }}
 
 ng-template(#default_item let-item)
   span {{ item[displayField] }}

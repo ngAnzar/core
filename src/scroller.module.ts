@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 
-import { ScrollerComponent } from "./components/scroller/scroller.component"
+import { ScrollerDirective } from "./components/scroller/scroller.directive"
 import { VirtualForDirective } from "./components/scroller/virtual-for.directive"
 
 
@@ -10,11 +10,11 @@ import { VirtualForDirective } from "./components/scroller/virtual-for.directive
         CommonModule
     ],
     declarations: [
-        ScrollerComponent,
+        ScrollerDirective,
         VirtualForDirective
     ],
     exports: [
-        ScrollerComponent,
+        ScrollerDirective,
         VirtualForDirective
     ]
 })

@@ -2,6 +2,7 @@ import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 
 
+import { ServicesModule } from "./services.module"
 import { LayerService } from "./layer/layer.service"
 import { LayerContainer } from "./layer/layer-container"
 
@@ -19,7 +20,8 @@ export { LayerService }
     exports: [],
     providers: [
         LayerService,
-        LayerContainer
+        LayerContainer,
+        ServicesModule
     ]
 })
 export class LayerModule {

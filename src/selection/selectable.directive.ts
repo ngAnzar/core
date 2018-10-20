@@ -72,7 +72,7 @@ export class SelectableDirective<T extends Model = Model> implements Selectable<
     public readonly selectedChange: Observable<boolean> = new EventEmitter()
 
     public constructor(
-        @Inject(SelectionModel) protected selection: SelectionModel<T>,
+        @Inject(SelectionModel) public readonly selection: SelectionModel<T>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {
     }
 

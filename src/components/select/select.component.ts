@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
-    ViewChild, AfterContentInit, AfterViewInit, ViewContainerRef,
+    ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
     ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
@@ -18,6 +18,7 @@ import { FormFieldComponent } from "../form-field/form-field.component"
 import { DropdownComponent, DROPDOWN_ITEM_TPL } from "./dropdown.component"
 import { Subscriptions } from "../../util/subscriptions"
 
+// import { ChipComponent } from "./chip.component"
 
 
 export class SelectTplContext<T> {
@@ -75,6 +76,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ViewChild("default_selected_multi", { read: TemplateRef }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
     @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
+    // @ViewChild("chipSelection", { read: SelectionModel }) protected readonly chipSelection: SelectionModel
+    protected readonly chipSelection: SelectionModel = new SingleSelection()
 
     @Input("data-source") //public readonly dataSource: DataSource<T>
     public set dataSource(val: DataSource<T>) {
@@ -96,6 +99,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
     public get storage(): DataStorage<T> { return this._storage }
     protected _storage: DataStorage<T>
+
+    @Input()
+    public set filter(val: any) { this.storage.filter.set(val) }
+    public get filter(): any { return this.storage.filter.get() }
+
 
     public readonly displayField: string
 
@@ -156,6 +164,21 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         return this.selection.items
     }
 
+    // public get focusedModel(): T {
+    //     const chip = this.focusedChip
+    //     if (chip) {
+    //         return chip.selectable.model as T
+    //     }
+    // }
+
+    // protected get focusedChip(): ChipComponent {
+    //     for (let chip of this.chips as any as ChipComponent[]) {
+    //         if (chip.selectable.selected) {
+    //             return chip
+    //         }
+    //     }
+    // }
+
     protected ddLayer: ComponentLayerRef<DropdownComponent<T>>
     protected s = new Subscriptions()
     protected focusOrigin: FocusOrigin
@@ -167,7 +190,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(NgModel) @Optional() ngModel: NgModel,
         @Inject(Renderer2) _renderer: Renderer2,
         @Inject(ElementRef) el: ElementRef,
-        @Inject(SelectionModel) @Optional() protected readonly selection: SelectionModel<T>,
+        @Inject(SelectionModel) @Optional() public readonly selection: SelectionModel<T>,
         @Inject(LayerService) protected readonly layer: LayerService,
         @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
@@ -281,6 +304,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public ngAfterContentInit() {
         // (this as any).storage = new DataStorage(this.dataSource)
+
     }
 
     public ngAfterViewInit() {
