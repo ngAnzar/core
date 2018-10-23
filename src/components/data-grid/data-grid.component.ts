@@ -82,6 +82,7 @@ export class DataGridComponent implements AfterContentInit, DoCheck {
 
     public ngAfterContentInit() {
         this.subscriptions.add(this.columns.layoutChanged).subscribe(this._update)
+        this.updateGridTemplate()
     }
 
     public ngDoCheck() {
