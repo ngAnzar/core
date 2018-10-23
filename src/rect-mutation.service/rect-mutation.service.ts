@@ -128,7 +128,6 @@ export class RectMutationService {
     protected createPositionWatcher(element: HTMLElement): Observable<Position> {
         return Observable.create((observer: Observer<Position>) => {
             let rect = element.getBoundingClientRect()
-            console.log("brect", rect)
             const rafId = requestAnimationFrame(() => {
                 let current = element.getBoundingClientRect()
                 if (current.top !== rect.top || current.left !== rect.left) {

@@ -1,5 +1,5 @@
 import {
-    Component, Inject, Host, SkipSelf, Optional, Input, OnInit, NgZone,
+    Component, Inject, Host, SkipSelf, Optional, Input, OnInit, NgZone, DoCheck,
     ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
@@ -26,12 +26,40 @@ import { SelectionModel, SingleSelection } from "../../selection.module"
     // ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataGridComponent implements OnInit, AfterContentInit {
-    @Input("data-source")
-    public source: DataSource<any>
-    protected storage: DataStorage<any>
-
+export class DataGridComponent implements AfterContentInit, DoCheck {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
+
+    @Input("data-source")
+    public set source(val: DataSource<any>) {
+        if (this._source !== val) {
+            this._source = val
+            this.storage = val ? new DataStorage(val) : null
+            this.cdr.markForCheck()
+        }
+    }
+    public get source(): DataSource<any> { return this._source }
+    protected _source: DataSource<any>
+
+    public set storage(val: DataStorage<any>) {
+        if (this._storage !== val) {
+            this._storage = val
+            if (val) {
+                this.subscriptions.add(val.invalidated).subscribe(this._update)
+                this.subscriptions.add(val.items).subscribe(this._update)
+            }
+            this._update()
+        }
+    }
+    public get storage(): DataStorage<any> { return this._storage }
+    protected _storage: DataStorage<any>
+
+    @Input()
+    public set filter(val: any) { this.storage.filter.set(val) }
+    public get filter(): any { return this.storage.filter.get() }
+
+    @Input()
+    public set sorter(val: any) { this.storage.sorter.set(val) }
+    public get sorter(): any { return this.storage.sorter.get() }
 
     public get gtRows(): SafeStyle { return this._gtRows }
     protected _gtRows: SafeStyle = ""
@@ -49,22 +77,14 @@ export class DataGridComponent implements OnInit, AfterContentInit {
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel) {
         selection.maintainSelection = true
 
-        this.subscriptions.add(selection.changes).subscribe(event => {
-            this.cdr.detectChanges()
-        })
-    }
-
-    public ngOnInit() {
-        this.storage = new DataStorage(this.source)
-        this.subscriptions.add(this.storage.invalidated).subscribe(() => {
-            this.updateGridTemplate()
-        })
+        this.subscriptions.add(selection.changes).subscribe(this._update)
     }
 
     public ngAfterContentInit() {
-        this.subscriptions.add(this.columns.layoutChanged).subscribe((layout) => {
-            this.updateGridTemplate()
-        })
+        this.subscriptions.add(this.columns.layoutChanged).subscribe(this._update)
+    }
+
+    public ngDoCheck() {
         this.updateGridTemplate()
     }
 
@@ -79,14 +99,16 @@ export class DataGridComponent implements OnInit, AfterContentInit {
         }
         let colTemplate = col.join(" ")
 
-        if (this.storage) {
-            this._gtRows = this.snitizer.bypassSecurityTrustStyle("repeat(${this.storage.lastIndex}, ${this._rowHeight}px) / 1fr")
+        if (this.storage && this.storage.lastIndex) {
+            this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex}, ${this._rowHeight}px) / 1fr`)
         }
 
         this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${colTemplate}`)
 
         this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`40px / ${colTemplate}`)
+    }
 
+    protected _update = () => {
         this.cdr.detectChanges()
     }
 }

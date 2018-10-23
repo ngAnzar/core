@@ -1,5 +1,5 @@
 import { EventEmitter } from "@angular/core"
-import { Observable } from "rxjs"
+import { Observable, of } from "rxjs"
 import { map } from "rxjs/operators"
 
 import { Range } from "./range"
@@ -49,6 +49,9 @@ export abstract class DataSource<T extends Model> {
     public abstract readonly model: ModelClass<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
+        if (r.end - r.begin <= 0) {
+            return of(new Items([], r))
+        }
         return this._search(f, s, r).pipe(map(value => this.makeModels(value, r))) as any
     }
 
@@ -88,6 +91,7 @@ export abstract class DataSource<T extends Model> {
 
     protected makeModels(items: any[], range: Range): T[] {
         let total = items ? (items as any).total : null
+        range = new Range(range.begin, range.begin + items.length)
         return new Items(items.map(this.makeModel.bind(this)), range, total)
     }
 

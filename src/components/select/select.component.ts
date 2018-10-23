@@ -70,14 +70,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<T>
     @ContentChild("item", { read: TemplateRef }) public readonly itemTpl: SelectTemplateRef<T>
 
-    @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLElement>
+    @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
     @ViewChild("default_selected_single", { read: TemplateRef }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
     @ViewChild("default_selected_multi", { read: TemplateRef }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
     @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
     // @ViewChild("chipSelection", { read: SelectionModel }) protected readonly chipSelection: SelectionModel
-    protected readonly chipSelection: SelectionModel = new SingleSelection()
 
     @Input("data-source") //public readonly dataSource: DataSource<T>
     public set dataSource(val: DataSource<T>) {
@@ -94,6 +93,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public set storage(val: DataStorage<T>) {
         if (this._storage !== val) {
             this._storage = val
+            this.applyPendingValue()
             this.cdr.markForCheck()
         }
     }
@@ -104,6 +104,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public set filter(val: any) { this.storage.filter.set(val) }
     public get filter(): any { return this.storage.filter.get() }
 
+    @Input()
+    public set sorter(val: any) { this.storage.sorter.set(val) }
+    public get sorter(): any { return this.storage.sorter.get() }
 
     public readonly displayField: string
 
@@ -131,6 +134,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public get editable(): boolean { return this._editable }
     protected _editable: boolean = false
     protected _iss: Subscription
+
+    @Input("can-create")
+    public set canCreate(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._canCreate !== val) {
+            this._canCreate = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get canCreate(): boolean { return !this.disabled && this._canCreate }
+    protected _canCreate: boolean = false
 
     @Input()
     public set disabled(val: boolean) {
@@ -184,6 +198,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected focusOrigin: FocusOrigin
     protected inputStream: Observable<string> = new Subject()
     protected lastKeyup: number
+    protected pendingValue: any
+    protected readonly chipSelection: SelectionModel = new SingleSelection()
 
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
@@ -216,12 +232,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.value = value
             }
 
-            if (this.selection.type === "single" && selected[0]) {
-                this._resetTextInput((selected[0] as any)[this.displayField])
-            } else {
-                this._resetTextInput()
-            }
-
+            this._resetTextInput()
             this.cdr.markForCheck()
         })
 
@@ -241,6 +252,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public writeValue(obj: SelectValue<T>): void {
+        if (!this.dataSource || !this.storage || !this.hidden) {
+            this.pendingValue = obj
+            return
+        }
+
         const { ids, request, models } = this.coerceValue(obj)
 
         if (request.length) {
@@ -252,7 +268,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         if (this.hidden) {
-            this._renderer.setAttribute(this.hidden.nativeElement, "value", ids.join(","))
+            this.hidden.nativeElement.value = ids.join(",")
+        }
+    }
+
+    protected applyPendingValue() {
+        if (this.dataSource && this.storage && this.hidden) {
+            if ("pendingValue" in this) {
+                this.writeValue(this.pendingValue)
+                delete this.pendingValue
+            }
         }
     }
 
@@ -291,8 +316,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected getModels(ids: ID[]): Observable<T[]> {
         return Observable.create((observer: Observer<T[]>) => {
             let s = []
-            for (let i = 0, l = ids.length; i < l; i++) {
-                s.push(this.dataSource.get(ids[i]))
+
+            if (this.dataSource) {
+                for (let i = 0, l = ids.length; i < l; i++) {
+                    s.push(this.dataSource.get(ids[i]))
+                }
             }
 
             const merged = forkJoin(...s).subscribe(observer)
@@ -304,7 +332,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public ngAfterContentInit() {
         // (this as any).storage = new DataStorage(this.dataSource)
-
+        this.applyPendingValue()
     }
 
     public ngAfterViewInit() {
@@ -319,6 +347,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (!this.itemTpl) {
             (this as any).itemTpl = this.defaultItemTpl
         }
+
+        this.applyPendingValue()
     }
 
     protected _updateDropDown() {
@@ -387,20 +417,26 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _handleFocus(f: boolean) {
         super._handleFocus(f)
 
-        if (this.input) {
+        if (this.input && f) {
             this.input.nativeElement.focus()
         }
 
         if (f) {
-            if (this.focusOrigin !== "keyboard") {
+            if (this.focusOrigin === "mouse") {
                 this.opened = true
             }
         } else {
             this.opened = false
+            this._resetTextInput()
         }
     }
 
     protected _onInput(event: Event): void {
+        // TODO: dev mode only
+        if (!this.dataSource) {
+            console.warn("Missing data source")
+        }
+
         (this.inputStream as Subject<string>).next(this.input.nativeElement.value)
         this.opened = true
         this.inputState = "typing"
@@ -456,9 +492,22 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    protected _resetTextInput(val: string = "") {
+    protected _resetTextInput() {
+        let value = ""
+        const selected = this.selection.items
+
+        if (this.selection.type === "single") {
+            if (selected[0]) {
+                value = (selected[0] as any)[this.displayField]
+            } else if (this.canCreate) {
+                throw new Error("TODO: implement canCreate")
+            }
+        } else if (this.canCreate) {
+            throw new Error("TODO: implement canCreate")
+        }
+
         if (this.input) {
-            this.input.nativeElement.value = val
+            this.input.nativeElement.value = value
         }
     }
 

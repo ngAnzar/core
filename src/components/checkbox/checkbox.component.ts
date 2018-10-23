@@ -106,6 +106,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 
 
     public writeValue(obj: any): void {
+        console.log("writeValue", obj)
         if (obj === true || obj === "true") {
             this.checked = true
         } else if (obj === this.trueValue) {

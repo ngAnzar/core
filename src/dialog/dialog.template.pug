@@ -22,17 +22,20 @@
   .spacer
     flex: 1
 
-h6.title(bind-innerHTML="title" "*ngIf"="title && title.length")
+block title
+  h6.title(bind-innerHTML="title" "*ngIf"="title && title.length")
 
-.content(*ngIf="content")
-  ng-template(bind-cdkPortalOutlet="content")
+block content
+  .content(*ngIf="content")
+    ng-template(bind-cdkPortalOutlet="content")
 
-.buttons(*ngIf="buttons && buttons.length")
-  ng-template(ngFor bind-ngForOf="buttons" let-button)
-    button.nz-button(*ngIf="button.role != 'spacer'"
-      bind-attr.color="button.color"
-      bind-attr.variant="button.variant"
-      bind-attr.type="button.type"
-      bind-disabled="buttonIsDisabled(button)"
-      on-click="_handleButtonClick($event, button.role)") {{ button.label }}
-    div.spacer(*ngIf="button.role === 'spacer'")
+block buttons
+  .buttons(*ngIf="buttons && buttons.length")
+    ng-template(ngFor bind-ngForOf="buttons" let-button)
+      button.nz-button(*ngIf="button.role != 'spacer'"
+        bind-attr.color="button.color"
+        bind-attr.variant="button.variant"
+        bind-attr.type="button.type"
+        bind-disabled="buttonIsDisabled(button)"
+        on-click="_handleButtonClick($event, button.role)") {{ button.label }}
+      div.spacer(*ngIf="button.role === 'spacer'")

@@ -15,6 +15,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     public readonly sorter = new DictField<Sorter<T>>()
     public readonly range: Range = new Range(0, 0)
     public readonly lastIndex: number = 0
+    public itemsPerRequest = 30
 
     public get items(): Observable<ItemsWithChanges<T>> {
         return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
@@ -40,7 +41,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     protected s = new Subscriptions()
     protected cancel = new Subject()
     protected readonly _itemsStream: Observable<ItemsWithChanges<T>> = new EventEmitter()
-
+    protected total: number
 
     public constructor(protected readonly source: DataSource<T>) {
         super()
@@ -52,15 +53,29 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
 
     public getRange(r: Range): Observable<ItemsWithChanges<T>> {
         this.cancel.next()
+
+        if (this.total) {
+            r = new Range(Math.min(this.total, r.begin), Math.min(this.total, r.end))
+        }
+
         if (!this.cachedRanges.contains(r)) {
             let oldValues = this._collectRange(r)
             let rrange = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
+
+            if (rrange.begin + this.itemsPerRequest >= rrange.end) {
+                rrange = new Range(rrange.begin, rrange.begin + this.itemsPerRequest)
+            }
+
             return this.s.add(this.source.search(this.filter.get(), this.sorter.get(), rrange))
                 .pipe(takeUntil(this.cancel), take(1))
                 .pipe(map(items => {
-                    (this as any).range = r
-                    this._cacheItems(items, items.range || r, oldValues)
-                    return this._collectRange(r, oldValues)
+                    (this as any).range = items.range || r
+                    this._cacheItems(items, this.range, oldValues)
+                    if (items.total != null) {
+                        (this as any).lastIndex = items.total
+                        this.total = items.total
+                    }
+                    return this._collectRange(this.range, oldValues)
                 }))
         } else {
             (this as any).range = r
@@ -78,6 +93,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         this.cache = {}
         this.cachedRanges = new RangeList();
 
+        this.total = 0;
         (this as any).lastIndex = 0;
         (this.reseted as EventEmitter<void>).emit()
     }

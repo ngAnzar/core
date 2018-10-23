@@ -93,7 +93,7 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
     protected _pending: Update = {}
 
     public update(update: Update): void {
-        if (this._suspended) {
+        if (this._suspended || !this._selected) {
             this._pending = Object.assign(this._pending, update)
             return
         }

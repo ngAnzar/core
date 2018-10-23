@@ -108,7 +108,9 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
     }
 
     setDisabledState(isDisabled: boolean): void {
-        this._renderer.setProperty(this.el.nativeElement, "disabled", isDisabled)
+        if (this._renderer) {
+            this._renderer.setProperty(this.el.nativeElement, "disabled", isDisabled)
+        }
     }
 
     ngOnDestroy() {
@@ -176,7 +178,9 @@ export class TextFieldComponent extends InputComponent<string> {
 
     writeValue(value: any): void {
         const normalizedValue = value == null ? "" : value
-        this._renderer.setProperty(this.el.nativeElement, "value", normalizedValue)
+        if (this._renderer) {
+            this._renderer.setProperty(this.el.nativeElement, "value", normalizedValue)
+        }
     }
 
     protected _handleInput(value: string | null) {

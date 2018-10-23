@@ -248,6 +248,10 @@ export class Model {
     }
 
     public static toObject(model: Model, forSave?: boolean): { [key: string]: any } {
+        if (!(model instanceof Model)) {
+            return model
+        }
+
         const fields = (model as any)[FIELDS] as Fields
         const res = {} as any
 
@@ -258,6 +262,29 @@ export class Model {
                 }
             }
         } else {
+
+
+            // for (const field of fields) {
+            //     const value = (model as any)[field.targetName]
+
+            //     if (value == null) {
+            //         res[field.targetName] = value
+            //         continue
+            //     }
+
+            //     if (field.fields.length) {
+            //         if ("listOf" in field.type) {
+            //             res[field.targetName] = value.map(Model.toObject)
+            //         } else if ("single" in field.type) {
+            //             res[field.targetName] = Model.toObject(value)
+            //         } else {
+            //             throw new Error(`TODO: not implemented: ${JSON.stringify(field)}`)
+            //         }
+            //     } else {
+            //         res[field.targetName] = value
+            //     }
+            // }
+
             for (const field of fields) {
                 res[field.targetName] = (model as any)[field.targetName]
             }

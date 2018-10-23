@@ -16,7 +16,7 @@ export class Range {
     // }
 
     public isOverlap(other: Range): boolean {
-        return Math.max(this.begin, other.begin) < Math.min(this.end, other.end)
+        return Math.max(this.begin, other.begin) <= Math.min(this.end, other.end)
     }
 
     public contains(n: number): boolean {

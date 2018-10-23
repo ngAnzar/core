@@ -91,8 +91,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public constructor(@Inject(ViewContainerRef) protected _vcr: ViewContainerRef,
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
         @Inject(ChangeDetectorRef) protected _cdr: ChangeDetectorRef,
-        @Inject(ScrollerDirective) protected _scroller: ScrollerDirective,
-        @Inject(LevitateRef) @Optional() protected _levitateRef: LevitateRef) {
+        @Inject(ScrollerDirective) protected _scroller: ScrollerDirective) {
     }
 
     public ngOnInit() {
@@ -143,17 +142,16 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         for (let i = 0, l = this._vcr.length; i < l; i++) {
             let view = this._vcr.get(i) as EmbeddedView<T>
             if (view && view.context && view.context.index !== -1) {
+                // view.markForCheck()
                 view.detectChanges()
+                // view.detectChanges()
             }
         }
-
-        // if (this._levitateRef) {
-        //     this._levitateRef.update()
-        // }
     }
 
     protected _updateContent(range: Range, items: ItemsWithChanges<T>) {
         let changes = items.compare(this.rendered)
+        // console.log(changes)
 
         for (let change of changes) {
             if (change.kind === ListDiffKind.CREATE) {
@@ -179,7 +177,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         // this._updateRenderedRange()
         if (changes.length) {
-            this._cdr.detectChanges()
+            this._cdr.markForCheck()
+            // this._cdr.detectChanges()
         }
     }
 

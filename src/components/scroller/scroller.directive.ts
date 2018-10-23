@@ -138,11 +138,29 @@ export class ScrollerDirective implements OnInit, OnDestroy {
         //     minScrollbarLength: 50
         // })
 
+        // this.ngZone.runOutsideAngular(() => {
+        //     (this as any).primaryScrolling =
+        //         merge(fromEvent(this.el.nativeElement, "ps-scroll-y"), fromEvent(this.el.nativeElement, "ps-scroll-x"))
+        //             .pipe(filter(e => (this.orient === "horizontal" && e.type === "ps-scroll-x") ||
+        //                 (this.orient === "vertical" && e.type === "ps-scroll-y")))
+        // })
+
         this.ngZone.runOutsideAngular(() => {
-            (this as any).primaryScrolling =
-                merge(fromEvent(this.el.nativeElement, "ps-scroll-y"), fromEvent(this.el.nativeElement, "ps-scroll-x"))
-                    .pipe(filter(e => (this.orient === "horizontal" && e.type === "ps-scroll-x") ||
-                        (this.orient === "vertical" && e.type === "ps-scroll-y")))
+            let element = this.el.nativeElement
+            let lastLeft = element.scrollLeft;
+            let lastTop = element.scrollTop;
+            (this as any).primaryScrolling = fromEvent(element, "scroll").pipe(filter(event => {
+                if (this.orient === "horizontal") {
+                    if (lastLeft !== element.scrollLeft) {
+                        return true
+                    }
+                } else if (this.orient === "vertical") {
+                    if (lastTop !== element.scrollTop) {
+                        return true
+                    }
+                }
+                return false
+            }))
         })
     }
 
