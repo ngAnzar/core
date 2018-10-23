@@ -23,7 +23,7 @@
     "@angular/platform-browser-dynamic": "^6.1.0",
     "@angular/router": "^6.1.0",
     "@angularclass/hmr": "^2.1.3",
-    "@anzar/build": "github:ngAnzar/build",
+    "@anzar/build": "ngAnzar/build",
     "@types/deep-diff": "^0.0.31",
     "@types/element-resize-detector": "^1.1.0",
     "@types/googlemaps": "^3.30.14",
