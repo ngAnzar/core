@@ -10,6 +10,7 @@ export const MODEL_ID = new InjectionToken<ID>("MODEL_ID")
 export const EQ = Symbol("@eq")
 const RAW = Symbol("@raw")
 const CACHE = Symbol("@cache")
+const CHANGES = Symbol("@changes")
 const FIELDS = Symbol("@fields")
 
 
@@ -37,13 +38,14 @@ export interface FieldMeta {
 
 export type Fields = FieldMeta[]
 
-const builtinTypes: any = {} as any
-builtinTypes[String as any] = String
-builtinTypes[Number as any] = Number
-builtinTypes[Boolean as any] = Boolean
-builtinTypes[Date as any] = (value: any): any => { return value instanceof Date ? value : (value != null ? new Date(value) : value) }
-builtinTypes[Function as any] = (value: any): any => { throw new Error("Function type is not supported") }
-builtinTypes[Object as any] = (value: any): any => { throw new Error("Please provide better type information") }
+const builtinTypes: Map<any, any> = new Map
+builtinTypes.set(String, String)
+builtinTypes.set(Number, Number)
+builtinTypes.set(Boolean, Boolean)
+builtinTypes.set(Date, (value: any): any => { return value instanceof Date ? value : (value != null ? new Date(value) : value) })
+builtinTypes.set(Function, (value: any): any => { throw new Error("Function type is not supported") })
+builtinTypes.set(Object, (value: any): any => { throw new Error("Please provide better type information") })
+
 
 function isPrimitiveType(t: any): boolean {
     return t === String || t === Number || t === Boolean || t === Date
@@ -72,7 +74,7 @@ function createProperty(modelName: string, inpName: string, altName: string, con
             try {
                 return data[inpName] = raw == null ? raw : converter(raw, this)
             } catch (e) {
-                throw new Error(`Cannot convert '${modelName}.${inpName}' filed beacuse: ${e.message}`)
+                throw new Error(`Cannot convert '${modelName}.${inpName}' field beacuse: ${e.message}`)
             }
         },
         set(val) {
@@ -117,14 +119,12 @@ function typeFactory(type: { new(val: any): any }): ModelFactory {
     }
 }
 
-function typeOrConverterFactory(t: any): ModelFactory {
-    const builtin = builtinTypes[t]
+function customOrBuiltinFactory(t: any): ModelFactory {
+    const builtin = builtinTypes.get(t)
     if (builtin) {
         return builtin
-    } else if (isClass(t)) {
-        return typeFactory(t)
     } else {
-        return t
+        return typeFactory(t)
     }
 }
 
@@ -148,7 +148,7 @@ export function Field(name: string | FieldOptions = {}) {
         if ("listOf" in options) {
             typeList = Array.isArray(options.listOf) ? options.listOf : [options.listOf]
             if (typeList.length === 1) {
-                converter = listFactory(typeOrConverterFactory(typeList[0]) as any)
+                converter = listFactory(customOrBuiltinFactory(typeList[0]) as any)
             } else if (!options.map && typeList.length > 1) {
                 throw new Error("Multiple types is not supperted withput map function")
             }
@@ -156,7 +156,7 @@ export function Field(name: string | FieldOptions = {}) {
         } else if ("mapOf" in options) {
             typeList = Array.isArray(options.mapOf) ? options.mapOf : [options.mapOf]
             if (typeList.length === 1) {
-                converter = mapFactory(typeOrConverterFactory(typeList[0]) as any)
+                converter = mapFactory(customOrBuiltinFactory(typeList[0]) as any)
             } else if (!options.map && typeList.length > 1) {
                 throw new Error("Multiple types is not supperted withput map function")
             }
@@ -164,7 +164,7 @@ export function Field(name: string | FieldOptions = {}) {
         } else if ("type" in options) {
             typeList = Array.isArray(options.type) ? options.type : [options.type]
             if (typeList.length === 1) {
-                converter = typeOrConverterFactory(typeList[0])
+                converter = customOrBuiltinFactory(typeList[0])
             } else if (!options.map && typeList.length > 1) {
                 throw new Error("Multiple types is not supperted withput map function")
             }
@@ -172,14 +172,14 @@ export function Field(name: string | FieldOptions = {}) {
         } else {
             typeList = [type]
             if (typeList.length === 1) {
-                converter = typeOrConverterFactory(typeList[0])
+                converter = customOrBuiltinFactory(typeList[0])
             } else if (!options.map && typeList.length > 1) {
                 throw new Error("Multiple types is not supperted withput map function")
             }
             meta.type = { single: typeList }
         }
 
-        converter = converter || typeOrConverterFactory(options.map || type)
+        converter = converter || options.map || customOrBuiltinFactory(type)
         meta.save = options.save == null
             ? typeList.length === typeList.filter(isPrimitiveType).length
             : options.save !== false
@@ -192,7 +192,7 @@ export function Field(name: string | FieldOptions = {}) {
                 createProperty(target.constructor.name, meta.sourceName, meta.targetName, converter as any))
         } else {
             meta.initEarly = true
-            if (converter) {
+            if (options.map) {
                 throw new Error("'converter' options is not supperted for properties")
             }
         }
@@ -228,7 +228,11 @@ function parseId(value: any): any {
 
 export class Model {
     public static isEq(modelA: Model, modelB: Model): boolean {
-        return modelA instanceof Model && modelA[EQ](modelB)
+        return this.isModel(modelA) && modelA[EQ](modelB)
+    }
+
+    public static isModel(model: any): boolean {
+        return Boolean(model && model[FIELDS])
     }
 
     public static rawData(model: Model): { [key: string]: any } {
@@ -240,7 +244,7 @@ export class Model {
     }
 
     public static create<T=any>(factory: ModelFactory<T>, data: T): T {
-        return data instanceof Model
+        return Model.isModel(data)
             ? data
             : isClass(factory)
                 ? new (factory as any)(data)
@@ -248,7 +252,7 @@ export class Model {
     }
 
     public static toObject(model: Model, forSave?: boolean): { [key: string]: any } {
-        if (!(model instanceof Model)) {
+        if (!model[FIELDS]) {
             return model
         }
 
@@ -292,6 +296,10 @@ export class Model {
         return res
     }
 
+    public static proxy<T extends Model>(model: T): ModelProxy & T {
+        return new ModelProxy(model) as any
+    }
+
     @IDField() public id: ID
 
     private [RAW]: { [key: string]: any }
@@ -310,33 +318,95 @@ export class Model {
     }
 
     public [EQ](other: Model) {
-        return this === other || (other instanceof Model && other.id === this.id)
+        return this === other || (Model.isModel(other) && other.id === this.id)
     }
 
-    public update(data: { [key: string]: any } = {}) {
-        const fields = this[FIELDS]
-
-        for (const field of fields) {
-            const value = data.hasOwnProperty(field.sourceName)
-                ? data[field.sourceName]
-                : data.hasOwnProperty(field.targetName)
-                    ? data[field.targetName]
-                    : undefined
-            if (value === undefined) {
-                continue
-            }
-
+    public update(data: { [key: string]: any }) {
+        updateModel(this, data, (field, value) => {
             this[RAW][field.sourceName] = value
             delete this[CACHE][field.sourceName]
 
             if (field.initEarly) {
                 (this as any)[field.targetName] = value
             }
-        }
+        })
     }
 }
 
 
+function updateModel(model: any, data: any, apply: (field: FieldMeta, value: any) => void) {
+    const fields = model[FIELDS]
+
+    for (const field of fields) {
+        let tmp: any
+        const value =
+            (tmp = data[field.sourceName]) !== undefined ? tmp
+                : (tmp = data[field.targetName]) !== undefined ? tmp : undefined
+
+        if (value === undefined) {
+            continue
+        }
+        apply(field, value)
+    }
+}
+
+
+export class ModelProxy {
+    private [RAW]: any
+    private [FIELDS]: any
+    private [CHANGES]: { [key: string]: any } = {}
+
+    public static applyChanges(proxy: ModelProxy) {
+        const source = proxy[CHANGES]
+        const target = proxy[RAW]
+        for (const field of proxy[FIELDS]) {
+            if (source.hasOwnProperty(field.targetName)) {
+                target[field.targetName] = source[field.targetName]
+            }
+        }
+    }
+
+    public constructor(model: Model) {
+        this[RAW] = model
+        this[FIELDS] = model[FIELDS]
+
+        for (const field of model[FIELDS]) {
+            defineModelProxyProperty(this, field)
+        }
+    }
+
+    public [EQ](other: any) {
+        return this === other || (Model.isModel(other) && other.id === (this as any).id)
+    }
+
+    public update(data: { [key: string]: any }) {
+        updateModel(this, data, (field, value) => {
+            this[CHANGES][field.targetName] = value
+        })
+    }
+}
+
+
+function defineModelProxyProperty(fm: any, field: FieldMeta) {
+    let cache: any
+
+    const get = () => {
+        let value = fm[RAW][field.targetName]
+        if (value instanceof Model) {
+            if (cache == null) {
+                cache = new ModelProxy(value)
+            }
+            return cache
+        }
+        return value
+    }
+
+    const set = (v: any) => {
+        fm[CHANGES][field.targetName] = v
+    }
+
+    Object.defineProperty(fm, field.targetName, { get, set })
+}
 
 
 /*

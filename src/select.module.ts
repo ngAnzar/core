@@ -14,7 +14,7 @@ import { DropdownComponent } from "./components/select/dropdown.component"
 import { ChipComponent } from "./components/select/chip.component"
 // import { HighlightPipe } from "./components/select/highlight.pipe"
 
-export { IAutocompleteModel, Match } from "./components/select/select.component"
+export { IAutocompleteModel, Match, SelectComponent } from "./components/select/select.component"
 
 @NgModule({
     imports: [

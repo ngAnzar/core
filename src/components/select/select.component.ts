@@ -71,7 +71,19 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ContentChild("item", { read: TemplateRef }) public readonly itemTpl: SelectTemplateRef<T>
 
     @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLInputElement>
-    @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
+    // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { read: ElementRef })
+    protected set input(val: ElementRef<HTMLInputElement>) {
+        this._input = val
+        if (val) {
+            this._resetTextInput()
+        }
+    }
+    protected get input(): ElementRef<HTMLInputElement> {
+        return this._input
+    }
+    protected _input: ElementRef<HTMLInputElement>
+
     @ViewChild("default_selected_single", { read: TemplateRef }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
     @ViewChild("default_selected_multi", { read: TemplateRef }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
     @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
@@ -234,6 +246,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
             this._resetTextInput()
             this.cdr.markForCheck()
+            // this.cdr.detectChanges()
         })
 
         this.displayField = displayField || "label"
@@ -304,7 +317,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     request.push(item)
                 }
                 ids.push(item)
-            } else if (item instanceof Model) {
+            } else if (Model.isModel(item)) {
                 models.push(item)
                 ids.push(item.id)
             }
@@ -349,6 +362,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.applyPendingValue()
+        this.cdr.detectChanges()
     }
 
     protected _updateDropDown() {
@@ -492,7 +506,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
+    @HostListener("click")
+    protected _onClick() {
+        this.opened = true
+    }
+
     protected _resetTextInput() {
+        if (!this.input) {
+            return
+        }
+
         let value = ""
         const selected = this.selection.items
 
@@ -506,9 +529,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             throw new Error("TODO: implement canCreate")
         }
 
-        if (this.input) {
-            this.input.nativeElement.value = value
-        }
+        this.input.nativeElement.value = value
     }
 
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {

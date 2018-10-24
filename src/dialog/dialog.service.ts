@@ -11,9 +11,7 @@ import {
 import { MessageDialog } from "./message.dialog"
 import { LayerService } from "../layer/layer.service"
 import { ModalLayer } from "../layer/layer-behavior"
-import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
-import { LayerEvent } from "../layer/layer-ref"
-import { LayerOptions } from "../layer/layer-options"
+import { ComponentLayerRef, LayerEvent, LayerOptions } from "../layer.module"
 
 
 export const BUTTON_CANCEL: ButtonOption = { role: "cancel", label: "Mégse" }

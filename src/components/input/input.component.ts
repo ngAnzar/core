@@ -2,6 +2,7 @@ import { Component, Input, Inject, Optional, Renderer2, OnDestroy, EventEmitter,
 import { NgControl, NgModel, ControlValueAccessor, NG_VALUE_ACCESSOR, AbstractControlDirective, AbstractControl } from "@angular/forms"
 
 import { Observable } from "rxjs"
+import * as autosize from "autosize"
 
 
 let UID_COUNTER = 0
@@ -160,8 +161,8 @@ export const INPUT_VALUE_ACCESSOR = {
 
 
 @Component({
-    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input, textarea.nz-input",
-    templateUrl: "./input.template.pug",
+    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input",
+    template: "",
     host: {
         "[attr.id]": "id",
         "(focus)": "_handleFocus(true)",
@@ -181,6 +182,48 @@ export class TextFieldComponent extends InputComponent<string> {
         if (this._renderer) {
             this._renderer.setProperty(this.el.nativeElement, "value", normalizedValue)
         }
+    }
+
+    protected _handleInput(value: string | null) {
+        if (!value || value.length === 0) {
+            value = null
+        }
+        return super._handleInput(value)
+    }
+}
+
+
+@Component({
+    selector: "textarea.nz-input",
+    template: "",
+    host: {
+        "[attr.id]": "id",
+        "(focus)": "_handleFocus(true)",
+        "(blur)": "_handleFocus(false)",
+        "(input)": "_handleInput($event.target.value)"
+    },
+    providers: [
+        { provide: InputComponent, useExisting: TextareaComponent },
+        INPUT_VALUE_ACCESSOR
+    ]
+})
+export class TextareaComponent extends InputComponent<string> implements OnDestroy, OnInit {
+    public get type(): string { return "text" }
+
+    writeValue(value: any): void {
+        const normalizedValue = value == null ? "" : value
+        if (this._renderer) {
+            this._renderer.setProperty(this.el.nativeElement, "value", normalizedValue)
+        }
+    }
+
+    public ngOnInit() {
+        autosize(this.el.nativeElement)
+    }
+
+    public ngOnDestroy() {
+        autosize.destroy(this.el.nativeElement)
+        super.ngOnDestroy()
     }
 
     protected _handleInput(value: string | null) {

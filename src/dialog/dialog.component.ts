@@ -2,8 +2,7 @@ import { Component, Inject, InjectionToken, Optional, AfterViewChecked, Componen
 import { Portal, ComponentPortal } from "@angular/cdk/portal"
 
 import { DialogEvent } from "./dialog.service"
-import { LayerRef } from "../layer/layer-ref"
-import { LayerService } from "../layer/layer.service"
+import { LayerService, LayerRef } from "../layer.module"
 
 
 export interface _ButtonOption {

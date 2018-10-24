@@ -71,7 +71,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     }
 
     protected _get(id: ID): Observable<T> {
-        return null
+        return of(this.getSync(id))
     }
 
     protected _testFilters(filter: Filter<T>, value: { [key: string]: any }) {

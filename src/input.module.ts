@@ -2,7 +2,7 @@ import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { ReactiveFormsModule } from "@angular/forms"
 
-import { TextFieldComponent } from "./components/input/input.component"
+import { TextFieldComponent, TextareaComponent } from "./components/input/input.component"
 export { InputComponent, INPUT_VALUE_ACCESSOR } from "./components/input/input.component"
 
 
@@ -12,10 +12,12 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./components/input/input.c
         ReactiveFormsModule
     ],
     declarations: [
-        TextFieldComponent
+        TextFieldComponent,
+        TextareaComponent
     ],
     exports: [
-        TextFieldComponent
+        TextFieldComponent,
+        TextareaComponent
     ]
 })
 export class InputModule {
