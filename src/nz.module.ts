@@ -13,6 +13,7 @@ import { FormFieldModule } from "./form-field.module"
 import { InputModule } from "./input.module"
 import { LayerModule } from "./layer.module"
 import { ListModule } from "./list.module"
+import { MenuModule } from "./menu.module"
 import { NavbarModule } from "./navbar.module"
 import { PanelModule } from "./panel.module"
 import { RadioModule } from "./radio.module"
@@ -34,6 +35,7 @@ const content = [
     InputModule,
     LayerModule,
     ListModule,
+    MenuModule,
     NavbarModule,
     PanelModule,
     RadioModule,

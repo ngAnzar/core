@@ -12,7 +12,7 @@ export class LevitateService {
         @Inject(RectMutationService) protected rectMutation: RectMutationService) {
     }
 
-    public levitate(levitate: Levitating, connect?: Anchor, constraint?: Constraint): LevitateRef {
-        return new LevitateRef(this.rectMutation, levitate, connect, constraint)
+    public levitate(levitate: Levitating, anchor?: Anchor, constraint?: Constraint): LevitateRef {
+        return new LevitateRef(this.rectMutation, levitate, anchor, constraint)
     }
 }

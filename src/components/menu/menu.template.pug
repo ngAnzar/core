@@ -1,0 +1,8 @@
+:stylus
+  .menu-item
+    cursor: pointer
+
+ng-template(#layer)
+  .nz-scroller.nz-list
+    .nz-list-item.menu-item(*ngFor="let menuItem of menuItems")
+      ng-template(bind-ngTemplateOutlet="menuItem")

@@ -142,10 +142,6 @@ export class ModalLayer extends LayerBehavior {
     }
 }
 
-export class MenuLayer extends LayerBehavior {
-
-}
-
 export class TooltipLayer extends LayerBehavior {
 
 }
@@ -173,4 +169,8 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
         return this.playAnimation(layer, ddAnimation.hide)
             .then(() => super.animateHide(layer))
     }
+}
+
+export class MenuLayer extends DropdownLayer {
+
 }

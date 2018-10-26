@@ -374,7 +374,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     ? {
                         align: "left",
                         valign: "top",
-                        connect: {
+                        anchor: {
                             ref: targetEl,
                             align: "left",
                             valign: "bottom",
@@ -384,7 +384,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     : {
                         align: "left",
                         valign: "top",
-                        connect: {
+                        anchor: {
                             ref: targetEl,
                             align: "left",
                             valign: "top",

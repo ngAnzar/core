@@ -1,9 +1,11 @@
-import { Directive, AfterContentInit, Inject, Attribute, ElementRef, Input } from "@angular/core"
+import { Directive, AfterContentInit, Inject, Attribute, ElementRef, Input, OnDestroy } from "@angular/core"
 
 
-export abstract class BoxDirective implements AfterContentInit {
+export abstract class BoxDirective implements AfterContentInit, OnDestroy {
     public abstract readonly gapMargin: string
     public readonly gap: number
+
+    protected mutationObserver: MutationObserver
 
     public constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
@@ -11,20 +13,34 @@ export abstract class BoxDirective implements AfterContentInit {
         this.gap = parseInt(gap || "", 10) || 0
     }
 
-    // TODO: DOM Mutation Events...
     public ngAfterContentInit() {
         if (this.gap) {
-            console.log("ngAfterContentChecked")
-            const childNodes = this.el.nativeElement.childNodes
-            const childLength = childNodes.length
+            this.updateGap()
+            this.mutationObserver = new MutationObserver(mutationsList => {
+                // TODO: optimalizálni, hogy csak a szükséges elemeket módosítsa
+                this.updateGap()
+            })
+            this.mutationObserver.observe(this.el.nativeElement, { childList: true })
+        }
+    }
 
-            for (let i = 0; i < childLength; i++) {
-                const child = childNodes[i]
-                if (child.nodeType === 1) {
-                    ((child as HTMLElement).style as any)[this.gapMargin] =
-                        i + 1 === childLength ? "0" : `${this.gap}px`
-                }
+    protected updateGap() {
+        const childNodes = this.el.nativeElement.childNodes
+        const childLength = childNodes.length
+
+        for (let i = 0; i < childLength; i++) {
+            const child = childNodes[i]
+            if (child.nodeType === 1) {
+                ((child as HTMLElement).style as any)[this.gapMargin] =
+                    i + 1 === childLength ? "0" : `${this.gap}px`
             }
+        }
+    }
+
+    public ngOnDestroy() {
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect()
+            delete this.mutationObserver
         }
     }
 }

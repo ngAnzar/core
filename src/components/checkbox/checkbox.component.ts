@@ -50,8 +50,21 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     // }
     // protected _value: T
 
-    @Input("true-value") public trueValue: T
-    @Input("false-value") public falseValue: T = null
+    @Input("true-value")
+    public set trueValue(val: T) {
+        this._trueValue = val
+        this.writeValue(this._rawValue)
+    }
+    public get trueValue(): T { return this._trueValue }
+    protected _trueValue: T
+
+    @Input("false-value")
+    public set falseValue(val: T) {
+        this._falseValue = val
+        this.writeValue(this._rawValue)
+    }
+    public get falseValue(): T { return this._falseValue }
+    protected _falseValue: T = false as any
 
     @Output()
     public readonly change: Observable<CheckboxChangeEvent<T>> = new EventEmitter()
@@ -85,6 +98,8 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public get tabIndex(): number { return this._tabIndex }
     protected _tabIndex: number
 
+    protected _rawValue: any
+
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
@@ -106,12 +121,8 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 
 
     public writeValue(obj: any): void {
-        console.log("writeValue", obj)
-        if (obj === true || obj === "true") {
-            this.checked = true
-        } else if (obj === this.trueValue) {
-            this.checked = true
-        }
+        this._rawValue = obj
+        this.checked = (this.trueValue == null ? Boolean(obj) : this.trueValue === obj)
     }
 
     public ngAfterViewInit() {

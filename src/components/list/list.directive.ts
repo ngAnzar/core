@@ -43,6 +43,8 @@ export class ListDirective implements AfterContentInit {
                 this.focusedIndex = fidx
             }
         })
+
+        console.log("nz list", this.items)
     }
 
     public moveFocus(step: number) {

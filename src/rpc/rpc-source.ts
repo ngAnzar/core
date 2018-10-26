@@ -75,8 +75,6 @@ export interface IRpcDataSource {
 
 
 export abstract class RpcDataSource<T extends Model = Model> extends DataSource<T> implements IRpcDataSource {
-    public readonly async = true
-
     public static withModel(modelCls: ModelClass): StaticProvider {
         const src = this as any
         return {
@@ -87,6 +85,8 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
             }
         }
     }
+
+    public readonly async = true
 
     public constructor(
         @Inject(Model) @Optional() public readonly model: ModelClass<T>,

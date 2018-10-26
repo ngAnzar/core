@@ -8,7 +8,7 @@ export interface LevitateOptions {
     valign?: Align
     margin?: Margin
 
-    connect?: Anchor
+    anchor?: Anchor
     constraint?: Constraint
 }
 

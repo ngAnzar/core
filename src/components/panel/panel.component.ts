@@ -83,6 +83,7 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
         if (this._appear !== value) {
             this._appear = value;
             (this.appearChange as EventEmitter<string>).emit(value)
+            this.cdr.markForCheck()
         }
     }
     public get appear(): PanelAppear {
@@ -112,6 +113,7 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
             this._opened = value;
             this._animationState = (value ? "opened" : "closed");
             (this.stateChanges as EventEmitter<PanelStateEvent>).emit({ source: this, state: value ? "opening" : "closing" })
+            this.cdr.markForCheck()
         }
     }
     public get opened(): boolean {
@@ -157,7 +159,7 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
         @Inject(FocusTrapFactory) protected _focusTrapFactory: FocusTrapFactory,
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
         @Inject(ElementRef) protected el: ElementRef<HTMLElement>,
-        @Inject(ChangeDetectorRef) protected _changeDetector: ChangeDetectorRef,
+        @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(NgZone) protected _ngZone: NgZone) {
 
         this.subscriptions.add(this.onOpenStart).subscribe(() => {

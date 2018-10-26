@@ -73,7 +73,7 @@ export class LayerService {
             }
         }
 
-        return this.levitateSvc.levitate(base, opt.connect, opt.constraint)
+        return this.levitateSvc.levitate(base, opt.anchor, opt.constraint)
     }
 
     // public createRef<T>(target: TemplateRef<T> | ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[]): LayerRef {

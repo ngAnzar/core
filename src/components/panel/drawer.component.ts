@@ -24,11 +24,7 @@ export class DrawerSide {
             this.panels.push(panel)
         }
 
-        if (this.visible === panel) {
-            if (!opened) {
-                this.visible = null
-            }
-        } else if (opened) {
+        if (opened && this.visible !== panel) {
             if (this.visible) {
                 this.visible.onClosed.pipe(take(1)).subscribe(() => {
                     this.visible = panel
