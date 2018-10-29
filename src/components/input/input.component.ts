@@ -51,7 +51,7 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
         } else {
             this._value = val
         }
-        this.writeValue(val)
+        // this.writeValue(val)
         this._handleInput(val)
     }
     protected _value: T

@@ -1,7 +1,8 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject } from "rxjs"
 import { map, takeUntil, take, startWith, debounceTime } from "rxjs/operators"
-import * as DeepDiff from "deep-diff"
+// import * as DeepDiff from "deep-diff"
+const DeepDiff = require("deep-diff")
 
 import { Subscriptions } from "../util"
 import { DataSource, Filter, Sorter, Diff, MappingChangingEvent, MappingChangedEvent } from "./data-source"
