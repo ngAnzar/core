@@ -6,6 +6,8 @@ import { LevitateRef } from "../levitate/levitate-ref"
 import { Levitating } from "../levitate/levitate-compute"
 import { LevitateService } from "../levitate/levitate.service"
 
+import { MaskService } from "../mask.module"
+
 import { LayerRef, TemplateLayerRef, ComponentLayerRef } from "./layer-ref"
 import { LayerBehavior } from "./layer-behavior"
 import { LayerContainer } from "./layer-container"
@@ -19,7 +21,8 @@ export class LayerService {
         @Inject(Injector) protected readonly injector: Injector,
         @Inject(LayerRef) @Optional() protected readonly layer: LayerRef,
         @Inject(AnimationBuilder) protected readonly animation: AnimationBuilder,
-        @Inject(LevitateService) protected readonly levitateSvc: LevitateService) {
+        @Inject(LevitateService) protected readonly levitateSvc: LevitateService,
+        @Inject(MaskService) protected readonly maskSvc: LevitateService) {
     }
 
     public createFromTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, behavior: LayerBehavior, opener?: LayerRef, context?: T): TemplateLayerRef<T> {
@@ -44,7 +47,7 @@ export class LayerService {
                     LayerContainer
                 ],
                 useFactory: (container?: LayerContainer) => {
-                    return new LayerService(this, container || this.container, this.injector, ref as any, this.animation, this.levitateSvc)
+                    return new LayerService(this, container || this.container, this.injector, ref as any, this.animation, this.levitateSvc, this.maskSvc)
                 }
             },
             ...provides

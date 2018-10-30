@@ -139,4 +139,13 @@ export class Rect {
     public copy(): Rect {
         return new Rect(this.x, this.y, this.width, this.height)
     }
+
+    public asRelative(other: Rect): Rect {
+        return new Rect(
+            this.x - other.x,
+            this.y - other.y,
+            other.width,
+            other.height
+        )
+    }
 }

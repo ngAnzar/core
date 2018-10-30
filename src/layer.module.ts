@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common"
 
 
 import { ServicesModule } from "./services.module"
+import { MaskModule } from "./mask.module"
 import { LayerService } from "./layer/layer.service"
 import { LayerContainer } from "./layer/layer-container"
 import { LayerComponent } from "./layer/layer-component"
@@ -16,7 +17,8 @@ export { LayerComponent }
 
 @NgModule({
     imports: [
-        CommonModule
+        CommonModule,
+        MaskModule
     ],
     declarations: [LayerComponent],
     exports: [LayerComponent],
