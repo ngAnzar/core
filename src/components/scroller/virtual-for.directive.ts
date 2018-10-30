@@ -97,39 +97,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public ngOnInit() {
         this.s.add(this.nzVirtualForOf.invalidated).pipe(startWith(0)).subscribe(this._update)
 
-        // let prevVisibleRange: Range = new Range(-1, -1)
-        // let lastSuccessVisibleRange: Range = prevVisibleRange
-        // let lastSuccessScrollPosition: number
-
         this.s.add(this._scroller.primaryScrolling).subscribe(event => {
             let vr = this._getVisibleRange()
             this._setVisibleRange(vr)
-
-            // console.log("scroll...")
-            // let vr = this._getVisibleRange()
-
-            // if (vr.begin === -1) {
-            //     this._scroller.primaryScroll = lastSuccessScrollPosition
-            //     this.visiblingRange = vr = lastSuccessVisibleRange
-            // } else {
-            //     lastSuccessScrollPosition = this._scroller.primaryScroll
-            //     lastSuccessVisibleRange = vr
-            //     this.visiblingRange = vr
-            // }
-
-            // if (prevVisibleRange.begin <= vr.begin) {
-            //     this.scrollingDirection = ScrollingDirection.FORWARD
-            // } else {
-            //     this.scrollingDirection = ScrollingDirection.BACKWARD
-            // }
-
-            // let dirty = !prevVisibleRange.isEq(this.visiblingRange)
-
-            // if (dirty) {
-            //     prevVisibleRange = this.visiblingRange
-            //     this._updateRenderingRange(vr)
-            //     this._cdr.markForCheck()
-            // }
         })
     }
 
@@ -139,6 +109,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngDoCheck() {
+
         for (let i = 0, l = this._vcr.length; i < l; i++) {
             let view = this._vcr.get(i) as EmbeddedView<T>
             if (view && view.context && view.context.index !== -1) {
@@ -151,7 +122,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
     protected _updateContent(range: Range, items: ItemsWithChanges<T>) {
         let changes = items.compare(this.rendered)
-        // console.log(changes)
 
         for (let change of changes) {
             if (change.kind === ListDiffKind.CREATE) {

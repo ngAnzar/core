@@ -6,6 +6,7 @@ import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 
 import { DataStorage, Model } from "../../data"
 import { ListDirective } from "../list/list.directive"
+import { Subscriptions } from "../../util/subscriptions"
 
 
 export const DROPDOWN_ITEM_TPL = new InjectionToken<TemplateRef<any>>("dropdown.itemTpl")
@@ -48,13 +49,19 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
         return null
     }
 
+    protected readonly s = new Subscriptions()
 
     public constructor(
         @Inject(DataStorage) public readonly storage: DataStorage<T>,
         @Inject(DROPDOWN_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected sanitizer: DomSanitizer) {
-        storage.items.subscribe(event => {
+
+        // this.s.add(storage.invalidated).subscribe(event => {
+        //     this.cdr.markForCheck()
+        // })
+
+        this.s.add(storage.items).subscribe(event => {
             this.cdr.markForCheck()
         })
     }
@@ -68,6 +75,6 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
     }
 
     public ngOnDestroy() {
-        console.log("dd.destroy")
+        this.s.unsubscribe()
     }
 }

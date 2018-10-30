@@ -9,6 +9,7 @@ import { DataSource, Filter, Sorter, Diff, MappingChangingEvent, MappingChangedE
 import { Model, ID } from "./model"
 import { Collection, ItemsWithChanges, Items } from "./collection"
 import { Range, RangeList } from "./range"
+import { StaticSource } from "./static-source"
 
 
 export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
@@ -137,6 +138,10 @@ export class DictField<E> {
     }
     public set(value: E) {
         this._tryChanging(this._value, value)
+    }
+    public update(value: E) {
+        let val = deepClone(this._value) || {}
+        this.set({ ...val, ...value as any })
     }
     private _value: E
 

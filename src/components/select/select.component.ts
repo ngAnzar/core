@@ -457,20 +457,24 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _querySuggestions = (text: string): void => {
+        // if (!text || text.length === 0) {
+        //     console.log("reset dd")
+        // }
+
         this.inputState = "querying"
         this.opened = true
-        this.storage.filter.set({
-            [this.displayField]: text
+        this.storage.filter.update({
+            [this.displayField]: this.dataSource.async ? text : { contains: text }
         } as any)
     }
 
     protected _watchInputStream(on: boolean) {
         if (on) {
             if (!this._iss && this.dataSource) {
-                let ml = Number(this.minLength)
+                let ml = this.dataSource.async ? Number(this.minLength) : 0
                 this._iss = this.s.add(this.inputStream)
                     .pipe(
-                        debounceTime(this.dataSource.async ? 1000 : 100),
+                        debounceTime(this.dataSource.async ? 400 : 50),
                         filter(v => ml === 0 || (v && v.length >= ml))
                     )
                     .subscribe(this._querySuggestions)

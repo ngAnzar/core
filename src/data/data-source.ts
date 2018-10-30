@@ -15,13 +15,17 @@ export type Filter_Gte<T> = { gte: T }
 export type Filter_Lt<T> = { lt: T }
 export type Filter_Lte<T> = { lte: T }
 export type Filter_In<T> = { in: T[] }
+export type Filter_Contains<T> = { contains: T }
+export type Filter_StartsWith<T> = { startsWith: T }
+export type Filter_EndsWith<T> = { endsWith: T }
 export type Filter_Or<T> = { or: Filter_Exp<T>[] }
 export type Filter_And<T> = { and: Filter_Exp<T>[] }
 export type Filter_Exp<T> = Filter_MinMax | Filter_In<T> |
     Filter_Eq<T> | Filter_Neq<T> |
     Filter_Gt<T> | Filter_Gte<T> |
     Filter_Lt<T> | Filter_Lte<T> |
-    Filter_Or<T> | Filter_And<T>
+    Filter_Or<T> | Filter_And<T> |
+    Filter_Contains<T> | Filter_StartsWith<T> | Filter_EndsWith<T>
 export type FilterValue<T> = T | Filter_Exp<T>
 
 export type Filter<T> = {

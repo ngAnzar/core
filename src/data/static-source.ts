@@ -4,11 +4,16 @@ import { Observable, of } from "rxjs"
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
 import { Model, ID, ModelClass, RawData } from "./model"
 import { Range } from "./range"
+import { Items } from "./collection"
 
 
 export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly async = false
     public readonly data: Array<Readonly<T>>
+
+    public get total(): number {
+        return this.data.length
+    }
 
     public constructor(
         public readonly model: ModelClass<T>,
@@ -42,6 +47,8 @@ export class StaticSource<T extends Model> extends DataSource<T> {
             result = result.filter(v => this._testFilters(filter, v))
         }
 
+        let total = result.length
+
         if (sorter) {
             result = result.sort((a: any, b: any) => {
                 for (let field in sorter) {
@@ -66,8 +73,8 @@ export class StaticSource<T extends Model> extends DataSource<T> {
             result = result.slice(range.begin, range.end)
         }
 
-        // console.log("result...", result, { filter, sorter, range })
-        return of(result)
+        // console.log("result...", result, { filter, sorter, range, total })
+        return of(new Items(result, range, total))
     }
 
     protected _get(id: ID): Observable<T> {
@@ -116,6 +123,12 @@ export class StaticSource<T extends Model> extends DataSource<T> {
             return filter.or.filter((f: Filter_Exp<any>) => this._testFilter(f, value)).length > 0
         } else if ("and" in filter && filter.and.length > 0) {
             return filter.and.filter((f: Filter_Exp<any>) => this._testFilter(f, value)).length === filter.and.length
+        } else if ("contains" in filter) {
+            return typeof value === "string" && value.toLocaleLowerCase().indexOf(filter.contains.toLocaleLowerCase()) > -1
+        } else if ("startsWith" in filter) {
+            return typeof value === "string" && value.startsWith(filter.startsWith)
+        } else if ("endsWith" in filter) {
+            return typeof value === "string" && value.endsWith(filter.endsWith)
         } else {
             throw new Error("Unexpected filter: " + filter)
         }
