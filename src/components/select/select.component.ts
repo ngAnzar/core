@@ -396,6 +396,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     position: position,
                     backdrop: {
                         type: "empty",
+                        crop: targetEl,
                         hideOnClick: true
                     },
                     minWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),

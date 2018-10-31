@@ -1,9 +1,8 @@
 import { Injectable, Inject } from "@angular/core"
 
 import { Rect, RectMutationService } from "../rect-mutation.service"
-import { Subscriptions } from "../util/subscriptions"
 import { LayerContainer } from "../layer/layer-container"
-import { MaskRef } from "./mask-ref"
+import { MaskRef, MaskStyle } from "./mask-ref"
 
 
 @Injectable()
@@ -13,8 +12,8 @@ export class MaskService {
         @Inject(LayerContainer) protected readonly layerContainer: LayerContainer) {
     }
 
-    public show(target: HTMLElement | Window, crop: HTMLElement | Rect): MaskRef {
+    public show(target: HTMLElement | Window, style: MaskStyle, crop?: HTMLElement | Rect): MaskRef {
         const container = this.layerContainer.getCommonContainer()
-        return new MaskRef(this.rectMutation, container, target, crop)
+        return new MaskRef(this.rectMutation, container, target, style, crop)
     }
 }

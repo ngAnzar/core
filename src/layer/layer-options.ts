@@ -1,6 +1,5 @@
-import { Margin } from "../rect-mutation.service"
+import { Margin, Rect } from "../rect-mutation.service"
 import { Anchor, Constraint, Align } from "../levitate/levitate-compute"
-import { BackdropType } from "./layer-container"
 
 
 export interface LevitateOptions {
@@ -13,8 +12,12 @@ export interface LevitateOptions {
 }
 
 
+export type BackdropType = "filled" | "empty"
+
+
 export interface BackdropOptions {
     type: BackdropType
+    crop?: HTMLElement | Rect
     hideOnClick?: boolean
 }
 

@@ -5,7 +5,7 @@ import { filter, mapTo } from "rxjs/operators"
 
 import { Subscriptions } from "../util/subscriptions"
 import { AnzarEvent } from "../util/event"
-import { LayerOutlet } from "./layer-container"
+import { LayerOutletRef } from "./layer-container"
 import { LayerService } from "./layer.service"
 import { LayerBehavior } from "./layer-behavior"
 
@@ -34,7 +34,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
     public abstract readonly service: LayerService
     public abstract readonly behavior: LayerBehavior
     public abstract readonly opener: LayerRef
-    public abstract outlet: LayerOutlet
+    public abstract outlet: LayerOutletRef
     protected abstract vcr: ViewContainerRef
 
     public get onClose(): Observable<void> {
@@ -84,7 +84,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
             this.behavior.levitate.begin()
             this.emit(new LayerEvent("showing") as E)
             return Promise.all([
-                this.behavior.showBackdrop(this),
+                // this.behavior.showBackdrop(this),
                 this.behavior.animateShow(this)
             ])
         }
@@ -99,7 +99,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
             this.behavior.levitate.suspend()
             this.emit(new LayerEvent("hiding") as E)
             return Promise.all([
-                this.behavior.hideBackdrop(this),
+                // this.behavior.hideBackdrop(this),
                 this.behavior.animateHide(this).then(() => this.dispose())
             ])
         } else {
@@ -140,7 +140,7 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
 
     public constructor(public readonly service: LayerService,
         public readonly behavior: LayerBehavior,
-        public outlet: LayerOutlet,
+        public outlet: LayerOutletRef,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
@@ -163,7 +163,7 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
 
     public constructor(public readonly service: LayerService,
         public readonly behavior: LayerBehavior,
-        public outlet: LayerOutlet,
+        public outlet: LayerOutletRef,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         tpl: TemplateRef<C>,

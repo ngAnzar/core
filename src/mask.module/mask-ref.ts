@@ -3,11 +3,21 @@ import { Subscriptions } from "../util"
 import { LayerContainerRef } from "../layer/layer-container"
 
 
-export interface MaskStyle {
-    backgroundColor?: string
-    backgroundImage?: string
-    pointerEvents?: boolean
+export interface _BasicStyle {
+    pointerEvents?: "auto" | "none" | "stroke" | "fill"
 }
+
+export interface _BackgroundColor extends _BasicStyle {
+    backgroundColor?: string
+}
+
+export interface _BackgroundImage extends _BasicStyle {
+    backgroundImage?: string
+    backgroundOpacity?: number
+}
+
+
+export type MaskStyle = _BackgroundColor | _BackgroundImage
 
 
 export class MaskRef {
@@ -36,6 +46,7 @@ export class MaskRef {
         rectMutation: RectMutationService,
         public readonly container: LayerContainerRef,
         target: HTMLElement | Window,
+        public readonly style: Readonly<MaskStyle>,
         crop?: HTMLElement | Rect) {
 
         if (target === window) {
@@ -74,40 +85,51 @@ export class MaskRef {
         if (this._crop) {
             this.clearStyle(container)
 
+            container.style.pointerEvents = "none"
+
             if (!this.cropMaskEls) {
                 this.cropMaskEls = {}
                 container.appendChild(this.cropMaskEls.top = this.createCropMaskEl())
                 container.appendChild(this.cropMaskEls.right = this.createCropMaskEl())
                 container.appendChild(this.cropMaskEls.bottom = this.createCropMaskEl())
                 container.appendChild(this.cropMaskEls.left = this.createCropMaskEl())
+
+                this.applyStyle(this.cropMaskEls.top)
+                this.applyStyle(this.cropMaskEls.right)
+                this.applyStyle(this.cropMaskEls.bottom)
+                this.applyStyle(this.cropMaskEls.left)
             }
 
             this.setStyle(this.cropMaskEls.top, {
                 top: 0,
                 right: 0,
                 left: 0,
-                height: `${this._crop.top}px`
+                height: `${this._crop.top}px`,
+                pointerEvents: "auto"
             })
 
             this.setStyle(this.cropMaskEls.right, {
                 top: `${this._crop.top}px`,
                 right: 0,
                 left: `${this._crop.right}px`,
-                height: `${this._crop.height}px`
+                height: `${this._crop.height}px`,
+                pointerEvents: "auto"
             })
 
             this.setStyle(this.cropMaskEls.bottom, {
                 top: `${this._crop.bottom}px`,
                 right: 0,
                 left: 0,
-                height: `${this._rect.bottom - this._crop.bottom}px`
+                height: `${this._rect.bottom - this._crop.bottom}px`,
+                pointerEvents: "auto"
             })
 
             this.setStyle(this.cropMaskEls.left, {
                 top: `${this._crop.top}px`,
-                width: `${this._rect.left - this._crop.left}px`,
+                width: `${this._crop.left - this._rect.left}px`,
                 left: 0,
-                height: `${this._crop.height}px`
+                height: `${this._crop.height}px`,
+                pointerEvents: "auto"
             })
         } else {
             this.destroyCropMasks()
@@ -138,11 +160,23 @@ export class MaskRef {
     }
 
     protected applyStyle(el: HTMLElement, rect?: Rect) {
+        if (this.style.pointerEvents) {
+            el.style.pointerEvents = this.style.pointerEvents
+        }
 
+        if ("backgroundColor" in this.style) {
+            el.style.backgroundColor = this.style.backgroundColor
+        }
     }
 
     protected clearStyle(el: HTMLElement) {
+        if (this.style.pointerEvents) {
+            el.style.pointerEvents = ""
+        }
 
+        if ("backgroundColor" in this.style) {
+            el.style.backgroundColor = ""
+        }
     }
 
     protected createCropMaskEl(): HTMLElement {
