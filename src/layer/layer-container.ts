@@ -2,6 +2,8 @@ import { Injectable, Inject, Renderer2, OnDestroy, Injector, ApplicationRef, Com
 import { AnimationBuilder } from "@angular/animations"
 import { DOCUMENT } from "@angular/platform-browser"
 import { DomPortalOutlet } from "@angular/cdk/portal"
+import { Subject } from "rxjs"
+
 
 import "./layer.styl"
 import { fadeAnimation } from "./layer-animations"
@@ -21,8 +23,8 @@ export type BackdropType = "filled" | "empty"
 @Injectable()
 export class LayerContainer implements OnDestroy {
     private _zIndex = 1000001
-    private _backdrops: { [key in BackdropType]?: BackdropRef } = {}
-    private _outlets: LayerOutlet[] = []
+    // private _backdrops: { [key in BackdropType]?: BackdropRef } = {}
+    private _containers: LayerContainerRef[] = []
 
     public constructor(
         @Inject(DOCUMENT) protected doc: Document,
@@ -32,68 +34,95 @@ export class LayerContainer implements OnDestroy {
     }
 
     public getNewOutlet(): LayerOutlet {
-        let el = this.doc.createElement("div")
+        const el = this.doc.createElement("div")
         el.classList.add("nz-layer-container")
 
         this.doc.body.appendChild(el)
-        let portal = new DomPortalOutlet(el, this.cmpResolver, this.appRef, this.injector)
-        let res = new LayerOutlet(el, portal, () => {
-            let i = this._outlets.indexOf(res)
+        const portal = new DomPortalOutlet(el, this.cmpResolver, this.appRef, this.injector)
+        const res = new LayerOutlet(el, portal, () => {
+            const i = this._containers.indexOf(res)
             if (i !== -1) {
-                this._outlets.splice(i, 1)
+                this._containers.splice(i, 1)
             }
         })
         res.zIndex = this._zIndex++
-        this._outlets.push(res)
+        this._containers.push(res)
 
         return res
     }
 
-    public getBackdrop(type: BackdropType): BackdropRef {
-        if (!this._backdrops[type]) {
-            let el = this.doc.createElement("div")
-            el.classList.add(`nz-layer-backdrop`)
-            el.classList.add(`nz-layer-backdrop-${type}`)
-            this._backdrops[type] = new BackdropRef(el, type, () => {
-                delete this._backdrops[type]
-            })
-        }
-        return this._backdrops[type]
+    public getCommonContainer(): LayerContainerRef {
+        const el = this.doc.createElement("div")
+        const container = new LayerContainerRef(el, () => {
+            const i = this._containers.indexOf(container)
+            if (i !== -1) {
+                this._containers.splice(i, 1)
+            }
+        })
+        container.zIndex = this._zIndex++
+        this.doc.body.appendChild(el)
+        this._containers.push(container)
+        return container
     }
 
-    public ngOnDestroy() {
-        for (let k in this._backdrops) {
-            this._backdrops[k as BackdropType].dispose()
-        }
+    // public getBackdrop(type: BackdropType): BackdropRef {
+    //     if (!this._backdrops[type]) {
+    //         let el = this.doc.createElement("div")
+    //         el.classList.add(`nz-layer-backdrop`)
+    //         el.classList.add(`nz-layer-backdrop-${type}`)
+    //         this._backdrops[type] = new BackdropRef(el, type, () => {
+    //             delete this._backdrops[type]
+    //         })
+    //     }
+    //     return this._backdrops[type]
+    // }
 
-        for (let lo of this._outlets) {
-            lo.dispose()
+    public ngOnDestroy() {
+        for (const containers of this._containers) {
+            containers.dispose()
         }
     }
 }
 
 
-export class LayerOutlet extends ElementRef<HTMLElement> {
+export class LayerContainerRef extends ElementRef<HTMLElement> {
     public get zIndex(): number { return parseInt(this.nativeElement.style.zIndex, 10) }
     public set zIndex(val: number) { this.nativeElement.style.zIndex = `${val}` }
 
-    public constructor(
-        el: HTMLElement,
-        public readonly portal: DomPortalOutlet,
-        private onDestroy: () => void) {
+    public readonly onDestroy: Subject<void> = new Subject()
+
+    public constructor(el: HTMLElement, private _onDestroy: () => void) {
         super(el)
     }
 
     public dispose() {
-        if (this.onDestroy) {
-            this.onDestroy()
-            delete this.onDestroy
-
-            this.portal.dispose()
-            if (this.nativeElement.parentNode) {
-                this.nativeElement.parentNode.removeChild(this.nativeElement)
-            }
+        if (this._onDestroy) {
+            this._onDestroy()
+            delete this._onDestroy
         }
+
+        if (this.nativeElement.parentNode) {
+            this.nativeElement.parentNode.removeChild(this.nativeElement)
+        }
+        this.onDestroy.next()
+    }
+}
+
+
+export class LayerOutlet extends LayerContainerRef {
+    public constructor(
+        el: HTMLElement,
+        public readonly portal: DomPortalOutlet,
+        onDestroy: () => void) {
+        super(el, onDestroy)
+    }
+
+    public dispose() {
+        if (this.portal) {
+            this.portal.dispose()
+            delete (this as any).portal
+        }
+        super.dispose()
     }
 }
 
