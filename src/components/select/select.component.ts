@@ -121,6 +121,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public get sorter(): any { return this.storage.sorter.get() }
 
     public readonly displayField: string
+    public readonly queryField: string
 
     @Input()
     public set opened(val: boolean) {
@@ -224,7 +225,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
         @Attribute("display-field") displayField: string,
-        @Attribute("value-field") protected readonly valueField: string) {
+        @Attribute("value-field") protected readonly valueField: string,
+        @Attribute("query-field") queryField: string) {
         super(ngControl, ngModel, _renderer, el)
 
         if (!selection) {
@@ -250,6 +252,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         })
 
         this.displayField = displayField || "label"
+        this.queryField = queryField || this.displayField
 
         this._focusMonitor.monitor(el.nativeElement, true).subscribe(origin => {
             if (this.focusOrigin !== origin) {
@@ -437,7 +440,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         if (f) {
-            if (this.focusOrigin === "mouse") {
+            if (this.focusOrigin === "mouse" && !this.dataSource.async) {
                 this.opened = true
             }
         } else {
@@ -453,7 +456,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         (this.inputStream as Subject<string>).next(this.input.nativeElement.value)
-        this.opened = true
+        // this.opened = true
         this.inputState = "typing"
     }
 
@@ -465,7 +468,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.inputState = "querying"
         this.opened = true
         this.storage.filter.update({
-            [this.displayField]: this.dataSource.async ? text : { contains: text }
+            [this.queryField]: this.dataSource.async ? text : { contains: text }
         } as any)
     }
 
@@ -511,10 +514,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    @HostListener("click")
-    protected _onClick() {
-        this.opened = true
-    }
+    // @HostListener("click")
+    // protected _onClick() {
+    //     this.opened = true
+    // }
 
     protected _resetTextInput() {
         if (!this.input) {
