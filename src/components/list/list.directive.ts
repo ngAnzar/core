@@ -44,7 +44,7 @@ export class ListDirective implements AfterContentInit {
             }
         })
 
-        console.log("nz list", this.items)
+        // console.log("nz list", this.items)
     }
 
     public moveFocus(step: number) {
