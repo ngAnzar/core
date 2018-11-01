@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common"
 import { SelectionModule } from "./selection.module"
 import { ListDirective } from "./components/list/list.directive"
 import { ListItemComponent } from "./components/list/list-item.component"
+import { ListActionComponent, SelectableActionDirective } from "./components/list/list-action.component"
 
 
 @NgModule({
@@ -13,11 +14,15 @@ import { ListItemComponent } from "./components/list/list-item.component"
     ],
     declarations: [
         ListDirective,
-        ListItemComponent
+        ListItemComponent,
+        ListActionComponent,
+        SelectableActionDirective
     ],
     exports: [
         ListDirective,
         ListItemComponent,
+        ListActionComponent,
+        SelectableActionDirective,
         SelectionModule
     ]
 })

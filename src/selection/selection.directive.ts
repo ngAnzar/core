@@ -43,9 +43,8 @@ export interface ISelectionModel<T extends Model = Model> {
     isSelected(what: ID): boolean
     setSelected(what: ID, selected: boolean): void
     _handleOnDestroy(cmp: Selectable<T>): void
-    _handleSelectedChange(cmp: Selectable<T>): void
+    // _handleSelectedChange(cmp: Selectable<T>): void
     _handleModelChange(cmp: Selectable<T>, oldModel: T, newModel: T): void
-    _canChangeSelected(cmp: Selectable<T>, newValue: boolean): boolean
 }
 
 
@@ -105,9 +104,13 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         for (let k in update) {
             if (update[k]) {
                 let cmp = this._selectables[k]
-                if (cmp) {
-                    cmp.selected = true
+                if (cmp && cmp.selected !== true) {
+                    if (!cmp._canChangeSelected(true)) {
+                        continue
+                    }
+                    cmp._changeSelected(true)
                 }
+
                 if (!this._selected.hasOwnProperty(k)) {
                     const model = (this._models ? this._models[k] : null)
                         || (cmp ? cmp.model : null)
@@ -117,15 +120,20 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
                 }
             } else {
                 let cmp = this._selectables[k]
-                if (cmp) {
-                    cmp.selected = false
+                if (cmp && cmp.selected !== false) {
+                    if (!cmp._canChangeSelected(false)) {
+                        continue
+                    }
+                    cmp._changeSelected(false)
                 }
+
                 if (this._selected.hasOwnProperty(k)) {
                     removed.push(this._selected[k])
                     delete this._selected[k]
                 }
             }
         }
+
 
         removeEntries(this.items, removed)
         for (let a of selected) {
@@ -161,9 +169,9 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         delete this._selectables[cmp.selectionId]
     }
 
-    public _handleSelectedChange(cmp: Selectable<T>): void {
-        this.update({ [cmp.selectionId]: cmp.selected })
-    }
+    // public _handleSelectedChange(cmp: Selectable<T>): void {
+    //     this.update({ [cmp.selectionId]: cmp.selected })
+    // }
 
     public _handleModelChange(cmp: Selectable<T>, oldModel: T, newModel: T): void {
         for (let k in this._selectables) {
@@ -175,10 +183,6 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         }
         this._selectables[cmp.selectionId] = cmp
         this.update({ [cmp.selectionId]: this.isSelected(cmp.selectionId) })
-    }
-
-    public _canChangeSelected(cmp: Selectable<T>, newValue: boolean): boolean {
-        return true
     }
 
     // protected _selectableComponent(id: string): T {
@@ -275,7 +279,5 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
     public isSelected(what: ID): boolean { return this[SELECTION].isSelected(what) }
     public setSelected(what: ID, selected: boolean): void { this[SELECTION].setSelected(what, selected) }
     public _handleOnDestroy(cmp: Selectable<T>): void { this[SELECTION]._handleOnDestroy(cmp) }
-    public _handleSelectedChange(cmp: Selectable<T>): void { this[SELECTION]._handleSelectedChange(cmp) }
     public _handleModelChange(cmp: Selectable<T>, oldModel: T, newModel: T): void { this[SELECTION]._handleModelChange(cmp, oldModel, newModel) }
-    public _canChangeSelected(cmp: Selectable<T>, newValue: boolean): boolean { return this[SELECTION]._canChangeSelected(cmp, newValue) }
 }

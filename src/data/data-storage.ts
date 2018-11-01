@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject } from "rxjs"
-import { map, takeUntil, take, startWith, debounceTime } from "rxjs/operators"
+import { map, takeUntil, take, startWith, debounceTime, tap, shareReplay } from "rxjs/operators"
 // import * as DeepDiff from "deep-diff"
 const DeepDiff = require("deep-diff")
 
@@ -44,6 +44,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     protected cancel = new Subject()
     protected readonly _itemsStream: Observable<ItemsWithChanges<T>> = new EventEmitter()
     protected total: number
+    protected pendingRanges: Array<[Range, Observable<any>]> = []
 
     public constructor(protected readonly source: DataSource<T>) {
         super()
@@ -54,8 +55,6 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     }
 
     public getRange(r: Range): Observable<ItemsWithChanges<T>> {
-        this.cancel.next()
-
         if (this.total) {
             r = new Range(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
@@ -68,22 +67,29 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
                 rrange = new Range(rrange.begin, rrange.begin + this.itemsPerRequest)
             }
 
-            return this.s.add(this.source.search(this.filter.get(), this.sorter.get(), rrange))
-                .pipe(takeUntil(this.cancel), take(1))
-                .pipe(map(items => {
-                    (this as any).range = items.range || r
-                    this._cacheItems(items, this.range, oldValues)
-                    if (items.total != null) {
-                        (this as any).lastIndex = items.total
-                        this.total = items.total
-                    }
-                    return this._collectRange(this.range, oldValues)
-                }))
+            let pending = this._getPending(rrange)
+            if (pending) {
+                return pending
+            }
+
+            return this._setPending(
+                rrange,
+                this.s.add(this.source.search(this.filter.get(), this.sorter.get(), rrange))
+                    // .pipe(take(1))
+                    .pipe(map(items => {
+                        (this as any).range = items.range || r
+                        this._cacheItems(items, this.range, oldValues)
+                        if (items.total != null) {
+                            (this as any).lastIndex = items.total
+                            this.total = items.total
+                        }
+                        return this._collectRange(this.range, oldValues)
+                    }))
+            )
         } else {
             (this as any).range = r
             let items = this._collectRange(r)
             return this.s.add(of(items))
-                .pipe(takeUntil(this.cancel), take(1))
         }
     }
 
@@ -94,6 +100,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     public reset() {
         this.cache = {}
         this.cachedRanges = new RangeList();
+        this.pendingRanges = []
 
         this.total = 0;
         (this as any).lastIndex = 0;
@@ -121,6 +128,26 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
             }
         }
         return items
+    }
+
+    protected _getPending(r: Range): Observable<ItemsWithChanges<T>> {
+        for (const item of this.pendingRanges) {
+            if (item[0].contains(r.begin) && item[0].contains(r.end)) {
+                return item[1]
+            }
+        }
+    }
+
+    protected _setPending(r: Range, s: Observable<ItemsWithChanges<T>>): Observable<ItemsWithChanges<T>> {
+        s = s.pipe(tap(() => {
+            let idx = this.pendingRanges.findIndex((v) => v[0] === r)
+            if (idx !== -1) {
+                this.pendingRanges.splice(idx, 1)
+            }
+        }), shareReplay())
+
+        this.pendingRanges.push([r, s])
+        return s
     }
 
     public dispose() {

@@ -46,11 +46,18 @@
     border-right: 6px solid transparent
     border-top: 6px solid $theme.foreground.lighter
     flex: none
-    margin-right: 8px
 
   .chip-item
     margin-right: 8px
     margin-bottom: 8px
+
+  .trigger
+    width: 20px
+    height: 20px
+    cursor: default
+    text-align: center
+    line-height: 22px
+
 
 
 input(#hidden type="hidden")
@@ -59,18 +66,18 @@ div.select-input
   //- ng-template(*ngIf="!editable || selection.type !== 'single'")
   ng-template(bind-ngIf="!editable || selection.type !== 'single'")
     ng-template(ngFor bind-ngForOf="selection.items" let-item let-first="first" let-last="last")
-      ng-template(
-        bind-ngTemplateOutlet="selectedTpl"
-        bind-ngTemplateOutletContext="{$implicit:item,first:first,last:last}")
+      ng-template(bind-ngIf="item.isListAction" bind-ngIfElse="normalModel")
+        ng-template(bind-ngTemplateOutlet="item.action.tpl")
+      ng-template(#normalModel)
+        ng-template(bind-ngTemplateOutlet="selectedTpl" bind-ngTemplateOutletContext="{$implicit:item,first:first,last:last}")
   input.text-input(*ngIf="editable"
     #input
     bind-attr.tabindex="tabIndex"
     on-input="_onInput($event)"
-    on-keypress="_onKeypress($event)"
-    on-keyup="_onKeyup($event)"
     style="flex:1")
 
-i.arrow-down(*ngIf="!editable")
+div.trigger(on-click="_onTriggerClick($event)")
+  i.arrow-down
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}

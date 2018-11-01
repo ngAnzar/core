@@ -1,4 +1,4 @@
-import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, OnInit, ChangeDetectorRef } from "@angular/core"
+import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, OnInit, ChangeDetectorRef, HostListener, HostBinding } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
@@ -19,6 +19,9 @@ export interface Selectable<T extends Model = Model> {
     // egyedi azonosító, lehetőleg mindig maradjon meg az eredeti egy adott elemhez
     model: T
     selectionId: ID
+
+    _changeSelected(newValue: boolean): void
+    _canChangeSelected(newValue: boolean): boolean
     // selectionData: any
 }
 
@@ -26,11 +29,7 @@ export interface Selectable<T extends Model = Model> {
 let UID_COUNTER = 0
 
 @Directive({
-    selector: "[selectable]",
-    host: {
-        "[attr.selected]": "selected ? '' : null",
-        "(click)": "_handleClick($event)"
-    }
+    selector: "[selectable]"
 })
 export class SelectableDirective<T extends Model = Model> implements Selectable<T>, OnDestroy, OnInit {
     @Input()
@@ -39,6 +38,7 @@ export class SelectableDirective<T extends Model = Model> implements Selectable<
             let old = this._model
             this._model = val
             this._selectionId = val ? val.id : null
+            this._selected = this.selection.isSelected(this.selectionId)
             this.selection._handleModelChange(this, old, val)
         }
     }
@@ -56,11 +56,8 @@ export class SelectableDirective<T extends Model = Model> implements Selectable<
     @Input()
     public set selected(value: boolean) {
         value = coerceBooleanProperty(value)
-        if (this._selected !== value && this.selection._canChangeSelected(this, value)) {
-            this._selected = value
-            this.selection._handleSelectedChange(this);
-            (this.selectedChange as EventEmitter<boolean>).emit(value)
-            this.cdr.markForCheck()
+        if (this._selected !== value) {
+            this.selection.setSelected(this.selectionId, value)
         }
     }
     public get selected(): boolean {
@@ -71,6 +68,9 @@ export class SelectableDirective<T extends Model = Model> implements Selectable<
     @Output("selected")
     public readonly selectedChange: Observable<boolean> = new EventEmitter()
 
+    @HostBinding("attr.selected")
+    protected get selectedAttr(): string { return this.selected ? "" : null }
+
     public constructor(
         @Inject(SelectionModel) public readonly selection: SelectionModel<T>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {
@@ -78,7 +78,10 @@ export class SelectableDirective<T extends Model = Model> implements Selectable<
 
     public ngOnInit() {
         if (this._selected == null) {
-            this.selected = this.selection.isSelected(this.selectionId)
+            this._selected = this.selection.isSelected(this.selectionId)
+            if (this._selected) {
+                this.cdr.markForCheck()
+            }
         }
     }
 
@@ -86,7 +89,18 @@ export class SelectableDirective<T extends Model = Model> implements Selectable<
         this.selection._handleOnDestroy(this)
     }
 
+    @HostListener("click")
     public _handleClick(event: MouseEvent) {
         this.selected = true
+    }
+
+    public _changeSelected(newValue: boolean) {
+        this._selected = newValue;
+        (this.selectedChange as EventEmitter<boolean>).emit(newValue)
+        this.cdr.markForCheck()
+    }
+
+    public _canChangeSelected(newValue: boolean): boolean {
+        return true
     }
 }

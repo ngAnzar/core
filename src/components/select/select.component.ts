@@ -17,7 +17,7 @@ import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, Com
 import { FormFieldComponent } from "../form-field/form-field.component"
 import { DropdownComponent, DROPDOWN_ITEM_TPL, DROPDOWN_ACTIONS } from "./dropdown.component"
 import { Subscriptions } from "../../util/subscriptions"
-import { ListActionComponent } from "../list/list-action.component"
+import { ListActionComponent, ListActionModel } from "../list/list-action.component"
 
 // import { ChipComponent } from "./chip.component"
 
@@ -492,17 +492,19 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    @HostListener("keypress", ["$event"])
-    protected _onKeypress(event: KeyboardEvent) {
-        if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
-            event.preventDefault()
-            event.stopImmediatePropagation()
-        }
-    }
+    // @HostListener("keypress", ["$event"])
+    // protected _onKeypress(event: KeyboardEvent) {
+    //     console.log({ type: event.type, keyCode: event.keyCode, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey })
+    //     if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
+    //         event.preventDefault()
+    //         event.stopImmediatePropagation()
+    //     }
+    // }
 
     @HostListener("keydown", ["$event"])
     protected _onKeydown(event: KeyboardEvent) {
-        if (event.keyCode === ESCAPE) {
+        // console.log({ type: event.type, keyCode: event.keyCode, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey })
+        if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
             event.preventDefault()
             event.stopImmediatePropagation()
         }
@@ -510,11 +512,20 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @HostListener("keyup", ["$event"])
     protected _onKeyup(event: KeyboardEvent) {
+        // console.log({ type: event.type, keyCode: event.keyCode, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey })
         this.lastKeyup = event.keyCode
         if (event.keyCode === ESCAPE) {
             event.preventDefault()
             event.stopImmediatePropagation()
         }
+    }
+
+    protected _onTriggerClick(event: MouseEvent) {
+        this.inputState = "querying"
+        this.opened = true
+        let filter: any = this.storage.filter.get() || {}
+        delete filter[this.queryField]
+        this.storage.filter.set(filter)
     }
 
     // @HostListener("click")
@@ -532,7 +543,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         if (this.selection.type === "single") {
             if (selected[0]) {
-                value = (selected[0] as any)[this.displayField]
+                if (selected[0] instanceof ListActionModel) {
+                    value = (selected[0] as any as ListActionModel).action.text || "Missing text options"
+                } else {
+                    value = (selected[0] as any)[this.displayField]
+                }
             } else if (this.canCreate) {
                 throw new Error("TODO: implement canCreate")
             }
@@ -566,6 +581,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 return true
 
             case DOWN_ARROW:
+                console.log("DOWN_ARROW")
                 this.opened = true
                 if (this.ddLayer) {
                     this.ddLayer.component.instance.focusNext()

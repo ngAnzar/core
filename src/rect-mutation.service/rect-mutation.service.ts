@@ -1,6 +1,6 @@
 import { Injectable, ElementRef } from "@angular/core"
-import { Observable, Observer, animationFrameScheduler, merge, fromEvent } from "rxjs"
-import { debounceTime, last, finalize } from "rxjs/operators"
+import { Observable, Observer, animationFrameScheduler, merge, fromEvent, Subject } from "rxjs"
+import { debounceTime, finalize, share } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
 import { Rect } from "./rect"
@@ -107,7 +107,7 @@ export class RectMutationService {
                     detector.uninstall(element)
                 }
             }
-        }).pipe(debounceTime(0, animationFrameScheduler))
+        }).pipe(debounceTime(0, animationFrameScheduler), share())
     }
 
     protected getResizeWatcher(element: HTMLElement): Observable<Dimension> {
@@ -116,6 +116,7 @@ export class RectMutationService {
         }
         const def = this.resizeWatchers.get(element)
         def.rc += 1
+
 
         return def.watcher.pipe(finalize(() => {
             def.rc -= 1
@@ -139,7 +140,7 @@ export class RectMutationService {
             return () => {
                 cancelAnimationFrame(rafId)
             }
-        }).pipe(debounceTime(0, animationFrameScheduler))
+        }).pipe(debounceTime(0, animationFrameScheduler), share())
     }
 
     protected getPositonWatcher(element: HTMLElement): Observable<Position> {

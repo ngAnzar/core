@@ -169,7 +169,7 @@ export function Field(name: string | FieldOptions = {}) {
                 throw new Error("Multiple types is not supperted withput map function")
             }
             meta.type = { single: typeList }
-        } else {
+        } else if (type) {
             typeList = [type]
             if (typeList.length === 1) {
                 converter = customOrBuiltinFactory(typeList[0])
@@ -177,6 +177,8 @@ export function Field(name: string | FieldOptions = {}) {
                 throw new Error("Multiple types is not supperted withput map function")
             }
             meta.type = { single: typeList }
+        } else {
+            throw new Error("Missing type annotation")
         }
 
         converter = converter || options.map || customOrBuiltinFactory(type)
@@ -384,19 +386,18 @@ export class ModelProxy {
             this[CHANGES][field.targetName] = value
         })
     }
+
+    public toJSON() {
+        return Model.toObject(this as any, true)
+    }
 }
 
 
 function defineModelProxyProperty(fm: any, field: FieldMeta) {
-    let cache: any
-
     const get = () => {
-        let value = fm[RAW][field.targetName]
+        let value = field.targetName in fm[CHANGES] ? fm[CHANGES][field.targetName] : fm[RAW][field.targetName]
         if (value instanceof Model) {
-            if (cache == null) {
-                cache = new ModelProxy(value)
-            }
-            return cache
+            return fm[CHANGES][field.targetName] = new ModelProxy(value)
         }
         return value
     }

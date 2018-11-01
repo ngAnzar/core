@@ -1,4 +1,4 @@
-export { Collection, ListDiff, ListDiffKind, ItemsWithChanges, Items } from "./collection"
+export { Collection, ListDiff, ListDiffKind, ListDiffItem, ItemsWithChanges, Items } from "./collection"
 export { DataSource, Filter, Sorter } from "./data-source"
 export { DataStorage } from "./data-storage"
 export { Range } from "./range"

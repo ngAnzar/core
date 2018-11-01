@@ -5,7 +5,7 @@ import {
 import { Observable, Subject, timer } from "rxjs"
 import { startWith, take, debounce } from "rxjs/operators"
 
-import { DataStorage, Range, Model, ItemsWithChanges, Items, ListDiffKind } from "../../data"
+import { DataStorage, Range, Model, ItemsWithChanges, Items, ListDiffKind, ListDiffItem } from "../../data"
 import { Subscriptions } from "../../util/subscriptions"
 import { LayerRef } from "../../layer.module"
 import { LevitateRef } from "../../levitate/levitate-ref"
@@ -109,7 +109,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngDoCheck() {
-
         for (let i = 0, l = this._vcr.length; i < l; i++) {
             let view = this._vcr.get(i) as EmbeddedView<T>
             if (view && view.context && view.context.index !== -1) {
@@ -121,6 +120,16 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     protected _updateContent(range: Range, items: ItemsWithChanges<T>) {
+        // let changes: Array<ListDiffItem<any>> = []
+        // for (let i = 0, l = this._vcr.length; i < l; i++) {
+        //     let v: EmbeddedView<T> = this._vcr.get(i) as any
+        //     if (v && v.context && v.context.index !== -1) {
+        //         if (!range.contains(v.context.index)) {
+        //             changes.push({ kind: ListDiffKind.DELETE, index: v.context.index, item: v.context.$implicit })
+        //         }
+        //     }
+        // }
+
         let changes = items.compare(this.rendered)
 
         for (let change of changes) {

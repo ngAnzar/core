@@ -1,8 +1,9 @@
 import {
     Component, Inject, InjectionToken, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy,
-    ViewChild, QueryList
+    ViewChild, QueryList, OnInit
 } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
+import { startWith } from "rxjs/operators"
 
 import { DataStorage, Model } from "../../data"
 import { ListDirective } from "../list/list.directive"
@@ -36,7 +37,7 @@ export class DDContext<T> {
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DropdownComponent<T extends Model> implements OnDestroy {
+export class DropdownComponent<T extends Model> implements OnDestroy, OnInit {
     @ViewChild("list", { read: ListDirective }) protected readonly list: ListDirective
 
     public get gridTemplateRows(): SafeStyle {
@@ -69,16 +70,24 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
         @Inject(DROPDOWN_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected sanitizer: DomSanitizer) {
+    }
 
-        // this.s.add(storage.invalidated).subscribe(event => {
-        //     this.cdr.markForCheck()
-        // })
+    public focusNext() {
+        this.list.moveFocus(1)
+        this.cdr.detectChanges()
+    }
 
-        this.s.add(storage.items).subscribe(event => {
-            this.cdr.markForCheck()
+    public focusPrev() {
+        this.list.moveFocus(-1)
+        this.cdr.detectChanges()
+    }
+
+    public ngOnInit() {
+        this.s.add(this.storage.items).subscribe(event => {
+            this.cdr.detectChanges()
         })
 
-        this.s.add(actions.changes).subscribe(items => {
+        this.s.add(this.actions.changes).pipe(startWith(this.actions)).subscribe(items => {
             this.actionsByPosition = {}
             for (const item of items) {
                 if (!this.actionsByPosition[item.position]) {
@@ -87,16 +96,8 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
                     this.actionsByPosition[item.position].push(item)
                 }
             }
-            this.cdr.markForCheck()
+            this.cdr.detectChanges()
         })
-    }
-
-    public focusNext() {
-        this.list.moveFocus(1)
-    }
-
-    public focusPrev() {
-        this.list.moveFocus(-1)
     }
 
     public ngOnDestroy() {
