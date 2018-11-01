@@ -1,5 +1,5 @@
 import {
-    Component, ContentChild, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
+    Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
     ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener
 } from "@angular/core"
@@ -15,8 +15,9 @@ import { DataSource, DataStorage, Range, Model, ID, Field } from "../../data"
 import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
 import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, ComponentLayerRef } from "../../layer.module"
 import { FormFieldComponent } from "../form-field/form-field.component"
-import { DropdownComponent, DROPDOWN_ITEM_TPL } from "./dropdown.component"
+import { DropdownComponent, DROPDOWN_ITEM_TPL, DROPDOWN_ACTIONS } from "./dropdown.component"
 import { Subscriptions } from "../../util/subscriptions"
+import { ListActionComponent } from "../list/list-action.component"
 
 // import { ChipComponent } from "./chip.component"
 
@@ -69,6 +70,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<T>
     @ContentChild("item", { read: TemplateRef }) public readonly itemTpl: SelectTemplateRef<T>
+    @ContentChildren(ListActionComponent) public readonly actions: QueryList<ListActionComponent>
 
     @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLInputElement>
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
@@ -415,7 +417,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     [
                         { provide: SelectionModel, useValue: this.selection },
                         { provide: DataStorage, useValue: this.storage },
-                        { provide: DROPDOWN_ITEM_TPL, useValue: this.itemTpl }
+                        { provide: DROPDOWN_ITEM_TPL, useValue: this.itemTpl },
+                        { provide: DROPDOWN_ACTIONS, useValue: this.actions },
                     ]) as any
 
                 let s = this.ddLayer.output.subscribe(event => {

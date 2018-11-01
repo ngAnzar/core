@@ -1,15 +1,17 @@
 import {
     Component, Inject, InjectionToken, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy,
-    ViewChild
+    ViewChild, QueryList
 } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 
 import { DataStorage, Model } from "../../data"
 import { ListDirective } from "../list/list.directive"
 import { Subscriptions } from "../../util/subscriptions"
+import { ListActionComponent } from "../list/list-action.component"
 
 
 export const DROPDOWN_ITEM_TPL = new InjectionToken<TemplateRef<any>>("dropdown.itemTpl")
+export const DROPDOWN_ACTIONS = new InjectionToken<QueryList<ListActionComponent>>("dropdown.actions")
 
 
 export class DDContext<T> {
@@ -38,7 +40,8 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
     @ViewChild("list", { read: ListDirective }) protected readonly list: ListDirective
 
     public get gridTemplateRows(): SafeStyle {
-        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex}, 48px)`)
+        const actionsLength = this.actions ? this.actions.length : 0
+        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex + actionsLength}, 48px)`)
     }
 
     public get focusedModel(): T {
@@ -49,11 +52,21 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
         return null
     }
 
+    // public get fristActions(): QueryList<ActionComponent> {
+    //     return this.actions ? this.actions.filter(v => v.position === "first") : [] as any
+    // }
+
+    // public get lastActions(): QueryList<ActionComponent> {
+    //     return this.actions ? this.actions.filter(v => v.position === "last") : [] as any
+    // }
+
+    protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}
     protected readonly s = new Subscriptions()
 
     public constructor(
         @Inject(DataStorage) public readonly storage: DataStorage<T>,
         @Inject(DROPDOWN_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
+        @Inject(DROPDOWN_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected sanitizer: DomSanitizer) {
 
@@ -62,6 +75,18 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
         // })
 
         this.s.add(storage.items).subscribe(event => {
+            this.cdr.markForCheck()
+        })
+
+        this.s.add(actions.changes).subscribe(items => {
+            this.actionsByPosition = {}
+            for (const item of items) {
+                if (!this.actionsByPosition[item.position]) {
+                    this.actionsByPosition[item.position] = [item]
+                } else {
+                    this.actionsByPosition[item.position].push(item)
+                }
+            }
             this.cdr.markForCheck()
         })
     }
@@ -76,5 +101,10 @@ export class DropdownComponent<T extends Model> implements OnDestroy {
 
     public ngOnDestroy() {
         this.s.unsubscribe()
+    }
+
+    protected offset(index: number): number {
+        return index + 1
+            + (this.actionsByPosition.first ? this.actionsByPosition.first.length : 0)
     }
 }
