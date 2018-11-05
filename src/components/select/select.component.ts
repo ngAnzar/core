@@ -430,11 +430,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         if (f) {
-            if (this.focusOrigin === "mouse" && !this.dataSource.async) {
+            if (this.focusOrigin === "mouse" && (!this.dataSource.async || !this.editable)) {
                 this.opened = true
             }
         } else {
-            // this.opened = false
+            this.opened = false
             this._resetTextInput()
         }
     }
