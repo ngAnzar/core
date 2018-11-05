@@ -78,11 +78,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
                     // .pipe(take(1))
                     .pipe(map(items => {
                         (this as any).range = items.range || r
-                        this._cacheItems(items, this.range, oldValues)
                         if (items.total != null) {
                             (this as any).lastIndex = items.total
                             this.total = items.total
                         }
+                        this._cacheItems(items, this.range, oldValues)
                         return this._collectRange(this.range, oldValues)
                     }))
             )
@@ -121,7 +121,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     }
 
     protected _collectRange(r: Range, o: Items<T> = [] as any): ItemsWithChanges<T> {
-        let items: ItemsWithChanges<T> = new ItemsWithChanges([], r, o)
+        let items: ItemsWithChanges<T> = new ItemsWithChanges([], r, this.total, o)
         for (let i = r.begin; i < r.end; i++) {
             if (this.cache[i]) {
                 items.push(this.cache[i])

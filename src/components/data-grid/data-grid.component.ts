@@ -34,7 +34,7 @@ export class DataGridComponent implements AfterContentInit, DoCheck {
         if (this._source !== val) {
             this._source = val
             this.storage = val ? new DataStorage(val) : null
-            this.cdr.markForCheck()
+            this._update()
         }
     }
     public get source(): DataSource<any> { return this._source }
@@ -69,6 +69,7 @@ export class DataGridComponent implements AfterContentInit, DoCheck {
 
     protected subscriptions: Subscriptions = new Subscriptions()
     protected _rowHeight: number = 52
+    protected _contentInited: boolean = false
 
 
     // @Inject(DataSource) @Host() public readonly source: DataSource<any>
@@ -81,6 +82,7 @@ export class DataGridComponent implements AfterContentInit, DoCheck {
     }
 
     public ngAfterContentInit() {
+        this._contentInited = true
         this.subscriptions.add(this.columns.layoutChanged).subscribe(this._update)
         this.updateGridTemplate()
     }
@@ -110,6 +112,10 @@ export class DataGridComponent implements AfterContentInit, DoCheck {
     }
 
     protected _update = () => {
-        this.cdr.detectChanges()
+        if (this._contentInited) {
+            this.cdr.detectChanges()
+        } else {
+            this.cdr.markForCheck()
+        }
     }
 }

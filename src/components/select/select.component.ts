@@ -447,7 +447,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.opened = true
             }
         } else {
-            this.opened = false
+            // this.opened = false
             this._resetTextInput()
         }
     }

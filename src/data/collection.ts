@@ -32,6 +32,18 @@ export class Items<T extends Model> extends Array<T> {
         // console.log(this.range, "<=>", other && other.range)
         return listDiff(other, this, oldIndexBegin, this.range.begin)
     }
+
+    public getRange(range: Range): Items<T> {
+        if (!this.range) {
+            return new Items(this, range, this.total)
+        } else {
+            let begin = Math.max(this.range.begin, range.begin)
+            let end = Math.min(this.range.end, range.end)
+            let s = this.range.begin > range.begin ? 0 : range.begin - this.range.begin
+            let l = end - begin
+            return new Items(this.slice(s, s + l), new Range(begin, end), this.total)
+        }
+    }
 }
 
 
@@ -47,8 +59,8 @@ export class ItemsWithChanges<T extends Model> extends Items<T> {
         return this._changes
     }
 
-    public constructor(items: T[], range: Range, private _old: Items<T>) {
-        super(items, range)
+    public constructor(items: T[], range: Range, total: number, private _old: Items<T>) {
+        super(items, range, total)
     }
 }
 

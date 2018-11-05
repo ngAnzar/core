@@ -109,17 +109,15 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngDoCheck() {
-        for (let i = 0, l = this._vcr.length; i < l; i++) {
-            let view = this._vcr.get(i) as EmbeddedView<T>
-            if (view && view.context && view.context.index !== -1) {
-                // view.markForCheck()
-                view.detectChanges()
-                // view.detectChanges()
-            }
-        }
+        let r = this.renderingRange
+        let request = this._getRequestRange(r)
+        this.nzVirtualForOf.getRange(request).subscribe(items => {
+            let render = items.getRange(r)
+            this._updateContent(render.range, render)
+        })
     }
 
-    protected _updateContent(range: Range, items: ItemsWithChanges<T>) {
+    protected _updateContent(range: Range, items: Items<T>) {
         // let changes: Array<ListDiffItem<any>> = []
         // for (let i = 0, l = this._vcr.length; i < l; i++) {
         //     let v: EmbeddedView<T> = this._vcr.get(i) as any
@@ -154,18 +152,16 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             }
         }
 
-        // this._updateRenderedRange()
-        if (changes.length) {
-            this._cdr.markForCheck()
-            // this._cdr.detectChanges()
+        for (let i = 0, l = this._vcr.length; i < l; i++) {
+            let view = this._vcr.get(i) as EmbeddedView<T>
+            if (view && view.context && view.context.index !== -1) {
+                view.detectChanges()
+            }
         }
     }
 
     protected _update = () => {
-        let r = this.renderingRange
-        this.nzVirtualForOf.getRange(r).subscribe(items => {
-            this._updateContent(r, items)
-        })
+        this._cdr.detectChanges()
     }
 
     // protected _fixRendering() {
@@ -283,17 +279,36 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     protected _setVisibleRange(vr: Range): void {
         if (!this._visibleRange || !this._visibleRange.isEq(vr)) {
             this._visibleRange = vr
-            // this._updateNeede.next()
             this._update()
         }
     }
 
     public get renderingRange(): Range {
+        // let vr = this.visibleRange
+        // let page = 0
+        // console.log(vr)
+        // if (vr.begin !== -1 && vr.begin !== vr.end) {
+        //     page = Math.floor(vr.begin / this.itemsPerRequest)
+
+        //     if (vr.end >= this.itemsPerRequest * (page + 1)) {
+        //         page += 1
+        //     }
+        // }
+        // console.log({ page })
+        // return new Range(this.itemsPerRequest * page, this.itemsPerRequest * (page + 1))
+
         let vr = this.visibleRange
         let offset = vr.begin === -1 || vr.begin === vr.end ? this.itemsPerRequest : Math.round(this.itemsPerRequest / 2)
         return new Range(
             Math.max(0, vr.begin - offset),
             vr.end + offset
+        )
+    }
+
+    protected _getRequestRange(r: Range): Range {
+        return new Range(
+            Math.floor(r.begin / this.itemsPerRequest) * this.itemsPerRequest,
+            Math.ceil(r.end / this.itemsPerRequest) * this.itemsPerRequest,
         )
     }
 
