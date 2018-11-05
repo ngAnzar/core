@@ -1,6 +1,6 @@
 import {
     Component, Inject, Host, SkipSelf, Optional, Input, OnInit, NgZone, DoCheck,
-    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef
+    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
@@ -26,7 +26,7 @@ import { SelectionModel, SingleSelection } from "../../selection.module"
     // ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataGridComponent implements AfterContentInit, DoCheck {
+export class DataGridComponent implements AfterContentInit, DoCheck, OnDestroy {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
 
     @Input("data-source")
@@ -117,5 +117,9 @@ export class DataGridComponent implements AfterContentInit, DoCheck {
         } else {
             this.cdr.markForCheck()
         }
+    }
+
+    public ngOnDestroy() {
+        this.subscriptions.unsubscribe()
     }
 }

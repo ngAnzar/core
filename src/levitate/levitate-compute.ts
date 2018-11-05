@@ -1,13 +1,15 @@
-import { Rect, Point, Margin } from "../rect-mutation.service"
+import { Rect, Point, Margin, HAlign, VAlign, Align } from "../rect-mutation.service"
 
 import { LevitateRef } from "./levitate-ref"
 
 
-export type Align = "top" | "right" | "bottom" | "left" | "center"
-export type HAlign = "left" | "right" | "center"
-export type VAlign = "top" | "bottom" | "center"
+export interface AnchorPosition {
+    halign: HAlign,
+    valign: VAlign,
+    offsetX?: number
+    offsetY?: number
+}
 
-export type SidePosition = { side: HAlign | VAlign, offset: number }
 export type Rects = {
     levitate: Rect,
     anchor: Rect,
@@ -23,9 +25,9 @@ export interface LevitatingPosition {
     maxWidth?: number
     maxHeight?: number
 
-    connection?: {
-        levitated: SidePosition
-        connected: SidePosition
+    anchor?: {
+        position: AnchorPosition
+        levitate: AnchorPosition
     }
 }
 
@@ -61,6 +63,20 @@ export interface Levitating extends Anchor {
 export interface Constraint {
     ref: HTMLElement | "viewport"
     margin?: Margin
+}
+
+
+function drawRect(r: Rect, color: string) {
+    let div = document.createElement("div")
+    div.style.position = "absolute"
+    div.style.left = `${r.left}px`
+    div.style.top = `${r.top}px`
+    div.style.width = `${r.width}px`
+    div.style.height = `${r.height}px`
+    div.style.border = `1px solid ${color}`
+    div.style.zIndex = `123456789`
+    // div.innerHTML = ``
+    document.body.appendChild(div)
 }
 
 
@@ -123,6 +139,7 @@ export class MagicCarpet {
                         placements: [a, b],
                         rect: r
                     })
+                    // drawRect(r)
                 }
             }
         }
@@ -219,12 +236,23 @@ function getLevitatingPosition(pA: Placement, pV: Placement, levitate: Rect, con
     rect[pV.levitate] = constraint[pV.levitate]
     rect = constraint.constraint(rect)
 
-    let res: LevitatingPosition & { [key: string]: number } = {
+    let res: LevitatingPosition & { [key: string]: any } = {
         maxWidth: Math.round(constraint.width),
         maxHeight: Math.round(constraint.height),
-        left: Math.round(rect.left),
-        top: Math.round(rect.top)
+        left: pA.levitate === "right" ? Math.round(constraint.right) - Math.round(levitate.width) : Math.round(rect.left),
+        top: pV.levitate === "bottom" ? Math.round(constraint.bottom) - Math.round(levitate.height) : Math.round(rect.top),
+        anchor: {
+            position: {
+                halign: pA.target as HAlign,
+                valign: pV.target as VAlign,
+            },
+            levitate: {
+                halign: pA.levitate as HAlign,
+                valign: pV.levitate as VAlign,
+            }
+        }
     }
+
 
     return res
 }

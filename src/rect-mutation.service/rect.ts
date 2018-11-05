@@ -1,6 +1,68 @@
 import { Point } from "./point"
 
 export type Margin = { top?: number, right?: number, bottom?: number, left?: number } | number
+export type HAlign = "left" | "right" | "center"
+export type VAlign = "top" | "bottom" | "center"
+export type Align = HAlign | VAlign
+
+
+// interface VAlignImpl {
+//     setTop(rect: Rect, top: number): void
+//     setBottom(rect: Rect, bottom: number): void
+//     setHeight(rect: Rect, height: number): void
+// }
+
+
+// interface HAlignImpl {
+//     setLeft(rect: Rect, left: number): void
+//     setRight(rect: Rect, right: number): void
+//     setWidth(rect: Rect, width: number): void
+// }
+
+
+// class VAlign_Top implements VAlignImpl {
+//     public setTop(rect: any, top: number): void {
+//         rect._y = top
+//     }
+
+//     public setBottom(rect: any, bottom: number): void {
+//         rect._height = Math.max(0, bottom - rect.top)
+//     }
+
+//     public setHeight(rect: any, height: number): void {
+//         rect._height = height
+//     }
+// }
+
+
+// class VAlign_Bottom implements VAlignImpl {
+//     public setTop(rect: any, top: number): void {
+//         rect._height = Math.max(0, rect.bottom - top)
+//     }
+
+//     public setBottom(rect: any, bottom: number): void {
+//         rect._height = Math.max(0, bottom - rect.top)
+//     }
+
+//     public setHeight(rect: any, height: number): void {
+//         rect._height = height
+//     }
+// }
+
+
+// class HAlign_Left implements HAlignImpl {
+
+// }
+
+
+// class HAlign_Right implements HAlignImpl {
+
+// }
+
+
+// class Center implements VAlignImpl, HAlignImpl {
+
+// }
 
 
 export class Rect {
@@ -15,11 +77,17 @@ export class Rect {
         return new Rect(window.pageXOffset, window.pageYOffset, window.innerWidth, window.innerHeight)
     }
 
+    public get width(): number { return this._width }
+    public set width(val: number) { this._width = val }
+
+    public get height(): number { return this._height }
+    public set height(val: number) { this._height = val }
+
     public get top(): number { return this.y }
-    public set top(val: number) { this.y = val }
+    public set top(val: number) { this._y = val }
 
     public get left(): number { return this.x }
-    public set left(val: number) { this.x = val }
+    public set left(val: number) { this._x = val }
 
     public get right(): number { return this.left + this.width }
     public set right(val: number) { this.width = Math.max(0, val - this.left) }
@@ -33,12 +101,17 @@ export class Rect {
         this.top = val.top - this.height / 2
     }
 
+    public get x(): number { return this._x }
+    public get y(): number { return this._y }
+
     public get area(): number { return this.width * this.height }
 
-    public constructor(public x: number,
-        public y: number,
-        public width: number,
-        public height: number) {
+    public constructor(protected _x: number,
+        protected _y: number,
+        protected _width: number,
+        protected _height: number,
+        public readonly halign: HAlign = "left",
+        public readonly valign: VAlign = "top") {
     }
 
     public isInside(other: Rect): boolean {

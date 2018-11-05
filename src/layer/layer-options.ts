@@ -1,10 +1,11 @@
 import { Margin, Rect } from "../rect-mutation.service"
-import { Anchor, Constraint, Align } from "../levitate/levitate-compute"
+import { Anchor, Constraint } from "../levitate/levitate-compute"
+import { HAlign, VAlign } from "../rect-mutation.service"
 
 
 export interface LevitateOptions {
-    align?: Align
-    valign?: Align
+    align?: HAlign
+    valign?: VAlign
     margin?: Margin
 
     anchor?: Anchor

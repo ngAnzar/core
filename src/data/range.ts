@@ -3,6 +3,10 @@ export class Range {
     constructor(public readonly begin: number,
         public readonly end: number) { }
 
+    public get length(): number {
+        return this.end - this.begin
+    }
+
     public merge(r: Range): Range {
         return new Range(
             Math.min(this.begin, r.begin),

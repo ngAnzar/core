@@ -66,11 +66,11 @@ export class RectMutationService {
             let sub = merge(this.getResizeWatcher(element), this.getPositonWatcher(element)).subscribe((change) => {
                 let next = lastEmit.copy()
                 if ("x" in change) {
-                    next.x = change.x
-                    next.y = change.y
+                    (next as any)._x = change.x;
+                    (next as any)._y = change.y;
                 } else {
-                    next.width = change.width
-                    next.height = change.height
+                    (next as any)._width = change.width;
+                    (next as any)._height = change.height
                 }
                 observer.next(lastEmit = next)
             })

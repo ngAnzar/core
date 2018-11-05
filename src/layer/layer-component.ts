@@ -1,6 +1,7 @@
 import { Component, Directive, Inject, TemplateRef, ViewContainerRef, Input, ViewChild } from "@angular/core"
 
-import { Anchor, HAlign, VAlign } from "../levitate/levitate-compute"
+import { Anchor } from "../levitate/levitate-compute"
+import { HAlign, VAlign } from "../rect-mutation.service"
 import { LayerRef } from "./layer-ref"
 import { LayerService } from "./layer.service"
 import { MenuLayer } from "./layer-behavior"

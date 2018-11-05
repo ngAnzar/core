@@ -185,27 +185,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @Input("min-length") public minLength: number = 2
 
-    // public get submitValue(): string {
-    //     return
-    // }
-
     public get selected(): T[] {
         return this.selection.items
     }
 
-    // public get focusedModel(): T {
-    //     const chip = this.focusedChip
-    //     if (chip) {
-    //         return chip.selectable.model as T
-    //     }
-    // }
-
-    // protected get focusedChip(): ChipComponent {
-    //     for (let chip of this.chips as any as ChipComponent[]) {
-    //         if (chip.selectable.selected) {
-    //             return chip
-    //         }
-    //     }
+    // public get value(): any { return super.value as any }
+    // public set value(val: any) {
+    //     super.value = val
+    //     this.writeValue(val)
     // }
 
     protected ddLayer: ComponentLayerRef<DropdownComponent<T>>
@@ -270,7 +257,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public writeValue(obj: SelectValue<T>): void {
-        if (!this.dataSource || !this.storage || !this.hidden) {
+        if (!this.dataSource || !this.storage) {
             this.pendingValue = obj
             return
         }

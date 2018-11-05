@@ -155,7 +155,7 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
     }
 
     public isSelected(what: ID): boolean {
-        return this._selected.hasOwnProperty(what)
+        return this._selected && this._selected.hasOwnProperty(what)
     }
 
     public setSelected(what: ID, selected: boolean) {
