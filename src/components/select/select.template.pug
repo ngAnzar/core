@@ -38,6 +38,7 @@
     width: 100%
     min-width: 30px
 
+  /*
   .arrow-down
     display: inline-block
     width: 0
@@ -46,6 +47,7 @@
     border-right: 6px solid transparent
     border-top: 6px solid $theme.foreground.lighter
     flex: none
+  */
 
   .chip-item
     margin-right: 8px
@@ -63,7 +65,6 @@
 input(#hidden type="hidden")
 
 div.select-input
-  //- ng-template(*ngIf="!editable || selection.type !== 'single'")
   ng-template(bind-ngIf="!editable || selection.type !== 'single'")
     ng-template(ngFor bind-ngForOf="selection.items" let-item let-first="first" let-last="last")
       ng-template(bind-ngIf="item.isListAction" bind-ngIfElse="normalModel")
@@ -77,7 +78,7 @@ div.select-input
     style="flex:1")
 
 div.trigger(on-click="_onTriggerClick($event)")
-  i.arrow-down
+  i.nz-icon(class=icon("mdi/menu-down"))
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}

@@ -1,4 +1,4 @@
-import { Directive, Input, Inject, ElementRef, AfterContentInit } from "@angular/core"
+import { Directive, Pipe, PipeTransform, Input, Inject, ElementRef, AfterContentInit } from "@angular/core"
 import { isEqual, distanceInWords, format } from "date-fns"
 import * as hu from "date-fns/locale/hu"
 
@@ -95,5 +95,15 @@ export class DateDirective implements AfterContentInit {
         if (this.el.nativeElement.innerHTML !== formatted) {
             this.el.nativeElement.innerHTML = formatted
         }
+    }
+}
+
+
+@Pipe({
+    name: "time"
+})
+export class TimePipe implements PipeTransform {
+    public transform(value: Date): string {
+        return format(value, "HH:mm")
     }
 }

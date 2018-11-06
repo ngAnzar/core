@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common"
 
 import { ListModule } from "./list.module"
 import { LayerModule } from "./layer.module"
+import { ScrollerModule } from "./scroller.module"
 
 import { MenuComponent } from "./components/menu/menu.component"
 import { MenuItemDirective } from "./components/menu/menu-item.directive"
@@ -13,7 +14,8 @@ import { MenuTriggerDirective } from "./components/menu/menu-trigger.directive"
     imports: [
         CommonModule,
         ListModule,
-        LayerModule
+        LayerModule,
+        ScrollerModule
     ],
     declarations: [
         MenuComponent,

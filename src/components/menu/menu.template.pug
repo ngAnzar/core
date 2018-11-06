@@ -2,7 +2,12 @@
   .menu-item
     cursor: pointer
 
+  .scroller
+    max-height: inherit
+    max-width: inherit
+
 ng-template(#layer)
-  .nz-scroller.nz-list
-    .nz-list-item.menu-item(*ngFor="let menuItem of menuItems")
-      ng-template(bind-ngTemplateOutlet="menuItem")
+  .nz-scroller.nz-list.scroller
+    ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
+      .nz-list-item.menu-item(on-click="!$event.defaultPrevented && hide()" #listItem)
+        ng-template(bind-ngTemplateOutlet="menuItem.tpl")

@@ -3,6 +3,7 @@ import { Directive, AfterContentInit, Inject, Attribute, ElementRef, Input, OnDe
 
 export abstract class BoxDirective implements AfterContentInit, OnDestroy {
     public abstract readonly gapMargin: string
+    public abstract readonly gapMarginOpposite: string
     public readonly gap: number
 
     protected mutationObserver: MutationObserver
@@ -27,12 +28,27 @@ export abstract class BoxDirective implements AfterContentInit, OnDestroy {
     protected updateGap() {
         const childNodes = this.el.nativeElement.childNodes
         const childLength = childNodes.length
+        let isFirst = true
 
         for (let i = 0; i < childLength; i++) {
-            const child = childNodes[i]
+            const child = childNodes[i] as HTMLElement
             if (child.nodeType === 1) {
-                ((child as HTMLElement).style as any)[this.gapMargin] =
-                    i + 1 === childLength ? "0" : `${this.gap}px`
+                const computedStyle = window.getComputedStyle(child)
+                const style = child.style as any
+
+                style[this.gapMarginOpposite] = "0"
+
+                if (computedStyle.visibility === "hidden" || computedStyle.display === "none") {
+                    style[this.gapMargin] = "0"
+                    continue
+                }
+
+                if (isFirst) {
+                    isFirst = false
+                    continue
+                }
+
+                style[this.gapMargin] = `${this.gap}px`
             }
         }
     }
@@ -50,7 +66,8 @@ export abstract class BoxDirective implements AfterContentInit, OnDestroy {
     selector: ".nz-vbox, .nz-inline-vbox"
 })
 export class VboxDirective extends BoxDirective {
-    public readonly gapMargin: string = "marginBottom"
+    public readonly gapMargin: string = "marginTop"
+    public readonly gapMarginOpposite: string = "marginBottom"
 }
 
 
@@ -58,16 +75,19 @@ export class VboxDirective extends BoxDirective {
     selector: ".nz-hbox, .nz-inline-hbox"
 })
 export class HboxDirective extends BoxDirective {
-    public readonly gapMargin: string = "marginRight"
+    public readonly gapMargin: string = "marginLeft"
+    public readonly gapMarginOpposite: string = "marginRight"
 }
 
 
 @Directive({
     selector: "[flex]",
     host: {
-        "[style.flex]": "flex"
+        "[style.flex]": "flex",
+        "[style.textAlign]": "textAlign", // FF: automatically add text-align: -moz-center
     }
 })
 export class FlexibleDirective {
     @Input() public flex: string
+    @Input() public textAlign: string = "left"
 }

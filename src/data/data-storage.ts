@@ -24,6 +24,24 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
     }
 
+    // public get all(): Observable<Items<T>> {
+    //     return this.getRange(new Range(0, 1000))
+    //     // if (this.endReached) {
+
+    //     // }
+
+    //     // return this.source.search(this.filter.get(), this.sorter.get())
+    //     //     .pipe(map(items => {
+    //     //         (this as any).range = new Range(0, items.length);
+    //     //         (this as any).endReached = true;
+    //     //         (this as any).lastIndex = items.length;
+    //     //         (this as any).total = items.length
+
+    //     //         this._cacheItems(items, this.range, [] as any)
+    //     //         return this._collectRange(this.range, [] as any)
+    //     //     }))
+    // }
+
     public readonly reseted: Observable<void> = new EventEmitter()
 
     public get invalidated(): Observable<void> {
@@ -47,8 +65,15 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     protected total: number
     protected pendingRanges: Array<[Range, Observable<any>]> = []
 
-    public constructor(protected readonly source: DataSource<T>) {
+    public constructor(protected readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
+
+        if (filter) {
+            this.filter.set(filter)
+        }
+        if (sorter) {
+            this.sorter.set(sorter)
+        }
 
         this.s.add(this.invalidated).subscribe(x => {
             this.reset()

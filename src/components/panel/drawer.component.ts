@@ -1,10 +1,11 @@
-import { Component, ContentChildren, ViewChild, QueryList, ElementRef, AfterContentInit, OnDestroy, Input } from "@angular/core"
+import { Component, ContentChildren, ViewChild, QueryList, ElementRef, AfterContentInit, OnDestroy, Input, Inject } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Subject, Observable, merge } from "rxjs"
 import { take, concat, filter, map, concatAll } from "rxjs/operators"
 
 import { PanelComponent, PanelPosition, OpenedChangingEvent, PanelStateEvent, PanelState } from "./panel.component"
 import { Subscriptions } from "../../util"
+import { MaskService, MaskRef } from "../../mask.module"
 
 
 export class DrawerSide {
@@ -77,8 +78,20 @@ export class DrawerComponent implements AfterContentInit, OnDestroy {
         return res
     }
 
+    public constructor(
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>) {
+    }
+
     public ngAfterContentInit() {
-        this.panels.forEach(this._watchPanelOpened.bind(this))
+        this.panels.forEach((panel: PanelComponent) => {
+            if (!this._side[panel.position]) {
+                this._side[panel.position] = new DrawerSide()
+            }
+            this._side[panel.position].updatePanelState(panel, panel.opened)
+            this._watchPanelOpened(panel)
+            this._updateOverlay()
+        })
+
     }
 
     public ngOnDestroy() {
@@ -95,19 +108,18 @@ export class DrawerComponent implements AfterContentInit, OnDestroy {
     protected _handlePanelSwitch = (panelEvent: OpenedChangingEvent) => {
         const position = panelEvent.source.position
         if (position) {
-            if (!this._side[position]) {
-                this._side[position] = new DrawerSide()
-            }
             panelEvent.finalValue = this._side[position]
                 .updatePanelState(panelEvent.source, panelEvent.pendigValue)
 
-            if (this.overlayed) {
-                if (this.opened.length) {
-                    this.overlay.nativeElement.classList.add("visible")
-                } else {
-                    this.overlay.nativeElement.classList.remove("visible")
-                }
-            }
+            this._updateOverlay()
+        }
+    }
+
+    protected _updateOverlay() {
+        if (this.overlayed && this.opened.length) {
+            this.overlay.nativeElement.classList.add("visible")
+        } else {
+            this.overlay.nativeElement.classList.remove("visible")
         }
     }
 }
