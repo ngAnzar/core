@@ -84,36 +84,6 @@ export class MagicCarpet {
     public constructor(public ref: LevitateRef) {
     }
 
-    // public updateRects() {
-    //     let levEl = this.ref.levitate.ref
-    //     levEl.style.maxWidth = "none"
-    //     levEl.style.maxHeight = "none"
-    // }
-
-    // private _setRect(k: "levitate" | "connect" | "constraint") {
-    //     let p: Anchor | Levitating | Constraint = (this.ref as any)[k]
-    //     let kk = `${k}Rect`
-
-    //     if (p) {
-    //         let rect
-    //         if (p.ref === "viewport") {
-    //             rect = Rect.viewport()
-    //         } else if (p.ref instanceof HTMLElement) {
-    //             rect = Rect.fromElement(p.ref)
-    //         } else if (p.ref instanceof Rect) {
-    //             rect = p.ref
-    //         } else {
-    //             throw new Error(`Invalid value of 'ref' in '${k}' config`)
-    //         }
-    //         if (p.margin) {
-    //             rect = rect.applyMargin(p.margin)
-    //         }
-    //         (this as any)[kk] = rect
-    //     } else {
-    //         (this as any)[kk] = null
-    //     }
-    // }
-
     public levitate(rects: Rects): LevitatingPosition {
         let lA = this.ref.levitate.align || "center"
         let lV = this.ref.levitate.valign || "center"
@@ -231,10 +201,15 @@ for (let a1 of aligns) {
 
 
 function getLevitatingPosition(pA: Placement, pV: Placement, levitate: Rect, constraint: Rect, connect?: Rect): LevitatingPosition {
+    // drawRect(levitate, "red")
+
     let rect = levitate.copy()
     rect[pA.levitate] = constraint[pA.levitate]
     rect[pV.levitate] = constraint[pV.levitate]
     rect = constraint.constraint(rect)
+
+    // drawRect(rect, "green")
+    // drawRect(constraint, "black")
 
     let res: LevitatingPosition & { [key: string]: any } = {
         maxWidth: Math.round(constraint.width),
