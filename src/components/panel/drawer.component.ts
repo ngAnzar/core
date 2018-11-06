@@ -116,10 +116,12 @@ export class DrawerComponent implements AfterContentInit, OnDestroy {
     }
 
     protected _updateOverlay() {
-        if (this.overlayed && this.opened.length) {
-            this.overlay.nativeElement.classList.add("visible")
-        } else {
-            this.overlay.nativeElement.classList.remove("visible")
+        if (this.overlay) {
+            if (this.overlayed && this.opened.length) {
+                this.overlay.nativeElement.classList.add("visible")
+            } else {
+                this.overlay.nativeElement.classList.remove("visible")
+            }
         }
     }
 }
