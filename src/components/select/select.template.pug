@@ -37,6 +37,7 @@
     max-width: 100%
     width: 100%
     min-width: 30px
+    color: inherit
 
   /*
   .arrow-down
@@ -59,6 +60,7 @@
     cursor: default
     text-align: center
     line-height: 22px
+    color: inherit
 
 
 
@@ -78,7 +80,7 @@ div.select-input
     style="flex:1")
 
 div.trigger(on-click="_onTriggerClick($event)")
-  i.nz-icon(class=icon("mdi/menu-down"))
+  i.nz-icon(bind-attr.class=`triggerIcon || '${icon("mdi/menu-down")}'`)
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}

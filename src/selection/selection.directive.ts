@@ -40,6 +40,7 @@ export interface ISelectionModel<T extends Model = Model> {
     readonly changes: Observable<SelectionEvent<T>>
 
     update(update: Update): void
+    clear(): void
     isSelected(what: ID): boolean
     setSelected(what: ID, selected: boolean): void
     _handleOnDestroy(cmp: Selectable<T>): void
@@ -150,6 +151,14 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
             let event = this.items.slice(0) as SelectionEvent<T>
             event.selected = selected
             event.removed = removed;
+            (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
+        }
+    }
+
+    public clear() {
+        if (this.items.length > 0) {
+            let event = [] as SelectionEvent<T>
+            event.removed = this.items.slice(0) as SelectionEvent<T>;
             (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
         }
     }
@@ -276,6 +285,7 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
     public get changes(): Observable<SelectionEvent<T>> { return this[SELECTION].changes }
 
     public update(update: Update): void { this[SELECTION].update(update) }
+    public clear(): void { this[SELECTION].clear() }
     public isSelected(what: ID): boolean { return this[SELECTION].isSelected(what) }
     public setSelected(what: ID, selected: boolean): void { this[SELECTION].setSelected(what, selected) }
     public _handleOnDestroy(cmp: Selectable<T>): void { this[SELECTION]._handleOnDestroy(cmp) }

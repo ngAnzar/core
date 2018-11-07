@@ -16,9 +16,9 @@
     bottom: 0
     background-color: $theme.foreground.default
     opacity: 0
+    display: none
     visibility: hidden
     transition: opacity 250ms
-    display: none
 
     &.visible
       opacity: 0.5
@@ -29,6 +29,6 @@
 //- .drawer-content(#content)
 ng-content(select=".nz-content")
 
-.drawer-overlay(#overlay)
+.drawer-overlay(*ngIf="overlayed" #overlay)
 
 ng-content(select=".nz-panel")

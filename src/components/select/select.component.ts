@@ -217,7 +217,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
         @Attribute("display-field") displayField: string,
         @Attribute("value-field") protected readonly valueField: string,
-        @Attribute("query-field") queryField: string) {
+        @Attribute("query-field") queryField: string,
+        @Attribute("trigger-icon") public readonly triggerIcon: string) {
         super(ngControl, ngModel, _renderer, el)
 
         if (!selection) {
@@ -540,7 +541,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 if (selected[0] instanceof ListActionModel) {
                     value = (selected[0] as any as ListActionModel).action.text || "Missing text options"
                 } else {
-                    value = (selected[0] as any)[this.displayField]
+                    value = (selected[0] as any)[this.displayField] || ""
                 }
             } else if (this.canCreate) {
                 throw new Error("TODO: implement canCreate")
