@@ -80,7 +80,7 @@ div.select-input
     style="flex:1")
 
 div.trigger(on-click="_onTriggerClick($event)")
-  i.nz-icon(bind-attr.class=`triggerIcon || '${icon("mdi/menu-down")}'`)
+  i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/menu-down"))}'`)
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}
