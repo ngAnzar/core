@@ -3,7 +3,7 @@ import { ComponentPortal, TemplatePortal, ComponentType } from "@angular/cdk/por
 import { Observable, Subscription, Observer } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
-import { Subscriptions } from "../util/subscriptions"
+import { Destruct, IDisposable } from "../util"
 import { AnzarEvent } from "../util/event"
 import { LayerOutletRef } from "./layer-container"
 import { LayerService } from "./layer.service"
@@ -21,21 +21,34 @@ export class LayerEvent<D> extends AnzarEvent {
 }
 
 
-export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
+export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> implements IDisposable {
     public readonly injector: Injector
     public readonly isEmpty: boolean
     public readonly isVisible: boolean
 
-    protected s = new Subscriptions()
+    public readonly destruct = new Destruct(() => {
+        this.emit(new LayerEvent("destroy") as E)
+        let self = this as any
+        delete self.behavior
+        delete self.opener
+        delete self.outlet
+        delete self.vcr
+    })
 
-    public readonly output: Observable<E> = new EventEmitter()
-    public readonly input: Observable<E> = new EventEmitter()
+    // protected s = new Subscriptions()
 
-    public abstract readonly service: LayerService
-    public abstract readonly behavior: LayerBehavior
+    public readonly output: Observable<E> = this.destruct.subject(new EventEmitter())
+    public readonly input: Observable<E> = this.destruct.subject(new EventEmitter())
+
     public abstract readonly opener: LayerRef
-    public abstract outlet: LayerOutletRef
     protected abstract vcr: ViewContainerRef
+
+    public constructor(
+        public readonly behavior: LayerBehavior,
+        public readonly outlet: LayerOutletRef) {
+        this.destruct.disposable(behavior)
+        this.destruct.disposable(outlet)
+    }
 
     public get onClose(): Observable<void> {
         return this.output.pipe(filter(v => v.type === "destroy"), mapTo(null))
@@ -51,7 +64,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
     }
 
     public subscribe(handler: (value: E) => void): Subscription {
-        return this.s.add(this.output).subscribe(handler as any)
+        return this.destruct.subscription(this.output).subscribe(handler as any)
     }
 
     public push(inp: Partial<E>): void {
@@ -60,7 +73,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
     }
 
     public pull(handler: (value: E) => void): Subscription {
-        return this.s.add(this.input).subscribe(handler as any)
+        return this.destruct.subscription(this.input).subscribe(handler as any)
     }
 
     public close(): Promise<boolean> {
@@ -108,21 +121,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> {
     }
 
     public dispose() {
-        if (!this.s.isClosed) {
-            this.emit(new LayerEvent("destroy") as E)
-            if (this.outlet) {
-                this.outlet.dispose()
-            }
-            this.s.unsubscribe()
-            this.behavior.dispose()
-
-            let x = this as any
-            delete x.service
-            delete x.behavior
-            delete x.opener
-            delete x.outlet
-            delete x.vcr
-        }
+        this.destruct.run()
     }
 }
 
@@ -138,13 +137,11 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
     }
     protected _portal: ComponentPortal<C>
 
-    public constructor(public readonly service: LayerService,
-        public readonly behavior: LayerBehavior,
-        public outlet: LayerOutletRef,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
-        super()
+        super(behavior, outlet)
     }
 
     protected attach(): void {
@@ -161,14 +158,12 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
     public readonly view: EmbeddedViewRef<C>
     protected readonly portal: TemplatePortal<C>
 
-    public constructor(public readonly service: LayerService,
-        public readonly behavior: LayerBehavior,
-        public outlet: LayerOutletRef,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         tpl: TemplateRef<C>,
         ctx: C) {
-        super()
+        super(behavior, outlet)
         this.portal = new TemplatePortal(tpl, vcr, ctx)
     }
 

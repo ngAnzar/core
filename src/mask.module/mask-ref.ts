@@ -1,5 +1,5 @@
 import { Rect, RectMutationService } from "../rect-mutation.service"
-import { Subscriptions } from "../util"
+import { Destruct, IDisposable } from "../util"
 import { LayerContainerRef } from "../layer/layer-container"
 
 
@@ -20,7 +20,7 @@ export interface _BackgroundImage extends _BasicStyle {
 export type MaskStyle = _BackgroundColor | _BackgroundImage
 
 
-export class MaskRef {
+export class MaskRef implements IDisposable {
     public set crop(val: Rect) {
         if (!this._crop || !val || !this._crop.isEq(val)) {
             this._crop = val
@@ -39,7 +39,9 @@ export class MaskRef {
     public get rect(): Rect { return this._rect }
     protected _rect: Rect
 
-    protected s = new Subscriptions()
+    public readonly destruct = new Destruct(() => {
+        this.destroyCropMasks()
+    })
     protected cropMaskEls: { [key: string]: HTMLElement }
 
     public constructor(
@@ -50,22 +52,23 @@ export class MaskRef {
         crop?: HTMLElement | Rect) {
 
         if (target === window) {
-            this.s.add(rectMutation.watchViewport()).subscribe(rect => this.rect = rect)
+            this.destruct.subscription(rectMutation.watchViewport()).subscribe(rect => this.rect = rect)
         } else if (target instanceof HTMLElement) {
-            this.s.add(rectMutation.watch(target)).subscribe(rect => this.rect = rect)
+            this.destruct.subscription(rectMutation.watch(target)).subscribe(rect => this.rect = rect)
         } else {
             throw new Error(`Invalid target element: ${target}`)
         }
 
         if (crop instanceof HTMLElement) {
-            this.s.add(rectMutation.watch(crop)).subscribe(rect => this.crop = rect)
+            this.destruct.subscription(rectMutation.watch(crop)).subscribe(rect => this.crop = rect)
         } else if (crop instanceof Rect) {
             this.crop = crop
         } else if (crop) {
             throw new Error(`Invalid crop: ${crop}`)
         }
 
-        this.s.add(container.onDestroy).subscribe(this.dispose.bind(this))
+        container.destruct.disposable(this)
+        this.destruct.disposable(container)
     }
 
     protected _update() {
@@ -138,13 +141,7 @@ export class MaskRef {
     }
 
     public dispose() {
-        this.destroyCropMasks()
-        if (this.container) {
-            const container = this.container
-            delete (this as any).container
-            container.dispose()
-        }
-        this.s.unsubscribe()
+        this.destruct.run()
     }
 
     protected destroyCropMasks() {

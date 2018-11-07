@@ -11,8 +11,7 @@ import { LayerComponent } from "./layer/layer-component"
 export { LayerRef, ComponentLayerRef, TemplateLayerRef, LayerEvent } from "./layer/layer-ref"
 export { ModalLayer, DropdownLayer, MenuLayer } from "./layer/layer-behavior"
 export { LayerOptions, LevitateOptions, DropdownLayerOptions } from "./layer/layer-options"
-export { LayerService }
-export { LayerComponent }
+export { LayerService, LayerComponent, LayerContainer }
 
 
 @NgModule({

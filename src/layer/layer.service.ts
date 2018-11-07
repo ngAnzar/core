@@ -30,12 +30,12 @@ export class LayerService {
 
     public createFromTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, behavior: LayerBehavior, opener?: LayerRef, context?: T): TemplateLayerRef<T> {
         let outlet = this.container.getNewOutlet()
-        return this._finalizeRef(new TemplateLayerRef(this, behavior, outlet, opener || this.layer, vcr, tpl, context), behavior, [])
+        return this._finalizeRef(new TemplateLayerRef(behavior, outlet, opener || this.layer, vcr, tpl, context), behavior, [])
     }
 
     public createFromComponent<T>(cmp: ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[], vcr?: ViewContainerRef): ComponentLayerRef<T> {
         let outlet = this.container.getNewOutlet()
-        return this._finalizeRef(new ComponentLayerRef(this, behavior, outlet, opener || this.layer, vcr, cmp), behavior, provides)
+        return this._finalizeRef(new ComponentLayerRef(behavior, outlet, opener || this.layer, vcr, cmp), behavior, provides)
     }
 
     protected _finalizeRef<T extends LayerRef>(ref: T, behavior: LayerBehavior, provides: StaticProvider[]): T {
@@ -106,7 +106,7 @@ export class LayerService {
         let backdrop = new LayerBackdropRef(mask, this.animation)
         if (!options.crop) {
             this.backdrops[options.type] = backdrop
-            let sub = backdrop.mask.container.onDestroy.subscribe(event => {
+            let sub = backdrop.mask.container.destruct.on.subscribe(event => {
                 sub.unsubscribe()
                 delete this.backdrops[options.type]
             })

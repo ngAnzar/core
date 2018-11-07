@@ -173,3 +173,8 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
 export class MenuLayer extends DropdownLayer {
 
 }
+
+
+export class ToastLayer extends LayerBehavior {
+
+}

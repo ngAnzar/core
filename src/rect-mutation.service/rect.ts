@@ -4,6 +4,55 @@ export type Margin = { top?: number, right?: number, bottom?: number, left?: num
 export type HAlign = "left" | "right" | "center"
 export type VAlign = "top" | "bottom" | "center"
 export type Align = HAlign | VAlign
+export type _Align = { halign: HAlign, valign: VAlign }
+
+
+const CENTER_ALIGN: _Align = { halign: "center", valign: "center" }
+
+
+export function parseAlign(align: string): _Align {
+    if (align === "center") {
+        return CENTER_ALIGN
+    } else {
+        let parts = align.split(/\s+/)
+        if (parts.length !== 2) {
+            throw new Error(`Invalid align value: ${align}`)
+        }
+
+        let res = {} as _Align
+        let i
+        if ((i = parts.indexOf("left")) !== -1 || (i = parts.indexOf("right")) !== -1) {
+            res.halign = parts.splice(i, 1)[0] as HAlign
+        }
+        if ((i = parts.indexOf("top")) !== -1 || (i = parts.indexOf("bottom")) !== -1) {
+            res.valign = parts.splice(i, 1)[0] as VAlign
+        }
+
+        switch (parts.length as number) {
+            case 0:
+                return res
+
+            case 1:
+                if (parts.indexOf("center") !== -1) {
+                    if (res.halign) {
+                        res.valign = "center"
+                    } else {
+                        res.halign = "center"
+                    }
+                    return res
+                }
+                break
+
+            case 2:
+                if (parts[0] === "center" && parts[1] === "center") {
+                    return CENTER_ALIGN
+                }
+                break
+
+        }
+    }
+    throw new Error(`Invalid align value: ${align}`)
+}
 
 
 // interface VAlignImpl {

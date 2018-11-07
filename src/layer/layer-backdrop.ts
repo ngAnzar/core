@@ -1,14 +1,14 @@
 import { AnimationBuilder } from "@angular/animations"
 
 import { MaskRef } from "../mask.module"
-import { Subscriptions } from "../util"
+import { Destruct, IDisposable } from "../util"
 
 import { LayerContainerRef } from "./layer-container"
 import { fadeAnimation } from "./layer-animations"
 import { LayerRef } from "./layer-ref"
 
 
-export class LayerBackdropRef {
+export class LayerBackdropRef implements IDisposable {
     public readonly isVisible: boolean
 
     public set currentLayer(val: LayerRef) {
@@ -33,17 +33,28 @@ export class LayerBackdropRef {
 
     protected _visibleUnder: LayerRef
     protected attached: LayerRef[] = []
-    protected s = new Subscriptions()
+
+    public readonly destruct = new Destruct(() => {
+        delete (this as any).mask
+        delete (this as any).animationBuilder
+        delete (this as any).attached
+        delete (this as any)._visibleUnder
+    })
 
     public constructor(
         public readonly mask: MaskRef,
         public readonly animationBuilder: AnimationBuilder) {
 
         mask.container.nativeElement.addEventListener("click", this.onClick)
+        this.destruct.any(() => {
+            mask.container.nativeElement.removeEventListener("click", this.onClick)
+        })
+
+        this.destruct.disposable(mask)
     }
 
     public attach(layer: LayerRef) {
-        let s = this.s.add(layer.output).subscribe(event => {
+        this.destruct.subscription(layer.output).subscribe(event => {
             if (event.type === "showing") {
                 this.currentLayer = layer
             } else if (event.type === "hiding") {
@@ -59,12 +70,16 @@ export class LayerBackdropRef {
                 }
             }
         })
+
+        this.destruct.subscription(layer.outlet.onPropertyChange).subscribe(prop => {
+            if (prop === "zIndex" && this._visibleUnder === layer) {
+                this._updateZIndex(layer.outlet)
+            }
+        })
     }
 
     public show(under: LayerContainerRef): Promise<void> {
-        let c = under.nativeElement.parentElement
-        this.mask.container.zIndex = under.zIndex
-        c.insertBefore(this.mask.container.nativeElement, under.nativeElement)
+        this._updateZIndex(under)
 
         if (!this.isVisible) {
             (this as any).isVisible = true
@@ -105,13 +120,7 @@ export class LayerBackdropRef {
     }
 
     public dispose() {
-        if (this.mask) {
-            this.s.unsubscribe()
-            this.mask.container.nativeElement.removeEventListener("click", this.onClick)
-            this.mask.dispose()
-            delete (this as any).mask
-            delete (this as any).animationBuilder
-        }
+        this.destruct.run()
     }
 
     protected onClick = (event: MouseEvent) => {
@@ -119,5 +128,11 @@ export class LayerBackdropRef {
         if (options.backdrop && options.backdrop.hideOnClick === true) {
             this.currentLayer.close()
         }
+    }
+
+    protected _updateZIndex(under: LayerContainerRef) {
+        let parentEl = under.nativeElement.parentElement
+        this.mask.container.zIndex = under.zIndex
+        parentEl.insertBefore(this.mask.container.nativeElement, under.nativeElement)
     }
 }

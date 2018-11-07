@@ -4,13 +4,13 @@ import { DOCUMENT } from "@angular/platform-browser"
 import { DomPortalOutlet } from "@angular/cdk/portal"
 import { Subject } from "rxjs"
 
-
+import { Destruct, IDisposable } from "../util"
 import "./layer.styl"
 
 
 @Injectable()
 export class LayerContainer implements OnDestroy {
-    private _zIndex = 1000001
+    public readonly zIndexBegin = 1000000
     private _containers: LayerContainerRef[] = []
 
     public constructor(
@@ -20,35 +20,24 @@ export class LayerContainer implements OnDestroy {
         @Inject(ComponentFactoryResolver) protected cmpResolver: ComponentFactoryResolver) {
     }
 
-    public getNewOutlet(): LayerOutletRef {
+    public getNewOutlet(alwaysOnTop?: boolean): LayerOutletRef {
         const el = this.doc.createElement("div")
         el.classList.add("nz-layer-container")
 
-        this.doc.body.appendChild(el)
         const portal = new DomPortalOutlet(el, this.cmpResolver, this.appRef, this.injector)
-        const res = new LayerOutletRef(el, portal, () => {
-            const i = this._containers.indexOf(res)
-            if (i !== -1) {
-                this._containers.splice(i, 1)
-            }
+        const container = new LayerOutletRef(el, portal, () => {
+            this._removeContainer(container)
         })
-        res.zIndex = this._zIndex++
-        this._containers.push(res)
-
-        return res
+        this._addContainer(container, alwaysOnTop)
+        return container
     }
 
-    public getCommonContainer(): LayerContainerRef {
+    public getCommonContainer(alwaysOnTop?: boolean): LayerContainerRef {
         const el = this.doc.createElement("div")
         const container = new LayerContainerRef(el, () => {
-            const i = this._containers.indexOf(container)
-            if (i !== -1) {
-                this._containers.splice(i, 1)
-            }
+            this._removeContainer(container)
         })
-        container.zIndex = this._zIndex++
-        this.doc.body.appendChild(el)
-        this._containers.push(container)
+        this._addContainer(container, alwaysOnTop)
         return container
     }
 
@@ -57,29 +46,70 @@ export class LayerContainer implements OnDestroy {
             containers.dispose()
         }
     }
+
+    protected _addContainer(container: LayerContainerRef, alwaysOnTop: boolean) {
+        if (typeof alwaysOnTop === "boolean") {
+            container.alwaysOnTop = alwaysOnTop
+        }
+
+        this._containers.push(container)
+        this._updateZIndex()
+        this.doc.body.appendChild(container.nativeElement)
+
+        container.onPropertyChange.subscribe(prop => {
+            if (prop === "alwaysOnTop") {
+                this._updateZIndex()
+            }
+        })
+    }
+
+    protected _removeContainer(container: LayerContainerRef) {
+        const i = this._containers.indexOf(container)
+        if (i !== -1) {
+            this._containers.splice(i, 1)
+        }
+    }
+
+    protected _updateZIndex() {
+        this._containers
+            .sort((a, b) => a.alwaysOnTop ? b.alwaysOnTop ? 0 : 1 : -1)
+            .forEach((c, i) => c.zIndex = this.zIndexBegin + i)
+    }
 }
 
 
-export class LayerContainerRef extends ElementRef<HTMLElement> {
-    public get zIndex(): number { return parseInt(this.nativeElement.style.zIndex, 10) }
-    public set zIndex(val: number) { this.nativeElement.style.zIndex = `${val}` }
+export class LayerContainerRef extends ElementRef<HTMLElement> implements IDisposable {
+    public set zIndex(val: number) {
+        if (this._zIndex !== val) {
+            this._zIndex = val
+            this.nativeElement.style.zIndex = `${val}`
+            this.onPropertyChange.next("zIndex")
+        }
+    }
+    public get zIndex(): number { return this._zIndex }
+    protected _zIndex: number
 
-    public readonly onDestroy: Subject<void> = new Subject()
+    public set alwaysOnTop(val: boolean) {
+        if (this._alwaysOnTop !== val) {
+            this._alwaysOnTop = val
+            this.onPropertyChange.next("alwaysOnTop")
+        }
+    }
+    public get alwaysOnTop(): boolean { return this._alwaysOnTop }
+    protected _alwaysOnTop: boolean = false
 
-    public constructor(el: HTMLElement, private _onDestroy: () => void) {
+    // public readonly onDestroy: Subject<void> = new Subject()
+    public readonly destruct: Destruct = new Destruct()
+    public readonly onPropertyChange: Subject<string> = this.destruct.subject(new Subject())
+
+    public constructor(el: HTMLElement, destroy: () => void) {
         super(el)
+        this.destruct.any(destroy)
+        this.destruct.element(el)
     }
 
     public dispose() {
-        if (this._onDestroy) {
-            this._onDestroy()
-            delete this._onDestroy
-        }
-
-        if (this.nativeElement.parentNode) {
-            this.nativeElement.parentNode.removeChild(this.nativeElement)
-        }
-        this.onDestroy.next()
+        this.destruct.run()
     }
 }
 
