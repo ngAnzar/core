@@ -18,10 +18,11 @@ export abstract class BoxDirective implements AfterContentInit, OnDestroy {
         if (this.gap) {
             this.updateGap()
             this.mutationObserver = new MutationObserver(mutationsList => {
+                // console.log(mutationsList)
                 // TODO: optimalizálni, hogy csak a szükséges elemeket módosítsa
                 this.updateGap()
             })
-            this.mutationObserver.observe(this.el.nativeElement, { childList: true })
+            this.mutationObserver.observe(this.el.nativeElement, { childList: true, attributes: true, attributeFilter: ["class", "style"] })
         }
     }
 
