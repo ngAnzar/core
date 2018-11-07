@@ -76,9 +76,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: ElementRef })
     protected set input(val: ElementRef<HTMLInputElement>) {
-        this._input = val
-        if (val) {
-            this._resetTextInput()
+        if (!this._input || !val || val.nativeElement !== this._input.nativeElement) {
+            this._input = val
+            if (val) {
+                this._resetTextInput()
+            }
         }
     }
     protected get input(): ElementRef<HTMLInputElement> {
@@ -423,7 +425,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _handleFocus(f: boolean) {
+        const skip = this.focused === f
         super._handleFocus(f)
+
+        if (skip) {
+            return
+        }
 
         if (this.input && f) {
             this.input.nativeElement.focus()
@@ -456,10 +463,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         // }
 
         this.inputState = "querying"
-        this.opened = true
         this.storage.filter.update({
             [this.queryField]: this.dataSource.async ? text : { contains: text }
         } as any)
+        this.opened = true
     }
 
     protected _watchInputStream(on: boolean) {
@@ -568,7 +575,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 return true
 
             case DOWN_ARROW:
-                console.log("DOWN_ARROW")
                 this.opened = true
                 if (this.ddLayer) {
                     this.ddLayer.component.instance.focusNext()
