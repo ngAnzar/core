@@ -2,7 +2,7 @@ import { Component, Directive, Inject, TemplateRef, ViewContainerRef, Input, Vie
 import { take } from "rxjs/operators"
 
 import { Anchor } from "../levitate/levitate-compute"
-import { HAlign, VAlign } from "../rect-mutation.service"
+import { HAlign, VAlign, AlignInput } from "../rect-mutation.service"
 import { LayerRef } from "./layer-ref"
 import { LayerService } from "./layer.service"
 import { MenuLayer } from "./layer-behavior"
@@ -16,7 +16,7 @@ import { DropdownLayerOptions, BackdropOptions } from "./layer-options"
 export class LayerComponent<T> implements OnDestroy {
     @ViewChild("layer", { read: TemplateRef }) protected readonly tpl: TemplateRef<T>
 
-    @Input() public selfAlign: string = "left bottom"
+    @Input() public selfAlign: AlignInput = "left bottom"
     @Input() public offsetX: number
     @Input() public offsetY: number
     @Input() public backdrop: BackdropOptions

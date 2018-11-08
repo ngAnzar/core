@@ -1,10 +1,10 @@
-import { Rect, Point, Margin, HAlign, VAlign, Align, parseAlign } from "../rect-mutation.service"
+import { Rect, Point, Margin, HAlign, VAlign, Align, AlignInput, parseAlign } from "../rect-mutation.service"
 
 import { LevitateRef } from "./levitate-ref"
 
 
 export interface AnchorPosition {
-    align: Align | string,
+    align: Align | AlignInput,
     offsetX?: number
     offsetY?: number
 }
@@ -39,7 +39,7 @@ export interface Grow {
 
 export interface Anchor {
     ref: HTMLElement | Rect | "viewport"
-    align: Align | string,
+    align: Align | AlignInput,
     margin?: Margin
 }
 

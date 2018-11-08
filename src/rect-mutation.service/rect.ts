@@ -5,12 +5,17 @@ export type HAlign = "left" | "right" | "center"
 export type VAlign = "top" | "bottom" | "center"
 // export type Align = HAlign | VAlign
 export type Align = { horizontal: HAlign, vertical: VAlign }
+export type AlignInput = "top left" | "top right" | "top center" |
+    "bottom left" | "bottom right" | "bottom center" |
+    "left top" | "left bottom" | "left center" |
+    "right top" | "right bottom" | "right center" |
+    "center" | "center center"
 
 
 const CENTER_ALIGN: Align = { horizontal: "center", vertical: "center" }
 
 
-export function parseAlign(align: string | Align): Align {
+export function parseAlign(align: Align | AlignInput): Align {
     if (typeof align !== "string") {
         if ("horizontal" in align && "vertical" in align) {
             return align
