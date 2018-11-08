@@ -78,7 +78,6 @@ export class LayerService {
         let base: Levitating = {
             ref: ref.container,
             align: opt.align || "center",
-            valign: opt.valign || "center",
             margin: opt.margin
         }
 

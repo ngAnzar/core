@@ -367,22 +367,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 let targetEl = (this.ffc ? this.ffc.el : this.el).nativeElement
                 let position: LevitateOptions = this.editable
                     ? {
-                        align: "left",
-                        valign: "top",
+                        align: "left top",
                         anchor: {
                             ref: targetEl,
-                            align: "left",
-                            valign: "bottom",
+                            align: "left bottom",
                             margin: { bottom: this.ffc ? 19 : 0 },
                         }
                     }
                     : {
-                        align: "left",
-                        valign: "top",
+                        align: "left top",
                         anchor: {
                             ref: targetEl,
-                            align: "left",
-                            valign: "top",
+                            align: "left top",
                             margin: { left: -16, right: -16 },
                         }
                     }

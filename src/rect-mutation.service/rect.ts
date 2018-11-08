@@ -3,14 +3,21 @@ import { Point } from "./point"
 export type Margin = { top?: number, right?: number, bottom?: number, left?: number } | number
 export type HAlign = "left" | "right" | "center"
 export type VAlign = "top" | "bottom" | "center"
-export type Align = HAlign | VAlign
-export type _Align = { halign: HAlign, valign: VAlign }
+// export type Align = HAlign | VAlign
+export type Align = { horizontal: HAlign, vertical: VAlign }
 
 
-const CENTER_ALIGN: _Align = { halign: "center", valign: "center" }
+const CENTER_ALIGN: Align = { horizontal: "center", vertical: "center" }
 
 
-export function parseAlign(align: string): _Align {
+export function parseAlign(align: string | Align): Align {
+    if (typeof align !== "string") {
+        if ("horizontal" in align && "vertical" in align) {
+            return align
+        }
+        throw new Error(`Invalid align value: ${align}`)
+    }
+
     if (align === "center") {
         return CENTER_ALIGN
     } else {
@@ -19,13 +26,13 @@ export function parseAlign(align: string): _Align {
             throw new Error(`Invalid align value: ${align}`)
         }
 
-        let res = {} as _Align
+        let res = {} as Align
         let i
         if ((i = parts.indexOf("left")) !== -1 || (i = parts.indexOf("right")) !== -1) {
-            res.halign = parts.splice(i, 1)[0] as HAlign
+            res.horizontal = parts.splice(i, 1)[0] as HAlign
         }
         if ((i = parts.indexOf("top")) !== -1 || (i = parts.indexOf("bottom")) !== -1) {
-            res.valign = parts.splice(i, 1)[0] as VAlign
+            res.vertical = parts.splice(i, 1)[0] as VAlign
         }
 
         switch (parts.length as number) {
@@ -34,10 +41,10 @@ export function parseAlign(align: string): _Align {
 
             case 1:
                 if (parts.indexOf("center") !== -1) {
-                    if (res.halign) {
-                        res.valign = "center"
+                    if (res.horizontal) {
+                        res.vertical = "center"
                     } else {
-                        res.halign = "center"
+                        res.horizontal = "center"
                     }
                     return res
                 }

@@ -27,8 +27,7 @@ export class MenuTriggerDirective {
             this.menuTrigger.hide()
         } else {
             this.menuTrigger.show({
-                align: "left",
-                valign: "bottom",
+                align: "left bottom",
                 ref: this.el.nativeElement
             })
         }

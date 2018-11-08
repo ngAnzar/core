@@ -16,12 +16,11 @@ import { DropdownLayerOptions, BackdropOptions } from "./layer-options"
 export class LayerComponent<T> implements OnDestroy {
     @ViewChild("layer", { read: TemplateRef }) protected readonly tpl: TemplateRef<T>
 
-    @Input("self-halign") public selfHAlign: HAlign = "left"
-    @Input("self-valign") public selfVAlign: VAlign = "top"
-    @Input("offset-x") public offsetX: number
-    @Input("offset-y") public offsetY: number
-    @Input("backdrop") public backdrop: BackdropOptions
-    @Input("anchor") public anchor: LayerAnchorDirective
+    @Input() public selfAlign: string = "left bottom"
+    @Input() public offsetX: number
+    @Input() public offsetY: number
+    @Input() public backdrop: BackdropOptions
+    @Input() public anchor: LayerAnchorDirective
 
     public get isVisible(): boolean {
         return this.layerRef && this.layerRef.isVisible
@@ -39,8 +38,7 @@ export class LayerComponent<T> implements OnDestroy {
 
         const options_: DropdownLayerOptions = {
             position: {
-                align: this.selfHAlign,
-                valign: this.selfVAlign,
+                align: this.selfAlign,
                 anchor
             },
             backdrop: this.backdrop,

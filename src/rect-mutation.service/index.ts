@@ -1,3 +1,3 @@
 export { RectMutationService } from "./rect-mutation.service"
-export { Rect, Margin, HAlign, VAlign, Align } from "./rect"
+export { Rect, Margin, HAlign, VAlign, Align, parseAlign } from "./rect"
 export { Point } from "./point"

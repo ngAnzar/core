@@ -1,11 +1,10 @@
-import { Rect, Point, Margin, HAlign, VAlign, Align } from "../rect-mutation.service"
+import { Rect, Point, Margin, HAlign, VAlign, Align, parseAlign } from "../rect-mutation.service"
 
 import { LevitateRef } from "./levitate-ref"
 
 
 export interface AnchorPosition {
-    halign: HAlign,
-    valign: VAlign,
+    align: Align | string,
     offsetX?: number
     offsetY?: number
 }
@@ -34,17 +33,13 @@ export interface LevitatingPosition {
 
 export interface Grow {
     from: Point
-    direction: {
-        horizontal: HAlign
-        vertical: VAlign
-    }
+    direction: Align
 }
 
 
 export interface Anchor {
     ref: HTMLElement | Rect | "viewport"
-    align: Align
-    valign: Align
+    align: Align | string,
     margin?: Margin
 }
 
@@ -84,20 +79,20 @@ export class MagicCarpet {
     public constructor(public ref: LevitateRef) {
     }
 
+    // TODO: ne itt parseoljon
     public levitate(rects: Rects): LevitatingPosition {
-        let lA = this.ref.levitate.align || "center"
-        let lV = this.ref.levitate.valign || "center"
+        let lAlign = parseAlign(this.ref.levitate.align || "center")
+
         let pA
         let pV
 
         if (this.ref.anchor) {
-            let cA = this.ref.anchor.align || "center"
-            let cV = this.ref.anchor.valign || "center"
-            pA = calcPlacementH[`${lA}-${cA}`](rects.levitate, rects.anchor, rects.constraint)
-            pV = calcPlacementV[`${lV}-${cV}`](rects.levitate, rects.anchor, rects.constraint)
+            let cAlign = parseAlign(this.ref.anchor.align || "center")
+            pA = calcPlacementH[`${lAlign.horizontal}-${cAlign.horizontal}`](rects.levitate, rects.anchor, rects.constraint)
+            pV = calcPlacementV[`${lAlign.vertical}-${cAlign.vertical}`](rects.levitate, rects.anchor, rects.constraint)
         } else if (this.ref.constraint) {
-            pA = calcPlacementH[`${lA}-${lA}`](rects.levitate, rects.constraint, rects.constraint)
-            pV = calcPlacementV[`${lV}-${lV}`](rects.levitate, rects.constraint, rects.constraint)
+            pA = calcPlacementH[`${lAlign.horizontal}-${lAlign.horizontal}`](rects.levitate, rects.constraint, rects.constraint)
+            pV = calcPlacementV[`${lAlign.vertical}-${lAlign.vertical}`](rects.levitate, rects.constraint, rects.constraint)
         }
 
         let possibilities: Array<{ placements: Placement[], rect: Rect }> = []
@@ -140,8 +135,8 @@ export class MagicCarpet {
 
 type Placement = {
     rect: Rect,
-    levitate: Align
-    target: Align
+    levitate: HAlign | VAlign
+    target: HAlign | VAlign
     orient: "H" | "V"
 }
 
@@ -150,7 +145,7 @@ type Calculator = (levitate: Readonly<Rect>, target: Readonly<Rect>, constraint:
 type Calculators = { [key: string]: Calculator }
 
 
-function placementCalculator(levitateAlign: Align, targetAlign: Align, orient: "H" | "V", opposit?: Calculator): Calculator {
+function placementCalculator(levitateAlign: HAlign | VAlign, targetAlign: HAlign | VAlign, orient: "H" | "V", opposit?: Calculator): Calculator {
     return function (levitate: Readonly<Rect>, target: Readonly<Rect>, constraint: Readonly<Rect>): Placement[] {
         let placement = constraint.copy()
         placement[levitateAlign] = target[targetAlign]
@@ -178,8 +173,8 @@ function placementCalculator(levitateAlign: Align, targetAlign: Align, orient: "
 // levitateAlign-targetAlign
 const calcPlacementH: Calculators = {}
 const calcPlacementV: Calculators = {}
-const aligns: Align[] = ["top", "right", "bottom", "left", "center"]
-const opposite: { [key in Align]: Align } = {
+const aligns: Array<HAlign | VAlign> = ["top", "right", "bottom", "left", "center"]
+const opposite: { [key: string]: HAlign | VAlign } = {
     top: "bottom",
     right: "left",
     bottom: "top",
@@ -218,12 +213,16 @@ function getLevitatingPosition(pA: Placement, pV: Placement, levitate: Rect, con
         top: pV.levitate === "bottom" ? Math.round(constraint.bottom) - Math.round(levitate.height) : Math.round(rect.top),
         anchor: {
             position: {
-                halign: pA.target as HAlign,
-                valign: pV.target as VAlign,
+                align: {
+                    horizontal: pA.target as HAlign,
+                    vertical: pV.target as VAlign
+                }
             },
             levitate: {
-                halign: pA.levitate as HAlign,
-                valign: pV.levitate as VAlign,
+                align: {
+                    horizontal: pA.levitate as HAlign,
+                    vertical: pV.levitate as VAlign
+                }
             }
         }
     }
