@@ -73,7 +73,11 @@ export class LayerContainer implements OnDestroy {
     protected _updateZIndex() {
         this._containers
             .sort((a, b) => a.alwaysOnTop ? b.alwaysOnTop ? 0 : 1 : -1)
-            .forEach((c, i) => c.zIndex = this.zIndexBegin + i)
+            .forEach((c, i) => {
+                if (!c.skipZIndexManagement) {
+                    c.zIndex = this.zIndexBegin + i
+                }
+            })
     }
 }
 
@@ -101,6 +105,7 @@ export class LayerContainerRef extends ElementRef<HTMLElement> implements IDispo
     // public readonly onDestroy: Subject<void> = new Subject()
     public readonly destruct: Destruct = new Destruct()
     public readonly onPropertyChange: Subject<string> = this.destruct.subject(new Subject())
+    public skipZIndexManagement: boolean
 
     public constructor(el: HTMLElement, destroy: () => void) {
         super(el)

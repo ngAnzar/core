@@ -44,7 +44,7 @@ export class LayerBackdropRef implements IDisposable {
     public constructor(
         public readonly mask: MaskRef,
         public readonly animationBuilder: AnimationBuilder) {
-
+        mask.container.skipZIndexManagement = true
         mask.container.nativeElement.addEventListener("click", this.onClick)
         this.destruct.any(() => {
             mask.container.nativeElement.removeEventListener("click", this.onClick)
