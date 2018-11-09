@@ -1,14 +1,12 @@
 import {
     Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
-    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, Optional
+    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, Optional, ViewRef
 } from "@angular/core"
 import { Observable, Subject, timer } from "rxjs"
 import { startWith, take, debounce } from "rxjs/operators"
 
 import { DataStorage, Range, Model, ItemsWithChanges, Items, ListDiffKind, ListDiffItem } from "../../data"
-import { Subscriptions } from "../../util/subscriptions"
-import { LayerRef } from "../../layer.module"
-import { LevitateRef } from "../../levitate/levitate-ref"
+import { Destruct } from "../../util"
 import { ScrollerDirective } from "./scroller.directive"
 
 
@@ -83,7 +81,21 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     //     }
     // }
 
-    protected s: Subscriptions = new Subscriptions()
+    // protected s: Subscriptions = new Subscriptions()
+    protected destruct = new Destruct(() => {
+        function d(view: ViewRef) {
+            !view.destroyed && view.destroy()
+        }
+
+        for (let i = 0, l = this._vcr.length; i < l; i++) {
+            d(this._vcr.get(i))
+        }
+
+        for (let i = 0, l = this.reusable.length; i < l; i++) {
+            d(this.reusable[i])
+        }
+        this.reusable.length = 0
+    })
 
     protected reusable: EmbeddedView<T>[] = []
     private _visibleRange: Range
@@ -95,20 +107,23 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngOnInit() {
-        this.s.add(this.nzVirtualForOf.invalidated).pipe(startWith(0)).subscribe(this._update)
+        this.destruct.subscription(this.nzVirtualForOf.invalidated).pipe(startWith(0)).subscribe(this._update)
 
-        this.s.add(this._scroller.primaryScrolling).subscribe(event => {
+        this.destruct.subscription(this._scroller.primaryScrolling).subscribe(event => {
             let vr = this._getVisibleRange()
             this._setVisibleRange(vr)
         })
     }
 
     public ngOnDestroy() {
-        this.s.unsubscribe()
-        this._clear()
+        this.destruct.run()
     }
 
     public ngDoCheck() {
+        if (this.destruct.done) {
+            return
+        }
+
         let r = this.renderingRange
         let request = this._getRequestRange(r)
         this.nzVirtualForOf.getRange(request).subscribe(items => {
@@ -154,14 +169,16 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         for (let i = 0, l = this._vcr.length; i < l; i++) {
             let view = this._vcr.get(i) as EmbeddedView<T>
-            if (view && view.context && view.context.index !== -1) {
+            if (view && !view.destroyed && view.context && view.context.index !== -1) {
                 view.detectChanges()
             }
         }
     }
 
     protected _update = () => {
-        this._cdr.detectChanges()
+        if (!this.destruct.done) {
+            this._cdr.detectChanges()
+        }
     }
 
     // protected _fixRendering() {
@@ -190,17 +207,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
     // }
 
-    protected _clear() {
-        let i = this._vcr.length
-        while (i-- > 0) {
-            this._vcr.get(i).destroy()
-        }
 
-        i = this.reusable.length
-        while (i-- > 0) {
-            this.reusable.pop().destroy()
-        }
-    }
 
     protected _getViewForItem(index: number, item: T, range: Range): EmbeddedView<T> {
         let v = this.reusable.pop()
@@ -284,19 +291,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public get renderingRange(): Range {
-        // let vr = this.visibleRange
-        // let page = 0
-        // console.log(vr)
-        // if (vr.begin !== -1 && vr.begin !== vr.end) {
-        //     page = Math.floor(vr.begin / this.itemsPerRequest)
-
-        //     if (vr.end >= this.itemsPerRequest * (page + 1)) {
-        //         page += 1
-        //     }
-        // }
-        // console.log({ page })
-        // return new Range(this.itemsPerRequest * page, this.itemsPerRequest * (page + 1))
-
         let vr = this.visibleRange
         let offset = vr.begin === -1 || vr.begin === vr.end ? this.itemsPerRequest : Math.round(this.itemsPerRequest / 2)
         return new Range(
