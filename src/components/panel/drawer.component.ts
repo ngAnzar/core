@@ -68,6 +68,11 @@ export class DrawerComponent implements AfterContentInit, OnDestroy {
     public get overlayed(): boolean { return this._overlayed }
     protected _overlayed: boolean = false
 
+    @Input()
+    public set autohide(val: boolean) { this._autohide = coerceBooleanProperty(val) }
+    public get autohide(): boolean { return this._autohide }
+    protected _autohide: boolean = false
+
     protected _subscriptions: Subscriptions = new Subscriptions()
     protected _side: { [K in PanelPosition]?: DrawerSide } = {}
 
@@ -106,6 +111,14 @@ export class DrawerComponent implements AfterContentInit, OnDestroy {
             this.cdr.markForCheck()
         })
 
+    }
+
+    public hideOpenedPanel() {
+        if (this.autohide) {
+            for (const opened of this.opened) {
+                opened.opened = false
+            }
+        }
     }
 
     public ngOnDestroy() {

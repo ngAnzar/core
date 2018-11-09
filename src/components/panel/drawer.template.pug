@@ -21,6 +21,6 @@
 //- .drawer-content(#content)
 ng-content(select=".nz-content")
 
-.drawer-overlay(*ngIf="overlayed" bind-ngClass="{visible:hasOpenedPanel}")
+.drawer-overlay(*ngIf="overlayed" bind-ngClass="{visible:hasOpenedPanel}" on-click="hideOpenedPanel()")
 
 ng-content(select=".nz-panel")
