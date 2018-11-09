@@ -14,6 +14,7 @@
 
 - common.module
    - script.service
+   - file-download.service
    - rect
    - scroller
    - ripple

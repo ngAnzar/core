@@ -9,6 +9,16 @@ import { DateRangePickerComponent } from "./components/date-input/date-range-pic
 import { DateTimePickerComponent } from "./components/date-input/date-time-picker.component"
 import { DatetimeInputComponent } from "./components/date-input/datetime-input.component"
 
+export {
+    DateInputComponent,
+    TimeInputComponent,
+    DatePickerComponent,
+    DateRangePickerComponent,
+    DateTimePickerComponent,
+    DatetimeInputComponent
+}
+
+
 @NgModule({
     imports: [
         CommonModule,
