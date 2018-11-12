@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject } from "rxjs"
-import { map, takeUntil, take, startWith, debounceTime, tap, shareReplay } from "rxjs/operators"
+import { map, takeUntil, take, startWith, debounceTime, tap, shareReplay, share } from "rxjs/operators"
 // import * as DeepDiff from "deep-diff"
 const DeepDiff = require("deep-diff")
 
@@ -48,11 +48,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         return Observable.create((observer: any) => {
             let s1 = this.filter.changed.subscribe(observer)
             let s2 = this.sorter.changed.subscribe(observer)
-            // let s3 = this.reseted.subscribe(observer)
+            let s3 = this.reseted.subscribe(observer)
             return () => {
                 s1.unsubscribe()
                 s2.unsubscribe()
-                // s3.unsubscribe()
+                s3.unsubscribe()
             }
         }).pipe(debounceTime(15))
     }
@@ -76,7 +76,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         }
 
         this.s.add(this.invalidated).subscribe(x => {
-            this.reset()
+            this.reset(true)
         })
     }
 
@@ -122,7 +122,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         return this.source.getPosition(id)
     }
 
-    public reset() {
+    public reload() {
+        this.reset(false)
+    }
+
+    protected reset(skipEvent?: boolean) {
         this.cache = {}
         this.cachedRanges = new RangeList();
         this.pendingRanges = []
@@ -130,7 +134,9 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         this.total = 0;
         (this as any).lastIndex = 0;
         (this as any).endReached = false;
-        (this.reseted as EventEmitter<void>).emit()
+        if (skipEvent !== true) {
+            (this.reseted as EventEmitter<void>).emit()
+        }
     }
 
     protected _cacheItems(items: T[], r: Range, oldValues: ItemsWithChanges<T>): ItemsWithChanges<T> {
