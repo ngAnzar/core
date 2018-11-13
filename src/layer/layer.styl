@@ -10,16 +10,17 @@
 
 for i in range(0, 24)
   {'[elevation="' + i + '"]'}
-    &:before
-      content: ""
-      position: absolute
-      top: 0
-      left: 0
-      right: 0
-      bottom: 0
-      pointer-events: none
-      z-index: 0
-      nz-elevation: i
+    nz-elevation: i
+    // &:before
+    //   content: ""
+    //   position: absolute
+    //   top: 0
+    //   left: 0
+    //   right: 0
+    //   bottom: 0
+    //   pointer-events: none
+    //   z-index: 0
+    //   nz-elevation: i
 
 
 .nz-layer-backdrop

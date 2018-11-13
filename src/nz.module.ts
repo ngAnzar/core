@@ -20,6 +20,7 @@ import { RadioModule } from "./radio.module"
 import { RpcModule } from "./rpc.module"
 import { SelectModule } from "./select.module"
 import { SelectionModule } from "./selection.module"
+import { ToastModule } from "./toast.module"
 
 
 const content = [
@@ -41,7 +42,8 @@ const content = [
     RadioModule,
     RpcModule,
     SelectModule,
-    SelectionModule
+    SelectionModule,
+    ToastModule
 ]
 
 

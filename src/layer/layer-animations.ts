@@ -45,7 +45,7 @@ export const ddAnimation: AnimationSet = {
     show: [
         query(":self, .nz-layer-content", style({
             "visibility": "visible",
-            "opacity": 0,
+            // "opacity": 0,
             "width": "{{ initialWidth }}",
             "height": "{{ initialHeight }}",
         })),
@@ -56,12 +56,12 @@ export const ddAnimation: AnimationSet = {
         //     "height": "{{ initialHeight }}",
         // }),
 
-        animate(`50ms ease-in`, style({
-            "opacity": 1
-        })),
+        // animate(`500ms ease-in`, style({
+        //     "opacity": 1
+        // })),
 
         query(":self, .nz-layer-content", animate(`200ms ease-in`, style({
-            "opacity": 1,
+            // "opacity": 1,
             "width": "{{ finalWidth }}",
             "height": "{{ finalHeight }}"
         })))
