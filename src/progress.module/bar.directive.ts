@@ -10,4 +10,11 @@ import { AbstractProgressComponent, ProgressEvent } from "./progress-base"
     template: `BAR`
 })
 export class CircleProgressComponent extends AbstractProgressComponent {
+    public set percent(val: number) {
+        if (this._percent !== val) {
+            this._percent = val
+        }
+    }
+    public get percent(): number { return this._percent }
+    protected _percent: number
 }

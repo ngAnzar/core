@@ -22,6 +22,7 @@ export class CircleProgressComponent extends AbstractProgressComponent {
         if (!this.strokeWidth) {
             this.strokeWidth = strokeWidthCalc(this._radius)
         }
+        this.dashArray = Math.PI * this._radius * 2
     }
     public get radius(): number { return this._radius }
     public _radius: number
@@ -32,6 +33,18 @@ export class CircleProgressComponent extends AbstractProgressComponent {
     // @Input() public strokeWidth: number = Math.round(this.radius / 6) + (Math.round(this.radius / 6) % 2)
     @Input() public strokeWidth: number
     @Input() public strokeColor: string = "#CC3300"
+
+    protected dashArray: number
+    protected dashOffset: number
+
+    public set percent(val: number) {
+        if (this._percent !== val) {
+            this._percent = val
+            this.dashOffset = this.dashArray * (1 - val)
+        }
+    }
+    public get percent(): number { return this._percent }
+    protected _percent: number
 
     // @Input() public progress: Observable<ProgressEvent>
 

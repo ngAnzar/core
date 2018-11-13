@@ -46,6 +46,8 @@ export abstract class AbstractProgressComponent {
     public get indeterminate(): boolean { return this._indeterminate }
     protected _indeterminate: boolean = false
 
+    public abstract percent: number
+
     // protected _view: EmbeddedViewRef<any>
 
     // public constructor(
