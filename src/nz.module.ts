@@ -21,6 +21,7 @@ import { RpcModule } from "./rpc.module"
 import { SelectModule } from "./select.module"
 import { SelectionModule } from "./selection.module"
 import { ToastModule } from "./toast.module"
+import { ProgressModule } from "./progress.module"
 
 
 const content = [
@@ -43,7 +44,8 @@ const content = [
     RpcModule,
     SelectModule,
     SelectionModule,
-    ToastModule
+    ToastModule,
+    ProgressModule
 ]
 
 

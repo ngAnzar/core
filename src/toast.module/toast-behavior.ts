@@ -13,6 +13,7 @@ export class ToastLayer<O extends LayerOptions = LayerOptions> extends LayerBeha
         const style = layer.container.style as any
         style.borderRadius = "3px"
         style.overflow = "hidden"
+
         style["-webkit-backface-visibility"] = "hidden"
         style["backface-visibility"] = "hidden"
         style["outline"] = "1px solid transparent"

@@ -1,0 +1,11 @@
+:stylus
+  .spinner
+    padding: 8px
+
+  .text
+    padding: 0 16px 0 0
+
+.nz-hbox(align="center")
+  div.spinner
+    nz-progress(type="circle" radius="20" bind-source="options.progress")
+  div.text Sikeres mentés

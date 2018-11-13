@@ -14,6 +14,7 @@ import { LayerRef } from "../layer/layer-ref"
             padding: 8px;
             display: inline-flex;
             flex-direction: row;
+            align-items: center;
         }
     `],
     templateUrl: "./toast.template.pug"
@@ -27,7 +28,7 @@ export class ToastComponent {
         @Inject(DIALOG_BUTTONS) @Optional() protected readonly buttons: ButtonList,
         @Inject(DIALOG_CONTENT) protected readonly content: TemplateRef<any> | ComponentType<any>) {
 
-        setTimeout(() => { layerLef.close() }, 5000)
+        // setTimeout(() => { layerLef.close() }, 5000)
         // if (content instanceof TemplateRef) {
         //     this.tpl = content
         // } else {

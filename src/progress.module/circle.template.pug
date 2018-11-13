@@ -1,0 +1,15 @@
+
+
+svg(
+  bind-style.width="width"
+  bind-style.height="height"
+  bind-style.transform="'rotate(-90deg)'"
+  bind-attr.width="width"
+  bind-attr.height="height")
+  circle(
+    bind-attr.cx="radius"
+    bind-attr.cy="radius"
+    bind-attr.r="radius - (strokeWidth / 2)"
+    bind-attr.stroke-width="strokeWidth"
+    bind-attr.stroke="strokeColor"
+    fill="none")

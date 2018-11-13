@@ -5,11 +5,12 @@ import { Observable } from "rxjs"
 import { LayerService, LayerRef, TemplateLayerRef, ComponentLayerRef } from "../layer.module"
 import { ButtonList, DIALOG_BUTTONS, DIALOG_CONTENT, DIALOG_MESSAGE } from "../dialog/dialog.component"
 import { Align, AlignInput } from "../rect-mutation.service"
+import { ProgressEvent } from "../progress.module"
 
 import { ToastLayer } from "./toast-behavior"
 import { ToastComponent } from "./toast.component"
 import { ToastMessageComponent } from "./toast-message.component"
-import { ToastProgressComponent } from "./toast-progress.component"
+import { ToastProgressComponent, ToastProgressOptions, PROGRESS_OPTIONS } from "./toast-progress.component"
 
 
 
@@ -21,15 +22,7 @@ export interface ToastOptions {
     align: Align | AlignInput
     autoHide?: number
     buttons?: ButtonList
-    anchorRef?: HTMLElement
-}
-
-
-export interface ProgressToastOptions extends ToastOptions {
-    success: string
-    failure: string
-    indeterminate: boolean
-    progress: Observable<any> // TODO: ProgressEvent
+    constraint?: HTMLElement | "viewport"
 }
 
 
@@ -78,16 +71,20 @@ export class ToastService {
         )
     }
 
-    public save(options: ProgressToastOptions) {
+    public save(options: ToastProgressOptions) {
         return this._show(
-            this._provides(null, options.buttons, ToastProgressComponent),
-            options
+            [
+                ...this._provides(null, options.buttons),
+                { provide: PROGRESS_OPTIONS, useValue: options }
+            ],
+            options,
+            ToastProgressComponent
         )
     }
 
 
-    protected _show(provides: StaticProvider[], options: ToastOptions = {} as any): LayerRef {
-        let ref = this.layerService.createFromComponent(ToastComponent, this._behavior(options), null, provides)
+    protected _show(provides: StaticProvider[], options: ToastOptions = {} as any, cmp?: ComponentType<any>): LayerRef {
+        let ref = this.layerService.createFromComponent(cmp || ToastComponent, this._behavior(options), null, provides)
         return this.queue.add(ref)
     }
 
@@ -98,9 +95,12 @@ export class ToastService {
             position: {
                 align: options.align,
                 anchor: {
-                    ref: options.anchorRef || "viewport",
+                    ref: options.constraint || "viewport",
                     align: options.align,
                     margin: 20
+                },
+                constraint: {
+                    ref: options.constraint || "viewport"
                 }
             }
         })
