@@ -4,7 +4,7 @@ import { PortalModule } from "@angular/cdk/portal"
 
 export { AbstractProgressComponent, ProgressEvent } from "./progress-base"
 
-import { CircleProgressComponent } from "./circle.directive"
+import { CircleProgressComponent } from "./circle.component"
 export { CircleProgressComponent }
 
 

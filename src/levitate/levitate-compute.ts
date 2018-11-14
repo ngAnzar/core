@@ -16,19 +16,19 @@ export type Rects = {
 }
 // export type Margin = { inside: Offset, outside: Offset }
 
-export interface LevitatingPosition {
-    top?: number
-    left?: number
-    right?: number
-    bottom?: number
-    maxWidth?: number
-    maxHeight?: number
+// export interface LevitatePosition {
+//     top?: number
+//     left?: number
+//     right?: number
+//     bottom?: number
+//     maxWidth?: number
+//     maxHeight?: number
 
-    anchor?: {
-        position: AnchorPosition
-        levitate: AnchorPosition
-    }
-}
+//     anchor?: {
+//         position: AnchorPosition
+//         levitate: AnchorPosition
+//     }
+// }
 
 
 export interface Grow {
@@ -80,7 +80,8 @@ export class MagicCarpet {
     }
 
     // TODO: ne itt parseoljon
-    public levitate(rects: Rects): LevitatingPosition {
+    public levitate(rects: Rects): LevitatePosition {
+        console.log(rects)
         let lAlign = parseAlign(this.ref.levitate.align || "center")
 
         let pA
@@ -124,11 +125,54 @@ export class MagicCarpet {
         // result.left = best.rect.left
         // result = best.rect.constraint(result)
 
-        return getLevitatingPosition(result.placements[0], result.placements[1], rects.levitate, result.rect, rects.anchor)
+        return getLevitatePosition(result.placements[0], result.placements[1], rects.levitate, result.rect, rects.anchor)
     }
 
     public dispose(): void {
         delete this.ref
+    }
+}
+
+
+export class LevitatePosition {
+    public constructor(
+        public readonly rect: Rect,
+        public readonly constraint: Rect,
+        public readonly maxWidth: number,
+        public readonly maxHeight: number) { }
+
+    public get transformOrigin(): string {
+        return `${this.rect.origin.horizontal} ${this.rect.origin.vertical}`
+    }
+
+    public get origin(): Align {
+        return this.rect.origin
+    }
+
+    public applyToElement(el: HTMLElement) {
+        const style = el.style
+        const origin = this.rect.origin
+
+        if (origin.horizontal === "right") {
+            const m = this.constraint.margin ? this.constraint.margin.right : 0
+            style.left = ""
+            style.right = `${this.constraint.right - this.rect.right + m}px`
+        } else {
+            style.right = ""
+            style.left = `${this.rect.left}px`
+        }
+
+        if (origin.vertical === "bottom") {
+            const m = this.constraint.margin ? this.constraint.margin.bottom : 0
+            style.top = ""
+            style.bottom = `${this.constraint.height - this.rect.bottom}px`
+        } else {
+            style.bottom = ""
+            style.top = `${this.rect.top}px`
+        }
+
+        style.maxWidth = `${this.maxWidth}px`
+        style.maxHeight = `${this.maxHeight}px`
     }
 }
 
@@ -195,39 +239,50 @@ for (let a1 of aligns) {
 }
 
 
-function getLevitatingPosition(pA: Placement, pV: Placement, levitate: Rect, constraint: Rect, connect?: Rect): LevitatingPosition {
+function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, constraint: Rect, connect?: Rect): LevitatePosition {
     // drawRect(levitate, "red")
 
     let rect = levitate.copy()
+    rect.setOrigin({ horizontal: pA.levitate as HAlign, vertical: pV.levitate as VAlign })
+
     rect[pA.levitate] = constraint[pA.levitate]
     rect[pV.levitate] = constraint[pV.levitate]
     rect = constraint.constraint(rect)
 
+
+
     // drawRect(rect, "green")
     // drawRect(constraint, "black")
 
-    let res: LevitatingPosition & { [key: string]: any } = {
-        maxWidth: Math.round(constraint.width),
-        maxHeight: Math.round(constraint.height),
-        left: pA.levitate === "right" ? Math.round(constraint.right) - Math.round(levitate.width) : Math.round(rect.left),
-        top: pV.levitate === "bottom" ? Math.round(constraint.bottom) - Math.round(levitate.height) : Math.round(rect.top),
-        anchor: {
-            position: {
-                align: {
-                    horizontal: pA.target as HAlign,
-                    vertical: pV.target as VAlign
-                }
-            },
-            levitate: {
-                align: {
-                    horizontal: pA.levitate as HAlign,
-                    vertical: pV.levitate as VAlign
-                }
-            }
-        }
-    }
+    return new LevitatePosition(
+        rect,
+        constraint,
+        Math.round(constraint.width),
+        Math.round(constraint.height)
+    )
+
+    // let res: LevitatePosition & { [key: string]: any } = {
+    //     maxWidth: Math.round(constraint.width),
+    //     maxHeight: Math.round(constraint.height),
+    //     left: pA.levitate === "right" ? Math.round(constraint.right) - Math.round(levitate.width) : Math.round(rect.left),
+    //     top: pV.levitate === "bottom" ? Math.round(constraint.bottom) - Math.round(levitate.height) : Math.round(rect.top),
+    //     anchor: {
+    //         position: {
+    //             align: {
+    //                 horizontal: pA.target as HAlign,
+    //                 vertical: pV.target as VAlign
+    //             }
+    //         },
+    //         levitate: {
+    //             align: {
+    //                 horizontal: pA.levitate as HAlign,
+    //                 vertical: pV.levitate as VAlign
+    //             }
+    //         }
+    //     }
+    // }
 
 
-    return res
+    // return res
 }
 

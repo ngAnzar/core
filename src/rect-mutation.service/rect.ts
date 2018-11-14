@@ -67,63 +67,7 @@ export function parseAlign(align: Align | AlignInput): Align {
 }
 
 
-// interface VAlignImpl {
-//     setTop(rect: Rect, top: number): void
-//     setBottom(rect: Rect, bottom: number): void
-//     setHeight(rect: Rect, height: number): void
-// }
-
-
-// interface HAlignImpl {
-//     setLeft(rect: Rect, left: number): void
-//     setRight(rect: Rect, right: number): void
-//     setWidth(rect: Rect, width: number): void
-// }
-
-
-// class VAlign_Top implements VAlignImpl {
-//     public setTop(rect: any, top: number): void {
-//         rect._y = top
-//     }
-
-//     public setBottom(rect: any, bottom: number): void {
-//         rect._height = Math.max(0, bottom - rect.top)
-//     }
-
-//     public setHeight(rect: any, height: number): void {
-//         rect._height = height
-//     }
-// }
-
-
-// class VAlign_Bottom implements VAlignImpl {
-//     public setTop(rect: any, top: number): void {
-//         rect._height = Math.max(0, rect.bottom - top)
-//     }
-
-//     public setBottom(rect: any, bottom: number): void {
-//         rect._height = Math.max(0, bottom - rect.top)
-//     }
-
-//     public setHeight(rect: any, height: number): void {
-//         rect._height = height
-//     }
-// }
-
-
-// class HAlign_Left implements HAlignImpl {
-
-// }
-
-
-// class HAlign_Right implements HAlignImpl {
-
-// }
-
-
-// class Center implements VAlignImpl, HAlignImpl {
-
-// }
+const DEFAULT_ALIGN: Align = { horizontal: "left", vertical: "top" }
 
 
 export class Rect {
@@ -138,23 +82,10 @@ export class Rect {
         return new Rect(window.pageXOffset, window.pageYOffset, window.innerWidth, window.innerHeight)
     }
 
-    public get width(): number { return this._width }
-    public set width(val: number) { this._width = val }
-
-    public get height(): number { return this._height }
-    public set height(val: number) { this._height = val }
-
-    public get top(): number { return this.y }
-    public set top(val: number) { this._y = val }
-
-    public get left(): number { return this.x }
-    public set left(val: number) { this._x = val }
-
-    public get right(): number { return this.left + this.width }
-    public set right(val: number) { this.width = Math.max(0, val - this.left) }
-
-    public get bottom(): number { return this.top + this.height }
-    public set bottom(val: number) { this.height = Math.max(0, val - this.top) }
+    public top: number
+    public left: number
+    public right: number
+    public bottom: number
 
     public get center(): Point { return new Point(this.left + this.width / 2, this.top + this.height / 2) }
     public set center(val: Point) {
@@ -167,12 +98,12 @@ export class Rect {
 
     public get area(): number { return this.width * this.height }
 
-    public constructor(protected _x: number,
-        protected _y: number,
-        protected _width: number,
-        protected _height: number,
-        public readonly halign: HAlign = "left",
-        public readonly valign: VAlign = "top") {
+    public readonly origin: Align
+    public readonly margin: { top?: number, right?: number, bottom?: number, left?: number }
+
+    public constructor(x: number, y: number, public width: number, public height: number,
+        origin: Align | AlignInput = DEFAULT_ALIGN) {
+        this.setOrigin(origin, x, y)
     }
 
     public isInside(other: Rect): boolean {
@@ -187,12 +118,14 @@ export class Rect {
 
     public intersection(other: Rect): Rect | null {
         if (this.isIntersect(other)) {
-            return new Rect(
+            let res = new Rect(
                 Math.max(this.x, other.x),
                 Math.max(this.y, other.y),
                 Math.min(this.width, other.width),
-                Math.min(this.height, other.height)
-            )
+                Math.min(this.height, other.height),
+                this.origin);
+            (res as any).margin = this.margin
+            return res
         }
         return null
     }
@@ -209,12 +142,14 @@ export class Rect {
             m.left = margin.left || 0
         }
 
-        return new Rect(
+        let res = new Rect(
             this.left + m.left,
             this.top + m.top,
             this.width - (m.left + m.right),
-            this.height - (m.top + m.bottom)
-        )
+            this.height - (m.top + m.bottom),
+            this.origin);
+        (res as any).margin = m
+        return res
     }
 
     // public insetBy(value: Inset): Rect {
@@ -263,7 +198,8 @@ export class Rect {
             Math.min(this.x, other.x),
             Math.min(this.y, other.y),
             0,
-            0
+            0,
+            this.origin
         )
         r.right = Math.max(this.right, other.right)
         r.bottom = Math.max(this.bottom, other.bottom)
@@ -271,15 +207,119 @@ export class Rect {
     }
 
     public copy(): Rect {
-        return new Rect(this.x, this.y, this.width, this.height)
+        let res = new Rect(this.x, this.y, this.width, this.height, this.origin);
+        (res as any).margin = this.margin
+        return res
+
     }
 
-    public asRelative(other: Rect): Rect {
-        return new Rect(
-            this.x - other.x,
-            this.y - other.y,
-            other.width,
-            other.height
-        )
+    public setOrigin(origin: AlignInput | Align, x?: number, y?: number) {
+        const align = parseAlign(origin)
+
+        if (!this.origin || this.origin.horizontal !== align.horizontal) {
+            installHAlign(this as any, align.horizontal)
+        }
+
+        if (!this.origin || this.origin.vertical !== align.vertical) {
+            installVAlign(this as any, align.vertical)
+        }
+
+        (this as any).origin = align
+
+        if (x != null) {
+            this._x = x
+        }
+
+        if (y != null) {
+            this._y = y
+        }
     }
+}
+
+
+type setter = (val: number) => void
+type getter = () => number
+type WritableRect = { _x: number, _y: number, width: number, height: number }
+
+
+function installHAlign(rect: WritableRect, align: HAlign) {
+    let setLeft: setter, getLeft: getter, setRight: setter, getRight: getter
+
+    switch (align) {
+        case "left":
+            setLeft = (val: number) => { rect._x = val }
+            getLeft = () => { return rect._x }
+            setRight = (val: number) => { rect.width = Math.max(0, val - rect._x) }
+            getRight = (): number => { return rect._x + rect.width }
+            break
+
+        case "right":
+            setLeft = (val: number) => { rect.width = Math.max(0, rect._x - val) }
+            getLeft = () => { return rect._x - rect.width }
+            setRight = (val: number) => { rect._x = val }
+            getRight = (): number => { return rect._x }
+            break
+
+        case "center":
+            setLeft = (val: number) => { rect._x = val + rect.width / 2 }
+            getLeft = () => { return rect._x - rect.width / 2 }
+            setRight = (val: number) => { rect._x = val - rect.width / 2 }
+            getRight = (): number => { return rect._x + rect.width / 2 }
+            break
+    }
+
+    Object.defineProperty(rect, "left", {
+        get: getLeft,
+        set: setLeft,
+        enumerable: true,
+        configurable: false
+    })
+
+    Object.defineProperty(rect, "right", {
+        get: getRight,
+        set: setRight,
+        enumerable: true,
+        configurable: false
+    })
+}
+
+function installVAlign(rect: WritableRect, align: VAlign) {
+    let setTop: setter, getTop: getter, setBottom: setter, getBottom: getter
+
+    switch (align) {
+        case "top":
+            setTop = (val: number) => { rect._y = val }
+            getTop = () => { return rect._y }
+            setBottom = (val: number) => { rect.height = Math.max(0, val - rect._y) }
+            getBottom = (): number => { return rect._y + rect.height }
+            break
+
+        case "bottom":
+            setTop = (val: number) => { rect.height = Math.max(0, rect._y - val) }
+            getTop = () => { return rect._y - rect.height }
+            setBottom = (val: number) => { rect._y = val }
+            getBottom = (): number => { return rect._y }
+            break
+
+        case "center":
+            setTop = (val: number) => { rect._y = val + rect.height / 2 }
+            getTop = () => { return rect._y - rect.height / 2 }
+            setBottom = (val: number) => { rect._y = val - rect.height / 2 }
+            getBottom = (): number => { return rect._y + rect.height / 2 }
+            break
+    }
+
+    Object.defineProperty(rect, "top", {
+        get: getTop,
+        set: setTop,
+        enumerable: true,
+        configurable: false
+    })
+
+    Object.defineProperty(rect, "bottom", {
+        get: getBottom,
+        set: setBottom,
+        enumerable: true,
+        configurable: false
+    })
 }

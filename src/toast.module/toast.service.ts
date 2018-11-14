@@ -71,7 +71,7 @@ export class ToastService {
         )
     }
 
-    public save(options: ToastProgressOptions) {
+    public progress(options: ToastProgressOptions) {
         return this._show(
             [
                 ...this._provides(null, options.buttons),
@@ -94,13 +94,9 @@ export class ToastService {
             elevation: 10,
             position: {
                 align: options.align,
-                anchor: {
-                    ref: options.constraint || "viewport",
-                    align: options.align,
-                    margin: 20
-                },
                 constraint: {
-                    ref: options.constraint || "viewport"
+                    ref: options.constraint || "viewport",
+                    margin: 20
                 }
             }
         })

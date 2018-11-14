@@ -4,10 +4,13 @@
 
   .text
     visibility: none
+    white-space: nowrap
 
 .nz-hbox(align="center")
   div.spinner
-    nz-progress(type="circle" radius="20" bind-source="options.progress" bind-indeterminate="options.indeterminate")
+    nz-progress(type="circle" radius="20" bind-source="progress" bind-color="spinnerColor")
+
+  div.text(#info bind-style.paddingRight.px="infoText ? 16 : 0") {{ infoText || "" }}
 
   //- div.text(#success bind-innerHTML="options.success")
   //- div.text(#failure bind-innerHTML="options.failure")

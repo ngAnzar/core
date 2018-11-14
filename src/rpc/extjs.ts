@@ -3,7 +3,10 @@ import { map } from "rxjs/operators"
 
 import { Model, Filter, Sorter, Range, Items } from "../data.module"
 import { RpcDataSource } from "./rpc-source"
-import { RpcTransport, Transaction, TransactionsDict, TransactionResultFn, Action } from "./rpc-transport"
+import {
+    RpcTransport, Transaction, TransactionsDict, Action, RpcError,
+    TransactionResultSuccessFn, TransactionResultErrorFn
+} from "./rpc-transport"
 import { LoadFields } from "../data/data-source"
 
 
@@ -41,12 +44,12 @@ export class ExtjsTransport extends RpcTransport {
         return new ExtjsTransaction(id, action.group, action.action, args, lf)
     }
 
-    protected _handleResponse(transactions: TransactionsDict, response: any[], success: TransactionResultFn, error: TransactionResultFn): void {
+    protected _handleResponse(transactions: TransactionsDict, response: any[], success: TransactionResultSuccessFn, error: TransactionResultErrorFn): void {
         for (let res of response) {
             let tid = res.tid
             if (tid in transactions) {
                 if (res.type === "exception") {
-                    error(tid, res)
+                    error(tid, new RpcError(res.message, res.exc_data, res.exc_type))
                 } else if (res.type === "rpc") {
                     let result = res.result
                     if (result) {
@@ -54,7 +57,7 @@ export class ExtjsTransport extends RpcTransport {
                             if (result.success) {
                                 success(tid, this._minifyResultData(result))
                             } else {
-                                error(tid, result)
+                                error(tid, new RpcError(result.msg, result))
                             }
                         } else {
                             success(tid, result)
@@ -63,10 +66,10 @@ export class ExtjsTransport extends RpcTransport {
                         success(tid, null)
                     }
                 } else {
-                    error(tid, res)
+                    error(tid, new RpcError(`Unexpected response type received: ${res.type}`, res))
                 }
             } else {
-                error(tid, new Error(`Unrequested tid is returned in response: ${tid}`))
+                error(tid, new RpcError(`Unrequested tid is returned in response: ${tid}`, null))
             }
         }
     }

@@ -1,4 +1,4 @@
-import { Levitating, Anchor, Constraint, LevitatingPosition, MagicCarpet } from "./levitate-compute"
+import { Levitating, Anchor, Constraint, LevitatePosition, MagicCarpet } from "./levitate-compute"
 import { Observable, Observer, of, merge, Subscription } from "rxjs"
 import { map } from "rxjs/operators"
 
@@ -9,7 +9,7 @@ import { Rects } from "./levitate-compute"
 
 export class LevitateRef {
 
-    public readonly position: Readonly<LevitatingPosition>
+    public readonly position: Readonly<LevitatePosition>
     protected mc: MagicCarpet = new MagicCarpet(this)
     protected suspended: number = 0
 
@@ -48,12 +48,8 @@ export class LevitateRef {
         // TODO: CHECK EQ
         (this as any).position = pos
 
-        let levitateEl = this.levitate.ref
-        for (let k in pos) {
-            if ((pos as any)[k] != null) {
-                (levitateEl.style as any)[k] = `${(pos as any)[k]}px`
-            }
-        }
+        console.log(JSON.parse(JSON.stringify(pos)))
+        pos.applyToElement(this.levitate.ref)
     }
 
     public dispose(): void {

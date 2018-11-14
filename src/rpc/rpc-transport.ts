@@ -1,6 +1,7 @@
 import { InjectionToken, Inject, Provider, Optional } from "@angular/core"
 import { HttpClient } from "@angular/common/http"
-import { Observable, Observer, Subject } from "rxjs"
+import { Observable, Observer, Subject, throwError } from "rxjs"
+import { share, shareReplay } from "rxjs/operators"
 
 import { LoadFields } from "../data/data-source"
 
@@ -49,7 +50,18 @@ export type TransactionsDict = { [key: number]: Transaction<any> }
 
 export type TransactionFactory = (id: number, ns: string, def: Action, args: any[]) => Transaction<any>
 
-export type TransactionResultFn = (tid: number, result: any) => void
+export type TransactionResultSuccessFn = (tid: number, result: any) => void
+
+export type TransactionResultErrorFn = (tid: number, result: RpcError) => void
+
+
+export class RpcError implements Error {
+    public constructor(
+        public readonly message: string,
+        public readonly response: any,
+        public readonly name: string = "RpcError") {
+    }
+}
 
 
 let counter: { [key: string]: number } = {}
@@ -101,13 +113,13 @@ export abstract class RpcTransport {
     protected _sendSingle(transaction: Transaction<any>): Observable<any> {
         return Observable.create((observer: Observer<any>) => {
             let sub = this.http.post(this.endpoint, transaction.render(), { withCredentials: true })
-                .subscribe(response => {
-                    let body: any[] = Array.isArray(response) ? response : [response]
+                .subscribe(success => {
+                    let body: any[] = Array.isArray(success) ? success : [success]
                     this._handleResponse(
                         { [transaction.id]: transaction },
                         body,
-                        (tid, succ) => { observer.next(succ) },
-                        (tid, err) => { observer.error(err) })
+                        (tid, succ) => { observer.next(succ); observer.complete() },
+                        (tid, err) => { observer.error(err); })
 
                     // try {
                     //     let res = this._handleResponse(response)
@@ -120,12 +132,16 @@ export abstract class RpcTransport {
                     //     observer.error(e)
                     //     return
                     // }
-                    observer.complete()
+
+
+
+                }, (error) => {
+                    observer.error(error)
                 })
             return () => {
                 sub.unsubscribe()
             }
-        })
+        }).pipe(share())
     }
 
     protected _sendBatch(batch: Batch): Observable<Array<{ tid: number, result: any }>> {
@@ -145,6 +161,8 @@ export abstract class RpcTransport {
                     this._handleResponse(batch.transactions, body, notifySuccess, notifyError)
 
                     observer.complete()
+                }, (error) => {
+                    observer.error(error)
                 })
             return () => {
                 sub.unsubscribe()
@@ -154,8 +172,8 @@ export abstract class RpcTransport {
 
     // protected abstract _handleResponse(response: any): { [key: number]: any }
     protected abstract _handleResponse(transactions: TransactionsDict, response: any[],
-        success: TransactionResultFn,
-        error: TransactionResultFn): void
+        success: TransactionResultSuccessFn,
+        error: TransactionResultErrorFn): void
 }
 
 

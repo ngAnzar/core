@@ -445,7 +445,7 @@ nz-theme(primary, accent, warn, critical, confirm, info, foreground, background,
 nz-color-names(theme)
   result = ()
   for k, v in theme
-    if k != "isLight" and k != "foreground" and k != "background" and k != "disabled"
+    if k != "isLight" and k != "foreground" and k != "background"
       push(result, k)
   return result
 

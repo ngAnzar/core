@@ -1,0 +1,17 @@
+
+nz-progress
+  display: block
+
+  &[type='circle']
+    svg
+      transform-origin: center
+
+    circle
+      transform-origin: center
+      transition: stroke-dashoffset 225ms linear
+
+    for color, value in nz-theme-colors($theme)
+      &{'[color="' + color + '"]'} circle
+        stroke: value.default
+
+

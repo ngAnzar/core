@@ -1,4 +1,4 @@
-import { Component, Input, HostBinding, HostListener } from "@angular/core"
+import { Component, Input, HostBinding, HostListener, ChangeDetectionStrategy } from "@angular/core"
 import { trigger, state, animate, keyframes, style, transition, query } from "@angular/animations"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
@@ -14,12 +14,8 @@ function strokeWidthCalc(r: number) {
 
 @Component({
     selector: "nz-progress[type='circle']",
-    styles: [`
-        nz-progress[type='circle'] { display: block; }
-        nz-progress[type='circle'] svg { transform-origin: center; }
-        nz-progress[type='circle'] circle { transform-origin: center; transition: stroke-dashoffset 225ms linear; }
-    `],
     templateUrl: "./circle.template.pug",
+    changeDetection: ChangeDetectionStrategy.OnPush,
     animations: [
         trigger("animation", [
             transition("* => indeterminate0", [
@@ -57,18 +53,12 @@ export class CircleProgressComponent extends AbstractProgressComponent {
 
     // @Input() public strokeWidth: number = Math.round(this.radius / 6) + (Math.round(this.radius / 6) % 2)
     @Input() public strokeWidth: number
-    @Input() public strokeColor: string = "#CC3300"
+    // @Input() public strokeColor: string = "#CC3300"
+    @HostBinding("attr.color")
+    @Input()
+    public color: string
 
     protected dashArray: number
-    protected dashOffset: number
-
-    public set percent(val: number) {
-        if (this._percent !== val) {
-            this._percent = val
-        }
-    }
-    public get percent(): number { return this._percent }
-    protected _percent: number
 
     @HostBinding("@animation")
     public get animation(): any {

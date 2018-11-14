@@ -1,14 +1,25 @@
-import { Directive, Input, Inject, TemplateRef, ViewContainerRef, EmbeddedViewRef, Attribute } from "@angular/core"
+import { Directive, Input, Inject, ChangeDetectorRef } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, Subscription } from "rxjs"
 
 import { Destruct } from "../util"
 
 
+/**
+ * Ha megvan adva a percent akkor megállapítható módba vált a progress indicator
+ * Ha nincs megadva a percent akkor pedig megállapíthatatlan
+ */
 export interface ProgressEvent {
-    percent: number
-    position?: number
+    /**
+     * Aktuális százalék 0...1
+     */
+    percent?: number
+    current?: number
     total?: number
+    /**
+     * Ez lesz kiírva, már ahol támogatott a szöveg
+     */
+    message?: string
 }
 
 
@@ -33,46 +44,36 @@ export abstract class AbstractProgressComponent {
     private _source: Observable<ProgressEvent>
     private _sourceS: Subscription
 
-    // @Input()
-    // public set visible(val: boolean) {
-    //     console.log("set visible", val)
-    //     val = coerceBooleanProperty(val)
-    //     if (this._visible !== val) {
-    //         this._visible = val
+    public set percent(val: number) {
+        if (this._percent !== val) {
+            this._percent = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get percent(): number { return this._percent }
+    protected _percent: number
 
-    //         if (this._view) {
-    //             this._view.destroy()
-    //             delete this._view
-    //         }
-
-    //         if (val) {
-    //             this._view = this.tpl.createEmbeddedView({})
-    //             this.vcr.insert(this._view)
-    //         }
-    //     }
-    // }
-    // public get visible(): boolean { return this._visible }
-    // protected _visible: boolean = false
-
-    @Input()
     public set indeterminate(val: boolean) {
-        val = coerceBooleanProperty(val)
         if (this._indeterminate !== val) {
             this._indeterminate = val
+            this.cdr.markForCheck()
         }
     }
     public get indeterminate(): boolean { return this._indeterminate }
-    protected _indeterminate: boolean = false
+    private _indeterminate: boolean = true
 
-    public abstract percent: number
-
-    private _onProgress = (event: any) => {
-        if (this.indeterminate) {
-            this.percent = 1
+    private _onProgress = (event: ProgressEvent) => {
+        console.log(event)
+        if (event.percent == null) {
+            this.indeterminate = true
+            this.percent = null
         } else {
+            this.indeterminate = false
             this.percent = event.percent
         }
     }
+
+    public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) { }
 
     // protected _view: EmbeddedViewRef<any>
 
