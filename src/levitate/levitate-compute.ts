@@ -110,7 +110,7 @@ export class MagicCarpet {
         }
 
         let result = possibilities.find((item) => {
-            return rects.levitate.isInside(item.rect)
+            return rects.levitate.width <= item.rect.width && rects.levitate.height <= item.rect.height
         })
 
         result = result || possibilities.sort((a, b) => {
