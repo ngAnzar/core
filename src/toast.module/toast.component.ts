@@ -11,7 +11,6 @@ import { LayerRef } from "../layer/layer-ref"
         .-nz-toast {
             background-color: #212121;
             color: #FFF;
-            padding: 8px;
             display: inline-flex;
             flex-direction: row;
             align-items: center;

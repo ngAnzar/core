@@ -1,6 +1,8 @@
 import { Directive, Input, Inject, TemplateRef, ViewContainerRef, EmbeddedViewRef, Attribute } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { Observable } from "rxjs"
+import { Observable, Subscription } from "rxjs"
+
+import { Destruct } from "../util"
 
 
 export interface ProgressEvent {
@@ -12,8 +14,24 @@ export interface ProgressEvent {
 
 // @Directive({})
 export abstract class AbstractProgressComponent {
+    public readonly destruct = new Destruct()
+
     @Input()
-    public source: Observable<ProgressEvent>
+    public set source(val: Observable<ProgressEvent>) {
+        if (this._source !== val) {
+            if (this._sourceS) {
+                this._sourceS.unsubscribe()
+                delete this._sourceS
+            }
+
+            if (this._source = val) {
+                this._sourceS = this.destruct.subscription(val).subscribe(this._onProgress)
+            }
+        }
+
+    }
+    private _source: Observable<ProgressEvent>
+    private _sourceS: Subscription
 
     // @Input()
     // public set visible(val: boolean) {
@@ -47,6 +65,14 @@ export abstract class AbstractProgressComponent {
     protected _indeterminate: boolean = false
 
     public abstract percent: number
+
+    private _onProgress = (event: any) => {
+        if (this.indeterminate) {
+            this.percent = 1
+        } else {
+            this.percent = event.percent
+        }
+    }
 
     // protected _view: EmbeddedViewRef<any>
 

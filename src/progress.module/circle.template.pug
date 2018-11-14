@@ -5,11 +5,13 @@ svg(
   bind-style.height="height"
   bind-style.transform="'rotate(-90deg)'"
   bind-attr.width="width"
-  bind-attr.height="height")
+  bind-attr.height="height"
+  preserveAspectRatio="xMidYMid meet"
+  focusable="false")
   circle(
     bind-attr.cx="radius"
     bind-attr.cy="radius"
-    bind-attr.r="radius - (strokeWidth / 2)"
+    bind-attr.r="_radiusMinusStroke"
     bind-attr.stroke-width="strokeWidth"
     bind-attr.stroke="strokeColor"
     bind-attr.stroke-dasharray="dashArray"

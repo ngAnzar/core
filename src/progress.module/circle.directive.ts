@@ -1,4 +1,5 @@
-import { Component, Input, HostBinding } from "@angular/core"
+import { Component, Input, HostBinding, HostListener } from "@angular/core"
+import { trigger, state, animate, keyframes, style, transition, query } from "@angular/animations"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
@@ -13,7 +14,29 @@ function strokeWidthCalc(r: number) {
 
 @Component({
     selector: "nz-progress[type='circle']",
-    templateUrl: "./circle.template.pug"
+    styles: [`
+        nz-progress[type='circle'] { display: block; }
+        nz-progress[type='circle'] svg { transform-origin: center; }
+        nz-progress[type='circle'] circle { transform-origin: center; transition: stroke-dashoffset 225ms linear; }
+    `],
+    templateUrl: "./circle.template.pug",
+    animations: [
+        trigger("animation", [
+            transition("* => indeterminate0", [
+                query("circle", [
+                    animate("1s linear", keyframes([
+                        style({ "stroke-dashoffset": "{{ dashStart }}", "transform": "rotate(0deg)" }),
+                        style({ "stroke-dashoffset": "{{ dashMiddle }}", "transform": "rotate(0deg)" }),
+
+                        style({ "transform": "rotate(180deg)" }),
+
+                        style({ "stroke-dashoffset": "{{ dashStart }}", "transform": "rotate(360deg)" }),
+                    ]))
+                ])
+            ]),
+            transition("indeterminate1 => indeterminate0", [])
+        ])
+    ]
 })
 export class CircleProgressComponent extends AbstractProgressComponent {
     @Input()
@@ -22,10 +45,12 @@ export class CircleProgressComponent extends AbstractProgressComponent {
         if (!this.strokeWidth) {
             this.strokeWidth = strokeWidthCalc(this._radius)
         }
-        this.dashArray = Math.PI * this._radius * 2
+        this._radiusMinusStroke = this._radius - this.strokeWidth / 2
+        this.dashArray = Math.PI * this._radiusMinusStroke * 2
     }
     public get radius(): number { return this._radius }
-    public _radius: number
+    protected _radius: number
+    protected _radiusMinusStroke: number
 
     @HostBinding("style.width") public get width(): string { return `${this.radius * 2}px` }
     @HostBinding("style.height") public get height(): string { return `${this.radius * 2}px` }
@@ -40,11 +65,38 @@ export class CircleProgressComponent extends AbstractProgressComponent {
     public set percent(val: number) {
         if (this._percent !== val) {
             this._percent = val
-            this.dashOffset = this.dashArray * (1 - val)
         }
     }
     public get percent(): number { return this._percent }
     protected _percent: number
+
+    @HostBinding("@animation")
+    public get animation(): any {
+        if (this.indeterminate) {
+            return {
+                value: `indeterminate${this._animationCounter % 2}`,
+                params: {
+                    dashStart: this.dashArray,
+                    dashMiddle: this.dashArray * 0.5,
+                    dashEnd: 0,
+                }
+            }
+        } else {
+            return {
+                value: "progress",
+                params: {
+                    dash: (this.dashArray * (1 - this.percent)) || 0
+                }
+            }
+        }
+
+    }
+
+    @HostListener("@animation.done")
+    protected onAnimationDone() {
+        this._animationCounter += 1
+    }
+    private _animationCounter = 0
 
     // @Input() public progress: Observable<ProgressEvent>
 

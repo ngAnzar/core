@@ -1,5 +1,6 @@
-import { Component, Inject, EventEmitter, OnDestroy, InjectionToken } from "@angular/core"
+import { Component, Inject, OnDestroy, InjectionToken, ViewChild, AfterViewInit, ElementRef } from "@angular/core"
 import { Observable } from "rxjs"
+import { finalize } from "rxjs/operators"
 
 import { Destruct } from "../util"
 import { LayerRef } from "../layer/layer-ref"
@@ -40,12 +41,25 @@ export const PROGRESS_OPTIONS = new InjectionToken<Observable<ToastProgressOptio
     `],
     templateUrl: "./toast-progress.template.pug"
 })
-export class ToastProgressComponent implements OnDestroy {
+export class ToastProgressComponent implements OnDestroy, AfterViewInit {
+    @ViewChild("success") public readonly successEl: ElementRef
+    @ViewChild("success") public readonly failureEl: ElementRef
+
     public readonly destruct = new Destruct()
 
     public constructor(
         @Inject(LayerRef) protected readonly layerRef: LayerRef,
         @Inject(PROGRESS_OPTIONS) protected readonly options: ToastProgressOptions) {
+
+        if (options.progress) {
+            (options.progress as any).subscribe(() => {
+                layerRef.hide()
+            })
+        }
+    }
+
+    public ngAfterViewInit() {
+
     }
 
     public ngOnDestroy() {

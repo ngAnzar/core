@@ -153,18 +153,16 @@ class ToastQueue {
             return
         }
 
-        let next: LayerRef
-        do {
-            next = this.items.shift()
-        } while (next && next.destruct.done)
-
-        if (!next) {
-            return
-        }
+        const next = this.items[0]
+        this.visible = next
 
         const ds = next.destruct.on.subscribe(() => {
             if (this.visible === next) {
                 delete this.visible
+                let idx = this.items.indexOf(next)
+                if (idx > -1) {
+                    this.items.splice(idx, 1)
+                }
                 this.play()
             }
             ds.unsubscribe()
