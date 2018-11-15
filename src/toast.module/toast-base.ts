@@ -30,13 +30,11 @@ export abstract class ToastBase {
     @HostListener("mouseenter")
     protected onMouseEnter() {
         this._suspendAutohide++
-        console.log("onMouseEnter")
     }
 
     @HostListener("mouseleave")
     protected onMouseLeave() {
         this._suspendAutohide = Math.max(0, this._suspendAutohide - 1)
-        console.log("onMouseLeave")
     }
 
     protected autoHideTick = () => {

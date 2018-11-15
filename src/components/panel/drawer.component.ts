@@ -138,7 +138,6 @@ export class DrawerComponent implements AfterContentInit, OnDestroy {
             panelEvent.finalValue = this._side[position]
                 .updatePanelState(panelEvent.source, panelEvent.pendigValue)
 
-            console.log(this.hasOpenedPanel)
             this.cdr.detectChanges()
 
             // this._updateOverlay()
