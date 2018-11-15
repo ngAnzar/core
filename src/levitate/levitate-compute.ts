@@ -81,7 +81,6 @@ export class MagicCarpet {
 
     // TODO: ne itt parseoljon
     public levitate(rects: Rects): LevitatePosition {
-        console.log(rects)
         let lAlign = parseAlign(this.ref.levitate.align || "center")
 
         let pA

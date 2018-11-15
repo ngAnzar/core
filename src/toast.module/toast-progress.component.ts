@@ -33,6 +33,9 @@ export interface ToastProgressOptions extends ToastOptions {
 export const PROGRESS_OPTIONS = new InjectionToken<Observable<ToastProgressOptions>>("PROGRESS_OPTIONS")
 
 
+export type TPState = "progress" | "success" | "failure"
+
+
 @Component({
     selector: ".-nz-toast",
     styles: [`
@@ -61,22 +64,37 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
     public get infoText(): string { return this._infoText }
     private _infoText: string
 
-    public set spinnerColor(val: string) {
-        if (this._spinnerColor !== val) {
-            this._spinnerColor = val
+    public set state(val: TPState) {
+        if (this._state !== val) {
+            this._state = val
+            this.autohide = val === "success"
             this.cdr.detectChanges()
         }
     }
-    public get spinnerColor(): string { return this._spinnerColor }
-    private _spinnerColor: string = "disabled"
+    public get state(): TPState { return this._state }
+    private _state: TPState = "progress"
 
-    // public set indeterminate(val: boolean) {
-    //     if (this._indeterminate !== val) {
-    //         this._indeterminate = val
-    //     }
-    // }
-    // public get indeterminate(): boolean { return this._indeterminate }
-    // private _indeterminate: boolean = true
+    public get spinnerColor(): string {
+        return this.state === "progress"
+            ? "disabled"
+            : this.state === "success"
+                ? "confirm"
+                : "critical"
+    }
+
+    protected set autohide(val: boolean) {
+        if (this._autohide !== val) {
+            if (this._autohideTimer) {
+                clearTimeout(this._autohideTimer)
+            }
+
+            if (this._autohide = val) {
+                this._autohideTimer = setTimeout(this.layerRef.hide.bind(this.layerRef), 3000)
+            }
+        }
+    }
+    private _autohide: boolean = false
+    private _autohideTimer: any
 
     protected progress: Observable<ProgressEvent>
 
@@ -89,10 +107,10 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
         if (options.progress) {
             this.progress = options.progress.pipe(
                 tap(val => {
-                    this.spinnerColor = "confirm"
+                    this.state = "success"
                 }),
                 catchError(err => {
-                    this.spinnerColor = "critical"
+                    this.state = "failure"
                     return of({ percent: 1, message: err.message })
                 }),
                 share()
@@ -105,9 +123,10 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
     }
 
     public ngAfterViewInit() {
-        this.destruct.subscription(this.rectMutation.watchDimension(this.infoEl)).subscribe(dim => {
-            console.log(dim)
-            // TODO: this.layerRef.resize()
+        const infoContainer = this.infoEl.nativeElement
+        const infoTextMeasure = infoContainer.childNodes[0] as HTMLElement
+        this.destruct.subscription(this.rectMutation.watchDimension(infoTextMeasure)).subscribe(dim => {
+            // infoContainer.style.width = dim.width ? `${dim.width + 8}px` : "0px"
         })
     }
 

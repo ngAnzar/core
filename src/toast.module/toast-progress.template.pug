@@ -2,15 +2,30 @@
   .spinner
     padding: 8px
 
+  .text-container
+    visibility: hidden
+    width: 0
+    overflow: hidden
+    transition: width 300ms
+    text-align: left
+
   .text
-    visibility: none
     white-space: nowrap
+    display: inline-block
+
+  .hidebutton
+    margin-right: 8px
 
 .nz-hbox(align="center")
   div.spinner
     nz-progress(type="circle" radius="20" bind-source="progress" bind-color="spinnerColor")
 
-  div.text(#info bind-style.paddingRight.px="infoText ? 16 : 0") {{ infoText || "" }}
+  //- bind-style.marginRight.px="infoText ? 16 : 0"
+  div.text-container(#info )
+    span.text {{ infoText || "" }}
+
+  button.nz-fab.hidebutton(*ngIf="state === 'failure'" on-click="layerRef.hide()" color="accent")
+    i.nz-icon(class=icon("mdi/close"))
 
   //- div.text(#success bind-innerHTML="options.success")
   //- div.text(#failure bind-innerHTML="options.failure")

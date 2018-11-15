@@ -48,7 +48,7 @@ export class LevitateRef {
         // TODO: CHECK EQ
         (this as any).position = pos
 
-        console.log(JSON.parse(JSON.stringify(pos)))
+        // console.log(JSON.parse(JSON.stringify(pos)))
         pos.applyToElement(this.levitate.ref)
     }
 

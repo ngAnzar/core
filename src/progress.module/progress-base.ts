@@ -47,6 +47,7 @@ export abstract class AbstractProgressComponent {
     public set percent(val: number) {
         if (this._percent !== val) {
             this._percent = val
+            this.onPercentChange()
             this.cdr.markForCheck()
         }
     }
@@ -56,6 +57,7 @@ export abstract class AbstractProgressComponent {
     public set indeterminate(val: boolean) {
         if (this._indeterminate !== val) {
             this._indeterminate = val
+            this.onIndeterminateChange()
             this.cdr.markForCheck()
         }
     }
@@ -63,7 +65,6 @@ export abstract class AbstractProgressComponent {
     private _indeterminate: boolean = true
 
     private _onProgress = (event: ProgressEvent) => {
-        console.log(event)
         if (event.percent == null) {
             this.indeterminate = true
             this.percent = null
@@ -74,6 +75,14 @@ export abstract class AbstractProgressComponent {
     }
 
     public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) { }
+
+    protected onIndeterminateChange() {
+
+    }
+
+    protected onPercentChange() {
+
+    }
 
     // protected _view: EmbeddedViewRef<any>
 
