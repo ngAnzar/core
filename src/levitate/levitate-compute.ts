@@ -81,13 +81,12 @@ export class MagicCarpet {
 
     // TODO: ne itt parseoljon
     public levitate(rects: Rects): LevitatePosition {
-        let lAlign = parseAlign(this.ref.levitate.align || "center")
-
+        const lAlign = rects.levitate.origin
         let pA
         let pV
 
         if (this.ref.anchor) {
-            let cAlign = parseAlign(this.ref.anchor.align || "center")
+            const cAlign = rects.anchor.origin
             pA = calcPlacementH[`${lAlign.horizontal}-${cAlign.horizontal}`](rects.levitate, rects.anchor, rects.constraint)
             pV = calcPlacementV[`${lAlign.vertical}-${cAlign.vertical}`](rects.levitate, rects.anchor, rects.constraint)
         } else if (this.ref.constraint) {
@@ -116,6 +115,8 @@ export class MagicCarpet {
         result = result || possibilities.sort((a, b) => {
             return b.rect.area - a.rect.area
         })[0]
+
+        // console.log(result.placements.map(v => v.))
 
         // console.log(rects, result)
 
@@ -164,7 +165,7 @@ export class LevitatePosition {
         if (origin.vertical === "bottom") {
             const m = this.constraint.margin ? this.constraint.margin.bottom : 0
             style.top = ""
-            style.bottom = `${this.constraint.height - this.rect.bottom}px`
+            style.bottom = `${this.constraint.bottom - this.rect.bottom + m}px`
         } else {
             style.bottom = ""
             style.top = `${this.rect.top}px`
@@ -202,13 +203,7 @@ function placementCalculator(levitateAlign: HAlign | VAlign, targetAlign: HAlign
         if (opposit) {
             res = res.concat(opposit(levitate, target, constraint))
         }
-
-        return res.sort((a, b) => {
-            if (a.rect.width < levitate.width) {
-                return 1
-            }
-            return 0
-        })
+        return res
     }
 }
 
@@ -252,6 +247,7 @@ function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, const
 
     // drawRect(rect, "green")
     // drawRect(constraint, "black")
+    // drawRect(connect, "purple")
 
     return new LevitatePosition(
         rect,

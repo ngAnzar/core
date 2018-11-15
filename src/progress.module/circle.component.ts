@@ -10,7 +10,7 @@ import { AbstractProgressComponent, ProgressEvent } from "./progress-base"
 
 
 function strokeWidthCalc(r: number) {
-    let x = Math.round(r * 2 / 7)
+    let x = Math.round(r / 7) * 2
     return x + (x % 2)
 }
 
@@ -252,7 +252,7 @@ export class CircleProgressComponent extends AbstractProgressComponent implement
             circle.style.strokeDashoffset = `${o}`
             circle.style.transform = `rotate(${r}deg)`
 
-            if (Math.floor(o) <= 1) {
+            if (Math.floor(o) <= 3) {
                 this.animation.stop()
             }
         }, () => !this.indeterminate)

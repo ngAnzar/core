@@ -2,7 +2,7 @@ import { Levitating, Anchor, Constraint, LevitatePosition, MagicCarpet } from ".
 import { Observable, Observer, of, merge, Subscription } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { RectMutationService, Rect } from "../rect-mutation.service"
+import { RectMutationService, Rect, parseAlign } from "../rect-mutation.service"
 import { Subscriptions } from "../util"
 import { Rects } from "./levitate-compute"
 
@@ -83,6 +83,8 @@ export class LevitateRef {
     protected start(): Observable<Rects> {
         return Observable.create((observer: Observer<Rects>) => {
             let rects: Rects = {} as any
+            let levitateOrigin = parseAlign(this.levitate.align || "center")
+            let anchorOrigin = this.anchor ? parseAlign(this.anchor.align || "center") : null
 
             function emit() {
                 if (rects.levitate && rects.constraint && rects.anchor) {
@@ -92,6 +94,9 @@ export class LevitateRef {
 
             let s1 = this.getRectObserver(this.levitate).subscribe((val) => {
                 rects.levitate = val
+                if (levitateOrigin) {
+                    val.setOrigin(levitateOrigin)
+                }
                 emit()
             })
 
@@ -102,6 +107,9 @@ export class LevitateRef {
 
             let s3 = this.getRectObserver(this.anchor || this.constraint).subscribe((val) => {
                 rects.anchor = val
+                if (anchorOrigin) {
+                    val.setOrigin(anchorOrigin)
+                }
                 emit()
             })
 

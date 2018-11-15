@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common"
 import { PortalModule } from "@angular/cdk/portal"
 
 import { ProgressModule } from "../progress.module"
+import { DirectivesModule } from "../directives.module"
 
 import { ToastService } from "./toast.service"
 export { ToastService }
@@ -16,7 +17,8 @@ import { ToastMessageComponent } from "./toast-message.component"
     imports: [
         CommonModule,
         PortalModule,
-        ProgressModule
+        ProgressModule,
+        DirectivesModule
     ],
     declarations: [
         ToastComponent,

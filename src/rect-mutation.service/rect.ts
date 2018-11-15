@@ -271,14 +271,14 @@ function installHAlign(rect: WritableRect, align: HAlign) {
     Object.defineProperty(rect, "left", {
         get: getLeft,
         set: setLeft,
-        enumerable: true,
+        enumerable: false,
         configurable: false
     })
 
     Object.defineProperty(rect, "right", {
         get: getRight,
         set: setRight,
-        enumerable: true,
+        enumerable: false,
         configurable: false
     })
 }
@@ -312,14 +312,14 @@ function installVAlign(rect: WritableRect, align: VAlign) {
     Object.defineProperty(rect, "top", {
         get: getTop,
         set: setTop,
-        enumerable: true,
+        enumerable: false,
         configurable: false
     })
 
     Object.defineProperty(rect, "bottom", {
         get: getBottom,
         set: setBottom,
-        enumerable: true,
+        enumerable: false,
         configurable: false
     })
 }

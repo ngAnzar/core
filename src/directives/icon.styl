@@ -8,3 +8,7 @@ $nz-icon-margin ?= nz-local-grid-size(2)
 
   &:not(:last-child)
     margin-right: $nz-icon-margin
+
+  for color, value in nz-theme-colors($theme)
+    &{'[color="' + color + '"]'}
+      color: value.default

@@ -1,9 +1,9 @@
 :stylus
   .spinner
     padding: 8px
+    position: relative
 
   .text-container
-    visibility: hidden
     width: 0
     overflow: hidden
     transition: width 300ms
@@ -16,12 +16,19 @@
   .hidebutton
     margin-right: 8px
 
+  .status-icon
+    position: absolute
+    top: 50%
+    left: 50%
+
 .nz-hbox(align="center")
   div.spinner
     nz-progress(type="circle" radius="20" bind-source="progress" bind-color="spinnerColor")
+    i.nz-icon.status-icon(*ngIf="state==='success'" bind-color="spinnerColor" class=icon("mdi/check-outline", 20) style="margin: -10px 0 0 -10px")
+    i.nz-icon.status-icon(*ngIf="state==='failure'" bind-color="spinnerColor" class=icon("mdi/close-outline", 20) style="margin: -10px 0 0 -10px")
 
   //- bind-style.marginRight.px="infoText ? 16 : 0"
-  div.text-container(#info )
+  div.text-container(#info)
     span.text {{ infoText || "" }}
 
   button.nz-fab.hidebutton(*ngIf="state === 'failure'" on-click="layerRef.hide()" color="accent")

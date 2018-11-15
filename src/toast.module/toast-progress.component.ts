@@ -11,6 +11,7 @@ import { ProgressEvent } from "../progress.module"
 import { RectMutationService } from "../rect-mutation.service"
 
 import { ToastOptions } from "./toast.service"
+import { ToastBase } from "./toast-base"
 
 export interface ToastProgressOptions extends ToastOptions {
     // success: string
@@ -50,7 +51,7 @@ export type TPState = "progress" | "success" | "failure"
     templateUrl: "./toast-progress.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ToastProgressComponent implements OnDestroy, AfterViewInit {
+export class ToastProgressComponent extends ToastBase implements OnDestroy, AfterViewInit {
     @ViewChild("info") public readonly infoEl: ElementRef<HTMLElement>
 
     public readonly destruct = new Destruct()
@@ -67,7 +68,7 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
     public set state(val: TPState) {
         if (this._state !== val) {
             this._state = val
-            this.autohide = val === "success"
+            this.autohide = val === "success" ? 3500 : 0
             this.cdr.detectChanges()
         }
     }
@@ -82,20 +83,6 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
                 : "critical"
     }
 
-    protected set autohide(val: boolean) {
-        if (this._autohide !== val) {
-            if (this._autohideTimer) {
-                clearTimeout(this._autohideTimer)
-            }
-
-            if (this._autohide = val) {
-                this._autohideTimer = setTimeout(this.layerRef.hide.bind(this.layerRef), 3000)
-            }
-        }
-    }
-    private _autohide: boolean = false
-    private _autohideTimer: any
-
     protected progress: Observable<ProgressEvent>
 
     public constructor(
@@ -103,6 +90,7 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
         @Inject(PROGRESS_OPTIONS) protected readonly options: ToastProgressOptions,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(RectMutationService) protected readonly rectMutation: RectMutationService) {
+        super()
 
         if (options.progress) {
             this.progress = options.progress.pipe(
@@ -126,7 +114,7 @@ export class ToastProgressComponent implements OnDestroy, AfterViewInit {
         const infoContainer = this.infoEl.nativeElement
         const infoTextMeasure = infoContainer.childNodes[0] as HTMLElement
         this.destruct.subscription(this.rectMutation.watchDimension(infoTextMeasure)).subscribe(dim => {
-            // infoContainer.style.width = dim.width ? `${dim.width + 8}px` : "0px"
+            infoContainer.style.width = dim.width ? `${dim.width + (this.state === "success" ? 16 : 8)}px` : "0px"
         })
     }
 

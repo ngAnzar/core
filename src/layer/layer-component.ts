@@ -16,7 +16,7 @@ import { DropdownLayerOptions, BackdropOptions } from "./layer-options"
 export class LayerComponent<T> implements OnDestroy {
     @ViewChild("layer", { read: TemplateRef }) protected readonly tpl: TemplateRef<T>
 
-    @Input() public selfAlign: AlignInput = "left bottom"
+    @Input() public selfAlign: AlignInput = "left top"
     @Input() public offsetX: number
     @Input() public offsetY: number
     @Input() public backdrop: BackdropOptions
