@@ -10,10 +10,10 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { ESCAPE } from "@angular/cdk/keycodes"
 import { FocusMonitor, FocusOrigin, FocusTrap, FocusTrapFactory } from "@angular/cdk/a11y"
 import { Observable, timer, fromEvent } from "rxjs"
-import { filter, last, debounce } from "rxjs/operators"
+import { filter, debounce } from "rxjs/operators"
 
 import { transitionAnimation } from "./panel.animation"
-import { Subscriptions } from "../../util"
+import { Destruct } from "../../util"
 
 
 export type PanelPosition = "top" | "right" | "bottom" | "left"
@@ -27,7 +27,7 @@ export interface PanelStateEvent {
 }
 
 
-export interface OpenedChangingEvent {
+export interface PanelOpeningEvent {
     source: PanelComponent
     pendigValue: boolean
     finalValue?: boolean
@@ -100,8 +100,8 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
     public set opened(value: boolean) {
         value = coerceBooleanProperty(value)
         if (this._opened !== value) {
-            let event: OpenedChangingEvent = { source: this, pendigValue: value };
-            (this.openedChanging as EventEmitter<OpenedChangingEvent>).emit(event);
+            let event: PanelOpeningEvent = { source: this, pendigValue: value };
+            (this.openedChanging as EventEmitter<PanelOpeningEvent>).emit(event);
 
             if (typeof event.finalValue === "boolean") {
                 value = event.finalValue
@@ -121,7 +121,7 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
     }
     protected _opened: boolean
 
-    public readonly openedChanging: Observable<OpenedChangingEvent> = new EventEmitter(false)
+    public readonly openedChanging: Observable<PanelOpeningEvent> = new EventEmitter(false)
 
     @Output("opened")
     public get onOpened(): Observable<PanelStateEvent> {
@@ -153,7 +153,14 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
     @ViewChild(TemplateRef) protected readonly tpl?: TemplateRef<any>
     @ViewChild("vc", { read: ViewContainerRef }) protected readonly vc?: ViewContainerRef
 
-    protected subscriptions: Subscriptions = new Subscriptions()
+    public readonly destruct: Destruct = new Destruct(() => {
+        if (this._focusTrap) {
+            this._focusTrap.destroy()
+            delete this._focusTrap
+        }
+        delete this.el
+        delete this._document
+    })
 
     constructor(@Inject(DOCUMENT) @Optional() protected _document: HTMLDocument,
         @Inject(FocusTrapFactory) protected _focusTrapFactory: FocusTrapFactory,
@@ -162,30 +169,18 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(NgZone) protected _ngZone: NgZone) {
 
-        this.subscriptions.add(this.onOpenStart).subscribe(() => {
+        this.destruct.subscription(this.onOpenStart).subscribe(() => {
             this._renderContent()
             if (_document) {
                 this._focusedBeforeOpen = _document.activeElement as HTMLElement
             }
         })
 
-        this.subscriptions.add(this.onClosed).subscribe(() => {
+        this.destruct.subscription(this.onClosed).subscribe(() => {
             this._restoreFocus()
         })
 
-        // this.subscriptions.add(this.stateChanges).subscribe((event) => {
-        //     if (event.state === "opening") {
-        //         this._renderContent()
-        //         if (_document) {
-        //             this._focusedBeforeOpen = _document.activeElement as HTMLElement
-        //         }
-        //     } else if (event.state === "clos") {
-        //         this._restoreFocus()
-        //     }
-        // })
-
-        this.subscriptions
-            .add(this._focusMonitor.monitor(this.el.nativeElement, true))
+        this.destruct.subscription(this._focusMonitor.monitor(this.el.nativeElement, true))
             .pipe(debounce(() => timer(20)))
             .subscribe((origin) => {
                 this.focused = origin;
@@ -264,12 +259,6 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
     }
 
     public ngOnDestroy() {
-        if (this._focusTrap) {
-            this._focusTrap.destroy()
-            delete this._focusTrap
-        }
-        this.subscriptions.unsubscribe()
-        delete this._document
-        delete this.el
+        this.destruct.run()
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@angular/core"
 
-import { Rect, RectMutationService } from "../rect-mutation.service"
+import { Rect, RectMutationService } from "../../layout.module"
 import { LayerContainer } from "../layer/layer-container"
 import { MaskRef, MaskStyle } from "./mask-ref"
 

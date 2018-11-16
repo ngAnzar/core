@@ -2,8 +2,8 @@ import { EventEmitter } from "@angular/core"
 import { Observable, of } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { Range } from "./range"
-import { Model, ID, ModelFactory, ModelClass, Fields } from "./model"
+import { NzRange } from "../util"
+import { Model, ID, ModelClass, Fields } from "./model"
 import { Items } from "./collection"
 
 
@@ -33,15 +33,15 @@ export type Filter<T> = {
 }
 export type Sorter<T> = { [K in keyof T]?: "asc" | "desc" }
 
-export interface GeneralError<T = any> {
-    success: false
-    msg?: string,
-    reason?: string,
-    data?: T
-}
-export type ModelError = any
-export type ModelErrors<T> = { [K in keyof T]?: ModelError }
-export type SaveResponse<T> = T | ModelErrors<T> | GeneralError
+// export interface GeneralError<T = any> {
+//     success: false
+//     msg?: string,
+//     reason?: string,
+//     data?: T
+// }
+// export type ModelError = any
+// export type ModelErrors<T> = { [K in keyof T]?: ModelError }
+// export type SaveResponse<T> = T | ModelErrors<T> | GeneralError
 export type LoadFields = Array<string | { [key: string]: LoadFields }>
 export type LoadFieldsArg = ModelClass | LoadFields
 
@@ -52,7 +52,7 @@ export abstract class DataSource<T extends Model> {
     public abstract readonly async: boolean
     public abstract readonly model: ModelClass<T>
 
-    public search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<Items<T>> {
+    public search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<Items<T>> {
         if (r && r.end - r.begin <= 0) {
             return of(new Items([], r))
         }
@@ -74,7 +74,7 @@ export abstract class DataSource<T extends Model> {
             .pipe(map(value => !!value))
     }
 
-    protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]>
+    protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<any[]>
 
     protected abstract _get(id: ID): Observable<T>
 
@@ -93,9 +93,9 @@ export abstract class DataSource<T extends Model> {
         return this.model ? Model.create(this.model, item) : item
     }
 
-    protected makeModels(items: any[], range?: Range): T[] {
+    protected makeModels(items: any[], range?: NzRange): T[] {
         let total = items ? (items as any).total : null
-        range = range ? new Range(range.begin, range.begin + items.length) : new Range(0, items.length)
+        range = range ? new NzRange(range.begin, range.begin + items.length) : new NzRange(0, items.length)
         return new Items(items.map(this.makeModel.bind(this)), range, total)
     }
 
@@ -150,47 +150,3 @@ export abstract class DataSource<T extends Model> {
 }
 
 
-export interface DiffKindNew {
-    kind: "N"
-    // path: string[]
-    rhs: any
-}
-
-
-export interface DiffKindDelete {
-    kind: "D"
-    path: string[]
-}
-
-
-export interface DiffKindEdit {
-    kind: "E"
-    path: string[]
-    lhs: any
-    rhs: any
-}
-
-
-export interface DiffKindAdd {
-    kind: "A"
-    path: string[]
-    index: number
-    item: DiffKind
-}
-
-
-export type DiffKind = DiffKindNew | DiffKindDelete | DiffKindEdit | DiffKindAdd
-export type Diff = Array<DiffKind>
-
-
-export interface MappingChangedEvent<F> {
-    diff: Diff
-    value: F
-}
-
-
-export interface MappingChangingEvent<F> {
-    diff: Diff
-    old: F
-    pending: F
-}

@@ -1,13 +1,13 @@
 import { AnimationBuilder, AnimationOptions, AnimationPlayer, AnimationMetadata } from "@angular/animations"
 
+import { IDisposable } from "../../util"
 import { LevitateRef } from "../levitate/levitate-ref"
 import { LayerOptions, DropdownLayerOptions } from "./layer-options"
 import { LayerRef } from "./layer-ref"
 import { fallAnimation, ddAnimation } from "./layer-animations"
-import { LayerBackdropRef } from "./layer-backdrop"
 
 
-export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> {
+export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> implements IDisposable {
     public readonly levitate: LevitateRef
 
     protected readonly animationBuilder: AnimationBuilder
@@ -71,50 +71,8 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> {
         })
     }
 
-    // TODO: refactor a backdrop kezelje az eseményeket
-    // private _backdropListeners: any[] = []
-    // public showBackdrop(layer: LayerRef): Promise<void> {
-    //     if (this.options.backdrop) {
-    //         if (!this.backdrop || !this.backdrop.nativeElement) {
-    //             this.backdrop = layer.service.container.getBackdrop(this.options.backdrop.type)
-    //         }
-    //         if (this.options.backdrop.hideOnClick) {
-    //             let listener = this.onBackdropClick.bind(this, layer)
-    //             this._backdropListeners.push(listener)
-    //             this.backdrop.nativeElement.addEventListener("click", listener)
-    //         }
-    //         return this.backdrop.show(layer.outlet, this.animationBuilder)
-    //     }
-    //     return Promise.resolve()
-    // }
-
-    // public hideBackdrop(layer: LayerRef): Promise<void> {
-    //     if (this.backdrop) {
-    //         if (this.backdrop.nativeElement) {
-    //             for (let l of this._backdropListeners) {
-    //                 this.backdrop.nativeElement.removeEventListener("click", l)
-    //             }
-    //         }
-    //         return this.backdrop.hide(this.animationBuilder)
-    //     }
-    //     return Promise.resolve()
-    // }
-
-    // protected onBackdropClick(layer: LayerRef) {
-    //     if (this.options.backdrop) {
-    //         if (this.options.backdrop.hideOnClick) {
-    //             layer.hide()
-    //         }
-    //     }
-    // }
-
     public dispose(): void {
         this.levitate.dispose()
-        // if (this.backdrop && this.backdrop.nativeElement) {
-        //     for (let l of this._backdropListeners) {
-        //         this.backdrop.nativeElement.removeEventListener("click", l)
-        //     }
-        // }
     }
 }
 

@@ -3,12 +3,116 @@ import {
     ChangeDetectorRef, ChangeDetectionStrategy
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { Subject, Observable, merge } from "rxjs"
-import { take, concat, filter, map, concatAll } from "rxjs/operators"
+import { take } from "rxjs/operators"
 
-import { PanelComponent, PanelPosition, OpenedChangingEvent, PanelStateEvent, PanelState } from "./panel.component"
-import { Subscriptions } from "../../util"
-import { MaskService, MaskRef } from "../../mask.module"
+import { PanelComponent, PanelPosition, PanelOpeningEvent } from "./panel.component"
+import { Destruct } from "../../util"
+
+
+@Component({
+    selector: ".nz-drawer",
+    templateUrl: "./drawer.template.pug",
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class DrawerComponent implements AfterContentInit, OnDestroy {
+    @ContentChildren(PanelComponent) readonly panels: QueryList<PanelComponent>
+    // @ViewChild("content") readonly content: ElementRef<HTMLElement>
+    // @ViewChild("overlay") readonly overlay: ElementRef<HTMLElement>
+
+    @Input()
+    public set overlayed(val: boolean) { this._overlayed = coerceBooleanProperty(val) }
+    public get overlayed(): boolean { return this._overlayed }
+    protected _overlayed: boolean = false
+
+    @Input()
+    public set autohide(val: boolean) { this._autohide = coerceBooleanProperty(val) }
+    public get autohide(): boolean { return this._autohide }
+    protected _autohide: boolean = false
+
+    protected _side: { [K in PanelPosition]?: DrawerSide } = {}
+
+    public readonly destruct: Destruct = new Destruct(() => {
+        for (const k in this._side) {
+            this._side[k as PanelPosition].dispose()
+        }
+    })
+
+    public get opened(): PanelComponent[] {
+        let res: PanelComponent[] = []
+        for (let k in this._side) {
+            let o = this._side[k as PanelPosition].opened
+            if (o) {
+                res.push(o)
+            }
+        }
+        return res
+    }
+
+    public get hasOpenedPanel(): boolean {
+        for (let k in this._side) {
+            if (this._side[k as PanelPosition].opened) {
+                return true
+            }
+        }
+        return false
+    }
+
+    public constructor(
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
+        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
+    }
+
+    public ngAfterContentInit() {
+        this.panels.forEach((panel: PanelComponent) => {
+            if (!this._side[panel.position]) {
+                this._side[panel.position] = new DrawerSide()
+            }
+            this._side[panel.position].updatePanelState(panel, panel.opened)
+            this._watchPanelOpened(panel)
+            this.cdr.markForCheck()
+        })
+
+    }
+
+    public ngOnDestroy() {
+        this.destruct.run()
+    }
+
+    public hideOpenedPanel() {
+        if (this.autohide) {
+            for (const opened of this.opened) {
+                opened.opened = false
+            }
+        }
+    }
+
+    protected _watchPanelOpened(panel: PanelComponent) {
+        this.destruct.subscription(panel.openedChanging).subscribe(this._handlePanelSwitch)
+    }
+
+    protected _handlePanelSwitch = (panelEvent: PanelOpeningEvent) => {
+        const position = panelEvent.source.position
+        if (position) {
+            panelEvent.finalValue = this._side[position]
+                .updatePanelState(panelEvent.source, panelEvent.pendigValue)
+
+            this.cdr.detectChanges()
+
+            // this._updateOverlay()
+        }
+    }
+
+    // protected _updateOverlay() {
+    //     if (this.overlay) {
+    //         if (this.overlayed && this.opened.length) {
+    //             this.overlay.nativeElement.classList.add("visible")
+    //         } else {
+    //             this.overlay.nativeElement.classList.remove("visible")
+    //         }
+    //     }
+    // }
+}
+
 
 
 export class DrawerSide {
@@ -50,107 +154,4 @@ export class DrawerSide {
         delete this.pending
         this.panels.length = 0
     }
-}
-
-
-@Component({
-    selector: ".nz-drawer",
-    templateUrl: "./drawer.template.pug",
-    changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class DrawerComponent implements AfterContentInit, OnDestroy {
-    @ContentChildren(PanelComponent) readonly panels: QueryList<PanelComponent>
-    // @ViewChild("content") readonly content: ElementRef<HTMLElement>
-    // @ViewChild("overlay") readonly overlay: ElementRef<HTMLElement>
-
-    @Input()
-    public set overlayed(val: boolean) { this._overlayed = coerceBooleanProperty(val) }
-    public get overlayed(): boolean { return this._overlayed }
-    protected _overlayed: boolean = false
-
-    @Input()
-    public set autohide(val: boolean) { this._autohide = coerceBooleanProperty(val) }
-    public get autohide(): boolean { return this._autohide }
-    protected _autohide: boolean = false
-
-    protected _subscriptions: Subscriptions = new Subscriptions()
-    protected _side: { [K in PanelPosition]?: DrawerSide } = {}
-
-    public get opened(): PanelComponent[] {
-        let res: PanelComponent[] = []
-        for (let k in this._side) {
-            let o = this._side[k as PanelPosition].opened
-            if (o) {
-                res.push(o)
-            }
-        }
-        return res
-    }
-
-    public get hasOpenedPanel(): boolean {
-        for (let k in this._side) {
-            if (this._side[k as PanelPosition].opened) {
-                return true
-            }
-        }
-        return false
-    }
-
-    public constructor(
-        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
-        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
-    }
-
-    public ngAfterContentInit() {
-        this.panels.forEach((panel: PanelComponent) => {
-            if (!this._side[panel.position]) {
-                this._side[panel.position] = new DrawerSide()
-            }
-            this._side[panel.position].updatePanelState(panel, panel.opened)
-            this._watchPanelOpened(panel)
-            this.cdr.markForCheck()
-        })
-
-    }
-
-    public hideOpenedPanel() {
-        if (this.autohide) {
-            for (const opened of this.opened) {
-                opened.opened = false
-            }
-        }
-    }
-
-    public ngOnDestroy() {
-        this._subscriptions.unsubscribe()
-        for (const k in this._side) {
-            this._side[k as PanelPosition].dispose()
-        }
-    }
-
-    protected _watchPanelOpened(panel: PanelComponent) {
-        this._subscriptions.add(panel.openedChanging).subscribe(this._handlePanelSwitch)
-    }
-
-    protected _handlePanelSwitch = (panelEvent: OpenedChangingEvent) => {
-        const position = panelEvent.source.position
-        if (position) {
-            panelEvent.finalValue = this._side[position]
-                .updatePanelState(panelEvent.source, panelEvent.pendigValue)
-
-            this.cdr.detectChanges()
-
-            // this._updateOverlay()
-        }
-    }
-
-    // protected _updateOverlay() {
-    //     if (this.overlay) {
-    //         if (this.overlayed && this.opened.length) {
-    //             this.overlay.nativeElement.classList.add("visible")
-    //         } else {
-    //             this.overlay.nativeElement.classList.remove("visible")
-    //         }
-    //     }
-    // }
 }

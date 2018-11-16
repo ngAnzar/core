@@ -1,9 +1,9 @@
 import { Injectable, Inject } from "@angular/core"
 
-import { RectMutationService } from "../rect-mutation.service"
+import { RectMutationService } from "../../layout.module"
 
 import { LevitateRef } from "./levitate-ref"
-import { Levitating, Anchor, Constraint } from "./levitate-compute"
+import { Levitating, Anchor, Constraint } from "./levitate-options"
 
 
 @Injectable()

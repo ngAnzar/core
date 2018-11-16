@@ -1,13 +1,15 @@
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { Model, Filter, Sorter, Range, Items } from "../data.module"
+import { NzRange } from "../../util"
+import { Model } from "../model"
+import { Items } from "../collection"
+import { LoadFields, Filter, Sorter } from "../data-source"
 import { RpcDataSource } from "./rpc-source"
 import {
-    RpcTransport, Transaction, TransactionsDict, Action, RpcError,
-    TransactionResultSuccessFn, TransactionResultErrorFn
+    RpcTransport, Transaction, TransactionsDict, RpcAction, RpcError,
+    RpcSuccessCallback, RpcFailureCallback
 } from "./rpc-transport"
-import { LoadFields } from "../data/data-source"
 
 
 export class ExtjsTransaction extends Transaction<any> {
@@ -40,11 +42,11 @@ export class ExtjsTransaction extends Transaction<any> {
 export class ExtjsTransport extends RpcTransport {
     protected pending: { [key: number]: ExtjsTransaction } = {}
 
-    public createTransaction(id: number, action: Action, args: any[], lf: LoadFields | null): Transaction<any> {
+    public createTransaction(id: number, action: RpcAction, args: any[], lf: LoadFields | null): Transaction<any> {
         return new ExtjsTransaction(id, action.group, action.action, args, lf)
     }
 
-    protected _handleResponse(transactions: TransactionsDict, response: any[], success: TransactionResultSuccessFn, error: TransactionResultErrorFn): void {
+    protected _handleResponse(transactions: TransactionsDict, response: any[], success: RpcSuccessCallback, error: RpcFailureCallback): void {
         for (let res of response) {
             let tid = res.tid
             if (tid in transactions) {
@@ -96,7 +98,7 @@ export interface ExtjsListItemsParam {
 export abstract class ExtjsDataSource<T extends Model = Model> extends RpcDataSource<T> {
     protected abstract list_items(params: ExtjsListItemsParam): Observable<T[]>
 
-    protected _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<T[]> {
+    protected _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<T[]> {
         let params = {} as ExtjsListItemsParam
 
         if (f) {

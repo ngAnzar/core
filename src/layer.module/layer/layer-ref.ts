@@ -1,16 +1,15 @@
 import { EventEmitter, Injector, ComponentRef, TemplateRef, EmbeddedViewRef, ViewContainerRef } from "@angular/core"
 import { ComponentPortal, TemplatePortal, ComponentType } from "@angular/cdk/portal"
-import { Observable, Subscription, Observer } from "rxjs"
+import { Observable, Subscription } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
-import { Destruct, IDisposable } from "../util"
-import { AnzarEvent } from "../util/event"
+import { Destruct, IDisposable } from "../../util"
+import { PreventableEvent } from "../../util"
 import { LayerOutletRef } from "./layer-container"
-import { LayerService } from "./layer.service"
 import { LayerBehavior } from "./layer-behavior"
 
 
-export class LayerEvent<D> extends AnzarEvent {
+export class LayerEvent<D> extends PreventableEvent {
     public readonly layer: LayerRef<this>
 
     public constructor(

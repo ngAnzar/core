@@ -1,7 +1,7 @@
 import { AnimationBuilder } from "@angular/animations"
 
-import { MaskRef } from "../mask.module"
-import { Destruct, IDisposable } from "../util"
+import { MaskRef } from "../mask/mask-ref"
+import { Destruct, IDisposable } from "../../util"
 
 import { LayerContainerRef } from "./layer-container"
 import { fadeAnimation } from "./layer-animations"

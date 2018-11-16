@@ -1,9 +1,8 @@
 import { Observable, of } from "rxjs"
-// import { of } from "rxjs/operators"
 
+import { NzRange } from "../util"
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
 import { Model, ID, ModelClass, RawData } from "./model"
-import { Range } from "./range"
 import { Items } from "./collection"
 
 
@@ -40,7 +39,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         throw new Error("StaticSource not supports delete")
     }
 
-    protected _search(filter?: Filter<T>, sorter?: Sorter<T>, range?: Range): Observable<any[]> {
+    protected _search(filter?: Filter<T>, sorter?: Sorter<T>, range?: NzRange): Observable<any[]> {
         let result: any[] = this.data.slice(0)
 
         if (filter) {

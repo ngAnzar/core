@@ -2,28 +2,9 @@ import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, OnInit, Chan
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
-import { SelectionModel } from "./selection.directive"
-import { Model, ID } from "../data"
+import { Model, ID } from "../model"
+import { SelectionModel, ISelectable } from "./abstract"
 
-
-export interface SelectedEvent<T extends Model> {
-    source: Selectable<T>
-    selected: boolean
-}
-
-
-export interface Selectable<T extends Model = Model> {
-    selected: boolean
-    readonly selectedChange: Observable<boolean>
-
-    // egyedi azonosító, lehetőleg mindig maradjon meg az eredeti egy adott elemhez
-    model: T
-    selectionId: ID
-
-    _changeSelected(newValue: boolean): void
-    _canChangeSelected(newValue: boolean): boolean
-    // selectionData: any
-}
 
 
 let UID_COUNTER = 0
@@ -31,8 +12,8 @@ let UID_COUNTER = 0
 @Directive({
     selector: "[selectable]"
 })
-export class SelectableDirective<T extends Model = Model> implements Selectable<T>, OnDestroy, OnInit {
-    @Input()
+export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy, OnInit {
+    @Input("selectable")
     public set model(val: T) {
         if (!Model.isEq(this._model, val)) {
             let old = this._model

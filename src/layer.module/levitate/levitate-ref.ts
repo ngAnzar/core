@@ -1,10 +1,13 @@
-import { Levitating, Anchor, Constraint, LevitatePosition, MagicCarpet } from "./levitate-compute"
-import { Observable, Observer, of, merge, Subscription } from "rxjs"
+
+import { Observable, Observer, of, Subscription } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { RectMutationService, Rect, parseAlign } from "../rect-mutation.service"
-import { Subscriptions } from "../util"
-import { Rects } from "./levitate-compute"
+import { Destruct } from "../../util"
+import { Rect, RectMutationService, parseAlign } from "../../layout.module"
+
+import { MagicCarpet, Rects } from "./levitate-compute"
+import { LevitatePosition } from "./levitate-position"
+import { Levitating, Anchor, Constraint } from "./levitate-options"
 
 
 export class LevitateRef {
@@ -53,6 +56,7 @@ export class LevitateRef {
     }
 
     public dispose(): void {
+        this.suspend()
         if (this.mc) {
             this.mc.dispose()
             delete this.mc

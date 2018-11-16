@@ -1,63 +1,19 @@
-import { Rect, Point, Margin, HAlign, VAlign, Align, AlignInput, parseAlign } from "../rect-mutation.service"
+import { Rect, HAlign, VAlign } from "../../layout.module"
 
 import { LevitateRef } from "./levitate-ref"
+import { LevitatePosition } from "./levitate-position"
 
 
-export interface AnchorPosition {
-    align: Align | AlignInput,
-    offsetX?: number
-    offsetY?: number
-}
+// export interface AnchorPosition {
+//     align: Align | AlignInput,
+//     offsetX?: number
+//     offsetY?: number
+// }
 
 export type Rects = {
     levitate: Rect,
     anchor: Rect,
     constraint: Rect
-}
-// export type Margin = { inside: Offset, outside: Offset }
-
-// export interface LevitatePosition {
-//     top?: number
-//     left?: number
-//     right?: number
-//     bottom?: number
-//     maxWidth?: number
-//     maxHeight?: number
-
-//     anchor?: {
-//         position: AnchorPosition
-//         levitate: AnchorPosition
-//     }
-// }
-
-
-export interface Grow {
-    from: Point
-    direction: Align
-}
-
-
-export interface Anchor {
-    ref: HTMLElement | Rect | "viewport"
-    align: Align | AlignInput,
-    margin?: Margin
-}
-
-
-export interface Levitating extends Anchor {
-    ref: HTMLElement
-    width?: number
-    height?: number
-    maxWidth?: number
-    maxHeight?: number
-    minWidth?: number
-    minHeight?: number
-}
-
-
-export interface Constraint {
-    ref: HTMLElement | "viewport"
-    margin?: Margin
 }
 
 
@@ -134,47 +90,7 @@ export class MagicCarpet {
 }
 
 
-export class LevitatePosition {
-    public constructor(
-        public readonly rect: Rect,
-        public readonly constraint: Rect,
-        public readonly maxWidth: number,
-        public readonly maxHeight: number) { }
 
-    public get transformOrigin(): string {
-        return `${this.rect.origin.horizontal} ${this.rect.origin.vertical}`
-    }
-
-    public get origin(): Align {
-        return this.rect.origin
-    }
-
-    public applyToElement(el: HTMLElement) {
-        const style = el.style
-        const origin = this.rect.origin
-
-        if (origin.horizontal === "right") {
-            const m = this.constraint.margin ? this.constraint.margin.right : 0
-            style.left = ""
-            style.right = `${this.constraint.right - this.rect.right + m}px`
-        } else {
-            style.right = ""
-            style.left = `${this.rect.left}px`
-        }
-
-        if (origin.vertical === "bottom") {
-            const m = this.constraint.margin ? this.constraint.margin.bottom : 0
-            style.top = ""
-            style.bottom = `${this.constraint.bottom - this.rect.bottom + m}px`
-        } else {
-            style.bottom = ""
-            style.top = `${this.rect.top}px`
-        }
-
-        style.maxWidth = `${this.maxWidth}px`
-        style.maxHeight = `${this.maxHeight}px`
-    }
-}
 
 
 type Placement = {

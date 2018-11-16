@@ -1,6 +1,6 @@
 import { HostListener } from "@angular/core"
 
-import { LayerRef } from "../layer.module"
+import { LayerRef } from "../layer/layer-ref"
 
 
 export abstract class ToastBase {

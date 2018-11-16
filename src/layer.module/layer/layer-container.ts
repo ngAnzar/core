@@ -4,7 +4,7 @@ import { DOCUMENT } from "@angular/platform-browser"
 import { DomPortalOutlet } from "@angular/cdk/portal"
 import { Subject } from "rxjs"
 
-import { Destruct, IDisposable } from "../util"
+import { Destruct, IDisposable } from "../../util"
 import "./layer.styl"
 
 

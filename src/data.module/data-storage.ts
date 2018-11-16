@@ -1,26 +1,28 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject } from "rxjs"
-import { map, takeUntil, take, startWith, debounceTime, tap, shareReplay, share } from "rxjs/operators"
-// import * as DeepDiff from "deep-diff"
+import { map, startWith, debounceTime, tap, shareReplay } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
-import { Subscriptions } from "../util"
-import { DataSource, Filter, Sorter, Diff, MappingChangingEvent, MappingChangedEvent } from "./data-source"
+
+import { Destruct, IDisposable, NzRange, NzRangeList } from "../util"
+import { DataSource, Filter, Sorter } from "./data-source"
 import { Model, ID } from "./model"
-import { Collection, ItemsWithChanges, Items } from "./collection"
-import { Range, RangeList } from "./range"
-import { StaticSource } from "./static-source"
+import { Collection, Items } from "./collection"
 
 
-export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
+export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> implements IDisposable {
     public readonly filter = new DictField<F>()
     public readonly sorter = new DictField<Sorter<T>>()
-    public readonly range: Range = new Range(0, 0)
+    public readonly range: NzRange = new NzRange(0, 0)
     public readonly lastIndex: number = 0
     public readonly endReached: boolean = false
+    public readonly destruct = new Destruct(() => {
+        delete this.cache
+        this.cachedRanges.length = 0
+    })
 
 
-    public get items(): Observable<ItemsWithChanges<T>> {
+    public get items(): Observable<Items<T>> {
         return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
     }
 
@@ -58,12 +60,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     }
 
     protected cache: { [key: number]: T } = {}
-    protected cachedRanges: RangeList = new RangeList()
-    protected s = new Subscriptions()
+    protected cachedRanges: NzRangeList = new NzRangeList()
     protected cancel = new Subject()
-    protected readonly _itemsStream: Observable<ItemsWithChanges<T>> = new EventEmitter()
+    protected readonly _itemsStream: Observable<Items<T>> = new EventEmitter()
     protected total: number
-    protected pendingRanges: Array<[Range, Observable<any>]> = []
+    protected pendingRanges: Array<[NzRange, Observable<any>]> = []
 
     public constructor(protected readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
@@ -75,18 +76,17 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
             this.sorter.set(sorter)
         }
 
-        this.s.add(this.invalidated).subscribe(x => {
+        this.destruct.subscription(this.invalidated).subscribe(x => {
             this.reset(true)
         })
     }
 
-    public getRange(r: Range): Observable<ItemsWithChanges<T>> {
+    public getRange(r: NzRange): Observable<Items<T>> {
         if (this.total) {
-            r = new Range(Math.min(this.total, r.begin), Math.min(this.total, r.end))
+            r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
 
         if (!this.cachedRanges.contains(r) && !this.endReached) {
-            let oldValues = this._collectRange(r)
             let rrange = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
 
             let pending = this._getPending(rrange)
@@ -96,7 +96,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
 
             return this._setPending(
                 rrange,
-                this.s.add(this.source.search(this.filter.get(), this.sorter.get(), rrange))
+                this.destruct.subscription(this.source.search(this.filter.get(), this.sorter.get(), rrange))
                     // .pipe(take(1))
                     .pipe(map(items => {
                         (this as any).range = items.range || r
@@ -107,14 +107,14 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
                         } else {
                             (this as any).endReached = r.length !== items.length
                         }
-                        this._cacheItems(items, this.range, oldValues)
-                        return this._collectRange(this.range, oldValues)
+                        this._cacheItems(items, this.range)
+                        return this._collectRange(this.range)
                     }))
             )
         } else {
             (this as any).range = r
             let items = this._collectRange(r)
-            return this.s.add(of(items))
+            return this.destruct.subscription(of(items))
         }
     }
 
@@ -128,7 +128,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
 
     protected reset(skipEvent?: boolean) {
         this.cache = {}
-        this.cachedRanges = new RangeList();
+        this.cachedRanges = new NzRangeList();
         this.pendingRanges = []
 
         this.total = 0;
@@ -139,7 +139,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         }
     }
 
-    protected _cacheItems(items: T[], r: Range, oldValues: ItemsWithChanges<T>): ItemsWithChanges<T> {
+    protected _cacheItems(items: T[], r: NzRange): Items<T> {
         for (let k = 0, l = items.length; k < l; k++) {
             this.cache[r.begin + k] = items[k]
         }
@@ -147,14 +147,14 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         (this as any).range = this.cachedRanges.span();
         (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length);
         // (this as any).endReached = this.endReached || items.length === 0 || items.length !== r.length
-        let newItems = this._collectRange(r, oldValues);
-        (this._itemsStream as EventEmitter<ItemsWithChanges<T>>).emit(newItems)
+        let newItems = this._collectRange(r);
+        (this._itemsStream as EventEmitter<Items<T>>).emit(newItems)
 
         return newItems
     }
 
-    protected _collectRange(r: Range, o: Items<T> = [] as any): ItemsWithChanges<T> {
-        let items: ItemsWithChanges<T> = new ItemsWithChanges([], r, this.total, o)
+    protected _collectRange(r: NzRange): Items<T> {
+        let items: Items<T> = new Items([], r, this.total)
         for (let i = r.begin; i < r.end; i++) {
             if (this.cache[i]) {
                 items.push(this.cache[i])
@@ -163,7 +163,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         return items
     }
 
-    protected _getPending(r: Range): Observable<ItemsWithChanges<T>> {
+    protected _getPending(r: NzRange): Observable<Items<T>> {
         for (const item of this.pendingRanges) {
             if (item[0].contains(r.begin) && item[0].contains(r.end)) {
                 return item[1]
@@ -171,7 +171,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
         }
     }
 
-    protected _setPending(r: Range, s: Observable<ItemsWithChanges<T>>): Observable<ItemsWithChanges<T>> {
+    protected _setPending(r: NzRange, s: Observable<Items<T>>): Observable<Items<T>> {
         s = s.pipe(tap(() => {
             let idx = this.pendingRanges.findIndex((v) => v[0] === r)
             if (idx !== -1) {
@@ -184,7 +184,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> {
     }
 
     public dispose() {
-        this.s.unsubscribe()
+        this.destruct.run()
     }
 }
 
@@ -251,4 +251,51 @@ function deepClone<T>(any: T): T {
     } else {
         return undefined
     }
+}
+
+
+
+export interface DiffKindNew {
+    kind: "N"
+    // path: string[]
+    rhs: any
+}
+
+
+export interface DiffKindDelete {
+    kind: "D"
+    path: string[]
+}
+
+
+export interface DiffKindEdit {
+    kind: "E"
+    path: string[]
+    lhs: any
+    rhs: any
+}
+
+
+export interface DiffKindAdd {
+    kind: "A"
+    path: string[]
+    index: number
+    item: DiffKind
+}
+
+
+export type DiffKind = DiffKindNew | DiffKindDelete | DiffKindEdit | DiffKindAdd
+export type Diff = Array<DiffKind>
+
+
+export interface MappingChangedEvent<F> {
+    diff: Diff
+    value: F
+}
+
+
+export interface MappingChangingEvent<F> {
+    diff: Diff
+    old: F
+    pending: F
 }

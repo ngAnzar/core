@@ -3,10 +3,10 @@ import { AnimationBuilder } from "@angular/animations"
 import { ComponentType } from "@angular/cdk/portal"
 
 import { LevitateRef } from "../levitate/levitate-ref"
-import { Levitating } from "../levitate/levitate-compute"
+import { Levitating } from "../levitate/levitate-options"
 import { LevitateService } from "../levitate/levitate.service"
 
-import { MaskService } from "../mask.module"
+import { MaskService } from "../mask/mask.service"
 
 import { LayerRef, TemplateLayerRef, ComponentLayerRef } from "./layer-ref"
 import { LayerBehavior } from "./layer-behavior"
@@ -84,7 +84,7 @@ export class LayerService {
         if (!opt.constraint) {
             opt.constraint = {
                 ref: "viewport",
-                margin: 16
+                inset: 16
             }
         }
 

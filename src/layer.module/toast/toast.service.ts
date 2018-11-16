@@ -1,36 +1,23 @@
-import { Injectable, Inject, Injector, StaticProvider } from "@angular/core"
-import { ComponentType, ComponentPortal } from "@angular/cdk/portal"
-import { Observable } from "rxjs"
+import { Injectable, Inject, StaticProvider } from "@angular/core"
+import { ComponentType } from "@angular/cdk/portal"
 
-import { LayerService, LayerRef, TemplateLayerRef, ComponentLayerRef } from "../layer.module"
-import { ButtonList, DIALOG_BUTTONS, DIALOG_CONTENT, DIALOG_MESSAGE } from "../dialog/dialog.component"
-import { Align, AlignInput } from "../rect-mutation.service"
-import { ProgressEvent } from "../progress.module"
+import { LayerService } from "../layer/layer.service"
+import { LayerRef } from "../layer/layer-ref"
+import { getProviders, LayerMessageComponent } from "../_shared"
 
 import { ToastLayer } from "./toast-behavior"
 import { ToastComponent } from "./toast.component"
-import { ToastMessageComponent } from "./toast-message.component"
-import { ToastProgressComponent, ToastProgressOptions, PROGRESS_OPTIONS } from "./toast-progress.component"
-
-
-
-const AUTO_HIDE = 4000
-
-
-export interface ToastOptions {
-    // "left top", "center", "bottom center", ...
-    align: Align | AlignInput
-    autoHide?: number
-    buttons?: ButtonList
-    constraint?: HTMLElement | "viewport"
-}
+import { ToastProgressComponent } from "./toast-progress.component"
+import { ToastOptions, ToastProgressOptions, TOAST_AUTO_HIDE_MIN, TOAST_DEFAULT_ALIGN } from "./toast-options"
 
 
 function defaultOptions(options: ToastOptions): ToastOptions {
     options = options || {} as ToastOptions
-    options.align = options.align || "bottom center"
+    options.align = options.align || TOAST_DEFAULT_ALIGN
     if (options.autoHide == null) {
-        options.autoHide = AUTO_HIDE
+        options.autoHide = TOAST_AUTO_HIDE_MIN
+    } else {
+        options.autoHide = Math.max(TOAST_AUTO_HIDE_MIN, options.autoHide)
     }
     return options
 }
@@ -48,35 +35,17 @@ export class ToastService {
 
     }
 
-    // public showTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, options?: ToastOptions, context?: T): TemplateLayerRef<T> {
-    //     const behavior = this._behavior(options)
-    //     const outlet = this.lc.getNewOutlet(true)
-    //     return this._show(new TemplateLayerRef(behavior, outlet, null, vcr, tpl, context))
-    // }
-
-    // public showComponent<T>(cmp: ComponentType<T>, options?: ToastOptions, vcr?: ViewContainerRef): ComponentLayerRef<T> {
-    //     const behavior = this._behavior(options)
-    //     const outlet = this.lc.getNewOutlet(true)
-    //     return this._show(new ComponentLayerRef(behavior, outlet, null, vcr, cmp))
-    // }
-
-    // public showComponent<T>(cmp: ComponentType<T>, options?: ToastOptions, provides?: StaticProvider[], vcr?: ViewContainerRef): ComponentLayerRef<T> {
-
-    // }
-
-    public info(msg: string, options: ToastOptions) {
+    public info(message: string, options: ToastOptions) {
         return this._show(
-            this._provides(msg, options.buttons, ToastMessageComponent),
-            options
+            getProviders({ message, options, content: LayerMessageComponent }),
+            options,
+            ToastComponent
         )
     }
 
     public progress(options: ToastProgressOptions) {
         return this._show(
-            [
-                ...this._provides(null, options.buttons),
-                { provide: PROGRESS_OPTIONS, useValue: options }
-            ],
+            getProviders({ options, buttons: options.buttons }),
             options,
             ToastProgressComponent
         )
@@ -84,7 +53,7 @@ export class ToastService {
 
 
     protected _show(provides: StaticProvider[], options: ToastOptions = {} as any, cmp?: ComponentType<any>): LayerRef {
-        let ref = this.layerService.createFromComponent(cmp || ToastComponent, this._behavior(options), null, provides)
+        let ref = this.layerService.createFromComponent(cmp, this._behavior(options), null, provides)
         return this.queue.add(ref)
     }
 
@@ -100,28 +69,6 @@ export class ToastService {
                 }
             }
         })
-    }
-
-    protected _provides(message?: string, buttons?: ButtonList, content?: ComponentType<any>): StaticProvider[] {
-        let res: StaticProvider[] = []
-
-        if (message) {
-            res.push({ provide: DIALOG_MESSAGE, useValue: message })
-        }
-        if (buttons && buttons.length) {
-            res.push({ provide: DIALOG_BUTTONS, useValue: buttons })
-        }
-        if (content) {
-            res.push({
-                provide: DIALOG_CONTENT,
-                deps: [Injector],
-                useFactory: (injector: Injector) => {
-                    return new ComponentPortal(content, null, injector)
-                }
-            })
-        }
-
-        return res
     }
 }
 

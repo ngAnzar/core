@@ -1,6 +1,5 @@
-import { Margin, Rect } from "../rect-mutation.service"
-import { Anchor, Constraint } from "../levitate/levitate-compute"
-import { Align, AlignInput } from "../rect-mutation.service"
+import { Margin, Rect, Align, AlignInput } from "../../layout.module"
+import { Anchor, Constraint } from "../levitate/levitate-options"
 
 
 export interface LevitateOptions {

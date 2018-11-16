@@ -1,8 +1,7 @@
-import { Directive, Input, Inject, ChangeDetectorRef } from "@angular/core"
-import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Input, Inject, ChangeDetectorRef } from "@angular/core"
 import { Observable, Subscription } from "rxjs"
 
-import { Destruct } from "../util"
+import { Destruct } from "../../util"
 
 
 /**
@@ -24,7 +23,7 @@ export interface ProgressEvent {
 
 
 // @Directive({})
-export abstract class AbstractProgressComponent {
+export abstract class ProgressComponent {
     public readonly destruct = new Destruct()
 
     @Input()

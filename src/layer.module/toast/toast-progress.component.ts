@@ -5,31 +5,14 @@ import {
 import { Observable, of } from "rxjs"
 import { tap, catchError, share } from "rxjs/operators"
 
-import { Destruct } from "../util"
+import { Destruct } from "../../util"
+import { RectMutationService } from "../../layout.module"
+import { ProgressEvent } from "../../animation.module"
 import { LayerRef } from "../layer/layer-ref"
-import { ProgressEvent } from "../progress.module"
-import { RectMutationService } from "../rect-mutation.service"
 
-import { ToastOptions } from "./toast.service"
 import { ToastBase } from "./toast-base"
+import { ToastProgressOptions, TOAST_AUTO_HIDE_MIN } from "./toast-options"
 
-export interface ToastProgressOptions extends ToastOptions {
-    // success: string
-    // failure: string
-    progress: Observable<ProgressEvent>
-}
-
-// export interface _Indeterminate extends _BaseOptions {
-//     indeterminate: true,
-//     progress: Observable<any>
-// }
-
-// export interface _Determinate extends _BaseOptions {
-//     indeterminate: false,
-//     progress: Observable<ProgressEvent>
-// }
-
-// export type ToastProgressOptions = _Indeterminate | _Determinate
 
 export const PROGRESS_OPTIONS = new InjectionToken<Observable<ToastProgressOptions>>("PROGRESS_OPTIONS")
 
@@ -68,7 +51,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     public set state(val: TPState) {
         if (this._state !== val) {
             this._state = val
-            this.autohide = val === "success" ? 3500 : 0
+            this.autohide = val === "success" ? TOAST_AUTO_HIDE_MIN : 0
             this.cdr.detectChanges()
         }
     }

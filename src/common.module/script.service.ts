@@ -14,7 +14,6 @@ export class ScriptService {
     private scripts: ScriptModel[] = []
 
     public constructor(@Inject(DOCUMENT) protected doc: Document) {
-        console.log("ScriptService")
     }
 
     public load(src: string): Observable<ScriptModel> {

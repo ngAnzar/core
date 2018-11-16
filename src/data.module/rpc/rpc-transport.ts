@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http"
 import { Observable, Observer, Subject, throwError } from "rxjs"
 import { share, shareReplay } from "rxjs/operators"
 
-import { LoadFields } from "../data/data-source"
+import { LoadFields } from "../data-source"
 
 
 export const RPC_ENDPOINT: InjectionToken<string> = new InjectionToken("@rpc.endpoint")
@@ -18,7 +18,7 @@ export type MultiParams = Array<{
 
 export type MultiResult = Array<any>
 
-export interface Action {
+export interface RpcAction {
     group: string
     action: string
 }
@@ -39,7 +39,6 @@ export abstract class Transaction<T> {
     public error(value: T): void {
         (this as any).isSuccess = false
         this.response.error(value)
-        this.response.complete()
     }
 
     public abstract render(): { [key: string]: any }
@@ -48,11 +47,11 @@ export abstract class Transaction<T> {
 
 export type TransactionsDict = { [key: number]: Transaction<any> }
 
-export type TransactionFactory = (id: number, ns: string, def: Action, args: any[]) => Transaction<any>
+export type TransactionFactory = (id: number, ns: string, def: RpcAction, args: any[]) => Transaction<any>
 
-export type TransactionResultSuccessFn = (tid: number, result: any) => void
+export type RpcSuccessCallback = (tid: number, result: any) => void
 
-export type TransactionResultErrorFn = (tid: number, result: RpcError) => void
+export type RpcFailureCallback = (tid: number, result: RpcError) => void
 
 
 export class RpcError implements Error {
@@ -95,7 +94,7 @@ export abstract class RpcTransport {
     }
     protected _batch: Batch
 
-    public send(action: Action, args: any[], loadFields: LoadFields | null): Observable<any> {
+    public send(action: RpcAction, args: any[], loadFields: LoadFields | null): Observable<any> {
         // console.log("rpc.send", { ns, def, args })
         let transaction = this.createTransaction(counter[this.endpoint]++, action, args, loadFields)
         if (this.batchInterval) {
@@ -108,7 +107,7 @@ export abstract class RpcTransport {
 
     // public abstract sendBatch(batch: Batch): Observable<MultiResult>
     public abstract createTransaction(
-        id: number, action: Action, args: any[], loadFields: LoadFields | null): Transaction<any>
+        id: number, action: RpcAction, args: any[], loadFields: LoadFields | null): Transaction<any>
 
     protected _sendSingle(transaction: Transaction<any>): Observable<any> {
         return Observable.create((observer: Observer<any>) => {
@@ -172,8 +171,8 @@ export abstract class RpcTransport {
 
     // protected abstract _handleResponse(response: any): { [key: number]: any }
     protected abstract _handleResponse(transactions: TransactionsDict, response: any[],
-        success: TransactionResultSuccessFn,
-        error: TransactionResultErrorFn): void
+        success: RpcSuccessCallback,
+        error: RpcFailureCallback): void
 }
 
 

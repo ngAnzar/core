@@ -7,7 +7,7 @@ export type ModelFactory<M=any> = { new(value: any): M } | ((value: any) => M)
 export type RawData<T> = Partial<T>
 
 export const MODEL_ID = new InjectionToken<ID>("MODEL_ID")
-export const EQ = Symbol("@eq")
+export const MODEL_EQ = Symbol("@eq")
 const RAW = Symbol("@raw")
 const CACHE = Symbol("@cache")
 const CHANGES = Symbol("@changes")
@@ -230,7 +230,7 @@ function parseId(value: any): any {
 
 export class Model {
     public static isEq(modelA: Model, modelB: Model): boolean {
-        return this.isModel(modelA) && modelA[EQ](modelB)
+        return this.isModel(modelA) && modelA[MODEL_EQ](modelB)
     }
 
     public static isModel(model: any): boolean {
@@ -319,7 +319,7 @@ export class Model {
         return this
     }
 
-    public [EQ](other: Model) {
+    public [MODEL_EQ](other: Model) {
         return this === other || (Model.isModel(other) && other.id === this.id)
     }
 
@@ -377,7 +377,7 @@ export class ModelProxy {
         }
     }
 
-    public [EQ](other: any) {
+    public [MODEL_EQ](other: any) {
         return this === other || (Model.isModel(other) && other.id === (this as any).id)
     }
 

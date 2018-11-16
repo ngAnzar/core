@@ -1,5 +1,3 @@
-import { Observable } from "rxjs"
-
 import { LayerBehavior } from "../layer/layer-behavior"
 import { LayerOptions } from "../layer/layer-options"
 import { LayerRef } from "../layer/layer-ref"

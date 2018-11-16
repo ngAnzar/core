@@ -3,7 +3,7 @@ import { Observable, Observer, animationFrameScheduler, merge, fromEvent } from 
 import { debounceTime, finalize, share } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
-import { Rect } from "../util"
+import { Rect } from "./geometry/rect"
 
 export type Watchers<T> = Map<HTMLElement, { rc: number, watcher: T }>
 export type Dimension = { width: number, height: number }

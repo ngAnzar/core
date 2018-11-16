@@ -3,8 +3,11 @@ import { Inject, Optional, StaticProvider } from "@angular/core"
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { DataSource, Model, ModelFactory, ModelClass, ID, Filter, Sorter, Range } from "../data.module"
-import { RpcTransport, Action } from "./rpc-transport"
+import { NzRange } from "../../util"
+import { DataSource, Filter, Sorter } from "../data-source"
+import { Model, ModelClass, ID } from "../model"
+
+import { RpcTransport, RpcAction } from "./rpc-transport"
 
 
 export type RpcMapper = (value: any) => any
@@ -106,7 +109,7 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
         throw new Error(`Not implemented ${this.constructor.name}::_delete`)
     }
 
-    protected _search(f?: Filter<T>, s?: Sorter<T>, r?: Range): Observable<any[]> {
+    protected _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<any[]> {
         throw new Error(`Not implemented ${this.constructor.name}::_search`)
     }
 
