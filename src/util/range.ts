@@ -1,5 +1,5 @@
 
-export class Range {
+export class NzRange {
     constructor(public readonly begin: number,
         public readonly end: number) { }
 
@@ -7,8 +7,8 @@ export class Range {
         return this.end - this.begin
     }
 
-    public merge(r: Range): Range {
-        return new Range(
+    public merge(r: NzRange): NzRange {
+        return new NzRange(
             Math.min(this.begin, r.begin),
             Math.max(this.end, r.end))
     }
@@ -19,7 +19,7 @@ export class Range {
     //     return this
     // }
 
-    public isOverlap(other: Range): boolean {
+    public isOverlap(other: NzRange): boolean {
         return Math.max(this.begin, other.begin) <= Math.min(this.end, other.end)
     }
 
@@ -27,43 +27,43 @@ export class Range {
         return this.begin <= n && this.end >= n
     }
 
-    public copy(): Range {
-        return new Range(this.begin, this.end)
+    public copy(): NzRange {
+        return new NzRange(this.begin, this.end)
     }
 
-    public diff(r: Range): RangeList {
+    public diff(r: NzRange): NzRangeList {
         if (!this.isOverlap(r)) {
-            return new RangeList(this, r)
+            return new NzRangeList(this, r)
         }
 
-        let res = new RangeList()
+        let res = new NzRangeList()
         if (this.begin < r.begin) {
-            res.push(new Range(this.begin, r.begin))
+            res.push(new NzRange(this.begin, r.begin))
         } else {
-            res.push(new Range(r.begin, this.begin))
+            res.push(new NzRange(r.begin, this.begin))
         }
 
         if (this.end < r.end) {
-            res.push(new Range(this.end, r.end))
+            res.push(new NzRange(this.end, r.end))
         } else {
-            res.push(new Range(r.end, this.end))
+            res.push(new NzRange(r.end, this.end))
         }
 
         return res.filter(r => r.begin != r.end)
     }
 
-    public isEq(other: Range): boolean {
+    public isEq(other: NzRange): boolean {
         return this.begin === other.begin && this.end === other.end
     }
 
-    public shift(amount: number): Range {
-        return new Range(this.begin + amount, this.end + amount)
+    public shift(amount: number): NzRange {
+        return new NzRange(this.begin + amount, this.end + amount)
     }
 }
 
 
-export class RangeList extends Array<Range> {
-    public push(...ranges: Range[]): number {
+export class NzRangeList extends Array<NzRange> {
+    public push(...ranges: NzRange[]): number {
         for (let r of ranges) {
             let inserted = false
             for (let e of this) {
@@ -80,8 +80,8 @@ export class RangeList extends Array<Range> {
         return 0
     }
 
-    public concat(other: RangeList): RangeList {
-        let res = new RangeList()
+    public concat(other: NzRangeList): NzRangeList {
+        let res = new NzRangeList()
         for (let r of this) {
             res.push(r)
         }
@@ -91,16 +91,16 @@ export class RangeList extends Array<Range> {
         return res
     }
 
-    public filter(cb: (item: Range, index: number, self: this) => boolean): RangeList {
-        return new RangeList(...super.filter(cb))
+    public filter(cb: (item: NzRange, index: number, self: this) => boolean): NzRangeList {
+        return new NzRangeList(...super.filter(cb))
     }
 
-    public unique(): RangeList {
-        return new RangeList(...super.filter((item, i) => super.findIndex(x => x.isEq(item)) === i))
+    public unique(): NzRangeList {
+        return new NzRangeList(...super.filter((item, i) => super.findIndex(x => x.isEq(item)) === i))
     }
 
-    public sorted(): RangeList {
-        return new RangeList(...super.sort((a, b) => a.begin - b.begin))
+    public sorted(): NzRangeList {
+        return new NzRangeList(...super.sort((a, b) => a.begin - b.begin))
     }
 
     public copy() {
@@ -108,11 +108,11 @@ export class RangeList extends Array<Range> {
         for (let r of this) {
             rl.push(r.copy())
         }
-        return new RangeList(...rl)
+        return new NzRangeList(...rl)
     }
 
-    public contains(other: Range | RangeList): boolean {
-        if (other instanceof Range) {
+    public contains(other: NzRange | NzRangeList): boolean {
+        if (other instanceof NzRange) {
             for (let r of this) {
                 if ((r.contains(other.begin) && r.contains(other.end))) {
                     return true
@@ -128,11 +128,11 @@ export class RangeList extends Array<Range> {
         return false
     }
 
-    public merge(...others: Array<RangeList | Range>): RangeList {
-        let flattened = new RangeList(...this)
+    public merge(...others: Array<NzRangeList | NzRange>): NzRangeList {
+        let flattened = new NzRangeList(...this)
 
         for (let o of others) {
-            if (o instanceof Range) {
+            if (o instanceof NzRange) {
                 flattened.push(o)
             } else {
                 for (let r of o) {
@@ -141,7 +141,7 @@ export class RangeList extends Array<Range> {
             }
         }
 
-        let result: RangeList = new RangeList()
+        let result: NzRangeList = new NzRangeList()
 
         for (let a of flattened) {
             let ok = false
@@ -163,13 +163,13 @@ export class RangeList extends Array<Range> {
         return result
     }
 
-    public diff(other: Range | RangeList): RangeList {
-        if (other instanceof Range) {
-            other = new RangeList(other)
+    public diff(other: NzRange | NzRangeList): NzRangeList {
+        if (other instanceof NzRange) {
+            other = new NzRangeList(other)
         }
 
-        let res = new RangeList()
-        let sub: { [key: string]: [Range, RangeList] } = {}
+        let res = new NzRangeList()
+        let sub: { [key: string]: [NzRange, NzRangeList] } = {}
 
         for (let a of this) {
             let k = `${a.begin}-${a.end}`
@@ -182,7 +182,7 @@ export class RangeList extends Array<Range> {
                     if (k in sub) {
                         sub[k][1].push(b)
                     } else {
-                        sub[k] = [a, new RangeList(b)]
+                        sub[k] = [a, new NzRangeList(b)]
                     }
                 }
             }
@@ -219,11 +219,11 @@ export class RangeList extends Array<Range> {
         return res.unique().merge()
     }
 
-    public span(): Range {
+    public span(): NzRange {
         if (this.length === 0) {
-            return new Range(0, 0)
+            return new NzRange(0, 0)
         } else {
-            return new Range(this[0].begin, this[this.length - 1].end)
+            return new NzRange(this[0].begin, this[this.length - 1].end)
         }
     }
 }

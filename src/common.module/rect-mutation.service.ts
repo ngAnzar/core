@@ -1,9 +1,9 @@
 import { Injectable, ElementRef } from "@angular/core"
-import { Observable, Observer, animationFrameScheduler, merge, fromEvent, Subject } from "rxjs"
+import { Observable, Observer, animationFrameScheduler, merge, fromEvent } from "rxjs"
 import { debounceTime, finalize, share } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
-import { Rect } from "./rect"
+import { Rect } from "../util"
 
 export type Watchers<T> = Map<HTMLElement, { rc: number, watcher: T }>
 export type Dimension = { width: number, height: number }
