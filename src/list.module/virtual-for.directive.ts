@@ -2,13 +2,11 @@ import {
     Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, Optional, ViewRef
 } from "@angular/core"
-import { Observable, Subject, timer } from "rxjs"
-import { startWith, take, debounce } from "rxjs/operators"
+import { startWith } from "rxjs/operators"
 
-import { DataStorage, Range, Model, ItemsWithChanges, Items, ListDiffKind, ListDiffItem } from "../../data"
-import { Destruct } from "../../util"
-import { ScrollerDirective } from "./scroller.directive"
-
+import { DataStorage, Model, Items } from "../data.module"
+import { Destruct, NzRange, ListDiffKind } from "../util"
+import { ScrollableDirective } from "./scrollable.directive"
 
 
 export const enum ScrollingDirection {
@@ -71,7 +69,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
                 }
             }
         }
-        return new Items(contexts.sort((a, b) => a.index - b.index).map(item => item.$implicit), new Range(begin, end))
+        return new Items(contexts.sort((a, b) => a.index - b.index).map(item => item.$implicit), new NzRange(begin, end))
     }
 
     // @Input()
@@ -98,20 +96,20 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     })
 
     protected reusable: EmbeddedView<T>[] = []
-    private _visibleRange: Range
+    private _visibleNzRange: NzRange
 
     public constructor(@Inject(ViewContainerRef) protected _vcr: ViewContainerRef,
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
         @Inject(ChangeDetectorRef) protected _cdr: ChangeDetectorRef,
-        @Inject(ScrollerDirective) protected _scroller: ScrollerDirective) {
+        @Inject(ScrollableDirective) protected _scroller: ScrollableDirective) {
     }
 
     public ngOnInit() {
         this.destruct.subscription(this.nzVirtualForOf.invalidated).pipe(startWith(0)).subscribe(this._update)
 
         this.destruct.subscription(this._scroller.primaryScrolling).subscribe(event => {
-            let vr = this._getVisibleRange()
-            this._setVisibleRange(vr)
+            let vr = this._getVisibleNzRange()
+            this._setVisibleNzRange(vr)
         })
     }
 
@@ -124,15 +122,15 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             return
         }
 
-        let r = this.renderingRange
-        let request = this._getRequestRange(r)
+        let r = this.renderingNzRange
+        let request = this._getRequestNzRange(r)
         this.nzVirtualForOf.getRange(request).subscribe(items => {
             let render = items.getRange(r)
             this._updateContent(render.range, render)
         })
     }
 
-    protected _updateContent(range: Range, items: Items<T>) {
+    protected _updateContent(range: NzRange, items: Items<T>) {
         // let changes: Array<ListDiffItem<any>> = []
         // for (let i = 0, l = this._vcr.length; i < l; i++) {
         //     let v: EmbeddedView<T> = this._vcr.get(i) as any
@@ -182,11 +180,11 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     // protected _fixRendering() {
-    //     if (this.renderingRange) {
+    //     if (this.renderingNzRange) {
     //         let items: T[] = []
     //         let changes: Array<CollectionChangeItem<T>> = []
 
-    //         for (let i = this.renderingRange.begin, l = this.renderingRange.end; i < l; i++) {
+    //         for (let i = this.renderingNzRange.begin, l = this.renderingNzRange.end; i < l; i++) {
     //             let v: EmbeddedView<T> = this._vcr.get(this.itemIndexToElIndex(i)) as EmbeddedView<T>
     //             if (!v || v.context.index === -1) {
     //                 let item = this.nzVirtualForOf.get(i)
@@ -209,7 +207,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
 
 
-    protected _getViewForItem(index: number, item: T, range: Range): EmbeddedView<T> {
+    protected _getViewForItem(index: number, item: T, range: NzRange): EmbeddedView<T> {
         let v = this.reusable.pop()
         if (v) {
             this._updateContext(v.context, index, item, range)
@@ -231,7 +229,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     //     }
     // }
 
-    protected _updateContext(ctx: VirtualForContext<T>, index: number, item: T, range: Range): VirtualForContext<T> {
+    protected _updateContext(ctx: VirtualForContext<T>, index: number, item: T, range: NzRange): VirtualForContext<T> {
         ctx.$implicit = item
         ctx.index = index
         ctx.begin = range.begin
@@ -241,14 +239,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         return ctx
     }
 
-    public get visibleRange(): Range {
-        if (!this._visibleRange) {
-            this._visibleRange = this._getVisibleRange()
+    public get visibleNzRange(): NzRange {
+        if (!this._visibleNzRange) {
+            this._visibleNzRange = this._getVisibleNzRange()
         }
-        return this._visibleRange
+        return this._visibleNzRange
     }
 
-    protected _getVisibleRange(): Range {
+    protected _getVisibleNzRange(): NzRange {
         let viewport = this._scroller.viewport
         let begin: number = -1
         let end: number = -1
@@ -256,7 +254,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         if (this.fixedItemHeight > 0) {
             begin = Math.floor(viewport.top / this.fixedItemHeight)
             end = begin + Math.ceil(viewport.height / this.fixedItemHeight)
-            return new Range(begin, end)
+            return new NzRange(begin, end)
         } else {
             let checked: any[] = []
 
@@ -277,30 +275,30 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
                 }
             }
 
-            return new Range(
+            return new NzRange(
                 this.elIndexToItemIndex(begin) || 0,
                 this.elIndexToItemIndex(end) || 0)
         }
     }
 
-    protected _setVisibleRange(vr: Range): void {
-        if (!this._visibleRange || !this._visibleRange.isEq(vr)) {
-            this._visibleRange = vr
+    protected _setVisibleNzRange(vr: NzRange): void {
+        if (!this._visibleNzRange || !this._visibleNzRange.isEq(vr)) {
+            this._visibleNzRange = vr
             this._update()
         }
     }
 
-    public get renderingRange(): Range {
-        let vr = this.visibleRange
+    public get renderingNzRange(): NzRange {
+        let vr = this.visibleNzRange
         let offset = vr.begin === -1 || vr.begin === vr.end ? this.itemsPerRequest : Math.round(this.itemsPerRequest / 2)
-        return new Range(
+        return new NzRange(
             Math.max(0, vr.begin - offset),
             vr.end + offset
         )
     }
 
-    protected _getRequestRange(r: Range): Range {
-        return new Range(
+    protected _getRequestNzRange(r: NzRange): NzRange {
+        return new NzRange(
             Math.floor(r.begin / this.itemsPerRequest) * this.itemsPerRequest,
             Math.ceil(r.end / this.itemsPerRequest) * this.itemsPerRequest,
         )

@@ -8,7 +8,7 @@
 
 ng-content(select=".nz-columns")
 
-.nz-scroller
+div(nzScrollable="vertical")
   .nz-list.rows(bind-style.gridTemplate="gtRows")
     ng-template(nzVirtualFor, [nzVirtualForOf]="storage" let-virtual let-row="index" bind-fixedItemHeight="_rowHeight")
       .nz-data-grid-row(

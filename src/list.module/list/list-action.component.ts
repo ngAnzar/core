@@ -4,9 +4,7 @@ import {
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
-import { Model, Field } from "../../data.module"
-import { SelectableDirective } from "../../selection.module"
-
+import { Model, Field, SelectableDirective } from "../../data.module"
 
 
 // related issue: https://github.com/angular/angular/issues/12530
@@ -14,7 +12,6 @@ import { SelectableDirective } from "../../selection.module"
 
 @Component({
     selector: "nz-list-action",
-    // templateUrl: "./list-action.template.pug"
     template: `<ng-template #tpl><ng-content></ng-content></ng-template>`
 })
 export class ListActionComponent implements OnDestroy {

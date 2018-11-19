@@ -1,4 +1,4 @@
-import { Directive, Inject, ElementRef, Input, EventEmitter, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from "@angular/core"
+import { Directive, Inject, ElementRef, Input, EventEmitter, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy, HostBinding } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, fromEvent, merge } from "rxjs"
 import { filter } from "rxjs/operators"
@@ -6,7 +6,7 @@ import { filter } from "rxjs/operators"
 import PerfectScrollbar from "perfect-scrollbar"
 import "perfect-scrollbar/css/perfect-scrollbar.css"
 
-import { Subscriptions } from "../../util"
+import { Destruct } from "../util"
 
 
 export type ScrollOrient = "horizontal" | "vertical"
@@ -23,13 +23,20 @@ export interface Viewport {
 
 
 @Directive({
-    selector: ".nz-scroller",
+    selector: "[nzScrollable]",
     host: {
-        "[style.overflow]": "orient === 'horizontal' ? 'auto' : 'auto'"
+        // TODO: remove
+        "[style.position]": "'relative'",
+        "[style.boxSizing]": "'border-box'",
     }
 })
-export class ScrollerDirective implements OnInit, OnDestroy {
-    @Input("wheel-speed")
+export class ScrollableDirective implements OnInit, OnDestroy {
+    @Input("nzScrollable")
+    public set orient(val: ScrollOrient) { this._orient = val }
+    public get orient(): ScrollOrient { return this._orient }
+    protected _orient: ScrollOrient = "vertical"
+
+    @Input()
     public set wheelSpeed(val: number) {
         val = parseInt(`${val}`, 10)
         if (this._wheelSpeed !== val) {
@@ -40,7 +47,7 @@ export class ScrollerDirective implements OnInit, OnDestroy {
     public get wheelSpeed(): number { return this._wheelSpeed }
     protected _wheelSpeed: number = 2
 
-    @Input("wheel-propagation")
+    @Input()
     public set wheelPropagation(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._wheelPropagation !== val) {
@@ -51,37 +58,33 @@ export class ScrollerDirective implements OnInit, OnDestroy {
     public get wheelPropagation(): boolean { return this._wheelPropagation }
     protected _wheelPropagation: boolean = false
 
-    @Input("suppress-scroll-x")
-    public set suppressScrollX(val: boolean) {
-        val = coerceBooleanProperty(val)
-        if (this._suppressScrollX !== val) {
-            this._suppressScrollX = val
-            this._emitOptionsChange({ suppressScrollX: val })
-        }
-    }
-    public get suppressScrollX(): boolean { return this._suppressScrollX }
-    protected _suppressScrollX: boolean = false
+    // @Input("suppress-scroll-x")
+    // public set suppressScrollX(val: boolean) {
+    //     val = coerceBooleanProperty(val)
+    //     if (this._suppressScrollX !== val) {
+    //         this._suppressScrollX = val
+    //         this._emitOptionsChange({ suppressScrollX: val })
+    //     }
+    // }
+    // public get suppressScrollX(): boolean { return this._suppressScrollX }
+    // protected _suppressScrollX: boolean = false
 
-    @Input("suppress-scroll-y")
-    public set suppressScrollY(val: boolean) {
-        val = coerceBooleanProperty(val)
-        if (this._suppressScrollY !== val) {
-            this._suppressScrollY = val
-            this._emitOptionsChange({ suppressScrollY: val })
-        }
-    }
-    public get suppressScrollY(): boolean { return this._suppressScrollY }
-    protected _suppressScrollY: boolean = false
+    // @Input("suppress-scroll-y")
+    // public set suppressScrollY(val: boolean) {
+    //     val = coerceBooleanProperty(val)
+    //     if (this._suppressScrollY !== val) {
+    //         this._suppressScrollY = val
+    //         this._emitOptionsChange({ suppressScrollY: val })
+    //     }
+    // }
+    // public get suppressScrollY(): boolean { return this._suppressScrollY }
+    // protected _suppressScrollY: boolean = false
 
     @Input()
     public set reversed(val: boolean) { this._reversed = coerceBooleanProperty(val) }
     public get reversed(): boolean { return this._reversed }
     protected _reversed: boolean = false
 
-    @Input()
-    public set orient(val: ScrollOrient) { this._orient = val }
-    public get orient(): ScrollOrient { return this._orient }
-    protected _orient: ScrollOrient = "vertical"
 
     public get overflowX(): number { return Math.max(0, this.el.nativeElement.scrollWidth - this.el.nativeElement.offsetWidth) }
     public get overflowY(): number { return Math.max(0, this.el.nativeElement.scrollHeight - this.el.nativeElement.offsetHeight) }
@@ -111,11 +114,17 @@ export class ScrollerDirective implements OnInit, OnDestroy {
         }
     }
 
+    @HostBinding("style.overflowX")
+    public get overflowXStyle(): string { return this.orient === "horizontal" ? "auto" : "hidden" }
+
+    @HostBinding("style.overflowY")
+    public get overflowYStyle(): string { return this.orient === "vertical" ? "auto" : "hidden" }
+
     public readonly optionsChanged: Observable<PerfectScrollbar.Options> = new EventEmitter()
     public readonly primaryScrolling: Observable<Event>
 
     protected perfectScrollbar: PerfectScrollbar
-    protected readonly subscriptions: Subscriptions = new Subscriptions()
+    public readonly destruct = new Destruct()
 
     public constructor(@Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(NgZone) protected ngZone: NgZone) {

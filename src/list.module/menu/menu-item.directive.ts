@@ -1,6 +1,4 @@
-import { Directive, Output, EventEmitter, Inject, TemplateRef } from "@angular/core"
-import { Observable } from "rxjs"
-import { share, map } from "rxjs/operators"
+import { Directive, Inject, TemplateRef } from "@angular/core"
 
 import { ListItemComponent } from "../list/list-item.component"
 

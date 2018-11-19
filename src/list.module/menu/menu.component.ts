@@ -3,8 +3,7 @@ import { startWith } from "rxjs/operators"
 
 import { LayerComponent } from "../../layer.module"
 import { MenuItemDirective } from "./menu-item.directive"
-import { Anchor } from "../../levitate/levitate-compute"
-import { Subscriptions } from "../../util"
+import { Anchor } from "../../layer.module"
 
 
 export interface MenuPanelContext {

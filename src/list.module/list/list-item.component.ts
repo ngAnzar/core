@@ -4,8 +4,8 @@ import {
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
-import { RippleService, BoundedRipple } from "../../ripple/ripple.service"
-import { SelectableDirective } from "../../selection/selectable.directive"
+import { RippleService, BoundedRippleRef } from "../../animation.module"
+import { SelectableDirective } from "../../data.module"
 // import { ListDirective } from "./list.directive"
 
 @Component({
@@ -33,7 +33,7 @@ export class ListItemComponent implements AfterViewInit {
     public get focused(): boolean { return this._focused }
     protected _focused: boolean
 
-    protected boundedRipple: BoundedRipple
+    protected boundedRipple: BoundedRippleRef
 
     public constructor(
         @Inject(RippleService) protected readonly rippleSvc: RippleService,

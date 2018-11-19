@@ -5,9 +5,8 @@ import {
 } from "@angular/core"
 
 import { ColumnComponent } from "./column.component"
-import { DataGridComponent } from "./data-grid.component"
-import { Model } from "../../data.module"
-import { SelectionModel } from "../../selection.module"
+import { GridComponent } from "./grid.component"
+import { Model, SelectionModel } from "../../data.module"
 
 
 
@@ -16,7 +15,7 @@ import { SelectionModel } from "../../selection.module"
     template: "<ng-container #vc></ng-container>",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataGridCellDirective<T extends Model = Model> implements OnInit, OnDestroy, AfterViewInit, DoCheck {
+export class GridCellDirective<T extends Model = Model> implements OnInit, OnDestroy, AfterViewInit, DoCheck {
     @Input() public row: number
     @Input() public set col(val: number) {
         val = parseFloat(val as any)
@@ -43,7 +42,7 @@ export class DataGridCellDirective<T extends Model = Model> implements OnInit, O
     @ViewChild("vc", { read: ViewContainerRef }) protected readonly vc?: ViewContainerRef
 
     public constructor(
-        @Inject(DataGridComponent) protected grid: DataGridComponent,
+        @Inject(GridComponent) protected grid: GridComponent,
         @Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(SelectionModel) protected sel: SelectionModel,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {

@@ -1,6 +1,6 @@
 import { Component, ContentChild, Input, ElementRef, TemplateRef } from "@angular/core"
 
-import { LabelDirective } from "@anzar/core/directives.module"
+import { LabelDirective } from "../../common.module"
 
 
 export interface NumberWithUnit {

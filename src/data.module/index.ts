@@ -11,13 +11,14 @@ export { StaticSource } from "./static-source"
 import { SingleSelection, MultiSelection, PropagateSelection } from "./selection/selection.directive"
 import { SelectableDirective } from "./selection/selectable.directive"
 export { SelectionModel, ISelectionModel, SelectionEvent, ISelectable } from "./selection/abstract"
-export { SingleSelection, MultiSelection, PropagateSelection }
+export { SingleSelection, MultiSelection, PropagateSelection, SelectableDirective }
 
 
 export {
     RpcTransport, RpcError, RpcAction, RpcFailureCallback, RpcSuccessCallback,
     Transaction, TransactionsDict, TransactionFactory
 } from "./rpc/rpc-transport"
+export { RpcGroup, RpcMethod, RpcDataSource, IRpcDataSource } from "./rpc/rpc-source"
 export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extjs"
 
 

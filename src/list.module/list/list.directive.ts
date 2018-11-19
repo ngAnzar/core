@@ -1,6 +1,6 @@
 import { Directive, Inject, Optional, Host, ContentChildren, QueryList, AfterContentInit } from "@angular/core"
 
-import { SelectionModel } from "../../selection.module"
+import { SelectionModel } from "../../data.module"
 import { ListItemComponent } from "./list-item.component"
 
 

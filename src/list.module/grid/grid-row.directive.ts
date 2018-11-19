@@ -8,6 +8,6 @@ import { Directive, Input } from "@angular/core"
         "[style.grid-column]": "1",
     }
 })
-export class DataGridRowDirective {
+export class GridRowDirective {
     @Input() public row: number
 }

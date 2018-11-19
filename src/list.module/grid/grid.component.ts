@@ -1,32 +1,22 @@
 import {
-    Component, Inject, Host, SkipSelf, Optional, Input, OnInit, NgZone, DoCheck,
+    Component, Inject, Host, Input, DoCheck,
     ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 import { ColumnsComponent } from "./columns.component"
 
-import { DataSource, DataStorage, Model } from "../../data"
-import { Subscriptions } from "../../util"
-import { SelectionModel, SingleSelection } from "../../selection.module"
+import { DataSource, DataStorage, SelectionModel } from "../../data.module"
+import { Destruct } from "../../util"
+
 
 
 @Component({
-    selector: ".nz-data-grid",
-    templateUrl: "./data-grid.template.pug",
-    // providers: [
-    //     {
-    //         provide: SelectionModel,
-    //         // deps: [new Host(), new Optional(), new SkipSelf(), SingleSelection],
-    //         useFactory() {
-    //             return new SingleSelection()
-    //         },
-    //         useExisting: SelectionModel
-    //     }
-    // ],
+    selector: ".nz-grid",
+    templateUrl: "./grid.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataGridComponent implements AfterContentInit, DoCheck, OnDestroy {
+export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
 
     @Input("data-source")
@@ -44,8 +34,8 @@ export class DataGridComponent implements AfterContentInit, DoCheck, OnDestroy {
         if (this._storage !== val) {
             this._storage = val
             if (val) {
-                this.subscriptions.add(val.invalidated).subscribe(this._update)
-                this.subscriptions.add(val.items).subscribe(this._update)
+                this.destruct.subscription(val.invalidated).subscribe(this._update)
+                this.destruct.subscription(val.items).subscribe(this._update)
             }
             this._update()
         }
@@ -67,7 +57,7 @@ export class DataGridComponent implements AfterContentInit, DoCheck, OnDestroy {
     public get gtRow(): SafeStyle { return this._gtRow }
     protected _gtRow: SafeStyle = ""
 
-    protected subscriptions: Subscriptions = new Subscriptions()
+    public readonly destruct = new Destruct()
     protected _rowHeight: number = 52
     protected _contentInited: boolean = false
 
@@ -78,12 +68,12 @@ export class DataGridComponent implements AfterContentInit, DoCheck, OnDestroy {
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel) {
         selection.maintainSelection = true
 
-        this.subscriptions.add(selection.changes).subscribe(this._update)
+        this.destruct.subscription(selection.changes).subscribe(this._update)
     }
 
     public ngAfterContentInit() {
         this._contentInited = true
-        this.subscriptions.add(this.columns.layoutChanged).subscribe(this._update)
+        this.destruct.subscription(this.columns.layoutChanged).subscribe(this._update)
         this.updateGridTemplate()
     }
 
@@ -120,6 +110,6 @@ export class DataGridComponent implements AfterContentInit, DoCheck, OnDestroy {
     }
 
     public ngOnDestroy() {
-        this.subscriptions.unsubscribe()
+        this.destruct.run()
     }
 }
