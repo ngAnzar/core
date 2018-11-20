@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from "@angular/forms"
 import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
 import { NzListModule } from "../list.module"
+import { NzLayoutModule } from "../layout.module"
 
 
 import { FormFieldComponent } from "./field/form-field.component"
@@ -40,7 +41,8 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         ReactiveFormsModule,
         NzCommonModule,
         NzDataModule,
-        NzListModule
+        NzListModule,
+        NzLayoutModule
     ],
     declarations: [
         FormFieldComponent,

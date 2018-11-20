@@ -12,9 +12,7 @@ import { LayerRef } from "../layer/layer-ref"
 
 import { ToastBase } from "./toast-base"
 import { ToastProgressOptions, TOAST_AUTO_HIDE_MIN } from "./toast-options"
-
-
-export const PROGRESS_OPTIONS = new InjectionToken<Observable<ToastProgressOptions>>("PROGRESS_OPTIONS")
+import { LAYER_OPTIONS } from "../_shared"
 
 
 export type TPState = "progress" | "success" | "failure"
@@ -70,7 +68,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
 
     public constructor(
         @Inject(LayerRef) protected readonly layerRef: LayerRef,
-        @Inject(PROGRESS_OPTIONS) protected readonly options: ToastProgressOptions,
+        @Inject(LAYER_OPTIONS) protected readonly options: ToastProgressOptions,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(RectMutationService) protected readonly rectMutation: RectMutationService) {
         super()

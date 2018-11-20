@@ -13,7 +13,7 @@ $nz-form-field-bottom-caption-height ?= 20px
   width: auto
   padding-top: $nz-form-field-top-caption-height
 
-  .nz-label
+  label
     position: absolute
     top: 0px
     left: 0px
@@ -44,7 +44,7 @@ $nz-form-field-bottom-caption-height ?= 20px
     transition: transform $nz-input-focus-transition-duration, opacity $nz-input-focus-transition-duration
 
   &.nz-focused, &.nz-has-value
-    .nz-label
+    label
       nz-typo: $typo.caption
       // color: $theme.primary.default
       top: -($nz-form-field-top-caption-height + 2px)
@@ -71,8 +71,3 @@ $nz-form-field-bottom-caption-height ?= 20px
 caption
   box-sizing: border-box
   // margin: 0
-
-
-
-// .nz-label
-//   color: $theme.disabled.darker

@@ -1,4 +1,5 @@
 import { NgModule } from "@angular/core"
+import { CommonModule } from "@angular/common"
 
 import { NzAnimationModule } from "./animation.module"
 import { NzCommonModule } from "./common.module"
@@ -25,7 +26,7 @@ const modules: any[] = [
 ]
 
 @NgModule({
-    imports: modules,
+    imports: [CommonModule, ...modules],
     exports: modules
 })
 export class NzModule { }

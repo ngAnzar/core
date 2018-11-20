@@ -230,7 +230,7 @@ function parseId(value: any): any {
 
 export class Model {
     public static isEq(modelA: Model, modelB: Model): boolean {
-        return this.isModel(modelA) && modelA[MODEL_EQ](modelB)
+        return Model.isModel(modelA) && modelA[MODEL_EQ](modelB)
     }
 
     public static isModel(model: any): boolean {

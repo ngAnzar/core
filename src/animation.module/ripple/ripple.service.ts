@@ -1,5 +1,6 @@
-import { Injectable, ElementRef, Inject, Renderer2 } from "@angular/core"
+import { Injectable, ElementRef, Inject } from "@angular/core"
 
+import { Renderer } from "../renderer.service"
 import { RippleOptions } from "./ripple-options"
 import { RippleRef } from "./ripple-ref"
 import { BoundedRippleRef } from "./bounded-ripple-ref"
@@ -12,7 +13,7 @@ import { BoundedRippleRef } from "./bounded-ripple-ref"
 export class RippleService {
     protected ripples: RippleRef[] = []
 
-    constructor(@Inject(Renderer2) protected renderer: Renderer2) {
+    constructor(@Inject(Renderer) protected renderer: Renderer) {
 
     }
 

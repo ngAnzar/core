@@ -14,10 +14,7 @@ import { SelectableDirective } from "../../data.module"
         "[attr.focused]": "focused ? '' : null"
     },
     templateUrl: "./list-item.template.pug",
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        RippleService
-    ]
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListItemComponent implements AfterViewInit {
     @ViewChild("ripple") protected readonly rippleContainer: ElementRef<any>

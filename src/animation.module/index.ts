@@ -15,6 +15,9 @@ export { RippleOptions } from "./ripple/ripple-options"
 export { RippleService, RippleDirective }
 
 
+import { Renderer } from "./renderer.service"
+
+
 @NgModule({
     imports: [
         CommonModule
@@ -30,6 +33,7 @@ export { RippleService, RippleDirective }
         RippleDirective
     ],
     providers: [
+        Renderer,
         RippleService
     ]
 })

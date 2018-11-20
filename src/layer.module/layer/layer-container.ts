@@ -1,9 +1,9 @@
-import { Injectable, Inject, Renderer2, OnDestroy, Injector, ApplicationRef, ComponentFactoryResolver, ElementRef } from "@angular/core"
-import { AnimationBuilder } from "@angular/animations"
+import { Injectable, Inject, OnDestroy, Injector, ApplicationRef, ComponentFactoryResolver, ElementRef } from "@angular/core"
 import { DOCUMENT } from "@angular/platform-browser"
 import { DomPortalOutlet } from "@angular/cdk/portal"
 import { Subject } from "rxjs"
 
+// import { Renderer } from "../../common.module"
 import { Destruct, IDisposable } from "../../util"
 import "./layer.styl"
 
