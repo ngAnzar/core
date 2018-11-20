@@ -1,7 +1,7 @@
 import { Component, ViewChild, TemplateRef, Inject } from "@angular/core"
 
-import { ColumnComponent } from "./column.component"
-import { ID, SelectionModel } from "../../data.module"
+import { ColumnComponent } from "../../../list.module"
+import { ID, SelectionModel } from "../../../data.module"
 
 
 @Component({

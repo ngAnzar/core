@@ -20,8 +20,9 @@ export { PanelComponent, DrawerComponent, PanelStateEvent, PanelOpeningEvent }
 
 
 import { NzSlotContent } from "./slot/abstract"
-import { ContentDirective, IconDirective, CaptionDirective, LabelDirective, PostfixDirective, PrefixDirective } from "./slot/common"
-export { NzSlotContent, ContentDirective, IconDirective, CaptionDirective, LabelDirective, PostfixDirective, PrefixDirective }
+import { ContentDirective, IconDirective, CaptionDirective, PostfixDirective, PrefixDirective } from "./slot/common"
+import { LabelDirective } from "./slot/label.directive"
+export { NzSlotContent, ContentDirective, IconDirective, CaptionDirective, PostfixDirective, PrefixDirective, LabelDirective }
 
 
 import { CardComponent, CardHeaderComponent, CardActionsComponent } from "./card/card.component"

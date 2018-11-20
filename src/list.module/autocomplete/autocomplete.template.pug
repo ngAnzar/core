@@ -1,6 +1,4 @@
 :stylus
-  @require "../list/list"
-
   .list
     display: inline-grid
     grid-template-columns: 1fr
@@ -26,17 +24,17 @@
   .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
     ng-template(bind-ngIf="actionsByPosition.first")
       ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")
-        .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-model="action.model" selectable-action)
+        .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model")
           ng-template(bind-ngTemplateOutlet="action.tpl")
 
     ng-template(nzVirtualFor, [nzVirtualForOf]="storage" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
-      .nz-list-item.item(bind-style.gridRow="offset(index)" bind-model="virtual" selectable)
+      .nz-list-item.item(bind-style.gridRow="offset(index)" bind-selectable="virtual")
         ng-template(
           bind-ngTemplateOutlet="itemTpl"
           bind-ngTemplateOutletContext="{$implicit:virtual}")
 
     ng-template(bind-ngIf="actionsByPosition.last")
       ng-template(ngFor bind-ngForOf="actionsByPosition.last" let-action let-index="index")
-        .nz-list-item.item.action(bind-style.gridRow="offset(index) + storage.total" bind-model="action.model" selectable-action)
+        .nz-list-item.item.action(bind-style.gridRow="offset(index) + storage.total" bind-selectableAction="action.model")
           ng-template(bind-ngTemplateOutlet="action.tpl")
 

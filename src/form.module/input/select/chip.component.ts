@@ -1,7 +1,7 @@
 import { Component, Inject, Input, HostListener, TemplateRef } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
-import { SelectionModel, SelectableDirective } from "../../selection.module"
+import { SelectionModel, SelectableDirective } from "../../../data.module"
 import { SelectComponent } from "./select.component"
 
 

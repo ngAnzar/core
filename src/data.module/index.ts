@@ -1,4 +1,5 @@
 import { NgModule } from "@angular/core"
+import { HttpClientModule } from "@angular/common/http"
 
 
 export { Collection, Items } from "./collection"
@@ -23,6 +24,9 @@ export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extj
 
 
 @NgModule({
+    imports: [
+        HttpClientModule
+    ],
     declarations: [
         SingleSelection,
         MultiSelection,

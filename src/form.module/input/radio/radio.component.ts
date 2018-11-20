@@ -7,7 +7,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
 import { Observable } from "rxjs"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
+import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
 import { RadioGroupDirective } from "./radio-group.directive"
 
 
@@ -83,12 +83,12 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(Renderer2) _renderer: Renderer2,
+        // @Inject(Renderer2) _renderer: Renderer2,
         @Inject(ElementRef) el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Attribute("tabindex") tabIndex: string,
         @Inject(RadioGroupDirective) @Optional() @SkipSelf() public readonly group: RadioGroupDirective) {
-        super(ngControl, ngModel, _renderer, el)
+        super(ngControl, ngModel, el)
         this.tabIndex = parseInt(tabIndex, 10)
 
         if (group) {

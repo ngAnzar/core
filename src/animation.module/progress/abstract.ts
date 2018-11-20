@@ -1,4 +1,4 @@
-import { Input, Inject, ChangeDetectorRef } from "@angular/core"
+import { Input, Inject, ChangeDetectorRef, HostBinding } from "@angular/core"
 import { Observable, Subscription } from "rxjs"
 
 import { Destruct } from "../../util"
@@ -62,6 +62,10 @@ export abstract class ProgressComponent {
     }
     public get indeterminate(): boolean { return this._indeterminate }
     private _indeterminate: boolean = true
+
+    @Input()
+    @HostBinding("attr.color")
+    public color: string
 
     private _onProgress = (event: ProgressEvent) => {
         if (event.percent == null) {

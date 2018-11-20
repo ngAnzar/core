@@ -1,7 +1,7 @@
 import { Component, Input } from "@angular/core"
 import { format, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
+import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
 
 
 @Component({

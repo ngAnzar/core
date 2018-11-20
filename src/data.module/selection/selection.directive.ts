@@ -65,11 +65,11 @@ const SELECTION = Symbol("selection")
     ]
 })
 export class PropagateSelection<T extends Model = Model> implements ISelectionModel<T> {
-    @Input("selection") private [SELECTION]: SelectionModel<T>
-
-    // protected set __selectionModel(val: SelectionModel<T>) {
-    //     this[SELECTION] = val
-    // }
+    @Input("selection")
+    protected set __selectionModel(val: SelectionModel<T>) {
+        this[SELECTION] = val
+    }
+    private [SELECTION]: SelectionModel<T>
 
 
     public get items(): T[] { return this[SELECTION].items }

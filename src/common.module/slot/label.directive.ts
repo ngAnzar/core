@@ -1,44 +1,26 @@
-// import { Directive, Input, ElementRef, Inject, OnDestroy } from "@angular/core"
-// import { Subscription } from "rxjs"
+import { Directive, HostBinding, Input, ElementRef } from "@angular/core"
+import { NzSlotContent } from "./abstract"
 
 
-// import { InputComponent } from "../components/input/input.component"
+@Directive({
+    selector: "[nzSlot='label'], label",
+    host: {
+        "[style.textAlign]": "'left'"
+    },
+    providers: [{ provide: NzSlotContent, useExisting: LabelDirective }]
+})
+export class LabelDirective extends NzSlotContent {
+    @Input()
+    @HostBinding("attr.for")
+    public targetId: string
 
-
-// @Directive({
-//     selector: "label, .nz-label",
-//     host: {
-//         "class": "nz-label",
-//         "[attr.for]": "inputId"
-//     }
-// })
-// export class LabelDirective {
-//     @Input("for") public inputId: string
-
-//     public set input(val: InputComponent<any>) {
-//         if (this._input !== val) {
-//             this._input = val
-
-//             if (val) {
-//                 this.inputId = val.id
-//             }
-//         }
-//     }
-
-//     public get input(): InputComponent<any> {
-//         return this._input
-//     }
-
-//     protected _input: InputComponent<any>
-
-//     public constructor(@Inject(ElementRef) protected el: ElementRef<HTMLLabelElement>) {
-
-//     }
-// }
-
-
-import { Directive } from "@angular/core"
-
-
-@Directive({ selector: "label" })
-export class LabelDirective { }
+    @Input()
+    public set targetEl(val: ElementRef<HTMLElement>) {
+        if (!this._targetEl || !val || this._targetEl.nativeElement !== val.nativeElement) {
+            this._targetEl = val
+            this.targetId = val.nativeElement.id
+        }
+    }
+    public get targetEl(): ElementRef<HTMLElement> { return this._targetEl }
+    private _targetEl: ElementRef<HTMLElement>
+}

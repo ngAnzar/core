@@ -34,10 +34,6 @@ export class ProgressCircleComponent extends ProgressComponent implements OnDest
 
     @Input() public strokeWidth: number
 
-    @HostBinding("attr.color")
-    @Input()
-    public color: string
-
     protected dashArray: number
 
     @ViewChild("circle") protected readonly circle: ElementRef<SVGCircleElement>

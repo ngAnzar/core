@@ -1,7 +1,7 @@
 import { Directive, Input } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
+import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
 import { RadioComponent } from "./radio.component"
 
 

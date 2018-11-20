@@ -10,14 +10,13 @@ import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/key
 import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators"
 
-import { SelectionModel, SingleSelection } from "../../selection.module"
-import { DataSource, DataStorage, Range, Model, ID, Field } from "../../data"
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
-import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, ComponentLayerRef } from "../../layer.module"
-import { FormFieldComponent } from "../form-field/form-field.component"
-import { DropdownComponent, DROPDOWN_ITEM_TPL, DROPDOWN_ACTIONS } from "./dropdown.component"
-import { Subscriptions } from "../../util/subscriptions"
-import { ListActionComponent, ListActionModel } from "../list/list-action.component"
+import { NzRange, Destruct } from "../../../util"
+import { DataSource, DataStorage, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
+import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, ComponentLayerRef } from "../../../layer.module"
+import { FormFieldComponent } from "../../field/form-field.component"
+import { ListActionComponent, ListActionModel } from "../../../list.module"
+import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
 
 // import { ChipComponent } from "./chip.component"
 
@@ -33,8 +32,8 @@ export class Match extends Model {
     @Field() public offset: number
     @Field() public length: number
 
-    public get range(): Range {
-        return new Range(this.offset, this.offset + this.length)
+    public get range(): NzRange {
+        return new NzRange(this.offset, this.offset + this.length)
     }
 }
 
@@ -197,8 +196,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     //     this.writeValue(val)
     // }
 
-    protected ddLayer: ComponentLayerRef<DropdownComponent<T>>
-    protected s = new Subscriptions()
+    public readonly destruct = new Destruct()
+
+    protected acLayer: ComponentLayerRef<AutocompleteComponent<T>>
     protected focusOrigin: FocusOrigin
     protected inputStream: Observable<string> = new Subject()
     protected lastKeyup: number
@@ -208,7 +208,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(Renderer2) _renderer: Renderer2,
+        // @Inject(Renderer2) _renderer: Renderer2,
         @Inject(ElementRef) el: ElementRef,
         @Inject(SelectionModel) @Optional() public readonly selection: SelectionModel<T>,
         @Inject(LayerService) protected readonly layer: LayerService,
@@ -219,14 +219,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Attribute("value-field") protected readonly valueField: string,
         @Attribute("query-field") queryField: string,
         @Attribute("trigger-icon") public readonly triggerIcon: string) {
-        super(ngControl, ngModel, _renderer, el)
+        super(ngControl, ngModel, el)
 
         if (!selection) {
             this.selection = new SingleSelection()
         }
 
         this.selection.maintainSelection = true
-        this.s.add(this.selection.changes).subscribe(selected => {
+        this.destruct.subscription(this.selection.changes).subscribe(selected => {
             let value = valueField
                 ? selected.map(item => (item as any)[valueField])
                 : selected.slice(0)
@@ -363,7 +363,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _updateDropDown() {
         if (this.opened) {
             // Promise.resolve(this.ddLayer ? this.ddLayer.hide() :)
-            if (!this.ddLayer) {
+            if (!this.acLayer) {
                 let targetEl = (this.ffc ? this.ffc.el : this.el).nativeElement
                 let position: LevitateOptions = this.editable
                     ? {
@@ -396,28 +396,28 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     initialHeight: this.editable ? 0 : targetEl.offsetHeight,
                     elevation: 10
                 }
-                this.ddLayer = this.layer.createFromComponent(
-                    DropdownComponent,
+                this.acLayer = this.layer.createFromComponent(
+                    AutocompleteComponent,
                     new DropdownLayer(options),
                     null,
                     [
                         { provide: SelectionModel, useValue: this.selection },
                         { provide: DataStorage, useValue: this.storage },
-                        { provide: DROPDOWN_ITEM_TPL, useValue: this.itemTpl },
-                        { provide: DROPDOWN_ACTIONS, useValue: this.actions },
+                        { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
+                        { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
                     ]) as any
 
-                let s = this.ddLayer.output.subscribe(event => {
+                let s = this.acLayer.output.subscribe(event => {
                     if (event.type === "hiding") {
                         this.opened = false
                         s.unsubscribe()
                     }
                 })
             }
-            this.ddLayer.show()
-        } else if (this.ddLayer) {
-            this.ddLayer.close()
-            this.ddLayer = null
+            this.acLayer.show()
+        } else if (this.acLayer) {
+            this.acLayer.close()
+            this.acLayer = null
         }
     }
 
@@ -470,7 +470,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (on) {
             if (!this._iss && this.dataSource) {
                 let ml = this.dataSource.async ? Number(this.minLength) : 0
-                this._iss = this.s.add(this.inputStream)
+                this._iss = this.destruct.subscription(this.inputStream)
                     .pipe(
                         debounceTime(this.dataSource.async ? 400 : 50),
                         filter(v => ml === 0 || (v && v.length >= ml))
@@ -556,8 +556,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 return true
 
             case ENTER:
-                if (this.ddLayer && this.ddLayer.component.instance.focusedModel) {
-                    let fml = this.ddLayer.component.instance.focusedModel
+                if (this.acLayer && this.acLayer.component.instance.focusedModel) {
+                    let fml = this.acLayer.component.instance.focusedModel
                     this.selection.update({
                         [fml.id]: true
                     })
@@ -566,15 +566,15 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
             case UP_ARROW:
                 this.opened = true
-                if (this.ddLayer) {
-                    this.ddLayer.component.instance.focusPrev()
+                if (this.acLayer) {
+                    this.acLayer.component.instance.focusPrev()
                 }
                 return true
 
             case DOWN_ARROW:
                 this.opened = true
-                if (this.ddLayer) {
-                    this.ddLayer.component.instance.focusNext()
+                if (this.acLayer) {
+                    this.acLayer.component.instance.focusNext()
                 }
                 return true
 

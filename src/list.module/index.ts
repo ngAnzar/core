@@ -2,19 +2,23 @@ import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 
 import { NzCommonModule } from "../common.module"
+import { NzDataModule } from "../data.module"
+
+import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "./autocomplete/autocomplete.component"
+export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL }
 
 import { GridComponent } from "./grid/grid.component"
-import { CheckboxColumnComponent } from "./grid/checkbox-column.component"
+// import { CheckboxColumnComponent } from "./grid/checkbox-column.component"
 import { ColumnComponent } from "./grid/column.component"
 import { ColumnsComponent } from "./grid/columns.component"
 import { GridCellDirective } from "./grid/grid-cell.directive"
 import { GridRowDirective } from "./grid/grid-row.directive"
-export { GridComponent, CheckboxColumnComponent, ColumnComponent, ColumnsComponent }
+export { GridComponent, ColumnComponent, ColumnsComponent }
 
 
 import { ListDirective } from "./list/list.directive"
 import { ListItemComponent } from "./list/list-item.component"
-import { ListActionComponent, ListActionModel } from "./list/list-action.component"
+import { ListActionComponent, ListActionModel, SelectableActionDirective } from "./list/list-action.component"
 export { ListDirective, ListItemComponent, ListActionComponent, ListActionModel }
 
 
@@ -34,11 +38,13 @@ import { VirtualForDirective } from "./virtual-for.directive"
 @NgModule({
     imports: [
         CommonModule,
-        NzCommonModule
+        NzCommonModule,
+        NzDataModule
     ],
     declarations: [
+        AutocompleteComponent,
+
         GridComponent,
-        CheckboxColumnComponent,
         ColumnComponent,
         ColumnsComponent,
         GridCellDirective,
@@ -47,6 +53,7 @@ import { VirtualForDirective } from "./virtual-for.directive"
         ListDirective,
         ListItemComponent,
         ListActionComponent,
+        SelectableActionDirective,
 
         MenuComponent,
         MenuItemDirective,
@@ -57,13 +64,13 @@ import { VirtualForDirective } from "./virtual-for.directive"
     ],
     exports: [
         GridComponent,
-        CheckboxColumnComponent,
         ColumnComponent,
         ColumnsComponent,
 
         ListDirective,
         ListItemComponent,
         ListActionComponent,
+        SelectableActionDirective,
 
         MenuComponent,
         MenuItemDirective,
@@ -71,6 +78,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
 
         ScrollableDirective,
         VirtualForDirective
+    ],
+    entryComponents: [
+        AutocompleteComponent
     ]
 })
 export class NzListModule { }

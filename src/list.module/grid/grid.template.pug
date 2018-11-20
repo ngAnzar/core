@@ -1,5 +1,5 @@
 :stylus
-  @require "./data-grid.styl"
+  @require "./grid.styl"
 
   .rows
     flex-grow: 1
@@ -14,8 +14,7 @@ div(nzScrollable="vertical")
       .nz-data-grid-row(
         bind-style.gridTemplate="gtRow"
         bind-row="row"
-        bind-model="virtual"
-        selectable)
+        bind-selectable="virtual")
 
         ng-template(ngFor, [ngForOf]="columns.items" let-column let-col="index" let-firstCell="first" let-lastCell="last")
           .nz-data-grid-cell(

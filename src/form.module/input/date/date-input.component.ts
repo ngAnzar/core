@@ -1,7 +1,7 @@
 import { Component } from "@angular/core"
 import { format } from "date-fns"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
+import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
 
 
 @Component({

@@ -4,8 +4,8 @@ import { FocusMonitor } from "@angular/cdk/a11y"
 
 import { setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
 
-import { Subscriptions } from "../../util"
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../input/input.component"
+import { Destruct } from "../../../util"
+import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
 
 
 @Component({
@@ -27,23 +27,23 @@ export class DatetimeInputComponent extends InputComponent<Date> implements OnDe
     protected dateValue = new FormControl()
     protected timeValue = new FormControl()
 
-    protected s = new Subscriptions()
+    public readonly destruct = new Destruct()
 
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(Renderer2) _renderer: Renderer2,
+        // @Inject(Renderer2) _renderer: Renderer2,
         @Inject(ElementRef) el: ElementRef,
         @Inject(FocusMonitor) focusMonitor: FocusMonitor,
         @Attribute("tabindex") tabIndex: string) {
-        super(ngControl, ngModel, _renderer, el)
+        super(ngControl, ngModel, el)
 
         this.tabIndex = Number(tabIndex) || 0
 
-        this.s.add(this.dateValue.valueChanges).subscribe(this.composeDate)
-        this.s.add(this.timeValue.valueChanges).subscribe(this.composeDate)
+        this.destruct.subscription(this.dateValue.valueChanges).subscribe(this.composeDate)
+        this.destruct.subscription(this.timeValue.valueChanges).subscribe(this.composeDate)
 
-        this.s.add(focusMonitor.monitor(el.nativeElement, true)).subscribe(origin => {
+        this.destruct.subscription(focusMonitor.monitor(el.nativeElement, true)).subscribe(origin => {
             this._handleFocus(origin !== null)
             if (origin === null) {
                 if (!this.value) {
@@ -61,7 +61,7 @@ export class DatetimeInputComponent extends InputComponent<Date> implements OnDe
 
     public ngOnDestroy() {
         super.ngOnDestroy()
-        this.s.unsubscribe()
+        this.destruct.run()
     }
 
     protected composeDate = () => {

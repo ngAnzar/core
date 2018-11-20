@@ -44,12 +44,17 @@ export class ListActionModel extends Model {
 
 
 @Directive({
-    selector: "[selectable-action]",
+    selector: "[selectableAction]",
     providers: [
         { provide: SelectableDirective, useExisting: SelectableActionDirective }
     ]
 })
 export class SelectableActionDirective extends SelectableDirective<ListActionModel> {
+    @Input("selectableAction")
+    public set selectableAction(val: any) {
+        this.model = val
+    }
+
     public _canChangeSelected(newValue: boolean): boolean {
         let action = this.model.action
 

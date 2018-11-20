@@ -5,14 +5,14 @@ import {
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { startWith } from "rxjs/operators"
 
-import { DataStorage, Model } from "../../data"
+import { DataStorage, Model } from "../../data.module"
 import { ListDirective } from "../list/list.directive"
-import { Subscriptions } from "../../util/subscriptions"
 import { ListActionComponent } from "../list/list-action.component"
+import { Destruct } from "../../util"
 
 
-export const DROPDOWN_ITEM_TPL = new InjectionToken<TemplateRef<any>>("dropdown.itemTpl")
-export const DROPDOWN_ACTIONS = new InjectionToken<QueryList<ListActionComponent>>("dropdown.actions")
+export const AUTOCOMPLETE_ITEM_TPL = new InjectionToken<TemplateRef<any>>("autocomplete.itemTpl")
+export const AUTOCOMPLETE_ACTIONS = new InjectionToken<QueryList<ListActionComponent>>("autocomplete.actions")
 
 
 export class DDContext<T> {
@@ -21,10 +21,10 @@ export class DDContext<T> {
 
 
 @Component({
-    selector: ".nz-dropdown",
-    templateUrl: "./dropdown.template.pug",
+    selector: "nz-autocomplete",
+    templateUrl: "./autocomplete.template.pug",
     styles: [
-        `.nz-dropdown {
+        `nz-autocomplete {
             background: #FFF;
             overflow: hidden;
             max-height: inherit;
@@ -37,7 +37,7 @@ export class DDContext<T> {
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DropdownComponent<T extends Model> implements OnDestroy, OnInit {
+export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit {
     @ViewChild("list", { read: ListDirective }) protected readonly list: ListDirective
 
     public get gridTemplateRows(): SafeStyle {
@@ -62,12 +62,12 @@ export class DropdownComponent<T extends Model> implements OnDestroy, OnInit {
     // }
 
     protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}
-    protected readonly s = new Subscriptions()
+    public readonly destruct = new Destruct()
 
     public constructor(
         @Inject(DataStorage) public readonly storage: DataStorage<T>,
-        @Inject(DROPDOWN_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
-        @Inject(DROPDOWN_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
+        @Inject(AUTOCOMPLETE_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
+        @Inject(AUTOCOMPLETE_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected sanitizer: DomSanitizer) {
     }
@@ -83,11 +83,11 @@ export class DropdownComponent<T extends Model> implements OnDestroy, OnInit {
     }
 
     public ngOnInit() {
-        this.s.add(this.storage.items).subscribe(event => {
+        this.destruct.subscription(this.storage.items).subscribe(event => {
             this.cdr.detectChanges()
         })
 
-        this.s.add(this.actions.changes).pipe(startWith(this.actions)).subscribe(items => {
+        this.destruct.subscription(this.actions.changes).pipe(startWith(this.actions)).subscribe(items => {
             this.actionsByPosition = {}
             for (const item of items) {
                 if (!this.actionsByPosition[item.position]) {
@@ -101,7 +101,7 @@ export class DropdownComponent<T extends Model> implements OnDestroy, OnInit {
     }
 
     public ngOnDestroy() {
-        this.s.unsubscribe()
+        this.destruct.run()
     }
 
     protected offset(index: number): number {

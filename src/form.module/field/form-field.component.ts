@@ -1,14 +1,12 @@
 import {
     Component, ContentChild, ContentChildren, QueryList,
-    AfterContentInit, AfterViewChecked, NgZone,
-    ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject,
-    ViewChild
+    AfterContentInit, NgZone, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject
 } from "@angular/core"
 import { merge } from "rxjs"
-import { startWith, combineAll } from "rxjs/operators"
+import { startWith } from "rxjs/operators"
 
-import { PrefixDirective, PostfixDirective, LabelDirective, CaptionDirective } from "../../directives.module"
-import { InputComponent } from "../input/input.component"
+import { PrefixDirective, PostfixDirective, LabelDirective, CaptionDirective } from "../../common.module"
+import { InputComponent } from "../input/abstract"
 
 
 @Component({
@@ -36,9 +34,6 @@ export class FormFieldComponent implements AfterContentInit {
     @ContentChild(CaptionDirective) protected _captionDirective: CaptionDirective
     @ContentChild(InputComponent) protected _input: InputComponent<any>
 
-    // @ViewChild("underline") protected _underline: ElementRef<HTMLElement>
-
-
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) private _changeDetector: ChangeDetectorRef,
@@ -52,7 +47,7 @@ export class FormFieldComponent implements AfterContentInit {
         (this as any).showUnderline = this._input.type === "text" || this._input.type === "select"
 
         if (this._labelDirective) {
-            this._labelDirective.input = this._input
+            this._labelDirective.targetId = this._input.id
         }
 
         const stChange = this._input.statusChanges
