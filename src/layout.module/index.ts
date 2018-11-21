@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core"
 
 
-import { FlexibleDirective } from "./flex/flex.directive"
+import { FlexibleDirective, VboxDirective, HboxDirective } from "./flex/flex.directive"
 
 
 export { Rect, Margin } from "./geometry/rect"
@@ -15,9 +15,13 @@ export { RectMutationService }
 
 @NgModule({
     declarations: [
+        VboxDirective,
+        HboxDirective,
         FlexibleDirective
     ],
     exports: [
+        VboxDirective,
+        HboxDirective,
         FlexibleDirective
     ],
     providers: [

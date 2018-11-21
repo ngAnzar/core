@@ -1,4 +1,4 @@
-import { Directive, AfterContentInit, Inject, Attribute, ElementRef, Input, OnDestroy } from "@angular/core"
+import { Directive, AfterContentInit, Inject, Attribute, ElementRef, Input, OnDestroy, NgZone } from "@angular/core"
 
 
 export abstract class BoxDirective implements AfterContentInit, OnDestroy {
@@ -10,19 +10,26 @@ export abstract class BoxDirective implements AfterContentInit, OnDestroy {
 
     public constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
+        @Inject(NgZone) protected readonly zone: NgZone,
         @Attribute("gap") gap: string) {
         this.gap = parseInt(gap || "", 10) || 0
     }
 
     public ngAfterContentInit() {
         if (this.gap) {
-            this.updateGap()
-            this.mutationObserver = new MutationObserver(mutationsList => {
-                // console.log(mutationsList)
-                // TODO: optimalizálni, hogy csak a szükséges elemeket módosítsa
+            this.zone.runOutsideAngular(() => {
                 this.updateGap()
+                this.mutationObserver = new MutationObserver(mutationsList => {
+                    // TODO: optimalizálni, hogy csak a szükséges elemeket módosítsa
+                    // TODO: csak ha a display vagy a visibility változik, akkor fusson le
+                    this.updateGap()
+                })
+                this.mutationObserver.observe(this.el.nativeElement, {
+                    childList: true,
+                    attributes: true,
+                    attributeFilter: ["class", "style"]
+                })
             })
-            this.mutationObserver.observe(this.el.nativeElement, { childList: true, attributes: true, attributeFilter: ["class", "style"] })
         }
     }
 

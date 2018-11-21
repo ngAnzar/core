@@ -85,12 +85,22 @@ $nz-button-height ?= nz-local-grid-size(9)
         .nz-ripple
           background-color: value.default
 
+
+.nz-button[disabled]
+  color: $theme.disabled.default
+  cursor: default
+
+  &[variant~="filled"]
+    color: $theme.disabled.on.default
+    background-color: $theme.disabled.default
+
 .nz-button
   min-width: $nz-button-min-width
   padding: $nz-button-padding
 
   nz-rounded-rect: auto, $nz-button-height, small
   line-height: $nz-button-height
+
 
 .nz-fab
   padding: 0

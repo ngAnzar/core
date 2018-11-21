@@ -6,6 +6,7 @@ import { NzCommonModule } from "./common.module"
 import { NzDataModule } from "./data.module"
 import { NzFormModule } from "./form.module"
 import { NzLayerModule } from "./layer.module"
+import { NzLayoutModule } from "./layout.module"
 import { NzListModule } from "./list.module"
 
 
@@ -22,6 +23,7 @@ const modules: any[] = [
     NzDataModule,
     NzFormModule,
     NzLayerModule,
+    NzLayoutModule,
     NzListModule
 ]
 
