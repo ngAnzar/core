@@ -143,7 +143,8 @@ export class Rect {
     }
 
     public copy(): Rect {
-        let res = new Rect(this.x, this.y, this.width, this.height, this.origin);
+        const cls = this.constructor as any
+        let res = new cls(this.x, this.y, this.width, this.height, this.origin);
         (res as any).margin = this.margin
         return res
 
