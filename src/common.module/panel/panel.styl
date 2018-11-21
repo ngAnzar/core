@@ -1,0 +1,31 @@
+@require "../../util"
+
+.nz-panel
+  position: absolute
+
+  &[position="left"]
+    left: 0px
+    top: 0px
+    bottom: 0px
+    transform: translateX(-100%)
+
+  &[position="right"]
+    right: 0px
+    top: 0px
+    bottom: 0px
+    transform: translateX(100%)
+
+  &[position="top"]
+    left: 0px
+    top: 0px
+    right: 0px
+    transform: translateY(-100%)
+
+  &[position="bottom"]
+    left: 0px
+    right: 0px
+    bottom: 0px
+    transform: translateY(100%)
+
+  &[variant~="raised"]
+    nz-elevation: 16

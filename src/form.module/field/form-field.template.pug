@@ -1,0 +1,39 @@
+:stylus
+  @require "./form-field"
+
+  .input-container
+    width: 100%
+    max-width: 100%
+    box-sizing: border-box
+    //- display: inline-flex
+    //- align-items: baseline
+    padding: $nz-form-field-input-padding 0
+
+  .before-input, .after-input
+    flex: none
+    white-space: nowrap
+    cursor: default
+
+  .input-component
+    position: relative
+    cursor: text
+
+  .caption
+    height: $nz-form-field-bottom-caption-height
+
+.nz-inline-hbox.input-container
+  .before-input(*ngIf="_prefixDirectives.length")
+    ng-content(select=".nz-prefix")
+
+  .input-component(flex=1)
+    ng-content
+    ng-content(select="label, .nz-label")
+
+  .after-input(*ngIf="_postfixDirectives.length")
+    ng-content(select=".nz-postfix")
+
+.underline(#underline *ngIf="showUnderline")
+  .nz-form-field-ripple
+
+.caption
+  ng-content(select="caption, .nz-caption")

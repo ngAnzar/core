@@ -1,0 +1,13 @@
+:stylus
+  .menu-item
+    cursor: pointer
+
+  .scroller
+    max-height: inherit
+    max-width: inherit
+
+ng-template(#layer)
+  .nz-list.scroller(nzScrollable="vertical")
+    ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
+      .nz-list-item.menu-item(on-click="!$event.defaultPrevented && hide()" #listItem)
+        ng-template(bind-ngTemplateOutlet="menuItem.tpl")

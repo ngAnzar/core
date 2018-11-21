@@ -1,6 +1,6 @@
 
 
-export abstract class AnzarEvent {
+export abstract class PreventableEvent {
     private _prevented: boolean
 
     public preventDefault(): void {

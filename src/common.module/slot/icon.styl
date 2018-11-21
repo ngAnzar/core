@@ -1,0 +1,14 @@
+@require "../../util"
+
+$nz-icon-margin ?= nz-local-grid-size(2)
+
+.nz-icon
+  &:not(:first-child)
+    margin-left: $nz-icon-margin
+
+  &:not(:last-child)
+    margin-right: $nz-icon-margin
+
+  for color, value in nz-theme-colors($theme)
+    &{'[color="' + color + '"]'}
+      color: value.default

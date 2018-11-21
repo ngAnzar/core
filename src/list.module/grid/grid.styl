@@ -1,0 +1,117 @@
+@require "../../util"
+
+// $nz-data-grid-padding ?= nz-local-grid-size(6)
+$nz-data-grid-header-height ?= nz-local-grid-size(10)
+$nz-grid-padding ?= nz-local-grid-size(6)
+$nz-cell-padding ?= nz-local-grid-size(2)
+
+.nz-grid
+  box-sizing: border-box
+  position: relative
+
+  display: flex
+  flex-direction: column
+
+  align-items: stretch
+  align-content: stretch
+
+
+.nz-columns
+  box-sizing: border-box
+  display: grid
+  justify-content: stretch
+  flex-grow: 0
+  height: $nz-data-grid-header-height
+
+.nz-column
+  nz-typo: $typo.subtitle2
+
+  box-sizing: border-box
+  overflow: hidden
+  height: $nz-data-grid-header-height
+  line-height: $nz-data-grid-header-height
+  user-select: none
+
+  padding: 0 $nz-cell-padding
+  background-color: lighten($theme.foreground.default, 95%)
+
+  &:first-child
+    padding-left: $nz-grid-padding
+
+  &:last-child
+    padding-right: $nz-grid-padding
+
+.nz-data-grid-row
+  display: grid
+  justify-content: stretch
+
+  &:not([disabled])
+    &:not([color])
+      color: $theme.foreground.tri-state.normal.fg
+
+      &[selected]:not(:hover)
+        color: $theme.accent.tri-state.selected.fg
+        background-color: $theme.accent.tri-state.selected.bg
+
+      &:hover, &[focused]
+        color: $theme.foreground.tri-state.hover.fg
+        background-color: $theme.foreground.tri-state.hover.bg
+
+      &[focused]::before
+        content: ""
+        position: absolute
+        top: 0
+        bottom: 0
+        left: 0
+        width: 3px
+        background-color: $theme.accent.default
+
+      .nz-ripple
+        background-color: $theme.foreground.default
+
+    for color, value in nz-theme-colors($theme)
+      &{'[color="' + color + '"]'}
+        color: value.tri-state.normal.fg
+
+        &[selected]:not(:hover)
+          color: value.tri-state.selected.fg
+          background-color: value.tri-state.selected.bg
+
+        &:hover, &[focused]
+          color: value.tri-state.hover.fg
+          background-color: value.tri-state.hover.bg
+
+        &[focused]::before
+          content: ""
+          position: absolute
+          top: 0
+          bottom: 0
+          left: 0
+          width: 3px
+          background-color: value.darker
+
+        .nz-ripple
+          background-color: value.default
+
+
+.nz-data-grid-cell
+  nz-typo: $typo.body2
+
+  box-sizing: border-box
+  overflow: hidden
+  display: flex
+  justify-content: flex-start
+  align-items: center
+  align-content: center
+  cursor: default
+
+  padding: 0 $nz-cell-padding
+  border-bottom: 1px solid lighten($theme.foreground.default, 90%)
+  transition: background-color 250ms, color 250ms
+
+  &.first-cell
+    padding-left: $nz-grid-padding
+
+  &.last-cell
+    padding-right: $nz-grid-padding
+

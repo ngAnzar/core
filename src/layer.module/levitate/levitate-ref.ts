@@ -1,0 +1,127 @@
+
+import { Observable, Observer, of, Subscription } from "rxjs"
+import { map } from "rxjs/operators"
+
+import { Destruct } from "../../util"
+import { Rect, RectMutationService, parseAlign } from "../../layout.module"
+
+import { MagicCarpet, Rects } from "./levitate-compute"
+import { LevitatePosition } from "./levitate-position"
+import { Levitating, Anchor, Constraint } from "./levitate-options"
+
+
+export class LevitateRef {
+
+    public readonly position: Readonly<LevitatePosition>
+    protected mc: MagicCarpet = new MagicCarpet(this)
+    protected suspended: number = 0
+
+    protected rects: Subscription
+
+    public constructor(
+        protected readonly rectMutation: RectMutationService,
+        public readonly levitate: Levitating,
+        public readonly anchor?: Anchor,
+        public readonly constraint: Constraint = { ref: "viewport" }) {
+    }
+
+    public suspend(): void {
+        this.suspended += 1
+
+        if (this.rects) {
+            this.rects.unsubscribe()
+            delete this.rects
+        }
+    }
+
+    public resume() {
+        this.suspended = Math.max(0, this.suspended - 1)
+
+        if (this.suspended === 0 && !this.rects) {
+            this.rects = this.start().subscribe(this.update)
+        }
+    }
+
+    public begin() {
+        this.resume()
+    }
+
+    protected update = (rects: Rects) => {
+        let pos = this.mc.levitate(rects);
+        // TODO: CHECK EQ
+        (this as any).position = pos
+
+        // console.log(JSON.parse(JSON.stringify(pos)))
+        pos.applyToElement(this.levitate.ref)
+    }
+
+    public dispose(): void {
+        this.suspend()
+        if (this.mc) {
+            this.mc.dispose()
+            delete this.mc
+        }
+    }
+
+    protected getRectObserver(opts: Anchor | Levitating | Constraint): Observable<Rect> {
+        let observable: Observable<Rect>
+
+        if (opts.ref === "viewport") {
+            observable = this.rectMutation.watchViewport()
+        } else if (opts.ref instanceof HTMLElement) {
+            observable = this.rectMutation.watch(opts.ref)
+        } else if (opts.ref instanceof Rect) {
+            observable = of(opts.ref)
+        }
+
+        if ("margin" in opts) {
+            let margin = opts.margin
+            if (margin) {
+                observable = observable.pipe(map(value => value.applyMargin(margin)))
+            }
+        }
+
+        return observable
+    }
+
+    protected start(): Observable<Rects> {
+        return Observable.create((observer: Observer<Rects>) => {
+            let rects: Rects = {} as any
+            let levitateOrigin = parseAlign(this.levitate.align || "center")
+            let anchorOrigin = this.anchor ? parseAlign(this.anchor.align || "center") : null
+
+            function emit() {
+                if (rects.levitate && rects.constraint && rects.anchor) {
+                    observer.next(rects)
+                }
+            }
+
+            let s1 = this.getRectObserver(this.levitate).subscribe((val) => {
+                rects.levitate = val
+                if (levitateOrigin) {
+                    val.setOrigin(levitateOrigin)
+                }
+                emit()
+            })
+
+            let s2 = this.getRectObserver(this.constraint).subscribe((val) => {
+                rects.constraint = val
+                emit()
+            })
+
+            let s3 = this.getRectObserver(this.anchor || this.constraint).subscribe((val) => {
+                rects.anchor = val
+                if (anchorOrigin) {
+                    val.setOrigin(anchorOrigin)
+                }
+                emit()
+            })
+
+            return () => {
+                s1.unsubscribe()
+                s2.unsubscribe()
+                s3.unsubscribe()
+            }
+        })
+    }
+}

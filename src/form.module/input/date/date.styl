@@ -1,0 +1,15 @@
+@require "../../../util"
+
+input[type="date"].nz-input, input[type="time"].nz-input
+  opacity: 0
+  transition: opacity 250ms
+
+  &:focus, &.nz-has-value
+    opacity: 1
+
+.nz-datetime-input
+  display: flex
+
+  &.cdk-focused, &.nz-has-value
+    input[type="date"].nz-input, input[type="time"].nz-input
+      opacity: 1
