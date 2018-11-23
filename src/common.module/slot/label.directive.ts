@@ -1,4 +1,4 @@
-import { Directive, HostBinding, Input, ElementRef } from "@angular/core"
+import { Directive, HostBinding, Input, ElementRef, Inject, ChangeDetectorRef } from "@angular/core"
 import { NzSlotContent } from "./abstract"
 
 
@@ -10,8 +10,8 @@ import { NzSlotContent } from "./abstract"
     providers: [{ provide: NzSlotContent, useExisting: LabelDirective }]
 })
 export class LabelDirective extends NzSlotContent {
-    @Input()
-    @HostBinding("attr.for")
+    // @Input()
+    // @HostBinding("attr.for")
     public targetId: string
 
     @Input()

@@ -19,7 +19,8 @@ export { CheckboxComponent, CheckboxGroupDirective }
 import { DateInputComponent } from "./input/date/date-input.component"
 // import { DateInputComponent } from "./input/date/date-picker.component"
 import { DatetimeInputComponent } from "./input/date/datetime-input.component"
-export { DateInputComponent, DatetimeInputComponent }
+import { TimeInputComponent } from "./input/date/time-input.component"
+export { DateInputComponent, DatetimeInputComponent, TimeInputComponent }
 
 import { RadioComponent } from "./input/radio/radio.component"
 import { RadioGroupDirective } from "./input/radio/radio-group.directive"
@@ -53,6 +54,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         DateInputComponent,
         DatetimeInputComponent,
+        TimeInputComponent,
 
         RadioComponent,
         RadioGroupDirective,
@@ -74,6 +76,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         DateInputComponent,
         DatetimeInputComponent,
+        TimeInputComponent,
 
         RadioComponent,
         RadioGroupDirective,

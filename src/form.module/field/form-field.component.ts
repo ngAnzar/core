@@ -60,6 +60,8 @@ export class FormFieldComponent implements AfterContentInit {
                 // force update host bindings
                 this.zone.run(_ => { })
             })
+
+        this._changeDetector.markForCheck()
     }
 
     // public ngAfterViewChecked() {
