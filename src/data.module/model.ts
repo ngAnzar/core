@@ -368,6 +368,10 @@ export class ModelProxy {
         }
     }
 
+    public static hasChanges(proxy: ModelProxy): boolean {
+        return Object.keys(proxy[CHANGES]).length > 0
+    }
+
     public constructor(model: Model) {
         this[RAW] = model
         this[FIELDS] = model[FIELDS]
