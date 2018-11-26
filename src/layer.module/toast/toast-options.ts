@@ -12,7 +12,7 @@ export const TOAST_DEFAULT_ALIGN: AlignInput = "top right"
 export interface ToastOptions {
     // "left top", "center", "bottom center", ...
     align: Align | AlignInput
-    autoHide?: number
+    autohide?: number
     buttons?: ButtonList
     constraint?: HTMLElement | "viewport"
 }

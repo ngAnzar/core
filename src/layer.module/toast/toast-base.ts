@@ -1,6 +1,7 @@
 import { HostListener } from "@angular/core"
 
 import { LayerRef } from "../layer/layer-ref"
+import { DialogEvent } from "../dialog/dialog.service"
 
 
 export abstract class ToastBase {
@@ -53,6 +54,15 @@ export abstract class ToastBase {
     protected onAutoHideProgress(progress: number) {
         if (progress === 1) {
             this.autohide = 0
+            this.layerRef.hide()
+        }
+    }
+
+    public _handleButtonClick(event: Event, role: string) {
+        let e = new DialogEvent("button", role)
+        this.layerRef.emit(e)
+
+        if (!e.isDefaultPrevented()) {
             this.layerRef.hide()
         }
     }

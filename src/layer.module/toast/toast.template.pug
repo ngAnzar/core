@@ -1,6 +1,7 @@
 :stylus
   .content
     flex: 1
+    padding: 8px 16px
 
   .buttons
     flex: none
@@ -17,7 +18,7 @@
 .buttons(*ngIf="buttons && buttons.length")
   ng-template(ngFor bind-ngForOf="buttons" let-button)
     button.nz-button(*ngIf="button.role != 'spacer'"
-      bind-attr.color="button.color"
+      bind-color="button.color"
       bind-attr.variant="button.variant"
       bind-attr.type="button.type"
       on-click="_handleButtonClick($event, button.role)") {{ button.label }}

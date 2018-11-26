@@ -14,10 +14,10 @@ import { ToastOptions, ToastProgressOptions, TOAST_AUTO_HIDE_MIN, TOAST_DEFAULT_
 function defaultOptions(options: ToastOptions): ToastOptions {
     options = options || {} as ToastOptions
     options.align = options.align || TOAST_DEFAULT_ALIGN
-    if (options.autoHide == null) {
-        options.autoHide = TOAST_AUTO_HIDE_MIN
+    if (typeof options.autohide === "number" && options.autohide > 0) {
+        options.autohide = Math.max(TOAST_AUTO_HIDE_MIN, options.autohide)
     } else {
-        options.autoHide = Math.max(TOAST_AUTO_HIDE_MIN, options.autoHide)
+        delete options.autohide
     }
     return options
 }
@@ -37,7 +37,7 @@ export class ToastService {
 
     public info(message: string, options: ToastOptions) {
         return this._show(
-            getProviders({ message, options, content: LayerMessageComponent }),
+            getProviders({ message, options, buttons: options.buttons, content: LayerMessageComponent }),
             options,
             ToastComponent
         )
