@@ -1,35 +1,64 @@
-import { Directive, Input, HostListener, ElementRef, Inject } from "@angular/core"
+import { Directive, Input, HostListener, Inject, Optional, Self, ViewContainerRef, ElementRef } from "@angular/core"
 
+import { LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective, LayerService } from "../../layer.module"
+import { MenuLayer } from "./menu-layer"
 import { MenuComponent } from "./menu.component"
 
 
 @Directive({
-    selector: "[menuTrigger]",
+    selector: "[nzMenuTrigger]",
     host: {
         "[style.cursor]": "'pointer'"
     }
 })
-export class MenuTriggerDirective {
-    @Input() public menuTrigger: MenuComponent
+export class MenuTriggerDirective extends LayerFactoryDirective {
+    @Input()
+    public set nzMenuTrigger(val: MenuComponent) {
+        this._menu = val
+    }
+    protected _menu: MenuComponent
 
-    public constructor(@Inject(ElementRef) public readonly el: ElementRef<HTMLElement>) {
+    public constructor(
+        @Inject(LevitateAnchorDirective) @Optional() @Self() levitateAnchor: LevitateAnchorDirective,
+        @Inject(TargetAnchorDirective) @Optional() @Self() targetAnchor: TargetAnchorDirective,
+        @Inject(LayerService) layerSvc: LayerService,
+        @Inject(ViewContainerRef) vcr: ViewContainerRef,
+        @Inject(ElementRef) el: ElementRef<HTMLElement>) {
+        if (!levitateAnchor) {
+            levitateAnchor = new LevitateAnchorDirective()
+            levitateAnchor.nzLevitateAnchor = "left top"
+        }
+        if (!targetAnchor) {
+            targetAnchor = new TargetAnchorDirective()
+            targetAnchor.nzTargetAnchor = "left bottom"
+        }
+        super(
+            levitateAnchor,
+            targetAnchor,
+            layerSvc,
+            vcr,
+            el)
     }
 
     @HostListener("click", ["$event"])
     protected onClick(event: MouseEvent) {
         event.preventDefault()
 
-        if (this.menuTrigger.backdrop) {
-            this.menuTrigger.backdrop.crop = this.el.nativeElement
-        }
+        this.nzLayerFactory = this._menu.layer
 
-        if (this.menuTrigger.isVisible) {
-            this.menuTrigger.hide()
+        if (this.isVisible) {
+            this.hide()
         } else {
-            this.menuTrigger.show({
-                align: "left bottom",
-                ref: this.el.nativeElement
+            let behavior = new MenuLayer({
+                backdrop: {
+                    type: "empty",
+                    hideOnClick: true,
+                    crop: this.el.nativeElement
+                },
+                elevation: 10,
+                minWidth: this.el.nativeElement.offsetWidth
             })
+            this.show(behavior, { $implicit: this })
         }
     }
 }

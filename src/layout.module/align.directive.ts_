@@ -1,0 +1,20 @@
+import { Directive, Input } from "@angular/core"
+
+import { Align, AlignInput, parseAlign } from "./geometry/align"
+
+
+@Directive({
+    selector: "[nzAlign]",
+    exportAs: "nzAlign"
+})
+export class AlignDirective {
+    @Input()
+    public set nzAlign(val: AlignInput | Align) {
+        (this as any).align = val ? parseAlign(val) : { horizontal: "left", vertical: "top" }
+    }
+
+    public readonly align: Align = { horizontal: "left", vertical: "top" }
+
+    @Input() public nzAlignX: number
+    @Input() public nzAlignY: number
+}

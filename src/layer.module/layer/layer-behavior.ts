@@ -128,6 +128,4 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
     }
 }
 
-export class MenuLayer extends DropdownLayer {
 
-}

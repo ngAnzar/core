@@ -9,11 +9,11 @@ import { NzAnimationModule } from "../animation.module"
 
 import { LayerService } from "./layer/layer.service"
 import { LayerContainer, LayerContainerRef, LayerOutletRef } from "./layer/layer-container"
-import { LayerComponent } from "./layer/layer-component"
-export { LayerService, LayerContainer, LayerContainerRef, LayerOutletRef, LayerComponent }
+import { LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective } from "./layer/layer-component"
+export { LayerService, LayerContainer, LayerContainerRef, LayerOutletRef, LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective }
 export { LayerRef, ComponentLayerRef, TemplateLayerRef, LayerEvent } from "./layer/layer-ref"
 export { LayerOptions, DropdownLayerOptions, LevitateOptions, BackdropOptions } from "./layer/layer-options"
-export { LayerBehavior, DropdownLayer, MenuLayer, ModalLayer, TooltipLayer } from "./layer/layer-behavior"
+export { LayerBehavior, DropdownLayer, ModalLayer, TooltipLayer } from "./layer/layer-behavior"
 export { LayerBackdropRef } from "./layer/layer-backdrop"
 
 
@@ -57,14 +57,18 @@ export {
         NzAnimationModule
     ],
     declarations: [
-        LayerComponent,
+        LayerFactoryDirective,
+        TargetAnchorDirective,
+        LevitateAnchorDirective,
         DialogComponent,
         ToastComponent,
         ToastProgressComponent,
         LayerMessageComponent
     ],
     exports: [
-        LayerComponent
+        LayerFactoryDirective,
+        TargetAnchorDirective,
+        LevitateAnchorDirective,
     ],
     providers: [
         LevitateService,
