@@ -18,6 +18,8 @@
   .content
     flex: 1
     overflow: hidden
+
+  .message-content
     padding: $nz-dialog-inner-margin ($nz-dialog-padding-side + $nz-dialog-padding-top-bottom)
 
   .spacer
@@ -27,7 +29,7 @@ block title
   h6.title(bind-innerHTML="title" "*ngIf"="title && title.length")
 
 block content
-  .content(*ngIf="content")
+  .content(*ngIf="content" bind-ngClass=`{"${style('message-content')}": options.isPlainText}`)
     ng-template(bind-cdkPortalOutlet="content")
 
 block buttons

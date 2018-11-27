@@ -3,8 +3,13 @@ import { Portal, ComponentPortal } from "@angular/cdk/portal"
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
-import { LAYER_TITLE, LAYER_BUTTONS, LAYER_CONTENT, ButtonList } from "../_shared"
+import { LAYER_TITLE, LAYER_BUTTONS, LAYER_CONTENT, LAYER_OPTIONS, ButtonList } from "../_shared"
 import { DialogEvent } from "./dialog.service"
+
+
+export interface DialogOptions {
+    isPlainText?: boolean
+}
 
 
 @Component({
@@ -18,7 +23,9 @@ export class DialogComponent implements AfterViewChecked {
         @Inject(LayerService) protected layerSvc: LayerService,
         @Inject(LAYER_TITLE) @Optional() public title: string,
         @Inject(LAYER_BUTTONS) @Optional() public buttons: ButtonList,
-        @Inject(LAYER_CONTENT) @Optional() protected content: Portal<any>) {
+        @Inject(LAYER_CONTENT) @Optional() protected content: Portal<any>,
+        @Inject(LAYER_OPTIONS) @Optional() protected options: DialogOptions) {
+        this.options = this.options || {}
     }
 
     public close() {

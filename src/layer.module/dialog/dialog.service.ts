@@ -44,14 +44,24 @@ export class DialogService {
 
     public alert(title: string, message: string, options?: LayerOptions): DialogRef {
         return this._show(
-            getProviders({ title, message, content: LayerMessageComponent, buttons: [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_OK] }),
+            getProviders({
+                title, message,
+                options: { isPlainText: true },
+                content: LayerMessageComponent,
+                buttons: [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_OK]
+            }),
             options
         )
     }
 
     public error(title: string, message: string, options?: LayerOptions): DialogRef {
         return this._show(
-            getProviders({ title, message, content: LayerMessageComponent, buttons: [BUTTON_SEPARATOR, BUTTON_ERROR] }),
+            getProviders({
+                title, message,
+                options: { isPlainText: true },
+                content: LayerMessageComponent,
+                buttons: [BUTTON_SEPARATOR, BUTTON_ERROR]
+            }),
             options
         )
     }
@@ -61,6 +71,7 @@ export class DialogService {
             getProviders({
                 title: `${what} törlés megerősítése`,
                 message: `Biztosan törölni szeretné?`,
+                options: { isPlainText: true },
                 content: LayerMessageComponent,
                 buttons: [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_DELETE]
             }),
