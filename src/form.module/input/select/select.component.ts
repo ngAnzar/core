@@ -1,7 +1,7 @@
 import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
-    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener
+    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Self
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -13,7 +13,7 @@ import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators"
 import { NzRange, Destruct } from "../../../util"
 import { DataSource, DataStorage, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
 import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
-import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, ComponentLayerRef } from "../../../layer.module"
+import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, ComponentLayerRef, LayerFactoryDirective } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
@@ -198,7 +198,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public readonly destruct = new Destruct()
 
-    protected acLayer: ComponentLayerRef<AutocompleteComponent<T>>
+    // protected acLayer: ComponentLayerRef<AutocompleteComponent<T>>
     protected focusOrigin: FocusOrigin
     protected inputStream: Observable<string> = new Subject()
     protected lastKeyup: number
@@ -215,6 +215,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
+        @Inject(LayerFactoryDirective) @Optional() @Self() protected _layerFactory: LayerFactoryDirective,
+        @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Attribute("display-field") displayField: string,
         @Attribute("value-field") protected readonly valueField: string,
         @Attribute("query-field") queryField: string,
@@ -252,6 +254,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this._handleFocus(origin !== null)
             }
         })
+
+        if (!_layerFactory) {
+            this._layerFactory = _layerFactory
+                || LayerFactoryDirective.create("left top", "left bottom", this.layer, this.vcr, el)
+            this._layerFactory.nzLayerFactory = AutocompleteComponent
+        }
     }
 
     public toggle() {
@@ -362,29 +370,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _updateDropDown() {
         if (this.opened) {
-            // Promise.resolve(this.ddLayer ? this.ddLayer.hide() :)
-            if (!this.acLayer) {
-                let targetEl = (this.ffc ? this.ffc.el : this.el).nativeElement
-                let position: LevitateOptions = this.editable
-                    ? {
-                        align: "left top",
-                        anchor: {
-                            ref: targetEl,
-                            align: "left bottom",
-                            margin: { bottom: this.ffc ? 19 : 0 },
-                        }
-                    }
-                    : {
-                        align: "left top",
-                        anchor: {
-                            ref: targetEl,
-                            align: "left top",
-                            margin: { left: -16, right: -16 },
-                        }
-                    }
+            let targetEl = (this._layerFactory.targetEl = (this.ffc ? this.ffc.el : this.el)).nativeElement
 
-                let options: DropdownLayerOptions = {
-                    position: position,
+            if (this.editable) {
+                this._layerFactory.targetAnchor.nzTargetAnchor = "left bottom"
+                this._layerFactory.targetAnchor.margin = { bottom: this.ffc ? 19 : 0 }
+            } else {
+                this._layerFactory.targetAnchor.nzTargetAnchor = "left top"
+                this._layerFactory.targetAnchor.margin = { left: -16, right: -16 }
+            }
+
+            let layerRef = this._layerFactory.show(
+                new DropdownLayer({
                     backdrop: {
                         type: "empty",
                         crop: targetEl,
@@ -395,29 +392,80 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     initialWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
                     initialHeight: this.editable ? 0 : targetEl.offsetHeight,
                     elevation: 10
-                }
-                this.acLayer = this.layer.createFromComponent(
-                    AutocompleteComponent,
-                    new DropdownLayer(options),
-                    null,
-                    [
-                        { provide: SelectionModel, useValue: this.selection },
-                        { provide: DataStorage, useValue: this.storage },
-                        { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
-                        { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
-                    ]) as any
+                }),
+                {
+                    $implicit: this
+                },
+                [
+                    { provide: SelectionModel, useValue: this.selection },
+                    { provide: DataStorage, useValue: this.storage },
+                    { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
+                    { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
+                ]
+            )
 
-                let s = this.acLayer.output.subscribe(event => {
-                    if (event.type === "hiding") {
-                        this.opened = false
-                        s.unsubscribe()
-                    }
-                })
-            }
-            this.acLayer.show()
-        } else if (this.acLayer) {
-            this.acLayer.close()
-            this.acLayer = null
+            let s = layerRef.subscribe((event) => {
+                if (event.type === "hiding") {
+                    this.opened = false
+                    s.unsubscribe()
+                }
+            })
+
+            // Promise.resolve(this.ddLayer ? this.ddLayer.hide() :)
+            // if (!this.acLayer) {
+            //     let targetEl = (this.ffc ? this.ffc.el : this.el).nativeElement
+            //     let position: LevitateOptions = this.editable
+            //         ? {
+            //             align: "left top",
+            //             anchor: {
+            //                 ref: targetEl,
+            //                 align: "left bottom",
+            //                 margin: { bottom: this.ffc ? 19 : 0 },
+            //             }
+            //         }
+            //         : {
+            //             align: "left top",
+            //             anchor: {
+            //                 ref: targetEl,
+            //                 align: "left top",
+            //                 margin: { left: -16, right: -16 },
+            //             }
+            //         }
+
+            //     let options: DropdownLayerOptions = {
+            //         position: position,
+            //         backdrop: {
+            //             type: "empty",
+            //             crop: targetEl,
+            //             hideOnClick: true
+            //         },
+            //         minWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
+            //         minHeight: this.editable ? 0 : targetEl.offsetHeight,
+            //         initialWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
+            //         initialHeight: this.editable ? 0 : targetEl.offsetHeight,
+            //         elevation: 10
+            //     }
+            //     this.acLayer = this.layer.createFromComponent(
+            //         AutocompleteComponent,
+            //         new DropdownLayer(options),
+            //         null,
+            //         [
+            //             { provide: SelectionModel, useValue: this.selection },
+            //             { provide: DataStorage, useValue: this.storage },
+            //             { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
+            //             { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
+            //         ]) as any
+
+            //     let s = this.acLayer.output.subscribe(event => {
+            //         if (event.type === "hiding") {
+            //             this.opened = false
+            //             s.unsubscribe()
+            //         }
+            //     })
+            // }
+            // this.acLayer.show()
+        } else {
+            this._layerFactory.hide()
         }
     }
 
@@ -556,26 +604,26 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 return true
 
             case ENTER:
-                if (this.acLayer && this.acLayer.component.instance.focusedModel) {
-                    let fml = this.acLayer.component.instance.focusedModel
-                    this.selection.update({
-                        [fml.id]: true
-                    })
-                }
+                // if (this.acLayer && this.acLayer.component.instance.focusedModel) {
+                //     let fml = this.acLayer.component.instance.focusedModel
+                //     this.selection.update({
+                //         [fml.id]: true
+                //     })
+                // }
                 return true
 
             case UP_ARROW:
                 this.opened = true
-                if (this.acLayer) {
-                    this.acLayer.component.instance.focusPrev()
-                }
+                // if (this.acLayer) {
+                //     this.acLayer.component.instance.focusPrev()
+                // }
                 return true
 
             case DOWN_ARROW:
                 this.opened = true
-                if (this.acLayer) {
-                    this.acLayer.component.instance.focusNext()
-                }
+                // if (this.acLayer) {
+                //     this.acLayer.component.instance.focusNext()
+                // }
                 return true
 
             case BACKSPACE:

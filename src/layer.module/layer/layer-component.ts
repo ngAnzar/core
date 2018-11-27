@@ -2,7 +2,7 @@ import { Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, Self
 import { ComponentType } from "@angular/cdk/portal"
 
 
-import { Align, AlignInput, parseAlign } from "../../layout.module"
+import { Align, AlignInput, Margin, parseAlign } from "../../layout.module"
 import { LayerRef } from "./layer-ref"
 import { LayerService } from "./layer.service"
 import { LayerBehavior } from "./layer-behavior"
@@ -22,8 +22,7 @@ export class TargetAnchorDirective {
 
     public readonly align: Align = { horizontal: "left", vertical: "top" }
 
-    @Input("nzTargetAnchorX") public offsetX: number
-    @Input("nzTargetAnchorY") public offsetY: number
+    @Input("nzTargetMargin") public margin: Margin
 }
 
 
@@ -39,8 +38,8 @@ export class LevitateAnchorDirective {
 
     public readonly align: Align = { horizontal: "left", vertical: "top" }
 
-    @Input("nzLevitateAnchorX") public offsetX: number
-    @Input("nzLevitateAnchorY") public offsetY: number
+    @Input("nzLevitateMargin") public margin: Margin
+
 }
 
 
@@ -48,6 +47,21 @@ export class LevitateAnchorDirective {
     selector: "[nzLayerFactory]"
 })
 export class LayerFactoryDirective implements OnDestroy {
+    public static create(
+        levitateAlign: Align | AlignInput,
+        targetAlign: Align | AlignInput,
+        layerSvc: LayerService,
+        vcr: ViewContainerRef,
+        targetEl: ElementRef<HTMLElement>) {
+        let levitate = new LevitateAnchorDirective()
+        levitate.nzLevitateAnchor = levitateAlign
+
+        let target = new TargetAnchorDirective()
+        target.nzTargetAnchor = targetAlign
+
+        return new LayerFactoryDirective(levitate, target, layerSvc, vcr, targetEl)
+    }
+
     @Input()
     public set nzLayerFactory(val: TemplateRef<any> | ComponentType<any>) {
         if (val instanceof TemplateRef) {
@@ -58,6 +72,9 @@ export class LayerFactoryDirective implements OnDestroy {
             this.tpl = null
         }
     }
+
+    @Input("nzLayerTargetEl")
+    public targetEl: ElementRef<HTMLElement>
 
     public get isVisible(): boolean { return !!this.visibleRef }
 
@@ -70,12 +87,15 @@ export class LayerFactoryDirective implements OnDestroy {
         @Inject(TargetAnchorDirective) @Optional() @Self() public readonly targetAnchor: TargetAnchorDirective,
         @Inject(LayerService) protected readonly layerSvc: LayerService,
         @Inject(ViewContainerRef) protected readonly vcr: ViewContainerRef,
-        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>) {
+        @Inject(ElementRef) el: ElementRef<HTMLElement>) {
         if (!levitateAnchor) {
             this.levitateAnchor = new LevitateAnchorDirective()
         }
         if (!targetAnchor) {
             this.targetAnchor = new TargetAnchorDirective()
+        }
+        if (!this.targetEl) {
+            this.targetEl = el
         }
     }
 
@@ -86,9 +106,11 @@ export class LayerFactoryDirective implements OnDestroy {
 
         behavior.options.position = {
             align: this.levitateAnchor.align,
+            margin: this.levitateAnchor.margin,
             anchor: {
-                ref: this.el.nativeElement,
-                align: this.targetAnchor.align
+                ref: this.targetEl.nativeElement,
+                align: this.targetAnchor.align,
+                margin: this.targetAnchor.margin
             },
             constraint
         }

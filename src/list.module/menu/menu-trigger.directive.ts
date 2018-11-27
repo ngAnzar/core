@@ -53,10 +53,10 @@ export class MenuTriggerDirective extends LayerFactoryDirective {
                 backdrop: {
                     type: "empty",
                     hideOnClick: true,
-                    crop: this.el.nativeElement
+                    crop: this.targetEl.nativeElement
                 },
                 elevation: 10,
-                minWidth: this.el.nativeElement.offsetWidth
+                minWidth: this.targetEl.nativeElement.offsetWidth
             })
             this.show(behavior, { $implicit: this })
         }
