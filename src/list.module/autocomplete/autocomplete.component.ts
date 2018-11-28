@@ -5,7 +5,7 @@ import {
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { startWith } from "rxjs/operators"
 
-import { DataStorage, Model } from "../../data.module"
+import { DataStorage, Model, SelectionModel } from "../../data.module"
 import { ListDirective } from "../list/list.directive"
 import { ListActionComponent } from "../list/list-action.component"
 import { Destruct } from "../../util"
@@ -45,22 +45,6 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
         return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex + actionsLength}, 48px)`)
     }
 
-    public get focusedModel(): T {
-        let item = this.list.focusedItem
-        if (item && item.selectable) {
-            return item.selectable.model as T
-        }
-        return null
-    }
-
-    // public get fristActions(): QueryList<ActionComponent> {
-    //     return this.actions ? this.actions.filter(v => v.position === "first") : [] as any
-    // }
-
-    // public get lastActions(): QueryList<ActionComponent> {
-    //     return this.actions ? this.actions.filter(v => v.position === "last") : [] as any
-    // }
-
     protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}
     public readonly destruct = new Destruct()
 
@@ -69,17 +53,12 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
         @Inject(AUTOCOMPLETE_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
         @Inject(AUTOCOMPLETE_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Inject(DomSanitizer) protected sanitizer: DomSanitizer) {
-    }
+        @Inject(DomSanitizer) protected sanitizer: DomSanitizer,
+        @Inject(SelectionModel) protected selection: SelectionModel) {
 
-    public focusNext() {
-        this.list.moveFocus(1)
-        this.cdr.detectChanges()
-    }
-
-    public focusPrev() {
-        this.list.moveFocus(-1)
-        this.cdr.detectChanges()
+        this.destruct.subscription(selection.changes).subscribe(() => {
+            this.cdr.detectChanges()
+        })
     }
 
     public ngOnInit() {

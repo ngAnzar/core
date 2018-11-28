@@ -2,8 +2,10 @@ import { Directive, OnDestroy, EventEmitter, Input, Output, Attribute, SkipSelf,
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
+import { NzRange } from "../../util"
 import { Model, ID } from "../model"
-import { SelectionModel, ISelectionModel, ISelectable, Update, SelectionEvent, SelectOrigin } from "./abstract"
+import { SelectionModel, ISelectionModel, ISelectable, Update, SelectionEvent, SelectOrigin, SelectionItems } from "./abstract"
+import { SelectionKeyboardHandler } from "./keyboard-handler"
 
 
 @Directive({
@@ -19,16 +21,29 @@ export class SingleSelection<T extends Model = Model> extends SelectionModel<T> 
     protected selectedId: ID
 
     public update(update: Update): void {
+        // console.log("Single", update)
+        // let up: Update = {}
+
+        // for (const k in this.selected.byId) {
+
+        //     up[k] = null
+        // }
+
+        // for (const k in update) {
+        //     if (up[k] = update[k]) {
+        //         break
+        //     }
+        // }
+        // console.log({ up })
+        // return super.update(up)
+
         let newSid = this.selectedId
-        let newOrigin: SelectOrigin
         for (let k in update) {
             if (update[k]) {
                 newSid = k
-                newOrigin = update[k]
                 break
             } else if (k === newSid) {
                 newSid = null
-                newOrigin = null
             }
         }
 
@@ -37,7 +52,7 @@ export class SingleSelection<T extends Model = Model> extends SelectionModel<T> 
         }
 
         for (let k in update) {
-            update[k] = k === newSid ? newOrigin : null
+            update[k] = k === newSid ? update[k] : null
         }
         this.selectedId = newSid
         super.update(update)
@@ -69,10 +84,10 @@ const SELECTION = Symbol("selection")
 })
 export class PropagateSelection<T extends Model = Model> implements ISelectionModel<T> {
     @Input("selection")
-    protected set __selectionModel(val: SelectionModel<T>) {
+    protected set __selectionModel(val: ISelectionModel<T>) {
         this[SELECTION] = val
     }
-    private [SELECTION]: SelectionModel<T>
+    private [SELECTION]: ISelectionModel<T>
 
 
     public get items(): T[] { return this[SELECTION].items }
@@ -83,11 +98,14 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
 
     public get type(): string { return this[SELECTION].type }
     public get changes(): Observable<SelectionEvent<T>> { return this[SELECTION].changes }
+    public get keyboard(): SelectionKeyboardHandler<T> { return this[SELECTION].keyboard }
+    public get selected(): SelectionItems<T> { return this[SELECTION].selected }
 
     public update(update: Update): void { this[SELECTION].update(update) }
     public clear(): void { this[SELECTION].clear() }
     public getSelectOrigin(what: ID): SelectOrigin { return this[SELECTION].getSelectOrigin(what) }
     public setSelected(what: ID, selected: SelectOrigin): void { this[SELECTION].setSelected(what, selected) }
+    public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] { return this[SELECTION].getSelectables(range, onlySelected) }
     public _handleOnDestroy(cmp: ISelectable<T>): void { this[SELECTION]._handleOnDestroy(cmp) }
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void { this[SELECTION]._handleModelChange(cmp, oldModel, newModel) }
 }

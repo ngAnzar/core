@@ -12,49 +12,40 @@ let UID_COUNTER = 0
 @Directive({
     selector: "[selectable]"
 })
-export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy, OnInit {
+export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy {
     @Input("selectable")
     public set model(val: T) {
         if (!Model.isEq(this._model, val)) {
             let old = this._model
             this._model = val
-            this._selectionId = val ? val.id : null
-            this._selected = this.selection.getSelectOrigin(this.selectionId)
+            this._selected = val ? this.selection.getSelectOrigin(val.id) : null
             this.selection._handleModelChange(this, old, val)
         }
     }
     public get model(): T { return this._model }
     protected _model: T
 
-    public get selectionId(): ID {
-        return this._selectionId
-            ? this._selectionId
-            : this._uid ? this._uid : (this._uid = `nz-selectable-${++UID_COUNTER}`)
-    }
-    protected _selectionId: ID
-    protected _uid?: string
-
     @Input()
-    public set selectionIndex(val: number) {
-        if (this._selectionIndex !== val) {
-            this._selectionIndex = val
-        }
-    }
-    public get selectionIndex(): number { return this._selectionIndex }
-    private _selectionIndex: number
+    public selectionIndex: number
+    // public set selectionIndex(val: number) {
+    //     if (this._selectionIndex !== val) {
+    //         this._selectionIndex = val
+    //     }
+    // }
+    // public get selectionIndex(): number { return this._selectionIndex }
+    // private _selectionIndex: number
 
     @Input()
     @HostBinding("attr.selected")
     public set selected(value: SelectOrigin) {
+        console.log("set selected", value)
         // value = coerceBooleanProperty(value)
         if (this._selected !== value) {
-            this.selection.setSelected(this.selectionId, value)
+            this.selection.setSelected(this.model.id, value)
         }
     }
-    public get selected(): SelectOrigin {
-        return this._selected
-    }
-    protected _selected?: SelectOrigin
+    public get selected(): SelectOrigin { return this._selected }
+    protected _selected: SelectOrigin
 
     @Output("selected")
     public readonly selectedChange: Observable<SelectOrigin> = new EventEmitter()
@@ -64,22 +55,22 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {
     }
 
-    public ngOnInit() {
-        if (this._selected == null) {
-            this._selected = this.selection.getSelectOrigin(this.selectionId)
-            if (this._selected) {
-                this.cdr.markForCheck()
-            }
-        }
-    }
+    // public ngOnInit() {
+    //     if (this._selected == null) {
+
+    //         if (this._selected) {
+    //             this.cdr.markForCheck()
+    //         }
+    //     }
+    // }
 
     public ngOnDestroy() {
         this.selection._handleOnDestroy(this)
     }
 
-    @HostListener("click")
-    public _handleClick(event: MouseEvent) {
-        this.selected = "mouse"
+    @HostListener("mouseup", ["$event"])
+    public _onMouseUp(event: MouseEvent) {
+        this.selection.keyboard.handleMouseUp(event, this)
     }
 
     public _changeSelected(newValue: SelectOrigin) {

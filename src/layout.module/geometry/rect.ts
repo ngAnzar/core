@@ -152,6 +152,8 @@ export class Rect {
 
     public setOrigin(origin: AlignInput | Align, x?: number, y?: number) {
         const align = parseAlign(origin)
+        const top = this.top
+        const left = this.left
 
         if (!this.origin || this.origin.horizontal !== align.horizontal) {
             installHAlign(this as any, align.horizontal)
@@ -195,6 +197,7 @@ function installHAlign(rect: WritableRect, align: HAlign) {
             getLeft = () => { return rect._x - rect.width }
             setRight = (val: number) => { rect._x = val }
             getRight = (): number => { return rect._x }
+            rect._x += rect.width
             break
 
         case "center":
@@ -202,6 +205,7 @@ function installHAlign(rect: WritableRect, align: HAlign) {
             getLeft = () => { return rect._x - rect.width / 2 }
             setRight = (val: number) => { rect._x = val - rect.width / 2 }
             getRight = (): number => { return rect._x + rect.width / 2 }
+            rect._x += rect.width / 2
             break
     }
 
@@ -236,6 +240,7 @@ function installVAlign(rect: WritableRect, align: VAlign) {
             getTop = () => { return rect._y - rect.height }
             setBottom = (val: number) => { rect._y = val }
             getBottom = (): number => { return rect._y }
+            rect._y += rect.height
             break
 
         case "center":
@@ -243,6 +248,7 @@ function installVAlign(rect: WritableRect, align: VAlign) {
             getTop = () => { return rect._y - rect.height / 2 }
             setBottom = (val: number) => { rect._y = val - rect.height / 2 }
             getBottom = (): number => { return rect._y + rect.height / 2 }
+            rect._y += rect.height / 2
             break
     }
 

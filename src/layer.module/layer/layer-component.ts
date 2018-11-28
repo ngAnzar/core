@@ -115,6 +115,8 @@ export class LayerFactoryDirective implements OnDestroy {
             constraint
         }
 
+        console.log(behavior.options.position)
+
         let layerRef: LayerRef
         if (this.cmp) {
             layerRef = this.layerSvc.createFromComponent(this.cmp, behavior, null, provides, this.vcr)

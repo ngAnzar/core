@@ -227,22 +227,15 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.selection = new SingleSelection()
         }
 
-        this.selection.maintainSelection = true
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
-            let value = valueField
-                ? selected.map(item => (item as any)[valueField])
-                : selected.slice(0)
-
-            if (this.selection.type !== "multi") {
+            if (this.selection.type === "single" &&
+                selected[0] &&
+                this.selection.getSelectOrigin(selected[0].id) === "mouse") {
                 this.opened = false
-                this.value = value[0]
-            } else {
-                this.value = value
             }
 
             this._resetTextInput()
-            this.cdr.markForCheck()
-            // this.cdr.detectChanges()
+            this.cdr.detectChanges()
         })
 
         this.displayField = displayField || "label"
@@ -260,6 +253,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 || LayerFactoryDirective.create("left top", "left bottom", this.layer, this.vcr, el)
             this._layerFactory.nzLayerFactory = AutocompleteComponent
         }
+
+        this.selection.keyboard.connect(el.nativeElement)
     }
 
     public toggle() {
@@ -380,6 +375,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this._layerFactory.targetAnchor.margin = { left: -16, right: -16 }
             }
 
+            console.log(this._layerFactory)
             let layerRef = this._layerFactory.show(
                 new DropdownLayer({
                     backdrop: {
@@ -410,62 +406,21 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     s.unsubscribe()
                 }
             })
-
-            // Promise.resolve(this.ddLayer ? this.ddLayer.hide() :)
-            // if (!this.acLayer) {
-            //     let targetEl = (this.ffc ? this.ffc.el : this.el).nativeElement
-            //     let position: LevitateOptions = this.editable
-            //         ? {
-            //             align: "left top",
-            //             anchor: {
-            //                 ref: targetEl,
-            //                 align: "left bottom",
-            //                 margin: { bottom: this.ffc ? 19 : 0 },
-            //             }
-            //         }
-            //         : {
-            //             align: "left top",
-            //             anchor: {
-            //                 ref: targetEl,
-            //                 align: "left top",
-            //                 margin: { left: -16, right: -16 },
-            //             }
-            //         }
-
-            //     let options: DropdownLayerOptions = {
-            //         position: position,
-            //         backdrop: {
-            //             type: "empty",
-            //             crop: targetEl,
-            //             hideOnClick: true
-            //         },
-            //         minWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
-            //         minHeight: this.editable ? 0 : targetEl.offsetHeight,
-            //         initialWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
-            //         initialHeight: this.editable ? 0 : targetEl.offsetHeight,
-            //         elevation: 10
-            //     }
-            //     this.acLayer = this.layer.createFromComponent(
-            //         AutocompleteComponent,
-            //         new DropdownLayer(options),
-            //         null,
-            //         [
-            //             { provide: SelectionModel, useValue: this.selection },
-            //             { provide: DataStorage, useValue: this.storage },
-            //             { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
-            //             { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
-            //         ]) as any
-
-            //     let s = this.acLayer.output.subscribe(event => {
-            //         if (event.type === "hiding") {
-            //             this.opened = false
-            //             s.unsubscribe()
-            //         }
-            //     })
-            // }
-            // this.acLayer.show()
         } else {
             this._layerFactory.hide()
+
+            let value = this.valueField
+                ? this.selected.map(item => (item as any)[this.valueField])
+                : this.selected.slice(0)
+
+            if (this.selection.type === "single") {
+                this.value = value[0]
+            } else {
+                this.value = value
+            }
+
+            this._resetTextInput()
+            this.cdr.detectChanges()
         }
     }
 
@@ -603,27 +558,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.opened = false
                 return true
 
-            case ENTER:
-                // if (this.acLayer && this.acLayer.component.instance.focusedModel) {
-                //     let fml = this.acLayer.component.instance.focusedModel
-                //     this.selection.update({
-                //         [fml.id]: true
-                //     })
-                // }
-                return true
-
             case UP_ARROW:
-                this.opened = true
-                // if (this.acLayer) {
-                //     this.acLayer.component.instance.focusPrev()
-                // }
-                return true
-
             case DOWN_ARROW:
                 this.opened = true
-                // if (this.acLayer) {
-                //     this.acLayer.component.instance.focusNext()
-                // }
+                return false
+
+            case ENTER:
+                this.opened = false
                 return true
 
             case BACKSPACE:

@@ -2,8 +2,9 @@ import { OnDestroy, EventEmitter, Input, Output } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
-import { IDisposable } from "../../util"
+import { IDisposable, NzRange } from "../../util"
 import { Model, ID } from "../model"
+import { SelectionKeyboardHandler } from "./keyboard-handler"
 
 
 export interface SelectionEvent<T> extends Array<T> {
@@ -24,11 +25,15 @@ export interface ISelectionModel<T extends Model = Model> {
 
     readonly type: string
     readonly changes: Observable<SelectionEvent<T>>
+    readonly keyboard: SelectionKeyboardHandler<T>
+    readonly selected: SelectionItems<T>
 
     update(update: Update): void
     clear(): void
+
     getSelectOrigin(what: ID): SelectOrigin
     setSelected(what: ID, selected: SelectOrigin): void
+    getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[]
 
     _handleOnDestroy(cmp: ISelectable<T>): void
     _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void
@@ -41,7 +46,6 @@ export interface ISelectable<T extends Model = Model> {
 
     // egyedi azonosító, lehetőleg mindig maradjon meg az eredeti egy adott elemhez
     model: T
-    selectionId: ID
     selectionIndex: number
 
     _changeSelected(newValue: SelectOrigin): void
@@ -72,20 +76,20 @@ function removeEntries<T extends Model>(list: T[], remove: T[]) {
 }
 
 
-class SelectionItems<T extends Model = Model> implements IDisposable {
-    public selected: SelectedDict<T> = {}
+export class SelectionItems<T extends Model = Model> implements IDisposable {
+    public byId: SelectedDict<T> = {}
     public origin: { [key: string]: SelectOrigin } = {}
     public readonly changes: Observable<SelectionEvent<T>> = new EventEmitter()
 
-    public set items(val: T[]) {
+    public set(val: T[], origin: SelectOrigin) {
         let fullUpdate: Update = {}
-        for (const k in this.selected) {
+        for (const k in this.byId) {
             fullUpdate[k] = null
         }
 
         let models = {} as any
         for (const item of val) {
-            fullUpdate[item.id] = "program"
+            fullUpdate[item.id] = origin
             models[item.id] = item
         }
 
@@ -93,7 +97,7 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
         this.update(fullUpdate)
         delete this._tmpModels
     }
-    public get items(): T[] { return this._items }
+    public get(): T[] { return this._items }
     private _items: T[] = []
 
     private _tmpModels: { [key: string]: T }
@@ -106,7 +110,7 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
     private _pending: Update = {}
 
     public update(update: Update): void {
-        if (this._suspended || !this.selected) {
+        if (this._suspended || !this.byId) {
             this._pending = Object.assign(this._pending, update)
             return
         }
@@ -125,13 +129,14 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
                     cmp._changeSelected(update[k])
                 }
 
-                if (!this.selected.hasOwnProperty(k)) {
+                if (!this.byId.hasOwnProperty(k)) {
                     const model = (this._tmpModels ? this._tmpModels[k] : null)
                         || (cmp ? cmp.model : null)
                         || new PlaceholderModel({ id: k })
-                    this.selected[k] = model as any
-                    selected.push(this.selected[k])
+                    this.byId[k] = model as any
+                    selected.push(this.byId[k])
                 }
+                this.origin[k] = update[k]
             } else {
                 let cmp = this.selectables[k]
                 if (cmp && cmp.selected !== null) {
@@ -141,17 +146,17 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
                     cmp._changeSelected(null)
                 }
 
-                if (this.selected.hasOwnProperty(k)) {
-                    removed.push(this.selected[k])
-                    delete this.selected[k]
+                if (this.byId.hasOwnProperty(k)) {
+                    removed.push(this.byId[k])
+                    delete this.byId[k]
                 }
+                delete this.origin[k]
             }
-            this.origin[k] = update[k]
         }
 
-        removeEntries(this.items, removed)
+        removeEntries(this._items, removed)
         for (let a of selected) {
-            this.items.push(a)
+            this._items.push(a)
         }
         this._suspended = Math.max(0, this._suspended - 1)
         if (Object.keys(this._pending).length) {
@@ -161,7 +166,7 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
         }
 
         if (removed.length || selected.length) {
-            let event = this.items.slice(0) as SelectionEvent<T>
+            let event = this._items.slice(0) as SelectionEvent<T>
             event.selected = selected
             event.removed = removed;
             (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
@@ -169,9 +174,9 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
     }
 
     public clear() {
-        if (this.items.length > 0) {
+        if (this._items.length > 0) {
             let event = [] as SelectionEvent<T>
-            event.removed = this.items.slice(0) as SelectionEvent<T>;
+            event.removed = this._items.slice(0) as SelectionEvent<T>;
             (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
         }
     }
@@ -189,59 +194,79 @@ class SelectionItems<T extends Model = Model> implements IDisposable {
 export abstract class SelectionModel<T extends Model = Model> implements OnDestroy, ISelectionModel {
     public abstract readonly type: string
 
-    public set items(val: T[]) { this._selectedItems.items = val }
-    public get items(): T[] { return this._selectedItems.items }
+    public set items(val: T[]) { this.selected.set(val, "program") }
+    public get items(): T[] { return this.selected.get() }
+
+    public readonly keyboard: SelectionKeyboardHandler = new SelectionKeyboardHandler(this)
+
+    protected _selectables: { [key: string]: ISelectable<T> } = {}
+    public readonly selected = new SelectionItems(this._selectables)
 
     @Output("selection")
-    public get changes() { return this._selectedItems.changes }
+    public get changes() { return this.selected.changes }
 
     @Input()
     public maintainSelection: boolean = true
 
-    protected _selectables: { [key: string]: ISelectable<T> } = {}
-
-    protected _selectedItems = new SelectionItems(this._selectables)
-    // protected _keyboardItems = new SelectionItems(this._selectables, this._models)
-
     public update(update: Update): void {
-        this._selectedItems.update(update)
+        this.selected.update(update)
     }
 
     public clear() {
-        this._selectedItems.clear()
+        this.selected.clear()
     }
 
     public getSelectOrigin(what: ID): SelectOrigin {
-        return this._selectedItems.origin[what]
+        return this.selected.origin[what] || null
     }
 
     public setSelected(what: ID, selected: SelectOrigin) {
         this.update({ [what]: selected })
     }
 
+    public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] {
+        if (onlySelected) {
+            return Object_values(this._selectables).filter(s => {
+                return (!range || range.contains(s.selectionIndex)) && this.getSelectOrigin(s.model.id) !== null
+            })
+        } else if (range) {
+            return Object_values(this._selectables).filter(s => {
+                return range.contains(s.selectionIndex)
+            })
+        } else {
+            return Object_values(this._selectables)
+        }
+    }
+
     public _handleOnDestroy(cmp: ISelectable<T>): void {
         if (!this.maintainSelection) {
-            this.update({ [cmp.selectionId]: null })
+            this.setSelected(cmp.model.id, null)
         }
-        delete this._selectables[cmp.selectionId]
+        delete this._selectables[cmp.model.id]
     }
 
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void {
-        for (let k in this._selectables) {
-            let selectable = this._selectables[k]
-            if (selectable === cmp && k !== cmp.selectionId) {
-                delete this._selectables[k]
-                break
-            }
+        if (oldModel && this._selectables[oldModel.id] === cmp) {
+            delete this._selectables[oldModel.id]
         }
-        this._selectables[cmp.selectionId] = cmp
-        this.update({ [cmp.selectionId]: this.getSelectOrigin(cmp.selectionId) })
+
+        if (newModel) {
+            this._selectables[newModel.id] = cmp
+        }
     }
 
     public ngOnDestroy() {
-        this._selectedItems.dispose()
-        delete this._selectedItems
+        this.selected.dispose()
+        this.keyboard.dispose()
+        delete (this as any).selected
+        delete (this as any).keyboard
     }
+}
+
+
+
+function Object_values<T>(val: { [key: string]: T }): T[] {
+    return Object.keys(val).map(k => val[k])
 }
 
 
