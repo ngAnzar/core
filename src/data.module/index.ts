@@ -11,7 +11,7 @@ export { StaticSource } from "./static-source"
 
 import { SingleSelection, MultiSelection, PropagateSelection } from "./selection/selection.directive"
 import { SelectableDirective } from "./selection/selectable.directive"
-export { SelectionModel, ISelectionModel, SelectionEvent, ISelectable } from "./selection/abstract"
+export { SelectionModel, ISelectionModel, SelectionEvent, ISelectable, SelectOrigin } from "./selection/abstract"
 export { SingleSelection, MultiSelection, PropagateSelection, SelectableDirective }
 
 

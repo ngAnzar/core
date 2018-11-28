@@ -3,7 +3,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
 import { Model, ID } from "../model"
-import { SelectionModel, ISelectionModel, ISelectable, Update, SelectionEvent } from "./abstract"
+import { SelectionModel, ISelectionModel, ISelectable, Update, SelectionEvent, SelectOrigin } from "./abstract"
 
 
 @Directive({
@@ -20,21 +20,24 @@ export class SingleSelection<T extends Model = Model> extends SelectionModel<T> 
 
     public update(update: Update): void {
         let newSid = this.selectedId
+        let newOrigin: SelectOrigin
         for (let k in update) {
             if (update[k]) {
                 newSid = k
+                newOrigin = update[k]
                 break
             } else if (k === newSid) {
                 newSid = null
+                newOrigin = null
             }
         }
 
         if (this.selectedId) {
-            update[this.selectedId] = false
+            update[this.selectedId] = null
         }
 
         for (let k in update) {
-            update[k] = k === newSid
+            update[k] = k === newSid ? newOrigin : null
         }
         this.selectedId = newSid
         super.update(update)
@@ -83,8 +86,8 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
 
     public update(update: Update): void { this[SELECTION].update(update) }
     public clear(): void { this[SELECTION].clear() }
-    public isSelected(what: ID): boolean { return this[SELECTION].isSelected(what) }
-    public setSelected(what: ID, selected: boolean): void { this[SELECTION].setSelected(what, selected) }
+    public getSelectOrigin(what: ID): SelectOrigin { return this[SELECTION].getSelectOrigin(what) }
+    public setSelected(what: ID, selected: SelectOrigin): void { this[SELECTION].setSelected(what, selected) }
     public _handleOnDestroy(cmp: ISelectable<T>): void { this[SELECTION]._handleOnDestroy(cmp) }
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void { this[SELECTION]._handleModelChange(cmp, oldModel, newModel) }
 }

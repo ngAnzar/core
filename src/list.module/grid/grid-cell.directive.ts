@@ -69,7 +69,7 @@ export class GridCellDirective<T extends Model = Model> implements OnInit, OnDes
 
     @HostListener("click")
     public onClick() {
-        this.sel.setSelected(this.data.id, true)
+        this.sel.setSelected(this.data.id, "mouse")
     }
 
     protected redraw() {

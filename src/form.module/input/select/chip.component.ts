@@ -21,7 +21,7 @@ export class ChipComponent {
     @HostListener("mousedown", ["$event"])
     protected onClick(event: MouseEvent) {
         if (!event.defaultPrevented) {
-            this.selection.setSelected(this.selectable.model.id, true)
+            this.selection.setSelected(this.selectable.model.id, "mouse")
         }
         event.preventDefault()
         event.stopImmediatePropagation()
@@ -29,7 +29,7 @@ export class ChipComponent {
 
     protected removeItem(event: MouseEvent) {
         event.preventDefault()
-        this.select.selection.setSelected(this.selectable.model.id, false)
-        this.selection.setSelected(this.selectable.model.id, false)
+        this.select.selection.setSelected(this.selectable.model.id, null)
+        this.selection.setSelected(this.selectable.model.id, null)
     }
 }

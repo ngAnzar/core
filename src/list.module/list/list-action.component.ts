@@ -4,7 +4,7 @@ import {
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
-import { Model, Field, SelectableDirective } from "../../data.module"
+import { Model, Field, SelectableDirective, SelectOrigin } from "../../data.module"
 
 
 // related issue: https://github.com/angular/angular/issues/12530
@@ -55,7 +55,7 @@ export class SelectableActionDirective extends SelectableDirective<ListActionMod
         this.model = val
     }
 
-    public _canChangeSelected(newValue: boolean): boolean {
+    public _canChangeSelected(newValue: SelectOrigin): boolean {
         let action = this.model.action
 
         if (action) {

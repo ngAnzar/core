@@ -633,7 +633,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                         || this.input.nativeElement.value.length === 0)) {
                     if (this.selection.items.length > 0) {
                         this.selection.update({
-                            [this.selection.items[this.selection.items.length - 1].id]: false
+                            [this.selection.items[this.selection.items.length - 1].id]: null
                         })
                     }
                     return true

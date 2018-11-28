@@ -3,7 +3,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
 import { Model, ID } from "../model"
-import { SelectionModel, ISelectable } from "./abstract"
+import { SelectionModel, ISelectable, SelectOrigin } from "./abstract"
 
 
 
@@ -19,7 +19,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
             let old = this._model
             this._model = val
             this._selectionId = val ? val.id : null
-            this._selected = this.selection.isSelected(this.selectionId)
+            this._selected = this.selection.getSelectOrigin(this.selectionId)
             this.selection._handleModelChange(this, old, val)
         }
     }
@@ -35,22 +35,29 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     protected _uid?: string
 
     @Input()
-    public set selected(value: boolean) {
-        value = coerceBooleanProperty(value)
+    public set selectionIndex(val: number) {
+        if (this._selectionIndex !== val) {
+            this._selectionIndex = val
+        }
+    }
+    public get selectionIndex(): number { return this._selectionIndex }
+    private _selectionIndex: number
+
+    @Input()
+    @HostBinding("attr.selected")
+    public set selected(value: SelectOrigin) {
+        // value = coerceBooleanProperty(value)
         if (this._selected !== value) {
             this.selection.setSelected(this.selectionId, value)
         }
     }
-    public get selected(): boolean {
+    public get selected(): SelectOrigin {
         return this._selected
     }
-    protected _selected?: boolean
+    protected _selected?: SelectOrigin
 
     @Output("selected")
-    public readonly selectedChange: Observable<boolean> = new EventEmitter()
-
-    @HostBinding("attr.selected")
-    protected get selectedAttr(): string { return this.selected ? "" : null }
+    public readonly selectedChange: Observable<SelectOrigin> = new EventEmitter()
 
     public constructor(
         @Inject(SelectionModel) public readonly selection: SelectionModel<T>,
@@ -59,7 +66,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
 
     public ngOnInit() {
         if (this._selected == null) {
-            this._selected = this.selection.isSelected(this.selectionId)
+            this._selected = this.selection.getSelectOrigin(this.selectionId)
             if (this._selected) {
                 this.cdr.markForCheck()
             }
@@ -72,16 +79,16 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
 
     @HostListener("click")
     public _handleClick(event: MouseEvent) {
-        this.selected = true
+        this.selected = "mouse"
     }
 
-    public _changeSelected(newValue: boolean) {
+    public _changeSelected(newValue: SelectOrigin) {
         this._selected = newValue;
-        (this.selectedChange as EventEmitter<boolean>).emit(newValue)
+        (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue)
         this.cdr.markForCheck()
     }
 
-    public _canChangeSelected(newValue: boolean): boolean {
+    public _canChangeSelected(newValue: SelectOrigin): boolean {
         return true
     }
 }

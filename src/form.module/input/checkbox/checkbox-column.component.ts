@@ -20,7 +20,6 @@ export class CheckboxColumnComponent extends ColumnComponent {
     public constructor(
         @Inject(SelectionModel) protected readonly selection: SelectionModel) {
         super()
-        console.log({ chk: selection })
         if (this._width.number === -1) {
             this._width = { number: 44, unit: "px" }
         }
@@ -35,10 +34,10 @@ export class CheckboxColumnComponent extends ColumnComponent {
     protected _content: TemplateRef<any>
 
     public setChecked(id: ID, checked: boolean) {
-        this.selection.setSelected(id, checked)
+        this.selection.setSelected(id, "program")
     }
 
     public isChecked(id: ID) {
-        return this.selection.isSelected(id)
+        return this.selection.getSelectOrigin(id) !== null
     }
 }
