@@ -1,6 +1,7 @@
-import { OnDestroy, EventEmitter, Input, Inject, Optional, ElementRef, Injector } from "@angular/core"
+import { OnDestroy, EventEmitter, Input, Inject, Optional, ElementRef, Injector, Output } from "@angular/core"
 import { AbstractControlDirective, ControlValueAccessor, AbstractControl, NgModel, NgControl, NG_VALUE_ACCESSOR } from "@angular/forms"
 import { Observable } from "rxjs"
+import { filter, map } from "rxjs/operators"
 
 
 let UID_COUNTER = 0
@@ -64,6 +65,9 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
     public set tabIndex(value: number) { this._tabIndex = value }
     protected _tabIndex: number = 0
 
+    @Output("focused")
+    public readonly onFocused: Observable<boolean> = new EventEmitter()
+
     public get focused(): boolean { return this._focused }
     protected _focused: boolean = false
 
@@ -79,7 +83,8 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
     protected _handleFocus(focused: boolean): void {
         if (this._focused !== focused) {
             this._focused = focused;
-            (this.statusChanges as EventEmitter<any>).next("")
+            (this.statusChanges as EventEmitter<any>).next();
+            (this.onFocused as EventEmitter<boolean>).next(focused)
             if (!focused && this._onTouchedHandler) {
                 this._onTouchedHandler()
             }
