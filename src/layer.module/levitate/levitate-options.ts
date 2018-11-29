@@ -21,5 +21,5 @@ export interface Levitating extends Anchor {
 
 export interface Constraint {
     ref: HTMLElement | "viewport"
-    inset?: Margin | number
+    inset?: Margin
 }

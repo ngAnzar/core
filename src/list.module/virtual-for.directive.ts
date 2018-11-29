@@ -131,16 +131,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     protected _updateContent(range: NzRange, items: Items<T>) {
-        // let changes: Array<ListDiffItem<any>> = []
-        // for (let i = 0, l = this._vcr.length; i < l; i++) {
-        //     let v: EmbeddedView<T> = this._vcr.get(i) as any
-        //     if (v && v.context && v.context.index !== -1) {
-        //         if (!range.contains(v.context.index)) {
-        //             changes.push({ kind: ListDiffKind.DELETE, index: v.context.index, item: v.context.$implicit })
-        //         }
-        //     }
-        // }
-
         let changes = items.compare(this.rendered)
 
         for (let change of changes) {
@@ -158,8 +148,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
                 let elIdx = this.itemIndexToElIndex(change.index)
                 if (elIdx >= 0) {
                     let view = this._vcr.get(elIdx) as EmbeddedView<T>
+                    this._updateContext(view.context, -1, null, range)
                     this._vcr.detach(elIdx)
-                    view.context.index = -1
+                    // view.detectChanges()
                     this.reusable.push(view)
                 }
             }

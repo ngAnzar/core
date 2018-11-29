@@ -11,7 +11,8 @@ import { SelectableDirective } from "../../data.module"
 @Component({
     selector: ".nz-list-item",
     host: {
-        "[attr.focused]": "focused ? '' : null"
+        "[attr.focused]": "focused ? '' : null",
+        "[attr.tabindex]": "-1"
     },
     templateUrl: "./list-item.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush

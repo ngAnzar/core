@@ -26,6 +26,7 @@ function drawRect(r: Rect, color: string) {
     div.style.height = `${r.height}px`
     div.style.border = `1px solid ${color}`
     div.style.zIndex = `123456789`
+    div.setAttribute("origin", `${r.origin.horizontal}:${r.origin.vertical}/X:${r.x} Y:${r.y}`)
     // div.innerHTML = ``
     document.body.appendChild(div)
 }
@@ -59,7 +60,7 @@ export class MagicCarpet {
                         placements: [a, b],
                         rect: r
                     })
-                    // drawRect(r)
+                    // drawRect(r, "yellow")
                 }
             }
         }

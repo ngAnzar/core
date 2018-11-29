@@ -65,7 +65,7 @@ export class ToastService {
                 align: options.align,
                 constraint: {
                     ref: options.constraint || "viewport",
-                    margin: 20
+                    margin: -20
                 }
             }
         })

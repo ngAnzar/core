@@ -21,41 +21,16 @@ export class SingleSelection<T extends Model = Model> extends SelectionModel<T> 
     protected selectedId: ID
 
     public update(update: Update): void {
-        // console.log("Single", update)
-        // let up: Update = {}
-
-        // for (const k in this.selected.byId) {
-
-        //     up[k] = null
-        // }
-
-        // for (const k in update) {
-        //     if (up[k] = update[k]) {
-        //         break
-        //     }
-        // }
-        // console.log({ up })
-        // return super.update(up)
-
-        let newSid = this.selectedId
-        for (let k in update) {
-            if (update[k]) {
-                newSid = k
+        let up: Update = {}
+        for (const k in this.selected.byId) {
+            up[k] = null
+        }
+        for (const k in update) {
+            if (up[k] = update[k]) {
                 break
-            } else if (k === newSid) {
-                newSid = null
             }
         }
-
-        if (this.selectedId) {
-            update[this.selectedId] = null
-        }
-
-        for (let k in update) {
-            update[k] = k === newSid ? update[k] : null
-        }
-        this.selectedId = newSid
-        super.update(update)
+        return super.update(up)
     }
 }
 

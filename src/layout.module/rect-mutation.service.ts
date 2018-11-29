@@ -67,7 +67,7 @@ export class RectMutationService {
                 if ("x" in change) {
                     observer.next(lastEmit = new Rect(change.x, change.y, lastEmit.width, lastEmit.height))
                 } else {
-                    observer.next(lastEmit = new Rect(lastEmit.x, lastEmit.y, change.width, change.height))
+                    observer.next(lastEmit = new Rect(lastEmit.left, lastEmit.top, change.width, change.height))
                 }
             })
 
@@ -125,18 +125,23 @@ export class RectMutationService {
     protected createPositionWatcher(element: HTMLElement): Observable<Position> {
         return Observable.create((observer: Observer<Position>) => {
             let rect = element.getBoundingClientRect()
-            const rafId = requestAnimationFrame(() => {
+            let rafId: any
+
+            const watcher = () => {
                 let current = element.getBoundingClientRect()
                 if (current.top !== rect.top || current.left !== rect.left) {
                     rect = current
                     observer.next({ x: current.left, y: current.top })
                 }
-            })
+                rafId = requestAnimationFrame(watcher)
+            }
+
+            rafId = requestAnimationFrame(watcher)
 
             return () => {
                 cancelAnimationFrame(rafId)
             }
-        }).pipe(debounceTime(0, animationFrameScheduler), share())
+        }).pipe(share())
     }
 
     protected getPositonWatcher(element: HTMLElement): Observable<Position> {

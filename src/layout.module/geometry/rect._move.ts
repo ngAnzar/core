@@ -1,5 +1,7 @@
 import { Point } from "./point"
-import { Align, AlignInput, HAlign, VAlign, parseAlign, Margin, MarginParsed, parseMargin } from "./align"
+import { Align, AlignInput, HAlign, VAlign, parseAlign } from "./align"
+
+export type Margin = { top?: number, right?: number, bottom?: number, left?: number }
 
 const DEFAULT_ALIGN: Align = { horizontal: "left", vertical: "top" }
 
@@ -33,7 +35,7 @@ export class Rect {
     public get area(): number { return this.width * this.height }
 
     public readonly origin: Align
-    public readonly margin: MarginParsed
+    public readonly margin: Margin
 
     public constructor(x: number, y: number, public width: number, public height: number,
         origin: Align | AlignInput = DEFAULT_ALIGN) {
@@ -41,6 +43,11 @@ export class Rect {
     }
 
     public contains(other: Rect): boolean {
+        // console.log("contains", this.left, "<=", other.left, "&&",
+        //     this.top, "<=", other.top, "&&",
+        //     this.right, ">=", other.right, "&&",
+        //     this.bottom, ">=", other.bottom, "&&",
+        // )
         return this.left <= other.left && this.top <= other.top
             && this.right >= other.right && this.bottom >= other.bottom
     }
@@ -52,20 +59,29 @@ export class Rect {
 
     public intersection(other: Rect): Rect | null {
         if (this.isIntersect(other)) {
-            let res = new Rect(
-                Math.max(this.x, other.x),
-                Math.max(this.y, other.y),
-                Math.min(this.width, other.width),
-                Math.min(this.height, other.height),
-                this.origin);
+            let res = this.copy()
+            res.width = Math.min(this.width, other.width)
+            res.height = Math.min(this.height, other.height)
+            res.left = Math.max(this.left, other.left)
+            res.top = Math.max(this.top, other.top);
             (res as any).margin = this.margin
             return res
         }
         return null
     }
 
-    public applyInset(margin: Margin) {
-        let m = parseMargin(margin)
+    public applyMargin(margin: Margin | number): Rect {
+        let m: { top: number, right: number, bottom: number, left: number } = {} as any
+
+        if (typeof margin === "number") {
+            m.top = m.right = m.bottom = m.left = margin
+        } else {
+            m.top = margin.top || 0
+            m.right = margin.right || 0
+            m.bottom = margin.bottom || 0
+            m.left = margin.left || 0
+        }
+
         let res = this.copy()
         res.width -= (m.left + m.right)
         res.height -= (m.top + m.bottom)
@@ -75,31 +91,10 @@ export class Rect {
         return res
     }
 
-    public applyMargin(margin: Margin): Rect {
-        let m = parseMargin(margin)
-        let res = this.copy()
-        res.width += (m.left + m.right)
-        res.height += (m.top + m.bottom)
-        res.left -= m.left
-        res.top -= m.top;
-        (res as any).margin = m
-        return res
-    }
-
-    // public insetBy(value: Inset): Rect {
-    //     return new Rect(
-    //         this.top + (value.top || 0),
-    //         this.left + (value.left || 0),
-    //         this.width - ((value.left || 0) + (value.right || 0)),
-    //         this.height - ((value.top || 0) + (value.bottom || 0))
-    //     )
-    // }
-
     public constraint(other: Rect): Rect {
         if (this.contains(other)) {
             return other
         } else {
-            // console.log("constraint", other, "into", this)
             let r = other.copy()
 
             if (this.top > r.top) {
@@ -109,10 +104,10 @@ export class Rect {
                 r.left = this.left
             }
             if (this.right < r.right) {
-                r.right = this.right
+                r.width = Math.max(0, r.width - (r.right - this.right))
             }
             if (this.bottom < r.bottom) {
-                r.bottom = this.bottom
+                r.height = Math.max(0, r.height - (r.bottom - this.bottom))
             }
 
             return r
@@ -121,22 +116,25 @@ export class Rect {
 
     public isEq(other: Rect): boolean {
         return other instanceof Rect
-            && other.x === this.x
-            && other.y === this.y
+            && other.left === this.left
+            && other.left === this.left
             && other.width === this.width
             && other.height === this.height
     }
 
     public merge(other: Rect): Rect {
+        let left = Math.min(this.left, other.left)
+        let right = Math.max(this.right, other.right)
+        let top = Math.min(this.top, other.top)
+        let bottom = Math.max(this.bottom, other.bottom)
         let r = new Rect(
-            Math.min(this.x, other.x),
-            Math.min(this.y, other.y),
-            0,
-            0,
-            this.origin
+            left,
+            top,
+            right - left,
+            bottom - top,
+            DEFAULT_ALIGN
         )
-        r.right = Math.max(this.right, other.right)
-        r.bottom = Math.max(this.bottom, other.bottom)
+        r.setOrigin(this.origin)
         return r
     }
 
@@ -150,56 +148,70 @@ export class Rect {
 
     public setOrigin(origin: AlignInput | Align, x?: number, y?: number) {
         const align = parseAlign(origin)
+        const top = this.top
+        const left = this.left
+        let changed = false
+
+        // if (!(this as any).___) {
+        //     (this as any).___ = Math.random().toString(36)
+        // }
+
+        // if (this.origin) {
+        //     console.log((this as any).___, { x: this.x, y: this.y, w: this.width, h: this.height }, this.origin)
+        // }
 
         if (!this.origin || this.origin.horizontal !== align.horizontal) {
             installHAlign(this as any, align.horizontal)
+            changed = true
         }
 
         if (!this.origin || this.origin.vertical !== align.vertical) {
             installVAlign(this as any, align.vertical)
+            changed = true
         }
 
         (this as any).origin = align
 
         if (x != null) {
             this._x = x
+        } else if (changed && left != null) {
+            this.left = left
         }
 
         if (y != null) {
             this._y = y
+        } else if (changed && top != null) {
+            this.top = top
         }
+
+        // if (this.origin && changed) {
+        //     console.log((this as any).___, { x: this.x, y: this.y, w: this.width, h: this.height }, this.origin)
+        // }
     }
 }
 
 
 type setter = (val: number) => void
 type getter = () => number
-type WritableRect = { _x: number, _y: number, width: number, height: number, left: number, top: number }
+type WritableRect = { _x: number, _y: number, width: number, height: number }
 
 
 function installHAlign(rect: WritableRect, align: HAlign) {
     let setLeft: setter, getLeft: getter, setRight: setter, getRight: getter
-    const left = rect.left
 
     switch (align) {
         case "left":
             setLeft = (val: number) => { rect._x = val }
             getLeft = () => { return rect._x }
-            setRight = (val: number) => { rect.width = Math.max(0, val - rect._x) }
+            setRight = (val: number) => { rect._x = val - rect.width }
             getRight = (): number => { return rect._x + rect.width }
-            if (left != null) {
-                rect._x = left
-            }
             break
 
         case "right":
-            setLeft = (val: number) => { rect.width = Math.max(0, rect._x - val) }
+            setLeft = (val: number) => { rect._x = val + rect.width }
             getLeft = () => { return rect._x - rect.width }
             setRight = (val: number) => { rect._x = val }
             getRight = (): number => { return rect._x }
-            if (left != null) {
-                rect._x = left + rect.width
-            }
             break
 
         case "center":
@@ -207,9 +219,6 @@ function installHAlign(rect: WritableRect, align: HAlign) {
             getLeft = () => { return rect._x - rect.width / 2 }
             setRight = (val: number) => { rect._x = val - rect.width / 2 }
             getRight = (): number => { return rect._x + rect.width / 2 }
-            if (left != null) {
-                rect._x = left + rect.width / 2
-            }
             break
     }
 
@@ -230,27 +239,20 @@ function installHAlign(rect: WritableRect, align: HAlign) {
 
 function installVAlign(rect: WritableRect, align: VAlign) {
     let setTop: setter, getTop: getter, setBottom: setter, getBottom: getter
-    const top = rect.top
 
     switch (align) {
         case "top":
             setTop = (val: number) => { rect._y = val }
             getTop = () => { return rect._y }
-            setBottom = (val: number) => { rect.height = Math.max(0, val - rect._y) }
+            setBottom = (val: number) => { rect._y = val - rect.height }
             getBottom = (): number => { return rect._y + rect.height }
-            if (top != null) {
-                rect._y = top
-            }
             break
 
         case "bottom":
-            setTop = (val: number) => { rect.height = Math.max(0, rect._y - val) }
+            setTop = (val: number) => { rect._y = val + rect.height }
             getTop = () => { return rect._y - rect.height }
             setBottom = (val: number) => { rect._y = val }
             getBottom = (): number => { return rect._y }
-            if (top != null) {
-                rect._y = top + rect.height
-            }
             break
 
         case "center":
@@ -258,9 +260,6 @@ function installVAlign(rect: WritableRect, align: VAlign) {
             getTop = () => { return rect._y - rect.height / 2 }
             setBottom = (val: number) => { rect._y = val - rect.height / 2 }
             getBottom = (): number => { return rect._y + rect.height / 2 }
-            if (top != null) {
-                rect._y = top + rect.height / 2
-            }
             break
     }
 

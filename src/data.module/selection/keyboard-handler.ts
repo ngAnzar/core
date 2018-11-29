@@ -53,7 +53,6 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
     }
 
     protected _handleKeyDown = (event: KeyboardEvent) => {
-        console.log("_handleKeyDown", event.keyCode)
         switch (event.keyCode) {
             case UP_ARROW:
                 this.moveSelection(-1, event.shiftKey, event.ctrlKey)
@@ -63,8 +62,11 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 this.moveSelection(1, event.shiftKey, event.ctrlKey)
                 break
 
-            case ENTER: // ???
             case SPACE:
+                if (!event.ctrlKey || !event.shiftKey) {
+                    return
+                }
+            case ENTER:
                 if (this._keyboardFocused !== -1) {
                     this.moveSelection(0, event.shiftKey, event.ctrlKey)
                 }
@@ -81,13 +83,17 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
 
     }
 
+    public handleMouseDown = (event: MouseEvent, selectable: ISelectable) => {
+        event.preventDefault()
+    }
+
     public handleMouseUp = (event: MouseEvent, selectable: ISelectable) => {
         let mode = this.determineMode(event.ctrlKey, event.shiftKey, true)
         this.addToSelection(selectable, mode, true)
     }
 
     protected moveSelection(direction: number, shift: boolean, ctrl: boolean) {
-        let selectables = this.selection.getSelectables()
+        let selectables = this.selection.getSelectables().sort((a, b) => a.selectionIndex - b.selectionIndex)
         let nextIdx: number = -1
         if (selectables.length === 0) {
             return

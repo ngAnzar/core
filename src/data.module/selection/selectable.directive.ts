@@ -1,13 +1,11 @@
-import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, OnInit, ChangeDetectorRef, HostListener, HostBinding } from "@angular/core"
-import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, ChangeDetectorRef, HostListener, HostBinding, ElementRef } from "@angular/core"
+import { DOCUMENT } from "@angular/platform-browser"
+// import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
-import { Model, ID } from "../model"
+import { Model } from "../model"
 import { SelectionModel, ISelectable, SelectOrigin } from "./abstract"
 
-
-
-let UID_COUNTER = 0
 
 @Directive({
     selector: "[selectable]"
@@ -26,19 +24,23 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     protected _model: T
 
     @Input()
-    public selectionIndex: number
-    // public set selectionIndex(val: number) {
-    //     if (this._selectionIndex !== val) {
-    //         this._selectionIndex = val
-    //     }
-    // }
-    // public get selectionIndex(): number { return this._selectionIndex }
-    // private _selectionIndex: number
+    // public selectionIndex: number
+    public set selectionIndex(val: number) {
+        if (this._selectionIndex !== val) {
+            this._selectionIndex = val
+            // console.log("selectionIndex", val)
+        }
+    }
+    public get selectionIndex(): number { return this._selectionIndex }
+    private _selectionIndex: number
+
+    public get isAccessible(): boolean {
+        return this.doc.contains(this.el.nativeElement)
+    }
 
     @Input()
     @HostBinding("attr.selected")
     public set selected(value: SelectOrigin) {
-        console.log("set selected", value)
         // value = coerceBooleanProperty(value)
         if (this._selected !== value) {
             this.selection.setSelected(this.model.id, value)
@@ -52,20 +54,19 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
 
     public constructor(
         @Inject(SelectionModel) public readonly selection: SelectionModel<T>,
-        @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {
+        @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
+        @Inject(ElementRef) protected el: ElementRef<HTMLElement>,
+        @Inject(DOCUMENT) protected doc: Document) {
     }
-
-    // public ngOnInit() {
-    //     if (this._selected == null) {
-
-    //         if (this._selected) {
-    //             this.cdr.markForCheck()
-    //         }
-    //     }
-    // }
 
     public ngOnDestroy() {
         this.selection._handleOnDestroy(this)
+    }
+
+    // prevent lose focusing on original element
+    @HostListener("mousedown", ["$event"])
+    public _onMouseDown(event: MouseEvent) {
+        this.selection.keyboard.handleMouseDown(event, this)
     }
 
     @HostListener("mouseup", ["$event"])

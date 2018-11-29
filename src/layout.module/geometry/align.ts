@@ -8,6 +8,8 @@ export type AlignInput = "top left" | "top right" | "top center" |
     "right top" | "right bottom" | "right center" |
     "center" | "center center"
 
+export type MarginParsed = { top: number, right: number, bottom: number, left: number }
+export type Margin = Partial<MarginParsed> | number | string
 
 const CENTER_ALIGN: Align = { horizontal: "center", vertical: "center" }
 
@@ -61,4 +63,24 @@ export function parseAlign(align: Align | AlignInput): Align {
         }
     }
     throw new Error(`Invalid align value: ${align}`)
+}
+
+
+
+
+export function parseMargin(val: Margin): MarginParsed {
+    if (typeof val === "number") {
+        return { top: val, right: val, bottom: val, left: val }
+    } else {
+        let m = { top: 0, right: 0, bottom: 0, left: 0 }
+        if (typeof val === "string") {
+            throw new Error("TODOD margin string parse")
+        } else if (val) {
+            m.top = val.top || 0
+            m.right = val.right || 0
+            m.bottom = val.bottom || 0
+            m.left = val.left || 0
+        }
+        return m
+    }
 }

@@ -1,10 +1,13 @@
-import { OnDestroy, EventEmitter, Input, Output } from "@angular/core"
+import { OnDestroy, EventEmitter, Input, Output, ContentChildren, QueryList, AfterContentInit, InjectionToken } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
 import { IDisposable, NzRange } from "../../util"
 import { Model, ID } from "../model"
 import { SelectionKeyboardHandler } from "./keyboard-handler"
+
+
+export const SELECTABLE_ITEM = new InjectionToken<ISelectable>("selectable")
 
 
 export interface SelectionEvent<T> extends Array<T> {
@@ -47,6 +50,7 @@ export interface ISelectable<T extends Model = Model> {
     // egyedi azonosító, lehetőleg mindig maradjon meg az eredeti egy adott elemhez
     model: T
     selectionIndex: number
+    readonly isAccessible: boolean
 
     _changeSelected(newValue: SelectOrigin): void
     _canChangeSelected(newValue: SelectOrigin): boolean
@@ -110,6 +114,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
     private _pending: Update = {}
 
     public update(update: Update): void {
+        // console.log(update)
         if (this._suspended || !this.byId) {
             this._pending = Object.assign(this._pending, update)
             return
@@ -220,21 +225,23 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         return this.selected.origin[what] || null
     }
 
-    public setSelected(what: ID, selected: SelectOrigin) {
-        this.update({ [what]: selected })
+    public setSelected(what: ID, origin: SelectOrigin) {
+        this.update({ [what]: origin })
     }
 
     public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] {
         if (onlySelected) {
             return Object_values(this._selectables).filter(s => {
-                return (!range || range.contains(s.selectionIndex)) && this.getSelectOrigin(s.model.id) !== null
+                return s.isAccessible
+                    && (!range || range.contains(s.selectionIndex))
+                    && this.getSelectOrigin(s.model.id) !== null
             })
         } else if (range) {
             return Object_values(this._selectables).filter(s => {
-                return range.contains(s.selectionIndex)
+                return s.isAccessible && range.contains(s.selectionIndex)
             })
         } else {
-            return Object_values(this._selectables)
+            return Object_values(this._selectables).filter(s => s.isAccessible)
         }
     }
 

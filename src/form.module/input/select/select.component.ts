@@ -204,6 +204,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected lastKeyup: number
     protected pendingValue: any
     protected readonly chipSelection: SelectionModel = new SingleSelection()
+    protected selectedBeforeOpen: T[]
 
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
@@ -228,6 +229,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
+            // console.log(this.selection.type, selected[0] ? this.selection.getSelectOrigin(selected[0].id) : null)
             if (this.selection.type === "single" &&
                 selected[0] &&
                 this.selection.getSelectOrigin(selected[0].id) === "mouse") {
@@ -365,17 +367,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _updateDropDown() {
         if (this.opened) {
+            this.selectedBeforeOpen = this.selected.slice(0)
             let targetEl = (this._layerFactory.targetEl = (this.ffc ? this.ffc.el : this.el)).nativeElement
 
             if (this.editable) {
                 this._layerFactory.targetAnchor.nzTargetAnchor = "left bottom"
-                this._layerFactory.targetAnchor.margin = { bottom: this.ffc ? 19 : 0 }
+                this._layerFactory.targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
             } else {
                 this._layerFactory.targetAnchor.nzTargetAnchor = "left top"
-                this._layerFactory.targetAnchor.margin = { left: -16, right: -16 }
+                this._layerFactory.targetAnchor.margin = { left: 16, right: 16 }
             }
 
-            console.log(this._layerFactory)
             let layerRef = this._layerFactory.show(
                 new DropdownLayer({
                     backdrop: {
@@ -407,20 +409,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 }
             })
         } else {
+            delete this.selectedBeforeOpen
             this._layerFactory.hide()
-
-            let value = this.valueField
-                ? this.selected.map(item => (item as any)[this.valueField])
-                : this.selected.slice(0)
-
-            if (this.selection.type === "single") {
-                this.value = value[0]
-            } else {
-                this.value = value
-            }
-
-            this._resetTextInput()
-            this.cdr.detectChanges()
+            this._applySelected()
         }
     }
 
@@ -506,7 +497,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @HostListener("keyup", ["$event"])
     protected _onKeyup(event: KeyboardEvent) {
-        // console.log({ type: event.type, keyCode: event.keyCode, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey })
         this.lastKeyup = event.keyCode
         if (event.keyCode === ESCAPE) {
             event.preventDefault()
@@ -522,10 +512,26 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.storage.filter.set(filter)
     }
 
-    // @HostListener("click")
-    // protected _onClick() {
-    //     this.opened = true
-    // }
+    @HostListener("click")
+    protected _onClick() {
+        this.opened = true
+    }
+
+    protected _applySelected() {
+        let value = this.valueField
+            ? this.selected.map(item => (item as any)[this.valueField])
+            : this.selected.slice(0)
+
+        if (this.selection.type === "single") {
+            this.value = value[0]
+        } else {
+            this.value = value
+        }
+
+        // this.writeValue(this.value)
+        this._resetTextInput()
+        this.cdr.detectChanges()
+    }
 
     protected _resetTextInput() {
         if (!this.input) {
@@ -555,6 +561,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {
         switch (code) {
             case ESCAPE:
+                if (this.selectedBeforeOpen) {
+                    let bso = this.selectedBeforeOpen
+                    delete this.selectedBeforeOpen
+                    this.selection.items = bso
+                }
                 this.opened = false
                 return true
 

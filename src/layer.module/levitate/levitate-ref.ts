@@ -81,6 +81,13 @@ export class LevitateRef {
             }
         }
 
+        if ("inset" in opts) {
+            let inset = opts.inset
+            if (inset) {
+                observable = observable.pipe(map(value => value.applyInset(inset)))
+            }
+        }
+
         return observable
     }
 
