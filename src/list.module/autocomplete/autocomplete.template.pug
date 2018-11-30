@@ -14,20 +14,20 @@
   .scroller
     display: inline-grid
 
-.notfound.nz-list(*ngIf="!storage || storage.total === 0")
+.notfound.nz-list(*ngIf="!source.storage || source.storage.total === 0")
   .nz-list-item
     i Nem található
 
 //- TODO: loading anim
 
-.scroller(*ngIf="storage" nzScrollable="vertical")
+.scroller(*ngIf="source.storage" nzScrollable="vertical")
   .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
     ng-template(bind-ngIf="actionsByPosition.first")
       ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")
         .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model" bind-selectionIndex="index + 1")
           ng-template(bind-ngTemplateOutlet="action.tpl")
 
-    ng-template(nzVirtualFor, [nzVirtualForOf]="storage" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
+    ng-template(nzVirtualFor, [nzVirtualForOf]="source.storage" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
       .nz-list-item.item(bind-style.gridRow="offset(index)" bind-selectable="virtual" bind-selectionIndex="offset(index)")
         ng-template(
           bind-ngTemplateOutlet="itemTpl"
@@ -35,6 +35,9 @@
 
     ng-template(bind-ngIf="actionsByPosition.last")
       ng-template(ngFor bind-ngForOf="actionsByPosition.last" let-action let-index="index")
-        .nz-list-item.item.action(bind-style.gridRow="offset(index) + storage.total" bind-selectableAction="action.model" bind-selectionIndex="offset(index) + storage.total")
+        .nz-list-item.item.action(
+          bind-style.gridRow="offset(index) + source.storage.total"
+          bind-selectableAction="action.model"
+          bind-selectionIndex="offset(index) + source.storage.total")
           ng-template(bind-ngTemplateOutlet="action.tpl")
 

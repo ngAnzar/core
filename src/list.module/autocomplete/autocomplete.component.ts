@@ -5,7 +5,7 @@ import {
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { startWith } from "rxjs/operators"
 
-import { DataStorage, Model, SelectionModel } from "../../data.module"
+import { DataSourceDirective, Model, SelectionModel } from "../../data.module"
 import { ListDirective } from "../list/list.directive"
 import { ListActionComponent } from "../list/list-action.component"
 import { Destruct } from "../../util"
@@ -42,14 +42,14 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
 
     public get gridTemplateRows(): SafeStyle {
         const actionsLength = this.actions ? this.actions.length : 0
-        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex + actionsLength}, 48px)`)
+        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex + actionsLength}, 48px)`)
     }
 
     protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}
     public readonly destruct = new Destruct()
 
     public constructor(
-        @Inject(DataStorage) public readonly storage: DataStorage<T>,
+        @Inject(DataSourceDirective) public readonly source: DataSourceDirective<T>,
         @Inject(AUTOCOMPLETE_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
         @Inject(AUTOCOMPLETE_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
@@ -62,7 +62,7 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
     }
 
     public ngOnInit() {
-        this.destruct.subscription(this.storage.items).subscribe(event => {
+        this.destruct.subscription(this.source.storage.items).subscribe(event => {
             this.cdr.detectChanges()
         })
 

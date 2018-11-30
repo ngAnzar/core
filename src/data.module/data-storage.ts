@@ -66,7 +66,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected total: number
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
 
-    public constructor(protected readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
+    public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
 
         if (filter) {

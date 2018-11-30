@@ -6,7 +6,7 @@ import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 import { ColumnsComponent } from "./columns.component"
 
-import { DataSource, DataStorage, SelectionModel } from "../../data.module"
+import { DataSourceDirective, SelectionModel } from "../../data.module"
 import { Destruct } from "../../util"
 
 
@@ -19,37 +19,37 @@ import { Destruct } from "../../util"
 export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
 
-    @Input("data-source")
-    public set source(val: DataSource<any>) {
-        if (this._source !== val) {
-            this._source = val
-            this.storage = val ? new DataStorage(val) : null
-            this._update()
-        }
-    }
-    public get source(): DataSource<any> { return this._source }
-    protected _source: DataSource<any>
+    // @Input("data-source")
+    // public set source(val: DataSource<any>) {
+    //     if (this._source !== val) {
+    //         this._source = val
+    //         this.storage = val ? new DataStorage(val) : null
+    //         this._update()
+    //     }
+    // }
+    // public get source(): DataSource<any> { return this._source }
+    // protected _source: DataSource<any>
 
-    public set storage(val: DataStorage<any>) {
-        if (this._storage !== val) {
-            this._storage = val
-            if (val) {
-                this.destruct.subscription(val.invalidated).subscribe(this._update)
-                this.destruct.subscription(val.items).subscribe(this._update)
-            }
-            this._update()
-        }
-    }
-    public get storage(): DataStorage<any> { return this._storage }
-    protected _storage: DataStorage<any>
+    // public set storage(val: DataStorage<any>) {
+    //     if (this._storage !== val) {
+    //         this._storage = val
+    //         if (val) {
+    //             this.destruct.subscription(val.invalidated).subscribe(this._update)
+    //             this.destruct.subscription(val.items).subscribe(this._update)
+    //         }
+    //         this._update()
+    //     }
+    // }
+    // public get storage(): DataStorage<any> { return this._storage }
+    // protected _storage: DataStorage<any>
 
-    @Input()
-    public set filter(val: any) { this.storage.filter.set(val) }
-    public get filter(): any { return this.storage.filter.get() }
+    // @Input()
+    // public set filter(val: any) { this.storage.filter.set(val) }
+    // public get filter(): any { return this.storage.filter.get() }
 
-    @Input()
-    public set sorter(val: any) { this.storage.sorter.set(val) }
-    public get sorter(): any { return this.storage.sorter.get() }
+    // @Input()
+    // public set sorter(val: any) { this.storage.sorter.set(val) }
+    // public get sorter(): any { return this.storage.sorter.get() }
 
     public get gtRows(): SafeStyle { return this._gtRows }
     protected _gtRows: SafeStyle = ""
@@ -63,9 +63,11 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
 
 
     // @Inject(DataSource) @Host() public readonly source: DataSource<any>
-    public constructor(@Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
+    public constructor(
+        @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
-        @Inject(SelectionModel) @Host() public readonly selection: SelectionModel) {
+        @Inject(SelectionModel) @Host() public readonly selection: SelectionModel,
+        @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective) {
         selection.maintainSelection = true
 
         this.destruct.subscription(selection.changes).subscribe(this._update)
@@ -92,8 +94,8 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
         }
         let colTemplate = col.join(" ")
 
-        if (this.storage && this.storage.lastIndex) {
-            this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.storage.lastIndex}, ${this._rowHeight}px) / 1fr`)
+        if (this.source.storage && this.source.storage.lastIndex) {
+            this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex}, ${this._rowHeight}px) / 1fr`)
         }
 
         this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${colTemplate}`)

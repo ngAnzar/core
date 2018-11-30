@@ -7,7 +7,6 @@ import { LayerRef } from "./layer-ref"
 import { LayerService } from "./layer.service"
 import { LayerBehavior } from "./layer-behavior"
 import { Constraint } from "../levitate/levitate-options"
-import { Subscription } from 'rxjs';
 
 
 @Directive({

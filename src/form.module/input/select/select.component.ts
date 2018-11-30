@@ -1,7 +1,7 @@
 import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
-    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Self
+    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -11,9 +11,9 @@ import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators"
 
 import { NzRange, Destruct } from "../../../util"
-import { DataSource, DataStorage, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
+import { DataSourceDirective, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
 import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
-import { LayerService, DropdownLayer, DropdownLayerOptions, LevitateOptions, ComponentLayerRef, LayerFactoryDirective } from "../../../layer.module"
+import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
@@ -93,35 +93,35 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
     // @ViewChild("chipSelection", { read: SelectionModel }) protected readonly chipSelection: SelectionModel
 
-    @Input("data-source") //public readonly dataSource: DataSource<T>
-    public set dataSource(val: DataSource<T>) {
-        if (this._dataSource !== val) {
-            this._dataSource = val
-            this.storage = val ? new DataStorage(val) : null
-            this._watchInputStream(this.editable)
-            this.cdr.markForCheck()
-        }
-    }
-    public get dataSource(): DataSource<T> { return this._dataSource }
-    protected _dataSource: DataSource<T>
+    // @Input("data-source") //public readonly dataSource: DataSource<T>
+    // public set dataSource(val: DataSource<T>) {
+    //     if (this._dataSource !== val) {
+    //         this._dataSource = val
+    //         this.storage = val ? new DataStorage(val) : null
+    //         this._watchInputStream(this.editable)
+    //         this.cdr.markForCheck()
+    //     }
+    // }
+    // public get dataSource(): DataSource<T> { return this._dataSource }
+    // protected _dataSource: DataSource<T>
 
-    public set storage(val: DataStorage<T>) {
-        if (this._storage !== val) {
-            this._storage = val
-            this.applyPendingValue()
-            this.cdr.markForCheck()
-        }
-    }
-    public get storage(): DataStorage<T> { return this._storage }
-    protected _storage: DataStorage<T>
+    // public set storage(val: DataStorage<T>) {
+    //     if (this._storage !== val) {
+    //         this._storage = val
+    //         this.applyPendingValue()
+    //         this.cdr.markForCheck()
+    //     }
+    // }
+    // public get storage(): DataStorage<T> { return this._storage }
+    // protected _storage: DataStorage<T>
 
-    @Input()
-    public set filter(val: any) { this.storage.filter.set(val) }
-    public get filter(): any { return this.storage.filter.get() }
+    // @Input()
+    // public set filter(val: any) { this.storage.filter.set(val) }
+    // public get filter(): any { return this.storage.filter.get() }
 
-    @Input()
-    public set sorter(val: any) { this.storage.sorter.set(val) }
-    public get sorter(): any { return this.storage.sorter.get() }
+    // @Input()
+    // public set sorter(val: any) { this.storage.sorter.set(val) }
+    // public get sorter(): any { return this.storage.sorter.get() }
 
     public readonly displayField: string
     public readonly queryField: string
@@ -172,7 +172,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get disabled(): boolean { return !this.dataSource || this._disabled }
+    public get disabled(): boolean { return !this.source.storage || this._disabled }
     protected _disabled: boolean = false
 
     public set inputState(val: InputState) {
@@ -209,14 +209,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
-        // @Inject(Renderer2) _renderer: Renderer2,
         @Inject(ElementRef) el: ElementRef,
+        @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<T>,
         @Inject(SelectionModel) @Optional() public readonly selection: SelectionModel<T>,
         @Inject(LayerService) protected readonly layer: LayerService,
         @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
-        @Inject(LayerFactoryDirective) @Optional() @Self() protected _layerFactory: LayerFactoryDirective,
+        @Inject(LayerFactoryDirective) @Optional() @Host() protected _layerFactory: LayerFactoryDirective,
         @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Attribute("display-field") displayField: string,
         @Attribute("value-field") protected readonly valueField: string,
@@ -265,7 +265,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public writeValue(obj: SelectValue<T>): void {
-        if (!this.dataSource || !this.storage) {
+        if (!this.source.storage) {
             this.pendingValue = obj
             return
         }
@@ -286,7 +286,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected applyPendingValue() {
-        if (this.dataSource && this.storage && this.hidden) {
+        if (this.source.storage && this.hidden) {
             if ("pendingValue" in this) {
                 this.writeValue(this.pendingValue)
                 delete this.pendingValue
@@ -330,9 +330,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         return Observable.create((observer: Observer<T[]>) => {
             let s = []
 
-            if (this.dataSource) {
+            if (this.source.storage) {
                 for (let i = 0, l = ids.length; i < l; i++) {
-                    s.push(this.dataSource.get(ids[i]))
+                    s.push(this.source.get(ids[i]))
                 }
             }
 
@@ -396,7 +396,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 },
                 [
                     { provide: SelectionModel, useValue: this.selection },
-                    { provide: DataStorage, useValue: this.storage },
+                    { provide: DataSourceDirective, useValue: this.source },
                     { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
                     { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
                 ]
@@ -428,7 +428,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         if (f) {
-            if (this.focusOrigin === "mouse" && (!this.dataSource.async || !this.editable)) {
+            if (this.focusOrigin === "mouse" && (!this.source.async || !this.editable)) {
                 this.opened = true
             }
         } else {
@@ -438,11 +438,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _onInput(event: Event): void {
-        // TODO: dev mode only
-        if (!this.dataSource) {
-            console.warn("Missing data source")
-        }
-
         (this.inputStream as Subject<string>).next(this.input.nativeElement.value)
         // this.opened = true
         this.inputState = "typing"
@@ -454,19 +449,20 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         // }
 
         this.inputState = "querying"
-        this.storage.filter.update({
-            [this.queryField]: this.dataSource.async ? text : { contains: text }
-        } as any)
+        this.source.filter = {
+            [this.queryField]: this.source.async ? text : { contains: text }
+        } as any
+
         this.opened = true
     }
 
     protected _watchInputStream(on: boolean) {
         if (on) {
-            if (!this._iss && this.dataSource) {
-                let ml = this.dataSource.async ? Number(this.minLength) : 0
+            if (!this._iss && this.source.storage) {
+                let ml = this.source.async ? Number(this.minLength) : 0
                 this._iss = this.destruct.subscription(this.inputStream)
                     .pipe(
-                        debounceTime(this.dataSource.async ? 400 : 50),
+                        debounceTime(this.source.async ? 400 : 50),
                         filter(v => ml === 0 || (v && v.length >= ml))
                     )
                     .subscribe(this._querySuggestions)
@@ -507,9 +503,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _onTriggerClick(event: MouseEvent) {
         this.inputState = "querying"
         this.opened = true
-        let filter: any = this.storage.filter.get() || {}
+        let filter: any = this.source.filter
         delete filter[this.queryField]
-        this.storage.filter.set(filter)
+        this.source.filter = filter
     }
 
     @HostListener("click")

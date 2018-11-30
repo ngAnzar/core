@@ -22,6 +22,9 @@ export {
 export { RpcGroup, RpcMethod, RpcDataSource, IRpcDataSource } from "./rpc/rpc-source"
 export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extjs"
 
+import { DataSourceDirective, FilterDirective, SorterDirective } from "./data-source.directive"
+export { DataSourceDirective, FilterDirective, SorterDirective }
+
 
 @NgModule({
     imports: [
@@ -31,13 +34,21 @@ export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extj
         SingleSelection,
         MultiSelection,
         PropagateSelection,
-        SelectableDirective
+        SelectableDirective,
+
+        DataSourceDirective,
+        FilterDirective,
+        SorterDirective
     ],
     exports: [
         SingleSelection,
         MultiSelection,
         PropagateSelection,
-        SelectableDirective
+        SelectableDirective,
+
+        DataSourceDirective,
+        FilterDirective,
+        SorterDirective
     ]
 })
 export class NzDataModule { }

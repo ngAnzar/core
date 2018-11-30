@@ -1,48 +1,48 @@
 import {
-    Component, Input, Output, EventEmitter, ViewChild, Inject, AfterViewInit, OnDestroy,
-    ChangeDetectionStrategy, ChangeDetectorRef
+    Component, Output, EventEmitter, Inject, AfterViewInit, OnDestroy, ChangeDetectorRef, HostBinding, ContentChild
 } from "@angular/core"
 import { Observable } from "rxjs"
 
-import { DataSource, Model } from "../../data.module"
-import { SelectComponent } from "../select/select.component"
-import { Subscriptions } from "../../util"
+import { Model } from "../../data.module"
+import { SelectComponent } from "../../form.module"
+import { Destruct } from "../../util"
 
 
 @Component({
     selector: ".nz-navbar-search",
-    host: {
-        "[attr.focused]": "select && select.focused ? '' : null"
-    },
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: "./navbar-search.template.pug"
+    template: `<ng-content></ng-content>`
 })
-export class NavbarSearchComponent<T extends Model> implements AfterViewInit, OnDestroy {
-    @Input() public dataSource: DataSource<T>
-    @Output() public action: Observable<T> = new EventEmitter()
+export abstract class NavbarSearchComponent<T extends Model> implements AfterViewInit, OnDestroy {
+    @Output()
+    public action: Observable<T> = new EventEmitter()
 
-    @ViewChild("select") public readonly select: SelectComponent<T>
+    @ContentChild(SelectComponent)
+    public readonly select: SelectComponent<T>
 
-    protected s = new Subscriptions()
+    @HostBinding("attr.focused")
+    public get focused(): string { return this.select && this.select.focused ? "" : null }
+
+    public readonly destruct = new Destruct()
 
     public constructor(
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
     }
 
     public ngAfterViewInit() {
-        this.s.add(this.select.statusChanges).subscribe(() => {
+        this.destruct.subscription(this.select.statusChanges).subscribe(() => {
             this.cdr.markForCheck()
         })
 
-        this.s.add(this.select.selection.changes).subscribe(selected => {
+        this.destruct.subscription(this.select.selection.changes).subscribe(selected => {
             if (selected.length > 0) {
                 (this.action as EventEmitter<T>).emit(selected[0])
                 this.select.selection.clear()
+                this.select.opened = false
             }
         })
     }
 
     public ngOnDestroy() {
-        this.s.unsubscribe()
+        this.destruct.run()
     }
 }
