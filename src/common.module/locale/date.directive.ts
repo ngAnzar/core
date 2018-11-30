@@ -23,7 +23,7 @@ export class DateDirective implements AfterContentInit {
         return this.locale.formatDate(this._date, this._format)
     }
 
-    @Input("nzDateFormat")
+    @Input()
     public set format(val: DateFormat) {
         if (this._format !== val) {
             this._format = val

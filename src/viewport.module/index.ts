@@ -5,7 +5,8 @@ import { CommonModule } from "@angular/common"
 import { NavbarComponent } from "./navbar/navbar.component"
 export { NavbarComponent }
 
-export { NavbarSearchComponent } from "./navbar/navbar-search.component"
+import { NavbarSearchComponent } from "./navbar/navbar-search.component"
+export { NavbarSearchComponent }
 
 
 @NgModule({
@@ -13,12 +14,14 @@ export { NavbarSearchComponent } from "./navbar/navbar-search.component"
         CommonModule
     ],
     declarations: [
-        NavbarComponent
+        NavbarComponent,
+        NavbarSearchComponent
     ],
     exports: [
-        NavbarComponent
+        NavbarComponent,
+        NavbarSearchComponent
     ]
 })
-export class ViewportModule {
+export class NzViewportModule {
 
 }

@@ -35,7 +35,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     private _selectionIndex: number
 
     public get isAccessible(): boolean {
-        return this.doc.contains(this.el.nativeElement)
+        return this.doc && this.doc.contains(this.el.nativeElement)
     }
 
     @Input()
@@ -60,7 +60,15 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     }
 
     public ngOnDestroy() {
-        this.selection._handleOnDestroy(this)
+        if (this.cdr) {
+            this.cdr.detach()
+            this.selection._handleOnDestroy(this)
+
+            delete (this as any).cdr
+            delete (this as any).selection
+            delete (this as any).el
+            delete (this as any).doc
+        }
     }
 
     // prevent lose focusing on original element
@@ -77,7 +85,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     public _changeSelected(newValue: SelectOrigin) {
         this._selected = newValue;
         (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue)
-        this.cdr.markForCheck()
+        this.cdr && this.cdr.markForCheck()
     }
 
     public _canChangeSelected(newValue: SelectOrigin): boolean {

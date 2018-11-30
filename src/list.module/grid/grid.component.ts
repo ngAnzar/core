@@ -57,7 +57,9 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
     public get gtRow(): SafeStyle { return this._gtRow }
     protected _gtRow: SafeStyle = ""
 
-    public readonly destruct = new Destruct()
+    public readonly destruct = new Destruct(() => {
+        this.cdr.detach()
+    })
     protected _rowHeight: number = 52
     protected _contentInited: boolean = false
 
@@ -104,6 +106,9 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
     }
 
     protected _update = () => {
+        if (this.destruct.done) {
+            return
+        }
         if (this._contentInited) {
             this.cdr.detectChanges()
         } else {

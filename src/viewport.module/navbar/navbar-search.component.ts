@@ -1,5 +1,7 @@
 import {
-    Component, Output, EventEmitter, Inject, AfterViewInit, OnDestroy, ChangeDetectorRef, HostBinding, ContentChild
+    Component, Output, EventEmitter, Inject, OnDestroy, ChangeDetectorRef, HostBinding, ContentChild,
+    AfterContentInit,
+    ChangeDetectionStrategy
 } from "@angular/core"
 import { Observable } from "rxjs"
 
@@ -10,9 +12,10 @@ import { Destruct } from "../../util"
 
 @Component({
     selector: ".nz-navbar-search",
-    template: `<ng-content></ng-content>`
+    template: `<ng-content></ng-content>`,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export abstract class NavbarSearchComponent<T extends Model> implements AfterViewInit, OnDestroy {
+export class NavbarSearchComponent<T extends Model> implements AfterContentInit, OnDestroy {
     @Output()
     public action: Observable<T> = new EventEmitter()
 
@@ -28,7 +31,7 @@ export abstract class NavbarSearchComponent<T extends Model> implements AfterVie
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
     }
 
-    public ngAfterViewInit() {
+    public ngAfterContentInit() {
         this.destruct.subscription(this.select.statusChanges).subscribe(() => {
             this.cdr.markForCheck()
         })

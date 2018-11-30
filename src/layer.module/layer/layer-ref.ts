@@ -127,24 +127,28 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
 
 export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> extends LayerRef<E> {
     public readonly component: ComponentRef<C>
-
-    protected get portal(): ComponentPortal<C> {
-        if (!this._portal) {
-            this._portal = new ComponentPortal(this.componentCls, this.vcr, this.injector)
-        }
-        return this._portal
-    }
-    protected _portal: ComponentPortal<C>
+    protected portal: ComponentPortal<C>
 
     public constructor(behavior: LayerBehavior, outlet: LayerOutletRef,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
         super(behavior, outlet)
+        this.destruct.any(() => {
+            if (this.portal && this.portal.isAttached) {
+                this.portal.detach()
+            }
+            delete (this as any).portal
+            if (this.component) {
+                this.component.destroy()
+                delete (this as any).component
+            }
+        })
     }
 
     protected attach(): void {
         if (!this.component) {
+            this.portal = new ComponentPortal(this.componentCls, this.vcr, this.injector);
             (this as any).component = this.outlet.portal.attachComponentPortal(this.portal)
             this.component.location.nativeElement.classList.add("nz-layer-content")
             this.component.changeDetectorRef.detectChanges()
@@ -164,6 +168,17 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
         ctx: C) {
         super(behavior, outlet)
         this.portal = new TemplatePortal(tpl, vcr, ctx)
+
+        this.destruct.any(() => {
+            if (this.portal && this.portal.isAttached) {
+                this.portal.detach()
+            }
+            delete (this as any).portal
+            if (this.view) {
+                this.view.destroy()
+                delete (this as any).view
+            }
+        })
     }
 
     protected attach(): void {
@@ -174,7 +189,9 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
                     e.classList.add("nz-layer-content")
                 }
             }
-            this.view.detectChanges()
+            if (!this.view.destroy) {
+                this.view.detectChanges()
+            }
         }
     }
 }

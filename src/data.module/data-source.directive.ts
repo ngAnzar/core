@@ -49,11 +49,12 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     private _disposeStroage: boolean
     private _dsd: DataSourceDirective<T>
 
-    public set baseFilter(val: Filter<T>) {
-        this._baseFilter = val
-        this._updateFilter()
-    }
-    private _baseFilter: Filter<T>
+    public baseFilter: Filter<T>
+    // public set baseFilter(val: Filter<T>) {
+    //     this._baseFilter = val
+    //     this._updateFilter()
+    // }
+    // private _baseFilter: Filter<T>
 
     public set filter(f: Filter<T>) {
         this._filter = f
@@ -85,8 +86,8 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
 
     protected _updateFilter() {
         let f = {} as Filter<T>
-        if (this._baseFilter) {
-            f = Object.assign(f, this._baseFilter)
+        if (this.baseFilter) {
+            f = Object.assign(f, this.baseFilter)
         }
         if (this._filter) {
             f = Object.assign(f, this._filter)

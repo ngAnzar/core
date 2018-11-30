@@ -246,10 +246,13 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
     }
 
     public _handleOnDestroy(cmp: ISelectable<T>): void {
-        if (!this.maintainSelection) {
-            this.setSelected(cmp.model.id, null)
+        let model = cmp.model
+        if (model) {
+            if (!this.maintainSelection) {
+                this.setSelected(cmp.model.id, null)
+            }
+            delete this._selectables[cmp.model.id]
         }
-        delete this._selectables[cmp.model.id]
     }
 
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void {

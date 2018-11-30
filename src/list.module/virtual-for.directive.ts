@@ -85,9 +85,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             !view.destroyed && view.destroy()
         }
 
+        /*
+        console.log("vcr.length", this._vcr.length)
         for (let i = 0, l = this._vcr.length; i < l; i++) {
+            console.log("D", i)
             d(this._vcr.get(i))
         }
+        */
+        this._vcr.clear()
 
         for (let i = 0, l = this.reusable.length; i < l; i++) {
             d(this.reusable[i])
@@ -102,6 +107,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
         @Inject(ChangeDetectorRef) protected _cdr: ChangeDetectorRef,
         @Inject(ScrollableDirective) protected _scroller: ScrollableDirective) {
+
     }
 
     public ngOnInit() {

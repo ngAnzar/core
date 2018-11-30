@@ -1,7 +1,7 @@
 import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
-    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host
+    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -59,12 +59,12 @@ export type SelectValue<T> = T | ID | T[] | ID[]
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
-        LayerService,
+        // LayerService,
         { provide: InputComponent, useExisting: SelectComponent },
         INPUT_VALUE_ACCESSOR
     ]
 })
-export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit {
+export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy {
     public get type(): string { return "select" }
 
     @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<T>
@@ -99,7 +99,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     //         this._dataSource = val
     //         this.storage = val ? new DataStorage(val) : null
     //         this._watchInputStream(this.editable)
-    //         this.cdr.markForCheck()
+    //         this._detectChanges()
     //     }
     // }
     // public get dataSource(): DataSource<T> { return this._dataSource }
@@ -109,7 +109,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     //     if (this._storage !== val) {
     //         this._storage = val
     //         this.applyPendingValue()
-    //         this.cdr.markForCheck()
+    //         this._detectChanges()
     //     }
     // }
     // public get storage(): DataStorage<T> { return this._storage }
@@ -132,7 +132,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this._opened !== val) {
             this._opened = val
             this._updateDropDown()
-            this.cdr.markForCheck()
+            this._detectChanges()
         }
     }
     public get opened(): boolean { return !this.disabled && this._opened }
@@ -144,7 +144,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this._editable !== val) {
             this._editable = val
             this._watchInputStream(val)
-            this.cdr.markForCheck()
+            this._detectChanges()
         }
     }
     public get editable(): boolean { return this._editable }
@@ -156,7 +156,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._canCreate !== val) {
             this._canCreate = val
-            this.cdr.markForCheck()
+            this._detectChanges()
         }
     }
     public get canCreate(): boolean { return !this.disabled && this._canCreate }
@@ -169,7 +169,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._disabled = val
             this._updateDropDown()
             this._watchInputStream(!val && this.editable)
-            this.cdr.markForCheck()
+            this._detectChanges()
         }
     }
     public get disabled(): boolean { return !this.source.storage || this._disabled }
@@ -178,7 +178,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public set inputState(val: InputState) {
         if (this._inputState !== val) {
             this._inputState = val
-            this.cdr.markForCheck()
+            this._detectChanges()
         }
     }
     public get inputState() { return this._inputState }
@@ -196,7 +196,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     //     this.writeValue(val)
     // }
 
-    public readonly destruct = new Destruct()
+    public readonly destruct = new Destruct(() => {
+        this.cdr.detach()
+        delete (this as any).source
+        delete (this as any).selection
+        delete (this as any).layer
+        delete (this as any).ffc
+        delete (this as any).cdr
+        delete (this as any).vcr
+        delete (this as any)._focusMonitor
+        delete (this as any)._layerFactory
+    })
 
     // protected acLayer: ComponentLayerRef<AutocompleteComponent<T>>
     protected focusOrigin: FocusOrigin
@@ -215,9 +225,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(LayerService) protected readonly layer: LayerService,
         @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
+        @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
         @Inject(LayerFactoryDirective) @Optional() @Host() protected _layerFactory: LayerFactoryDirective,
-        @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Attribute("display-field") displayField: string,
         @Attribute("value-field") protected readonly valueField: string,
         @Attribute("query-field") queryField: string,
@@ -237,13 +247,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
 
             this._resetTextInput()
-            this.cdr.detectChanges()
         })
 
         this.displayField = displayField || "label"
         this.queryField = queryField || this.displayField
 
-        this._focusMonitor.monitor(el.nativeElement, true).subscribe(origin => {
+        this.destruct.subscription(this._focusMonitor.monitor(el.nativeElement, true)).subscribe(origin => {
             if (this.focusOrigin !== origin) {
                 this.focusOrigin = origin
                 this._handleFocus(origin !== null)
@@ -261,7 +270,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public toggle() {
         this.opened = !this.opened
-        this.cdr.markForCheck()
+        this._detectChanges()
     }
 
     public writeValue(obj: SelectValue<T>): void {
@@ -362,7 +371,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.applyPendingValue()
-        this.cdr.detectChanges()
+        this._detectChanges()
     }
 
     protected _updateDropDown() {
@@ -526,7 +535,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         // this.writeValue(this.value)
         this._resetTextInput()
-        this.cdr.detectChanges()
     }
 
     protected _resetTextInput() {
@@ -552,6 +560,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.input.nativeElement.value = value
+        this._detectChanges()
     }
 
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {
@@ -591,4 +600,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         return false
     }
 
+    private _x: string = Math.random().toString(36)
+    protected _detectChanges() {
+        this.cdr && this.cdr.markForCheck()
+    }
+
+    public ngOnDestroy() {
+        this.destruct.run()
+    }
 }

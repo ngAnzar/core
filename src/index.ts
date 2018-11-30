@@ -8,6 +8,7 @@ import { NzFormModule } from "./form.module"
 import { NzLayerModule } from "./layer.module"
 import { NzLayoutModule } from "./layout.module"
 import { NzListModule } from "./list.module"
+import { NzViewportModule } from "./viewport.module"
 
 
 export * from "./animation.module"
@@ -24,7 +25,8 @@ const modules: any[] = [
     NzFormModule,
     NzLayerModule,
     NzLayoutModule,
-    NzListModule
+    NzListModule,
+    NzViewportModule
 ]
 
 @NgModule({
