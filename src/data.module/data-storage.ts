@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject } from "rxjs"
-import { map, startWith, debounceTime, tap, shareReplay } from "rxjs/operators"
+import { map, startWith, debounceTime, tap, shareReplay, finalize } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
 
@@ -45,6 +45,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     // }
 
     public readonly reseted: Observable<void> = new EventEmitter()
+    public readonly busy: Observable<boolean> = new EventEmitter()
 
     public get invalidated(): Observable<void> {
         return Observable.create((observer: any) => {
@@ -173,9 +174,16 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
     protected _setPending(r: NzRange, s: Observable<Items<T>>): Observable<Items<T>> {
         s = s.pipe(tap(() => {
+            if (this.source.async) {
+                (this.busy as EventEmitter<boolean>).emit(true)
+            }
             let idx = this.pendingRanges.findIndex((v) => v[0] === r)
             if (idx !== -1) {
                 this.pendingRanges.splice(idx, 1)
+            }
+        }), finalize(() => {
+            if (this.source.async) {
+                (this.busy as EventEmitter<boolean>).emit(false)
             }
         }), shareReplay())
 

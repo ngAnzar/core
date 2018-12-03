@@ -1,5 +1,5 @@
 import {
-    Component, Inject, Host, Input, DoCheck,
+    Component, Inject, Host, Input, DoCheck, OnInit, Attribute,
     ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
@@ -10,13 +10,12 @@ import { DataSourceDirective, SelectionModel } from "../../data.module"
 import { Destruct } from "../../util"
 
 
-
 @Component({
     selector: ".nz-grid",
     templateUrl: "./grid.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
+export class GridComponent implements AfterContentInit, OnDestroy, OnInit {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
 
     // @Input("data-source")
@@ -61,29 +60,42 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
         this.cdr.detach()
     })
     protected _rowHeight: number = 52
-    protected _contentInited: boolean = false
 
+    public get displayEmptyText(): boolean {
+        return this._canDisplayEmptyText && this.source.storage.lastIndex === 0
+    }
+    protected _canDisplayEmptyText: boolean
 
     // @Inject(DataSource) @Host() public readonly source: DataSource<any>
     public constructor(
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel,
-        @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective) {
-        selection.maintainSelection = true
+        @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective,
+        @Attribute("emptyText") public readonly emptyText: string) {
+        if (!emptyText) {
+            this.emptyText = "A lista üres"
+        }
+    }
 
-        this.destruct.subscription(selection.changes).subscribe(this._update)
+    public ngOnInit() {
+        this.destruct.subscription(this.selection.changes).subscribe(this._update)
+        this.destruct.subscription(this.source.storage.invalidated).subscribe(this._update)
+        this.destruct.subscription(this.source.storage.items).subscribe(this._update)
+        this.destruct.subscription(this.source.storage.busy).subscribe((val) => {
+            this._canDisplayEmptyText = !val
+            this._update()
+        })
     }
 
     public ngAfterContentInit() {
-        this._contentInited = true
         this.destruct.subscription(this.columns.layoutChanged).subscribe(this._update)
         this.updateGridTemplate()
     }
 
-    public ngDoCheck() {
-        this.updateGridTemplate()
-    }
+    // public ngDoCheck() {
+    //     this.updateGridTemplate()
+    // }
 
     protected updateGridTemplate() {
         let col = []
@@ -96,8 +108,8 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
         }
         let colTemplate = col.join(" ")
 
-        if (this.source.storage && this.source.storage.lastIndex) {
-            this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex}, ${this._rowHeight}px) / 1fr`)
+        if (this.source.storage) {
+            this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex || 1}, ${this._rowHeight}px) / 1fr`)
         }
 
         this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${colTemplate}`)
@@ -109,11 +121,8 @@ export class GridComponent implements AfterContentInit, DoCheck, OnDestroy {
         if (this.destruct.done) {
             return
         }
-        if (this._contentInited) {
-            this.cdr.detectChanges()
-        } else {
-            this.cdr.markForCheck()
-        }
+        this.updateGridTemplate()
+        this.cdr.markForCheck()
     }
 
     public ngOnDestroy() {

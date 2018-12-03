@@ -36,13 +36,15 @@ export class NavbarSearchComponent<T extends Model> implements AfterContentInit,
             this.cdr.markForCheck()
         })
 
-        this.destruct.subscription(this.select.selection.changes).subscribe(selected => {
-            if (selected.length > 0) {
-                (this.action as EventEmitter<T>).emit(selected[0])
-                this.select.selection.clear()
-                this.select.opened = false
-            }
-        })
+        this.select.layerFactory.targetAnchor.margin = { top: 10, bottom: 10 }
+
+        // this.destruct.subscription(this.select.selection.changes).subscribe(selected => {
+        //     if (selected.length > 0) {
+        //         (this.action as EventEmitter<T>).emit(selected[0])
+        //         this.select.selection.clear()
+        //         this.select.opened = false
+        //     }
+        // })
     }
 
     public ngOnDestroy() {

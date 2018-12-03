@@ -59,7 +59,7 @@ const SELECTION = Symbol("selection")
 })
 export class PropagateSelection<T extends Model = Model> implements ISelectionModel<T> {
     @Input("selection")
-    protected set __selectionModel(val: ISelectionModel<T>) {
+    public set selection(val: ISelectionModel<T>) {
         this[SELECTION] = val
     }
     private [SELECTION]: ISelectionModel<T>

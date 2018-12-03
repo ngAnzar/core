@@ -6,6 +6,14 @@
     display: grid
     justify-content: stretch
 
+  .empty
+    text-align: center
+    grid-row: 1
+    grid-column: 1
+    display: flex
+    justify-content: center
+    align-items: center
+
 ng-content(select=".nz-columns")
 
 div(nzScrollable="vertical")
@@ -25,4 +33,8 @@ div(nzScrollable="vertical")
             bind-data="virtual"
             bind-class.first-cell="firstCell"
             bind-class.last-cell="lastCell")
+
+    .empty(*ngIf="displayEmptyText")
+      div {{ emptyText }}
+
         //- .cell(style="grid-row: {{row}};grid-column: {{col}};") {{row}} - {{col}}

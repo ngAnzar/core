@@ -66,17 +66,22 @@ export class Rect {
 
     public applyInset(margin: Margin) {
         let m = parseMargin(margin)
-        let res = this.copy()
-        res.width -= (m.left + m.right)
-        res.height -= (m.top + m.bottom)
-        res.left += m.left
-        res.top += m.top;
-        (res as any).margin = m
-        return res
+        m.bottom *= -1
+        m.top *= -1
+        m.right *= -1
+        m.left *= -1
+        return this.applyMargin(m)
     }
 
     public applyMargin(margin: Margin): Rect {
         let m = parseMargin(margin)
+        if (this.margin) {
+            m.bottom += this.margin.bottom
+            m.top += this.margin.top
+            m.right += this.margin.right
+            m.left += this.margin.left
+        }
+
         let res = this.copy()
         res.width += (m.left + m.right)
         res.height += (m.top + m.bottom)

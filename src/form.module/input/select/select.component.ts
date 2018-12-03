@@ -227,11 +227,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
-        @Inject(LayerFactoryDirective) @Optional() @Host() protected _layerFactory: LayerFactoryDirective,
-        @Attribute("display-field") displayField: string,
-        @Attribute("value-field") protected readonly valueField: string,
-        @Attribute("query-field") queryField: string,
-        @Attribute("trigger-icon") public readonly triggerIcon: string) {
+        @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
+        @Attribute("displayField") displayField: string,
+        @Attribute("valueField") protected readonly valueField: string,
+        @Attribute("queryField") queryField: string,
+        @Attribute("triggerIcon") public readonly triggerIcon: string) {
         super(ngControl, ngModel, el)
 
         if (!selection) {
@@ -259,10 +259,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         })
 
-        if (!_layerFactory) {
-            this._layerFactory = _layerFactory
+        if (!layerFactory) {
+            this.layerFactory = layerFactory
                 || LayerFactoryDirective.create("left top", "left bottom", this.layer, this.vcr, el)
-            this._layerFactory.nzLayerFactory = AutocompleteComponent
+            this.layerFactory.nzLayerFactory = AutocompleteComponent
         }
 
         this.selection.keyboard.connect(el.nativeElement)
@@ -377,17 +377,26 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _updateDropDown() {
         if (this.opened) {
             this.selectedBeforeOpen = this.selected.slice(0)
-            let targetEl = (this._layerFactory.targetEl = (this.ffc ? this.ffc.el : this.el)).nativeElement
+            let targetEl = (this.layerFactory.targetEl = (this.ffc ? this.ffc.el : this.el)).nativeElement
+            let targetAnchor = this.layerFactory.targetAnchor
 
             if (this.editable) {
-                this._layerFactory.targetAnchor.nzTargetAnchor = "left bottom"
-                this._layerFactory.targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
+                if (!targetAnchor.nzTargetAnchor) {
+                    targetAnchor.nzTargetAnchor = "left bottom"
+                }
+                if (!targetAnchor.margin) {
+                    targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
+                }
             } else {
-                this._layerFactory.targetAnchor.nzTargetAnchor = "left top"
-                this._layerFactory.targetAnchor.margin = { left: 16, right: 16 }
+                if (!targetAnchor.nzTargetAnchor) {
+                    targetAnchor.nzTargetAnchor = "left top"
+                }
+                if (!targetAnchor.margin) {
+                    targetAnchor.margin = { left: 16, right: 16 }
+                }
             }
 
-            let layerRef = this._layerFactory.show(
+            let layerRef = this.layerFactory.show(
                 new DropdownLayer({
                     backdrop: {
                         type: "empty",
@@ -419,7 +428,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             })
         } else {
             delete this.selectedBeforeOpen
-            this._layerFactory.hide()
+            this.layerFactory.hide()
             this._applySelected()
         }
     }
