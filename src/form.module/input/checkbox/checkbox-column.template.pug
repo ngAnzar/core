@@ -9,4 +9,4 @@ ng-template(#defaultContent let-item)
   .nz-checkbox.checkbox(
     style="padding:0;line-height:0"
     bind-checked="isChecked(item.id)"
-    on-change="setChecked(item.id, $event.checked)")
+    noninteractive)

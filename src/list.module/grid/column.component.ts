@@ -1,6 +1,9 @@
-import { Component, ContentChild, Input, ElementRef, TemplateRef } from "@angular/core"
+import { Component, ContentChild, Input, Inject, ElementRef, TemplateRef, forwardRef } from "@angular/core"
 
 import { LabelDirective } from "../../common.module"
+import { Model, ID } from "../../data.module"
+import { GridCellDirective } from "./grid-cell.directive"
+import { GridComponent } from "./grid.component"
 
 
 export interface NumberWithUnit {
@@ -27,7 +30,7 @@ function parseNumber(val: any): NumberWithUnit {
     selector: ".nz-column",
     templateUrl: "./column.template.pug"
 })
-export class ColumnComponent {
+export class ColumnComponent<T extends Model = Model> {
     @ContentChild(LabelDirective) public readonly label: ElementRef<LabelDirective>
     @ContentChild("content") public readonly content: TemplateRef<any>
     @ContentChild("editor") public readonly editor: TemplateRef<any>
@@ -38,4 +41,14 @@ export class ColumnComponent {
     protected _width: NumberWithUnit = { number: -1, unit: "auto" }
 
     public index: number
+
+    public constructor(@Inject(forwardRef(() => GridComponent)) protected readonly grid: GridComponent<T>) {
+    }
+
+    public getCell(id: ID): GridCellDirective<T> {
+        const row = this.grid.getRow(id)
+        if (row) {
+            return row.cells.toArray()[this.index]
+        }
+    }
 }

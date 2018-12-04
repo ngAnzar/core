@@ -1,5 +1,5 @@
 import {
-    Component, ViewChild, ElementRef, AfterViewInit, Inject, Renderer2, Input, Attribute, NgZone,
+    Component, ViewChild, ElementRef, AfterViewInit, Inject, Renderer2, Input, Attribute,
     Optional, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SkipSelf, OnDestroy
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
@@ -37,18 +37,15 @@ export interface CheckboxChangeEvent<T> {
 })
 export class CheckboxComponent<T = boolean> extends InputComponent<T> implements AfterViewInit, OnDestroy {
     @ViewChild("input") protected readonly input: ElementRef<HTMLInputElement>
-
-    // @Input()
-    // public set value(value: T) {
-    //     if (this._value !== value) {
-    //         this._value = value
-    //         this.cdr.markForCheck()
-    //     }
-    // }
-    // public get value(): T {
-    //     return this._value
-    // }
-    // protected _value: T
+    @Input()
+    public set noninteractive(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._noninteractive !== val) {
+            this._noninteractive = val
+        }
+    }
+    public get noninteractive(): boolean { return this._noninteractive }
+    private _noninteractive: boolean = false
 
     @Input("true-value")
     public set trueValue(val: T) {
@@ -73,17 +70,15 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._checked !== val) {
-            this.zone.run(_ => {
-                this._checked = val;
-                (this.change as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
-                this.value = (val ? (this.trueValue == null ? true : this.trueValue) : this.falseValue) as any
+            this._checked = val;
+            (this.change as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
+            this.value = (val ? (this.trueValue == null ? true : this.trueValue) : this.falseValue) as any
 
-                if (this.group) {
-                    this.group.onCheckedChange()
-                }
+            if (this.group) {
+                this.group.onCheckedChange()
+            }
 
-                this.cdr.markForCheck()
-            })
+            this.cdr.markForCheck()
         }
     }
     public get checked(): boolean { return this._checked }
@@ -107,8 +102,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         @Inject(ElementRef) el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Attribute('tabindex') tabIndex: string,
-        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective,
-        @Inject(NgZone) protected readonly zone: NgZone) {
+        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective) {
         super(ngControl, ngModel, el)
         this.tabIndex = parseInt(tabIndex, 10)
 
@@ -134,7 +128,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     protected _handleClick(event: Event) {
-        this.checked = !this.checked
+        if (!this.noninteractive) {
+            this.checked = !this.checked
+        }
     }
 
     public ngOnDestroy() {

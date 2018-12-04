@@ -1,6 +1,6 @@
-import { Component, ViewChild, TemplateRef, Inject } from "@angular/core"
+import { Component, ViewChild, TemplateRef, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
 
-import { ColumnComponent } from "../../../list.module"
+import { ColumnComponent, GridComponent } from "../../../list.module"
 import { ID, SelectionModel } from "../../../data.module"
 
 
@@ -18,8 +18,9 @@ export class CheckboxColumnComponent extends ColumnComponent {
     @ViewChild("defaultContent") protected readonly defaultContent: TemplateRef<any>
 
     public constructor(
-        @Inject(SelectionModel) protected readonly selection: SelectionModel) {
-        super()
+        @Inject(SelectionModel) protected readonly selection: SelectionModel,
+        @Inject(GridComponent) grid: GridComponent) {
+        super(grid)
         if (this._width.number === -1) {
             this._width = { number: 44, unit: "px" }
         }
@@ -32,10 +33,6 @@ export class CheckboxColumnComponent extends ColumnComponent {
         this._content = val
     }
     protected _content: TemplateRef<any>
-
-    public setChecked(id: ID, checked: boolean) {
-        this.selection.setSelected(id, "program")
-    }
 
     public isChecked(id: ID) {
         return this.selection.getSelectOrigin(id) !== null

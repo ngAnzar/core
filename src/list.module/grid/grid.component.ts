@@ -1,13 +1,14 @@
 import {
     Component, Inject, Host, Input, DoCheck, OnInit, Attribute,
-    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy
+    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 import { ColumnsComponent } from "./columns.component"
 
-import { DataSourceDirective, SelectionModel } from "../../data.module"
+import { DataSourceDirective, SelectionModel, Model, ID, SelectionEvent } from "../../data.module"
 import { Destruct } from "../../util"
+import { GridRowDirective } from "./grid-row.directive"
 
 
 @Component({
@@ -15,40 +16,9 @@ import { Destruct } from "../../util"
     templateUrl: "./grid.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GridComponent implements AfterContentInit, OnDestroy, OnInit {
-    @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent
-
-    // @Input("data-source")
-    // public set source(val: DataSource<any>) {
-    //     if (this._source !== val) {
-    //         this._source = val
-    //         this.storage = val ? new DataStorage(val) : null
-    //         this._update()
-    //     }
-    // }
-    // public get source(): DataSource<any> { return this._source }
-    // protected _source: DataSource<any>
-
-    // public set storage(val: DataStorage<any>) {
-    //     if (this._storage !== val) {
-    //         this._storage = val
-    //         if (val) {
-    //             this.destruct.subscription(val.invalidated).subscribe(this._update)
-    //             this.destruct.subscription(val.items).subscribe(this._update)
-    //         }
-    //         this._update()
-    //     }
-    // }
-    // public get storage(): DataStorage<any> { return this._storage }
-    // protected _storage: DataStorage<any>
-
-    // @Input()
-    // public set filter(val: any) { this.storage.filter.set(val) }
-    // public get filter(): any { return this.storage.filter.get() }
-
-    // @Input()
-    // public set sorter(val: any) { this.storage.sorter.set(val) }
-    // public get sorter(): any { return this.storage.sorter.get() }
+export class GridComponent<T extends Model = Model> implements AfterContentInit, OnDestroy, OnInit {
+    @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent<T>
+    @ViewChildren(GridRowDirective) public readonly rows: QueryList<GridRowDirective<T>>
 
     public get gtRows(): SafeStyle { return this._gtRows }
     protected _gtRows: SafeStyle = ""
@@ -78,8 +48,16 @@ export class GridComponent implements AfterContentInit, OnDestroy, OnInit {
         }
     }
 
+    public getRow(id: ID): GridRowDirective<T> {
+        for (let row of this.rows.toArray()) {
+            if (row.model.id === id) {
+                return row
+            }
+        }
+    }
+
     public ngOnInit() {
-        this.destruct.subscription(this.selection.changes).subscribe(this._update)
+        this.destruct.subscription(this.selection.changes).subscribe(this._onSelectionChange)
         this.destruct.subscription(this.source.storage.invalidated).subscribe(this._update)
         this.destruct.subscription(this.source.storage.items).subscribe(this._update)
         this.destruct.subscription(this.source.storage.busy).subscribe((val) => {
@@ -122,7 +100,27 @@ export class GridComponent implements AfterContentInit, OnDestroy, OnInit {
             return
         }
         this.updateGridTemplate()
-        this.cdr.markForCheck()
+        this.cdr.detectChanges()
+    }
+
+    protected _onSelectionChange = (changes: SelectionEvent<T>) => {
+        if (this.destruct.done) {
+            return
+        }
+
+        for (const add of changes) {
+            const row = this.getRow(add.id)
+            if (row) {
+                row.detectChanges()
+            }
+        }
+
+        for (const remove of changes.removed) {
+            const row = this.getRow(remove.id)
+            if (row) {
+                row.detectChanges()
+            }
+        }
     }
 
     public ngOnDestroy() {

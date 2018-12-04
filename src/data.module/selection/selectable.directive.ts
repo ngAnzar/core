@@ -18,6 +18,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
             this._model = val
             this._selected = val ? this.selection.getSelectOrigin(val.id) : null
             this.selection._handleModelChange(this, old, val)
+            this.cdr && this.cdr.markForCheck()
         }
     }
     public get model(): T { return this._model }
@@ -44,6 +45,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
         // value = coerceBooleanProperty(value)
         if (this._selected !== value) {
             this.selection.setSelected(this.model.id, value)
+            this.cdr && this.cdr.markForCheck()
         }
     }
     public get selected(): SelectOrigin { return this._selected }
@@ -83,9 +85,9 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     }
 
     public _changeSelected(newValue: SelectOrigin) {
-        this._selected = newValue;
+        this._selected = newValue
+        this.cdr && this.cdr.markForCheck();
         (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue)
-        this.cdr && this.cdr.markForCheck()
     }
 
     public _canChangeSelected(newValue: SelectOrigin): boolean {

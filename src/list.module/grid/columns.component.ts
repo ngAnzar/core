@@ -5,6 +5,9 @@ import {
 import { SafeStyle } from "@angular/platform-browser"
 import { Observable } from "rxjs"
 
+
+import { Model } from "../../data.module"
+
 import { ColumnComponent, NumberWithUnit } from "./column.component"
 
 
@@ -19,8 +22,8 @@ export type ColumnsLayout = Array<{ column: ColumnComponent, width: NumberWithUn
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ColumnsComponent implements AfterContentInit {
-    @ContentChildren(ColumnComponent) public readonly items: QueryList<ColumnComponent>
+export class ColumnsComponent<T extends Model = Model> implements AfterContentInit {
+    @ContentChildren(ColumnComponent) public readonly items: QueryList<ColumnComponent<T>>
 
     // melyik column látszik, milyen sorrendben
     public readonly columnsChanged: Observable<ColumnComponent[]>
@@ -38,7 +41,6 @@ export class ColumnsComponent implements AfterContentInit {
 
     public constructor(@Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef) {
-
     }
 
     public ngAfterContentInit() {
