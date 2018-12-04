@@ -46,7 +46,7 @@ export abstract class BoxDirective implements AfterContentInit, OnDestroy {
 
                 style[this.gapMarginOpposite] = "0"
 
-                const visibility = computedStyle.getPropertyValue("visibility")
+                const visibility = style.visibility //computedStyle.getPropertyValue("visibility")
                 const display = computedStyle.getPropertyValue("display")
 
                 // TODO: ...

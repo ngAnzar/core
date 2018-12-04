@@ -49,12 +49,12 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     private _disposeStroage: boolean
     private _dsd: DataSourceDirective<T>
 
-    public baseFilter: Filter<T>
-    // public set baseFilter(val: Filter<T>) {
-    //     this._baseFilter = val
-    //     this._updateFilter()
-    // }
-    // private _baseFilter: Filter<T>
+    // public baseFilter: Filter<T>
+    public set baseFilter(val: Filter<T>) {
+        this._baseFilter = val
+        this._updateFilter()
+    }
+    private _baseFilter: Filter<T>
 
     public set filter(f: Filter<T>) {
         this._filter = f
@@ -77,6 +77,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
 
     public getRange(r: NzRange) {
+        this._updateFilter()
         return this.storage.getRange(r)
     }
 
@@ -84,15 +85,15 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.source.get(id)
     }
 
-    protected _updateFilter() {
+    protected _updateFilter(silent?: boolean) {
         let f = {} as Filter<T>
-        if (this.baseFilter) {
-            f = Object.assign(f, this.baseFilter)
+        if (this._baseFilter) {
+            f = Object.assign(f, this._baseFilter)
         }
         if (this._filter) {
             f = Object.assign(f, this._filter)
         }
-        this.storage.filter.set(f)
+        this.storage.filter.set(f, silent)
     }
 
     public ngOnDestroy() {

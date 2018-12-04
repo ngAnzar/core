@@ -204,8 +204,12 @@ export class DictField<E> {
     public get(): E {
         return deepClone(this._value)
     }
-    public set(value: E) {
-        this._tryChanging(this._value, value)
+    public set(value: E, silent?: boolean) {
+        if (silent) {
+            this._value = value
+        } else {
+            this._tryChanging(this._value, value)
+        }
     }
     public update(value: E) {
         let val = deepClone(this._value) || {}

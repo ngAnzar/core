@@ -4,7 +4,7 @@ import {
 } from "@angular/core"
 import { startWith } from "rxjs/operators"
 
-import { DataStorage, Model, Items } from "../data.module"
+import { DataSourceDirective, Model, Items } from "../data.module"
 import { Destruct, NzRange, ListDiffKind } from "../util"
 import { ScrollableDirective } from "./scrollable.directive"
 
@@ -33,13 +33,13 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 })
 export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, DoCheck {
     @Input()
-    public set nzVirtualForOf(value: DataStorage<T>) {
+    public set nzVirtualForOf(value: DataSourceDirective<T>) {
         this._nzVirtualForOf = value
     }
-    public get nzVirtualForOf(): DataStorage<T> {
+    public get nzVirtualForOf(): DataSourceDirective<T> {
         return this._nzVirtualForOf
     }
-    protected _nzVirtualForOf: DataStorage<T>
+    protected _nzVirtualForOf: DataSourceDirective<T>
 
     @Input()
     public set itemsPerRequest(value: number) { this._itemsPerRequest = parseInt(value as any, 10) }
@@ -111,7 +111,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngOnInit() {
-        this.destruct.subscription(this.nzVirtualForOf.invalidated).pipe(startWith(0)).subscribe(this._update)
+        this.destruct.subscription(this.nzVirtualForOf.storage.invalidated).pipe(startWith(0)).subscribe(this._update)
 
         this.destruct.subscription(this._scroller.primaryScrolling).subscribe(event => {
             let vr = this._getVisibleNzRange()
