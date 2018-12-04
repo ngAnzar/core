@@ -1,5 +1,5 @@
 import "reflect-metadata"
-import { Inject, Optional, StaticProvider } from "@angular/core"
+import { Inject, Optional, StaticProvider, Injector } from "@angular/core"
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 
@@ -82,9 +82,9 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
         const src = this as any
         return {
             provide: src,
-            deps: [RpcTransport],
-            useFactory(transport: RpcTransport) {
-                return new src(modelCls, transport)
+            deps: [RpcTransport, Injector],
+            useFactory(transport: RpcTransport, injector: Injector) {
+                return new src(modelCls, transport, injector)
             }
         }
     }
@@ -93,8 +93,14 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
 
     public constructor(
         @Inject(Model) @Optional() public readonly model: ModelClass<T>,
-        @Inject(RpcTransport) public readonly transport: RpcTransport) {
+        @Inject(RpcTransport) public readonly transport: RpcTransport,
+        @Inject(Injector) public readonly injector: Injector) {
         super()
+        this.init()
+    }
+
+    protected init() {
+
     }
 
     public getPosition(id: ID): Observable<number> {
