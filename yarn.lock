@@ -35,9 +35,9 @@
   dependencies:
     tslib "^1.9.0"
 
-"@angular/core@^6.1.0":
-  version "6.1.10"
-  resolved "https://registry.yarnpkg.com/@angular/core/-/core-6.1.10.tgz#9f3d8b7e44ec0a68c88745d25a920f98bfb2bc43"
+"@angular/core@^7.1.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@angular/core/-/core-7.1.1.tgz#9748b0103cd86226554e1ccbd0f43dd8c46f1ed1"
   dependencies:
     tslib "^1.9.0"
 
@@ -97,7 +97,6 @@
   version "1.0.0"
   resolved "https://codeload.github.com/ngAnzar/style/tar.gz/58da68719a4c970bd5bf6863cbdcb3bea38b83f7"
   dependencies:
-    clean-css "^4.2.1"
     css "^2.2.1"
     css-selector-tokenizer "^0.7.0"
     is-plain-object "^2.0.4"

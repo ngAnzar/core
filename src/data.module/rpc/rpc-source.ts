@@ -78,29 +78,10 @@ export interface IRpcDataSource {
 
 
 export abstract class RpcDataSource<T extends Model = Model> extends DataSource<T> implements IRpcDataSource {
-    public static withModel(modelCls: ModelClass): StaticProvider {
-        const src = this as any
-        return {
-            provide: src,
-            deps: [RpcTransport, Injector],
-            useFactory(transport: RpcTransport, injector: Injector) {
-                return new src(modelCls, transport, injector)
-            }
-        }
-    }
-
     public readonly async = true
 
-    public constructor(
-        @Inject(Model) @Optional() public readonly model: ModelClass<T>,
-        @Inject(RpcTransport) public readonly transport: RpcTransport,
-        @Inject(Injector) public readonly injector: Injector) {
+    public constructor(@Inject(RpcTransport) public readonly transport: RpcTransport) {
         super()
-        this.init()
-    }
-
-    protected init() {
-
     }
 
     public getPosition(id: ID): Observable<number> {
