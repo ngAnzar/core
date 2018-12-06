@@ -528,7 +528,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @HostListener("click")
     protected _onClick() {
-        this.opened = true
+        if (!this.source.async || !this.editable) {
+            this.opened = true
+        }
     }
 
     protected _applySelected() {
