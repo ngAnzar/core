@@ -17,7 +17,7 @@ export { SingleSelection, MultiSelection, PropagateSelection, SelectableDirectiv
 
 export {
     RpcTransport, RpcError, RpcAction, RpcFailureCallback, RpcSuccessCallback,
-    Transaction, TransactionsDict, TransactionFactory
+    Transaction, TransactionsDict, TransactionFactory, RPC_ENDPOINT, RPC_BATCHING
 } from "./rpc/rpc-transport"
 export { RpcGroup, RpcMethod, RpcDataSource, IRpcDataSource } from "./rpc/rpc-source"
 export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extjs"

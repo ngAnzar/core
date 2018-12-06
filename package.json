@@ -41,6 +41,5 @@
     "tslint": "^5.11.0",
     "typescript": "^3.0.1",
     "zone.js": "^0.8.25"
-  },
-  "typings": "./src/custom-typings.d.ts"
+  }
 }

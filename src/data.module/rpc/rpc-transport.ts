@@ -66,16 +66,16 @@ export class RpcError implements Error {
 let counter: { [key: string]: number } = {}
 
 export abstract class RpcTransport {
-    public static useEndpoint(endpoint: string): Provider {
-        let cls: any = this
-        return {
-            provide: RpcTransport,
-            deps: [HttpClient, [new Optional(), RPC_BATCHING]],
-            useFactory(http: HttpClient, batchInterval: number) {
-                return new cls(endpoint, http, batchInterval)
-            }
-        }
-    }
+    // public static useEndpoint(endpoint: string): Provider {
+    //     let cls: any = this
+    //     return {
+    //         provide: RpcTransport,
+    //         deps: [HttpClient, [new Optional(), RPC_BATCHING]],
+    //         useFactory(http: HttpClient, batchInterval: number) {
+    //             return new cls(endpoint, http, batchInterval)
+    //         }
+    //     }
+    // }
 
     public constructor(
         @Inject(RPC_ENDPOINT) public readonly endpoint: string,
