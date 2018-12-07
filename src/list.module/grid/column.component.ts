@@ -4,6 +4,7 @@ import { LabelDirective } from "../../common.module"
 import { Model, ID } from "../../data.module"
 import { GridCellDirective } from "./grid-cell.directive"
 import { GridComponent } from "./grid.component"
+import { GridFilterDirective } from "./filter/grid-filter.directive"
 
 
 export interface NumberWithUnit {
@@ -32,6 +33,7 @@ function parseNumber(val: any): NumberWithUnit {
 })
 export class ColumnComponent<T extends Model = Model> {
     @ContentChild(LabelDirective) public readonly label: ElementRef<LabelDirective>
+    @ContentChild(GridFilterDirective) public readonly filter: GridFilterDirective
     @ContentChild("content") public readonly content: TemplateRef<any>
     @ContentChild("editor") public readonly editor: TemplateRef<any>
 

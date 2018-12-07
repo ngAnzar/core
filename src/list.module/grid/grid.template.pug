@@ -14,7 +14,18 @@
     justify-content: center
     align-items: center
 
+  .filter
+    padding: 8px $nz-grid-padding
+    border-top: 1px solid lighten($theme.foreground.default, 85%)
+    background-color: lighten($theme.foreground.default, 95%)
+
 ng-content(select=".nz-columns")
+
+div.nz-hbox.filter(gap=8)
+  .nz-grid-filter-chip
+  .nz-grid-filter-chip
+  .nz-grid-filter-chip
+  .nz-grid-filter-chip
 
 div(nzScrollable="vertical")
   .nz-list.rows(bind-style.gridTemplate="gtRows")
