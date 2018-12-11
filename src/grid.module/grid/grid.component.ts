@@ -4,17 +4,22 @@ import {
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
-import { ColumnsComponent } from "./columns.component"
 
-import { DataSourceDirective, SelectionModel, Model, ID, SelectionEvent } from "../../data.module"
 import { Destruct } from "../../util"
+import { DataSourceDirective, SelectionModel, Model, ID, SelectionEvent } from "../../data.module"
+
+import { ColumnsComponent } from "../column/columns.component"
+import { GridFilterService } from "../filter/grid-filter.service"
 import { GridRowDirective } from "./grid-row.directive"
 
 
 @Component({
     selector: ".nz-grid",
     templateUrl: "./grid.template.pug",
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [
+        { provide: GridFilterService, useClass: GridFilterService }
+    ]
 })
 export class GridComponent<T extends Model = Model> implements AfterContentInit, OnDestroy, OnInit {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent<T>
@@ -42,6 +47,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective,
+        @Inject(GridFilterService) public readonly filterSvc: GridFilterService,
         @Attribute("emptyText") public readonly emptyText: string) {
         if (!emptyText) {
             this.emptyText = "A lista üres"
@@ -60,6 +66,10 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         this.destruct.subscription(this.selection.changes).subscribe(this._onSelectionChange)
         this.destruct.subscription(this.source.storage.invalidated).subscribe(this._update)
         this.destruct.subscription(this.source.storage.items).subscribe(this._update)
+        this.destruct.subscription(this.filterSvc.changes).subscribe(() => {
+            console.log("filters changed...")
+            this._update()
+        })
         this.destruct.subscription(this.source.storage.busy).subscribe((val) => {
             this._canDisplayEmptyText = !val
             this._update()
@@ -92,7 +102,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
 
         this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${colTemplate}`)
 
-        this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`40px / ${colTemplate}`)
+        this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`44px / ${colTemplate}`)
     }
 
     protected _update = () => {

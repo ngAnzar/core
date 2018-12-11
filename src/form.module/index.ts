@@ -12,7 +12,6 @@ import { FormFieldComponent } from "./field/form-field.component"
 export { FormFieldComponent }
 
 import { CheckboxComponent } from "./input/checkbox/checkbox.component"
-import { CheckboxColumnComponent } from "./input/checkbox/checkbox-column.component"
 import { CheckboxGroupDirective } from "./input/checkbox/checkbox-group.directive"
 export { CheckboxComponent, CheckboxGroupDirective }
 
@@ -49,7 +48,6 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         FormFieldComponent,
 
         CheckboxComponent,
-        CheckboxColumnComponent,
         CheckboxGroupDirective,
 
         DateInputComponent,
@@ -71,7 +69,6 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         FormFieldComponent,
 
         CheckboxComponent,
-        CheckboxColumnComponent,
         CheckboxGroupDirective,
 
         DateInputComponent,

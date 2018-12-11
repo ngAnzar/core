@@ -1,7 +1,9 @@
-import { Component, ViewChild, TemplateRef, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import { Component, ViewChild, TemplateRef, Inject, ViewContainerRef, ChangeDetectorRef, ElementRef } from "@angular/core"
 
-import { ColumnComponent, GridComponent } from "../../../list.module"
-import { ID, SelectionModel } from "../../../data.module"
+import { ColumnComponent } from "../column/column.component"
+import { GridComponent } from "../grid/grid.component"
+import { ID, SelectionModel } from "../../data.module"
+import { LayerService } from "../../layer.module"
 
 
 @Component({
@@ -19,8 +21,13 @@ export class CheckboxColumnComponent extends ColumnComponent {
 
     public constructor(
         @Inject(SelectionModel) protected readonly selection: SelectionModel,
-        @Inject(GridComponent) grid: GridComponent) {
-        super(grid)
+        @Inject(GridComponent) grid: GridComponent,
+        @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef,
+        @Inject(ElementRef) el: ElementRef<HTMLElement>,
+        @Inject(LayerService) layerSvc: LayerService,
+        @Inject(ViewContainerRef) vcr: ViewContainerRef) {
+        super(grid, cdr, el, layerSvc, vcr)
+
         if (this._width.number === -1) {
             this._width = { number: 44, unit: "px" }
         }

@@ -4,24 +4,10 @@ import { CommonModule } from "@angular/common"
 import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
 import { NzAnimationModule } from "../animation.module"
-import { NzLayoutModule } from "../layout.module"
+import { NzLayerModule } from "../layer.module"
 
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "./autocomplete/autocomplete.component"
 export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL }
-
-import { GridComponent } from "./grid/grid.component"
-// import { CheckboxColumnComponent } from "./grid/checkbox-column.component"
-import { ColumnComponent } from "./grid/column.component"
-import { ColumnsComponent } from "./grid/columns.component"
-import { GridCellDirective } from "./grid/grid-cell.directive"
-import { GridRowDirective } from "./grid/grid-row.directive"
-import { GridFilterDirective } from "./grid/filter/grid-filter.directive"
-import { GridFilterText } from "./grid/filter/text.component"
-import { GridFilterChipComponent } from "./grid/filter/grid-filter-chip.component"
-export {
-    GridComponent, ColumnComponent, ColumnsComponent,
-    GridFilterDirective, GridFilterText, GridFilterChipComponent
-}
 
 
 import { ListDirective } from "./list/list.directive"
@@ -49,19 +35,10 @@ import { VirtualForDirective } from "./virtual-for.directive"
         NzCommonModule,
         NzDataModule,
         NzAnimationModule,
-        NzLayoutModule
+        NzLayerModule
     ],
     declarations: [
         AutocompleteComponent,
-
-        GridComponent,
-        ColumnComponent,
-        ColumnsComponent,
-        GridCellDirective,
-        GridRowDirective,
-        GridFilterDirective,
-        GridFilterText,
-        GridFilterChipComponent,
 
         ListDirective,
         ListItemComponent,
@@ -76,13 +53,6 @@ import { VirtualForDirective } from "./virtual-for.directive"
         VirtualForDirective
     ],
     exports: [
-        GridComponent,
-        ColumnComponent,
-        ColumnsComponent,
-        GridFilterDirective,
-        GridFilterText,
-        GridFilterChipComponent,
-
         ListDirective,
         ListItemComponent,
         ListActionComponent,

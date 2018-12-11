@@ -5,6 +5,7 @@ import { NzAnimationModule } from "./animation.module"
 import { NzCommonModule } from "./common.module"
 import { NzDataModule } from "./data.module"
 import { NzFormModule } from "./form.module"
+import { NzGridModule } from "./grid.module"
 import { NzLayerModule } from "./layer.module"
 import { NzLayoutModule } from "./layout.module"
 import { NzListModule } from "./list.module"
@@ -23,6 +24,7 @@ const modules: any[] = [
     NzCommonModule,
     NzDataModule,
     NzFormModule,
+    NzGridModule,
     NzLayerModule,
     NzLayoutModule,
     NzListModule,

@@ -1,0 +1,18 @@
+:stylus
+  .label
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    flex: 1
+    display: block
+
+  .filter
+    flex: none
+
+.label
+  ng-content(select="label")
+
+.nz-fab.filter(*ngIf="filter && (!filter.isEmpty || mouseover || layerFilter.isVisible)"
+  bind-color="filter.isEmpty ? null : 'accent'"
+  on-click="showFilter($event)")
+  nz-icon(class=icon("mdi/filter-variant", 20))

@@ -1,0 +1,26 @@
+:stylus
+  @require "../index.styl"
+
+  .input-row
+    padding: 0 8px
+
+ng-template(#layer)
+  .nz-grid-filter-layer.nz-vbox(align="stretch" style="min-width:400px")
+    .nz-hbox.input-row
+      .nz-form-field
+        .nz-select(bind-formControl="operator" bind-dataSource="operators" valueField="id")
+
+      .nz-form-field(flex=1)
+        input.nz-input(bind-formControl="value")
+        span(nzSlot='prefix') &nbsp;&nbsp;
+
+    .nz-hbox
+      .nz-button(on-click="clearValue()") Törlés
+      div(flex=1)
+      .nz-button(color="confirm" on-click="applyFilter()") Szűrés
+
+
+ng-template(#chip)
+  .nz-grid-filter-chip(bind-title="title" bind-titleSeparator="operatorText" on-remove="clearValue()")
+    | {{ valueText }}
+

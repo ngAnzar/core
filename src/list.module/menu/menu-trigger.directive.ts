@@ -25,12 +25,10 @@ export class MenuTriggerDirective extends LayerFactoryDirective {
         @Inject(ViewContainerRef) vcr: ViewContainerRef,
         @Inject(ElementRef) el: ElementRef<HTMLElement>) {
         if (!levitateAnchor) {
-            levitateAnchor = new LevitateAnchorDirective()
-            levitateAnchor.nzLevitateAnchor = "left top"
+            levitateAnchor = new LevitateAnchorDirective("left top")
         }
         if (!targetAnchor) {
-            targetAnchor = new TargetAnchorDirective()
-            targetAnchor.nzTargetAnchor = "left bottom"
+            targetAnchor = new TargetAnchorDirective("left bottom")
         }
         super(
             levitateAnchor,

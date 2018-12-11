@@ -215,7 +215,7 @@ export class DictField<E> {
         let val = deepClone(this._value) || {}
         this.set({ ...val, ...value as any })
     }
-    private _value: E
+    private _value: E = {} as any
 
     public isEq(other: E): boolean {
         let diff = DeepDiff.diff(this._value, other)
@@ -269,7 +269,7 @@ function deepClone<T>(any: T): T {
 
 export interface DiffKindNew {
     kind: "N"
-    // path: string[]
+    path: string[]
     rhs: any
 }
 

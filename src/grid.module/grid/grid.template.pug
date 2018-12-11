@@ -1,5 +1,5 @@
 :stylus
-  @require "./grid.styl"
+  @require "../index.styl"
 
   .rows
     flex-grow: 1
@@ -21,11 +21,9 @@
 
 ng-content(select=".nz-columns")
 
-div.nz-hbox.filter(gap=8)
-  .nz-grid-filter-chip
-  .nz-grid-filter-chip
-  .nz-grid-filter-chip
-  .nz-grid-filter-chip
+div.nz-hbox.filter(*ngIf="filterSvc.filters.length" gap=8)
+  ng-template(ngFor bind-ngForOf="filterSvc.filters" let-editor)
+    ng-template(bind-ngTemplateOutlet="editor.chip" bind-ngTemplateOutletContext="{$implicit:editor}")
 
 div(nzScrollable="vertical")
   .nz-list.rows(bind-style.gridTemplate="gtRows")

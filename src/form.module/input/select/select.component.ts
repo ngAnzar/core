@@ -274,7 +274,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public writeValue(obj: SelectValue<T>): void {
-        if (!this.source.storage) {
+        if (!this.source || !this.source.storage) {
             this.pendingValue = obj
             return
         }
