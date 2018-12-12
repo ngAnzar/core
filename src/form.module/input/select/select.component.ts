@@ -519,11 +519,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _onTriggerClick(event: MouseEvent) {
-        this.inputState = "querying"
-        this.opened = true
-        let filter: any = this.source.filter
-        delete filter[this.queryField]
-        this.source.filter = filter
+        if (this.opened) {
+            this.opened = false
+            if (this.input) {
+                this._focusMonitor.focusVia(this.input.nativeElement, this.focusOrigin)
+            }
+        } else {
+            this.inputState = "querying"
+            this.opened = true
+            let filter: any = this.source.filter
+            delete filter[this.queryField]
+            this.source.filter = filter
+        }
     }
 
     @HostListener("click")
