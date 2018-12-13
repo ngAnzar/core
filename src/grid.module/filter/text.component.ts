@@ -22,18 +22,19 @@ export class GridFilterText extends ColumnGridFilter {
     public valueText: string
 
     protected get filter() {
-        if (this.operator.value && this.value.value) {
-            return {
-                [this.operator.value]: this.value.value
-            }
-        } else {
-            return null
-        }
+        return this.value.value
+        // if (this.operator.value && this.value.value) {
+        //     return {
+        //         [this.operator.value]: this.value.value
+        //     }
+        // } else {
+        //     return null
+        // }
     }
 
     public applyFilter() {
-        let op = textOperators.getSync(this.operator.value)
-        this.operatorText = op ? ` ${op.label} ` : null
+        // let op = textOperators.getSync(this.operator.value)
+        // this.operatorText = op ? ` ${op.label} ` : null
         this.valueText = this.value.value
 
         this._publishValue(this.filter)
@@ -42,9 +43,7 @@ export class GridFilterText extends ColumnGridFilter {
 
     public _writeValue(value: any) {
         if (value) {
-            let operator = Object.keys(value)[0]
-            this.operator.setValue(operator)
-            this.value.setValue(value[operator])
+            this.value.setValue(value)
         } else {
             this.operator.setValue("contains")
             this.value.setValue(null)

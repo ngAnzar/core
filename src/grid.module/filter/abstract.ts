@@ -98,6 +98,9 @@ export abstract class ColumnGridFilter extends GridFilter {
         if (changes && changes.length) {
             (this.valueChanges as EventEmitter<any>).emit(value)
         }
+
+        let filter = this.service.source.filter || {}
+        this.service.source.filter = { ...filter, [this.name]: value }
     }
 
     protected _resetValue() {
