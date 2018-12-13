@@ -57,12 +57,18 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this._dsd ? this._dsd.filterChanges : this._filterChanges
     }
 
+    public get sorterChanges(): Observable<MappingChangedEvent<Sorter<T>>> {
+        return this._dsd ? this._dsd.sorterChanges : this._sorterChanges
+    }
+
     private _storage: DataStorage<T>
     private _source: DataSource<T>
     private _disposeStroage: boolean
     private _dsd: DataSourceDirective<T>
     private _filterSubscription: Subscription
     private _filterChanges: Observable<MappingChangedEvent<Filter<T>>> = new EventEmitter()
+    private _sorterSubscription: Subscription
+    private _sorterChanges: Observable<MappingChangedEvent<Sorter<T>>> = new EventEmitter()
 
     // public baseFilter: Filter<T>
     public set baseFilter(val: Filter<T>) {
@@ -117,9 +123,16 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
             delete this._filterSubscription
         }
 
+        if (this._sorterSubscription) {
+            this._sorterSubscription.unsubscribe()
+            delete this._sorterSubscription
+        }
+
         if (this._storage) {
             this._storage.filter.changed
                 .subscribe((this._filterChanges as EventEmitter<MappingChangedEvent<Filter<T>>>))
+            this.storage.sorter.changed
+                .subscribe((this._sorterChanges as EventEmitter<MappingChangedEvent<Sorter<T>>>))
         }
     }
 

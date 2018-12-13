@@ -57,6 +57,14 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
         return this.outlet.nativeElement
     }
 
+    public set top(val: number) {
+
+    }
+
+    public set left(val: number) {
+
+    }
+
     public emit(out: Partial<E>): void {
         (out as any).layer = this;
         (this.output as EventEmitter<E>).emit(out as E)

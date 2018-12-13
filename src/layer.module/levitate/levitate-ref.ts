@@ -7,12 +7,13 @@ import { Rect, RectMutationService, parseAlign } from "../../layout.module"
 
 import { MagicCarpet, Rects } from "./levitate-compute"
 import { LevitatePosition } from "./levitate-position"
-import { Levitating, Anchor, Constraint } from "./levitate-options"
+import { Levitating, Anchor, Constraint, ConcretePosition } from "./levitate-options"
 
 
 export class LevitateRef {
-
     public readonly position: Readonly<LevitatePosition>
+    public concrete: ConcretePosition = { x: false, y: false }
+
     protected mc: MagicCarpet = new MagicCarpet(this)
     protected suspended: number = 0
 
@@ -52,7 +53,7 @@ export class LevitateRef {
         (this as any).position = pos
 
         // console.log(JSON.parse(JSON.stringify(pos)))
-        pos.applyToElement(this.levitate.ref)
+        pos.applyToElement(this.levitate.ref, this.concrete)
     }
 
     public dispose(): void {

@@ -23,3 +23,9 @@ export interface Constraint {
     ref: HTMLElement | "viewport"
     inset?: Margin
 }
+
+
+export interface ConcretePosition {
+    x: boolean
+    y: boolean
+}
