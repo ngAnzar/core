@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, Input, Output, EventEmitter, HostListener, OnDestroy, OnInit } from "@angular/core"
+import { Component, ElementRef, Inject, Input, Output, EventEmitter, HostListener, OnDestroy, OnInit, HostBinding } from "@angular/core"
 import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
 
 import { RippleService, BoundedRippleRef } from "../../animation.module"
@@ -21,6 +21,10 @@ export interface ButtonEvent {
 })
 export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit {
     @Output() public action: EventEmitter<ButtonEvent> = new EventEmitter<ButtonEvent>()
+
+    @HostBinding("attr.type")
+    @Input()
+    public type: string = "button"
 
     protected boundedRipple: BoundedRippleRef
 

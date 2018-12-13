@@ -5,7 +5,7 @@
     padding: 0 8px
 
 ng-template(#layer)
-  .nz-grid-filter-layer.nz-vbox(align="stretch" style="min-width:400px")
+  form.nz-grid-filter-layer.nz-vbox(align="stretch" style="min-width:400px" on-submit="applyFilter();$event.preventDefault()" ngNoForm)
     .nz-hbox.input-row
       .nz-form-field
         .nz-select(bind-formControl="operator" bind-dataSource="operators" valueField="id")
@@ -15,9 +15,9 @@ ng-template(#layer)
         span(nzSlot='prefix') &nbsp;&nbsp;
 
     .nz-hbox
-      .nz-button(on-click="clearValue()") Törlés
+      button.nz-button(on-click="clearValue()") Törlés
       div(flex=1)
-      .nz-button(color="confirm" on-click="applyFilter()") Szűrés
+      button.nz-button(color="confirm" type="submit") Szűrés
 
 
 ng-template(#chip)
