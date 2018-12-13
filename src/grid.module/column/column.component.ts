@@ -74,7 +74,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
                 delete this._sorterChangeSub
             }
 
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get sortable(): string { return this._sortable }
@@ -93,7 +93,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
                     this.dataSource.sort = sort
                 }
             }
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get sortDirection(): "asc" | "desc" { return this._sortDirection }
@@ -102,7 +102,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     public set mouseover(val: boolean) {
         if (this._mouseover !== val) {
             this._mouseover = val
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get mouseover(): boolean { return this._mouseover }
@@ -156,7 +156,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
             let s = ref.output.subscribe(event => {
                 if (event.type === "") {
                     s.unsubscribe()
-                    this.cdr.detectChanges()
+                    this.cdr.markForCheck()
                     this.filter.resetValue()
                 }
             })
@@ -170,7 +170,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
             }
 
             this.destruct.subscription(this.filter.valueChanges).subscribe(() => {
-                this.cdr.detectChanges()
+                this.cdr.markForCheck()
             })
         }
     }
