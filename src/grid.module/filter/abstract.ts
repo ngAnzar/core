@@ -99,8 +99,13 @@ export abstract class ColumnGridFilter extends GridFilter {
             (this.valueChanges as EventEmitter<any>).emit(value)
         }
 
-        let filter = this.service.source.filter || {}
-        this.service.source.filter = { ...filter, [this.name]: value }
+        let filter = this.service.source.filter || {} as any
+        if (this.isEmpty) {
+            delete filter[this.name]
+            this.service.source.filter = filter
+        } else {
+            this.service.source.filter = { ...filter, [this.name]: value }
+        }
     }
 
     protected _resetValue() {
