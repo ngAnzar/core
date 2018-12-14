@@ -141,14 +141,15 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         for (let change of changes) {
             if (change.kind === ListDiffKind.CREATE) {
-                this._getViewForItem(change.index, change.item, range)
+                this._getViewForItem(change.index, change.item, range).detectChanges()
             } else if (change.kind === ListDiffKind.UPDATE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
                 if (elIdx >= 0) {
                     let view: EmbeddedView<T> = this._vcr.get(elIdx) as EmbeddedView<T>
                     this._updateContext(view.context, change.index, change.item, range)
+                    view.detectChanges()
                 } else {
-                    this._getViewForItem(change.index, change.item, range)
+                    this._getViewForItem(change.index, change.item, range).detectChanges()
                 }
             } else if (change.kind === ListDiffKind.DELETE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
@@ -162,12 +163,12 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             }
         }
 
-        for (let i = 0, l = this._vcr.length; i < l; i++) {
-            let view = this._vcr.get(i) as EmbeddedView<T>
-            if (view && !view.destroyed && view.context && view.context.index !== -1) {
-                view.detectChanges()
-            }
-        }
+        // for (let i = 0, l = this._vcr.length; i < l; i++) {
+        //     let view = this._vcr.get(i) as EmbeddedView<T>
+        //     if (view && !view.destroyed && view.context && view.context.index !== -1) {
+        //         view.detectChanges()
+        //     }
+        // }
     }
 
     protected _update = () => {

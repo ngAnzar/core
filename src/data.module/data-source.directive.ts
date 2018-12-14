@@ -6,6 +6,7 @@ import { NzRange } from "../util"
 import { Model, ID } from "./model"
 import { DataSource, Filter, Sorter } from "./data-source"
 import { DataStorage, MappingChangedEvent } from "./data-storage"
+import { Items } from "./collection"
 
 
 @Directive({
@@ -72,14 +73,22 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
 
     // public baseFilter: Filter<T>
     public set baseFilter(val: Filter<T>) {
-        this._baseFilter = val
-        this._updateFilter()
+        if (this._dsd) {
+            this._dsd.baseFilter = val
+        } else {
+            this._baseFilter = val
+            this._updateFilter()
+        }
     }
     private _baseFilter: Filter<T>
 
     public set filter(f: Filter<T>) {
-        this._filter = f
-        this._updateFilter()
+        if (this._dsd) {
+            this._dsd.filter = f
+        } else {
+            this._filter = f
+            this._updateFilter()
+        }
     }
     public get filter(): Filter<T> {
         return this.storage.filter.get() || {}
@@ -97,9 +106,13 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.source.async
     }
 
-    public getRange(r: NzRange) {
-        this._updateFilter()
-        return this.storage.getRange(r)
+    public getRange(r: NzRange): Observable<Items<T>> {
+        if (this._dsd) {
+            return this._dsd.getRange(r)
+        } else {
+            this._updateFilter()
+            return this.storage.getRange(r)
+        }
     }
 
     public get(id: ID): Observable<T> {
@@ -107,12 +120,12 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
 
     protected _updateFilter(silent?: boolean) {
-        let f = {} as Filter<T>
+        let f = {}
         if (this._baseFilter) {
-            f = Object.assign(f, this._baseFilter)
+            f = { ...f, ...this._baseFilter as any }
         }
         if (this._filter) {
-            f = Object.assign(f, this._filter)
+            f = { ...f, ...this._filter as any }
         }
         this.storage.filter.set(f, silent)
     }
