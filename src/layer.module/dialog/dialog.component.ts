@@ -1,6 +1,7 @@
-import { Component, Inject, Optional, AfterViewChecked, ElementRef } from "@angular/core"
+import { Component, Inject, Optional, AfterViewChecked, ElementRef, OnDestroy } from "@angular/core"
 import { Portal, ComponentPortal } from "@angular/cdk/portal"
 
+import { DragService } from "../../common.module"
 import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
 import { LAYER_TITLE, LAYER_BUTTONS, LAYER_CONTENT, LAYER_OPTIONS, ButtonList } from "../_shared"
@@ -14,18 +15,29 @@ export interface DialogOptions {
 
 @Component({
     selector: ".nz-dialog",
-    templateUrl: "./dialog.template.pug"
+    templateUrl: "./dialog.template.pug",
+    providers: [
+        { provide: DragService, useClass: DragService }
+    ]
 })
 export class DialogComponent implements AfterViewChecked {
     public constructor(
         @Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(LayerRef) protected layerRef: LayerRef<DialogEvent>,
         @Inject(LayerService) protected layerSvc: LayerService,
+        @Inject(DragService) protected drag: DragService,
         @Inject(LAYER_TITLE) @Optional() public title: string,
         @Inject(LAYER_BUTTONS) @Optional() public buttons: ButtonList,
         @Inject(LAYER_CONTENT) @Optional() protected content: Portal<any>,
         @Inject(LAYER_OPTIONS) @Optional() protected options: DialogOptions) {
         this.options = this.options || {}
+        this.drag.draggable = layerRef.container
+
+        layerRef.destruct.subscription(this.drag.dragging).subscribe(event => {
+            if (event.type === "begin") {
+                layerRef.behavior.levitate.suspend()
+            }
+        })
     }
 
     public close() {

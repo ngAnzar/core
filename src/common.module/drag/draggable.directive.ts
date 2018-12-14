@@ -1,17 +1,17 @@
 import { Directive, Inject } from "@angular/core"
 
-import { DragHandlerService } from "./drag-handler.service"
+import { DragService } from "./drag.service"
 
 
 
 @Directive({
     selector: "[draggable]",
     providers: [
-        { provide: DragHandlerService, useClass: DragHandlerService }
+        { provide: DragService, useClass: DragService }
     ]
 })
 export class DraggableDirective {
-    public constructor(@Inject(DragHandlerService) public readonly service: DragHandlerService) {
+    public constructor(@Inject(DragService) public readonly service: DragService) {
 
     }
 }

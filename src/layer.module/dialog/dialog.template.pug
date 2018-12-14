@@ -5,6 +5,7 @@
     margin: 0
     padding: $nz-dialog-padding-top-bottom ($nz-dialog-padding-side + $nz-dialog-padding-top-bottom) $nz-dialog-inner-margin ($nz-dialog-padding-side + $nz-dialog-padding-top-bottom)
     flex: none
+    cursor: grab
 
   .buttons
     flex: none
@@ -26,7 +27,7 @@
     flex: 1
 
 block title
-  h6.title(bind-innerHTML="title" "*ngIf"="title && title.length")
+  h6.title(bind-innerHTML="title" "*ngIf"="title && title.length" nzDragHandle)
 
 block content
   .content(*ngIf="content" bind-ngClass=`{"${style('message-content')}": options.isPlainText}`)

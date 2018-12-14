@@ -7,4 +7,12 @@ export class Point {
 
     public constructor(public x: number, public y: number) {
     }
+
+    public sub(other: Point): Point {
+        return new Point(this.x - other.x, this.y - other.y)
+    }
+
+    public add(other: Point): Point {
+        return new Point(this.x + other.x, this.y + other.y)
+    }
 }

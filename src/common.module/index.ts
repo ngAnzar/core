@@ -7,6 +7,12 @@ import { ButtonComponent } from "./button/button.component"
 export { ButtonComponent }
 
 
+import { DragEventService, DragEvent } from "./drag/drag-event.service"
+import { DragService } from "./drag/drag.service"
+import { DragHandleDirective } from "./drag/drag-handle.directive"
+export { DragEventService, DragEvent, DragService, DragHandleDirective }
+
+
 import { LocaleService, DateFormat } from "./locale/locale.service"
 import { DateDirective } from "./locale/date.directive"
 import { DatePipe } from "./locale/date.pipe"
@@ -56,7 +62,9 @@ const content = [
 
     CardComponent,
     CardHeaderComponent,
-    CardActionsComponent
+    CardActionsComponent,
+
+    DragHandleDirective
 ]
 
 
@@ -70,7 +78,8 @@ const content = [
     providers: [
         LocaleService,
         FileDownloadService,
-        ScriptService
+        ScriptService,
+        DragEventService
     ]
 })
 export class NzCommonModule { }
