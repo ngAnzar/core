@@ -119,6 +119,10 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.source.get(id)
     }
 
+    public reload() {
+        this.storage.reload()
+    }
+
     protected _updateFilter(silent?: boolean) {
         let f = {}
         if (this._baseFilter) {
