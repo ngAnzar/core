@@ -12,7 +12,7 @@ import { NzListModule } from "../list.module"
 
 
 import { GridComponent } from "./grid/grid.component"
-// import { CheckboxColumnComponent } from "./grid/checkbox-column.component"
+import { CheckboxColumnComponent } from "./checkbox-column/checkbox-column.component"
 import { ColumnComponent } from "./column/column.component"
 import { ColumnsComponent } from "./column/columns.component"
 import { GridCellDirective } from "./grid/grid-cell.directive"
@@ -44,13 +44,17 @@ export {
         GridCellDirective,
         GridRowDirective,
         GridFilterText,
-        GridFilterChipComponent
+        GridFilterChipComponent,
+
+        CheckboxColumnComponent
     ],
     exports: [
         GridComponent,
         ColumnComponent,
         ColumnsComponent,
         GridFilterText,
+
+        CheckboxColumnComponent
     ]
 })
 export class NzGridModule { }
