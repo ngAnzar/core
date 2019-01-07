@@ -70,6 +70,7 @@ function createProperty(modelName: string, inpName: string, altName: string, con
                     ? rawData[altName]
                     : null
 
+            // console.log(modelName, inpName, converter, raw)
             // TODO: only development
             try {
                 return data[inpName] = raw == null ? raw : converter(raw, this)
@@ -238,7 +239,7 @@ export class Model {
     }
 
     public static rawData(model: Model): { [key: string]: any } {
-        return model instanceof Model ? model[RAW] : {}
+        return model ? model[RAW] || {} : {}
     }
 
     public static getFields(modelClass: { new(...args: any[]): Model }): Fields {

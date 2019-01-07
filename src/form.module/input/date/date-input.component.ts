@@ -24,6 +24,9 @@ export class DateInputComponent extends InputComponent<Date> {
     public get type(): string { return "text" }
 
     public writeValue(obj: Date): void {
-        (this.el.nativeElement as HTMLInputElement).value = format(obj, "YYYY-MM-DD")
+        // XXX: i don't know why working with this hack
+        setTimeout(() => {
+            (this.el.nativeElement as HTMLInputElement).value = format(obj, "YYYY-MM-DD")
+        }, 5)
     }
 }
