@@ -5,7 +5,7 @@ import { filter, share } from "rxjs/operators"
 import { Rect } from "../../layout.module"
 import { Destruct } from "../../util"
 
-export type ScrollableOrient = "horizontal" | "vertical"
+export type ScrollOrient = "horizontal" | "vertical"
 
 
 export interface ScrollableViewport {
@@ -22,7 +22,7 @@ export interface ScrollablePosition {
 }
 
 
-export type ScrollBy = { percent: ScrollablePosition } | { fix: ScrollablePosition }
+export type ScrollBy = { percent: ScrollablePosition } | { px: ScrollablePosition }
 
 
 export class ScrollEvent implements ScrollablePosition {
@@ -30,14 +30,14 @@ export class ScrollEvent implements ScrollablePosition {
         public readonly scroller: ScrollerService,
         public readonly top: number,
         public readonly left: number,
-        public readonly orient: ScrollableOrient,
+        public readonly orient: ScrollOrient,
         public readonly direction: number) {
     }
 }
 
 
 export class ScrollerService implements OnDestroy {
-    public orient: ScrollableOrient = "horizontal"
+    public orient: ScrollOrient = "horizontal"
     public readonly destruct = new Destruct()
 
     public set viewport(val: ScrollableViewport) {
@@ -60,7 +60,7 @@ export class ScrollerService implements OnDestroy {
         if (val) {
             const old = this._position
             let direction: number
-            let orient: ScrollableOrient
+            let orient: ScrollOrient
 
             if (old) {
                 let leftChanged = old.left !== val.left
@@ -106,10 +106,10 @@ export class ScrollerService implements OnDestroy {
                 left: opt.percent.left == null ? this.position.left : this.viewport.scrollWidth * opt.percent.left,
                 top: opt.percent.top == null ? this.position.top : this.viewport.scrollHeight * opt.percent.top
             }
-        } else if ("fix" in opt) {
+        } else if ("px" in opt) {
             this.position = {
-                left: opt.fix.left == null ? this.position.left : opt.fix.left,
-                top: opt.fix.top == null ? this.position.top : opt.fix.top
+                left: opt.px.left == null ? this.position.left : opt.px.left,
+                top: opt.px.top == null ? this.position.top : opt.px.top
             }
         }
     }

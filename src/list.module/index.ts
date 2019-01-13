@@ -22,8 +22,16 @@ import { MenuTriggerDirective } from "./menu/menu-trigger.directive"
 export { MenuComponent, MenuItemDirective, MenuTriggerDirective, MenuItemActionEvent }
 
 
-import { ScrollableDirective, ScrollOrient } from "./scrollable.directive"
-export { ScrollableDirective, ScrollOrient }
+// import { ScrollableDirective, ScrollOrient } from "./scrollable.directive"
+// export { ScrollableDirective, ScrollOrient }
+import { Scrollable, ScrollableNativeDirective } from "./scroller/scrollable.directive"
+import { ScrollbarComponent } from "./scroller/scrollbar.component"
+import { ScrollerComponent } from "./scroller/scroller.component"
+import { ScrollBy, ScrollEvent, ScrollOrient, ScrollerService } from "./scroller/scroller.service"
+export {
+    ScrollBy, ScrollEvent, ScrollOrient, ScrollerService, ScrollbarComponent, ScrollerComponent,
+    Scrollable, ScrollableNativeDirective
+}
 
 
 import { VirtualForDirective } from "./virtual-for.directive"
@@ -49,7 +57,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         MenuItemDirective,
         MenuTriggerDirective,
 
-        ScrollableDirective,
+        ScrollableNativeDirective,
+        ScrollbarComponent,
+        ScrollerComponent,
         VirtualForDirective
     ],
     exports: [
@@ -62,7 +72,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         MenuItemDirective,
         MenuTriggerDirective,
 
-        ScrollableDirective,
+        ScrollableNativeDirective,
+        ScrollbarComponent,
+        ScrollerComponent,
         VirtualForDirective
     ],
     entryComponents: [

@@ -4,13 +4,17 @@ import {
 } from "@angular/core"
 
 import { Destruct } from "../../util"
-import { ScrollerService, ScrollableOrient } from "./scroller.service"
+import { DragService } from "../../common.module"
+import { ScrollerService, ScrollOrient } from "./scroller.service"
 
 
 @Component({
     selector: ".nz-scrollbar",
     templateUrl: "./scrollbar.template.pug",
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [
+        DragService
+    ]
 })
 export class ScrollbarComponent implements OnDestroy {
     @Input()
@@ -21,7 +25,7 @@ export class ScrollbarComponent implements OnDestroy {
         }
     }
     public get position(): number { return this._position }
-    private _position: number
+    private _position: number = 0
 
     @Input()
     @HostBinding("style.width.px")
@@ -67,8 +71,9 @@ export class ScrollbarComponent implements OnDestroy {
 
     public constructor(
         @Inject(ScrollerService) public readonly scroller: ScrollerService,
+        @Inject(DragService) public readonly drag: DragService,
         @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef,
-        @Attribute("orient") public readonly orient: ScrollableOrient) {
+        @Attribute("orient") public readonly orient: ScrollOrient) {
 
         this.destruct.subscription(scroller.viewportChanges).subscribe(viewport => {
             if (this.orient === "horizontal") {

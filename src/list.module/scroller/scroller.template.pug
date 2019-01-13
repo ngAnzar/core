@@ -1,4 +1,13 @@
-ng-content
+:stylus
+  .scrollable
+    position: absolute
+    left: 0
+    top: 0
+    right: 0
+    bottom: 0
+
+div.scrollable(nzScrollable="native")
+  ng-content
 
 .nz-scrollbar(orient="horizontal")
 .nz-scrollbar(orient="vertical")
