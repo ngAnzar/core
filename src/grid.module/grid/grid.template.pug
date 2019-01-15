@@ -29,7 +29,7 @@ div.nz-hbox.filter(*ngIf="filterSvc.filters.length" gap=8)
   ng-template(ngFor bind-ngForOf="filterSvc.filters" let-editor)
     ng-template(bind-ngTemplateOutlet="editor.chip" bind-ngTemplateOutletContext="{$implicit:editor}")
 
-div.body(nzScrollable="vertical")
+div.nz-scroller.body
   .nz-list.rows(bind-style.gridTemplate="gtRows")
     ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-row="index" bind-fixedItemHeight="_rowHeight")
       .nz-data-grid-row(

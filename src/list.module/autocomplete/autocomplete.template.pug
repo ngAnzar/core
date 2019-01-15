@@ -20,7 +20,7 @@
 
 //- TODO: loading anim
 
-.scroller(*ngIf="source.storage" nzScrollable="vertical")
+.nz-scroller.scroller(*ngIf="source.storage")
   .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
     ng-template(bind-ngIf="actionsByPosition.first")
       ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")

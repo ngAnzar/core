@@ -17,7 +17,9 @@ export interface ScrollableViewport {
 
 
 export interface ScrollablePosition {
+    /** percent */
     readonly top: number
+    /** percent */
     readonly left: number
 }
 
@@ -37,7 +39,7 @@ export class ScrollEvent implements ScrollablePosition {
 
 
 export class ScrollerService implements OnDestroy {
-    public orient: ScrollOrient = "horizontal"
+    public orient: ScrollOrient = "vertical"
     public readonly destruct = new Destruct()
 
     public set viewport(val: ScrollableViewport) {
@@ -59,6 +61,7 @@ export class ScrollerService implements OnDestroy {
     public set position(val: ScrollablePosition) {
         if (val) {
             const old = this._position
+            this._position = val
             let direction: number
             let orient: ScrollOrient
 
@@ -67,7 +70,7 @@ export class ScrollerService implements OnDestroy {
                 let topChanged = old.top !== val.top
 
 
-                if (leftChanged && topChanged) {
+                if (leftChanged || topChanged) {
                     orient = this.orient === "horizontal" && leftChanged
                         ? "horizontal"
                         : this.orient === "vertical" && topChanged
@@ -84,32 +87,38 @@ export class ScrollerService implements OnDestroy {
                 }
             }
 
-            (this.scrollChanges as EventEmitter<ScrollEvent>)
-                .emit(new ScrollEvent(this, val.top, val.left, orient, direction))
+            if (orient) {
+                (this.scrollChanges as EventEmitter<ScrollEvent>)
+                    .emit(new ScrollEvent(this, val.top, val.left, orient, direction))
+            }
         }
     }
     public get position(): ScrollablePosition { return this._position }
     private _position: ScrollablePosition = { left: 0, top: 0 }
 
+    public get pxPosition(): ScrollablePosition {
+        const viewport = this.viewport
+        return {
+            top: ((viewport.scrollHeight - viewport.height) * this.position.top) || 0,
+            left: ((viewport.scrollWidth - viewport.width) * this.position.left) || 0,
+        }
+    }
+
     public readonly scrollChanges: Observable<ScrollEvent> = this.destruct.subject(new EventEmitter())
     public readonly primaryScroll: Observable<ScrollEvent> = this.scrollChanges
         .pipe(filter(event => event.orient === this.orient), share())
 
-
-    public init(pos: ScrollablePosition) {
-        this._position = pos
-    }
-
     public scroll(opt: ScrollBy) {
         if ("percent" in opt) {
             this.position = {
-                left: opt.percent.left == null ? this.position.left : this.viewport.scrollWidth * opt.percent.left,
-                top: opt.percent.top == null ? this.position.top : this.viewport.scrollHeight * opt.percent.top
+                left: constrainPercent(opt.percent.left == null ? this.position.left : opt.percent.left),
+                top: constrainPercent(opt.percent.top == null ? this.position.top : opt.percent.top)
             }
         } else if ("px" in opt) {
+            const viewport = this.viewport
             this.position = {
-                left: opt.px.left == null ? this.position.left : opt.px.left,
-                top: opt.px.top == null ? this.position.top : opt.px.top
+                left: constrainPercent(opt.px.left == null ? this.position.left : opt.px.left / (viewport.scrollWidth - viewport.width)) || 0,
+                top: constrainPercent(opt.px.top == null ? this.position.top : opt.px.top / (viewport.scrollHeight - viewport.height)) || 0
             }
         }
     }
@@ -127,4 +136,9 @@ export class ScrollerService implements OnDestroy {
     public ngOnDestroy() {
         this.destruct.run()
     }
+}
+
+
+function constrainPercent(num: number): number {
+    return Math.min(1, Math.max(0, num))
 }

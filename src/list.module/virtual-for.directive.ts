@@ -6,7 +6,8 @@ import { startWith } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items } from "../data.module"
 import { Destruct, NzRange, ListDiffKind } from "../util"
-import { ScrollableDirective } from "./scrollable.directive"
+// import { ScrollableDirective } from "./scrollable.directive"
+import { ScrollerService } from "./scroller/scroller.service"
 
 
 export const enum ScrollingDirection {
@@ -106,14 +107,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public constructor(@Inject(ViewContainerRef) protected _vcr: ViewContainerRef,
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
         @Inject(ChangeDetectorRef) protected _cdr: ChangeDetectorRef,
-        @Inject(ScrollableDirective) protected _scroller: ScrollableDirective) {
+        @Inject(ScrollerService) protected _scroller: ScrollerService) {
 
     }
 
     public ngOnInit() {
         this.destruct.subscription(this.nzVirtualForOf.storage.invalidated).pipe(startWith(0)).subscribe(this._update)
 
-        this.destruct.subscription(this._scroller.primaryScrolling).subscribe(event => {
+        this.destruct.subscription(this._scroller.primaryScroll).subscribe(event => {
             let vr = this._getVisibleNzRange()
             this._setVisibleNzRange(vr)
         })
@@ -245,12 +246,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     protected _getVisibleNzRange(): NzRange {
-        let viewport = this._scroller.viewport
+        const position = this._scroller.position
+        const viewport = this._scroller.viewport
         let begin: number = -1
         let end: number = -1
 
         if (this.fixedItemHeight > 0) {
-            begin = Math.floor(viewport.top / this.fixedItemHeight)
+            begin = Math.floor((viewport.scrollHeight * position.top) / this.fixedItemHeight)
             end = begin + Math.ceil(viewport.height / this.fixedItemHeight)
             return new NzRange(begin, end)
         } else {
@@ -265,7 +267,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
                 }
                 checked.push(el)
 
-                if (el && this._scroller.elementIsVisible(viewport, el)) {
+                if (el && this._scroller.elementIsVisible(el)) {
                     if (begin === -1) {
                         begin = vr.context.index
                     }

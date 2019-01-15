@@ -1,12 +1,9 @@
-:stylus
-  .scrollable
-    position: absolute
-    left: 0
-    top: 0
-    right: 0
-    bottom: 0
+//- :stylus
+//-   .scrollable
+//-     transition: transform 50ms
 
-div.scrollable(nzScrollable="native")
+
+div.scrollable(#scrollable)
   ng-content
 
 .nz-scrollbar(orient="horizontal")

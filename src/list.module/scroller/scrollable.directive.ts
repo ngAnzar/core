@@ -24,6 +24,9 @@ export class ScrollableNativeDirective extends Scrollable {
         super()
 
         const nativeEl = el.nativeElement
+        let firstDimenionChange = true
+
+        console.log({ nativeEl })
 
         scroller.destruct.subscription(rectMutation.watchDimension(nativeEl)).subscribe(dim => {
             scroller.viewport = {
@@ -32,18 +35,30 @@ export class ScrollableNativeDirective extends Scrollable {
                 scrollHeight: nativeEl.scrollHeight,
                 scrollWidth: nativeEl.scrollWidth
             }
-        })
 
-        scroller.init({
-            left: nativeEl.scrollLeft,
-            top: nativeEl.scrollTop,
+            if (firstDimenionChange) {
+                firstDimenionChange = false
+                scroller.scroll({
+                    px: {
+                        left: nativeEl.scrollLeft,
+                        top: nativeEl.scrollTop,
+                    }
+                })
+            }
         })
 
         scroller.destruct.subscription(fromEvent(nativeEl, "scroll")).subscribe(event => {
-            scroller.position = {
-                left: nativeEl.scrollLeft,
-                top: nativeEl.scrollTop,
-            }
+            scroller.scroll({
+                px: {
+                    left: nativeEl.scrollLeft,
+                    top: nativeEl.scrollTop,
+                }
+            })
+        })
+
+        scroller.destruct.subscription(scroller.scrollChanges).subscribe(scroll => {
+            nativeEl.scrollTop = nativeEl.scrollHeight * scroll.top
+            nativeEl.scrollLeft = nativeEl.scrollWidth * scroll.left
         })
     }
 }

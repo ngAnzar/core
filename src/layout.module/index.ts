@@ -11,6 +11,7 @@ export { Align, AlignInput, VAlign, HAlign, parseAlign, Margin, MarginParsed, pa
 
 import { RectMutationService } from "./rect-mutation.service"
 export { RectMutationService }
+export { Dimension, Position } from "./rect-mutation.service"
 
 
 @NgModule({
