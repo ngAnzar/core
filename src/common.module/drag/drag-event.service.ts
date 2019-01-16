@@ -30,6 +30,8 @@ export class DragEventService {
                 const onMouseDown = (event: MouseEvent) => {
                     this.doc.addEventListener("mousemove", onMouseMove)
                     this.doc.addEventListener("mouseup", onMouseUp)
+                    event.preventDefault()
+                    event.stopImmediatePropagation()
                 }
 
                 const onMouseUp = (event: MouseEvent) => {

@@ -9,6 +9,8 @@ export type ScrollOrient = "horizontal" | "vertical"
 
 
 export interface ScrollableViewport {
+    top: number,
+    left: number,
     width: number
     height: number
     scrollWidth: number
@@ -38,6 +40,14 @@ export class ScrollEvent implements ScrollablePosition {
 }
 
 
+export class ScrollVpEvent extends ScrollEvent {
+    public ack() {
+        (this.scroller.scrollChanges as EventEmitter<ScrollEvent>)
+            .emit(new ScrollEvent(this.scroller, this.top, this.left, this.orient, this.direction))
+    }
+}
+
+
 export class ScrollerService implements OnDestroy {
     public orient: ScrollOrient = "vertical"
     public readonly destruct = new Destruct()
@@ -54,7 +64,7 @@ export class ScrollerService implements OnDestroy {
         }
     }
     public get viewport(): ScrollableViewport { return this._viewport }
-    private _viewport: ScrollableViewport = { width: 0, height: 0, scrollWidth: 0, scrollHeight: 0 }
+    private _viewport: ScrollableViewport = { top: 0, left: 0, width: 0, height: 0, scrollWidth: 0, scrollHeight: 0 }
     public readonly viewportChanges: Observable<ScrollableViewport> = this.destruct.subject(new EventEmitter())
 
 
@@ -88,8 +98,8 @@ export class ScrollerService implements OnDestroy {
             }
 
             if (orient) {
-                (this.scrollChanges as EventEmitter<ScrollEvent>)
-                    .emit(new ScrollEvent(this, val.top, val.left, orient, direction))
+                (this.scrollVp as EventEmitter<ScrollVpEvent>)
+                    .emit(new ScrollVpEvent(this, val.top, val.left, orient, direction))
             }
         }
     }
@@ -104,6 +114,7 @@ export class ScrollerService implements OnDestroy {
         }
     }
 
+    public readonly scrollVp: Observable<ScrollVpEvent> = this.destruct.subject(new EventEmitter())
     public readonly scrollChanges: Observable<ScrollEvent> = this.destruct.subject(new EventEmitter())
     public readonly primaryScroll: Observable<ScrollEvent> = this.scrollChanges
         .pipe(filter(event => event.orient === this.orient), share())
@@ -124,13 +135,59 @@ export class ScrollerService implements OnDestroy {
     }
 
     public scrollIntoViewport(el: HTMLElement): void {
+        const visibleRect = this.getVisibleRect()
+        const elRect = this.getElementLocalRect(el)
+        let pxPos = this.pxPosition as { top: number, left: number }
 
+        let topSpace = elRect.top - visibleRect.top
+        if (topSpace < 0) {
+            pxPos.top -= Math.abs(topSpace)
+        } else {
+            let bottomSpace = visibleRect.bottom - elRect.bottom
+            if (bottomSpace < 0) {
+                pxPos.top -= bottomSpace
+            }
+        }
+
+        let leftSpace = elRect.left - visibleRect.left
+        if (leftSpace < 0) {
+            pxPos.left -= Math.abs(leftSpace)
+        } else {
+            let rightSpace = visibleRect.right - elRect.right
+            if (rightSpace < 0) {
+                pxPos.left -= rightSpace
+            }
+        }
+
+        this.scroll({ px: pxPos })
     }
 
     public elementIsVisible(el: HTMLElement): boolean {
-        throw new Error("not implementd")
-        // let rect = Rect.fromElement(el)
-        // return this._viewport && this._viewport.rect.isIntersect(rect)
+        // TODO: improve speed
+        const visibleRect = this.getVisibleRect()
+        const elRect = this.getElementLocalRect(el)
+        return visibleRect.contains(elRect)
+    }
+
+    public getElementLocalRect(el: HTMLElement): Rect {
+        const bbox = el.getBoundingClientRect()
+        const pxPos = this.pxPosition
+        return new Rect(
+            bbox.left - this.viewport.left + pxPos.left,
+            bbox.top - this.viewport.top + pxPos.top,
+            bbox.width,
+            bbox.height
+        )
+    }
+
+    public getVisibleRect(): Rect {
+        const pxPos = this.pxPosition
+        return new Rect(
+            pxPos.left,
+            pxPos.top,
+            this.viewport.width,
+            this.viewport.height
+        )
     }
 
     public ngOnDestroy() {

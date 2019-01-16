@@ -9,6 +9,7 @@ import { DataSourceDirective, Model, SelectionModel } from "../../data.module"
 import { ListDirective } from "../list/list.directive"
 import { ListActionComponent } from "../list/list-action.component"
 import { Destruct } from "../../util"
+import { ScrollerComponent } from "../scroller/scroller.component"
 
 
 export const AUTOCOMPLETE_ITEM_TPL = new InjectionToken<TemplateRef<any>>("autocomplete.itemTpl")
@@ -39,6 +40,7 @@ export class DDContext<T> {
 })
 export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit {
     @ViewChild("list", { read: ListDirective }) protected readonly list: ListDirective
+    @ViewChild("scroller", { read: ScrollerComponent }) protected readonly scroller: ScrollerComponent
 
     public get gridTemplateRows(): SafeStyle {
         const actionsLength = this.actions ? this.actions.length : 0
@@ -57,6 +59,11 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
         @Inject(SelectionModel) protected selection: SelectionModel) {
 
         this.destruct.subscription(selection.changes).subscribe(() => {
+            const selectedComponents = selection.getSelectables(null, true)
+            if (selectedComponents.length && this.scroller) {
+                const last = selectedComponents[selectedComponents.length - 1]
+                this.scroller.service.scrollIntoViewport(last.el.nativeElement)
+            }
             this.cdr.detectChanges()
         })
     }

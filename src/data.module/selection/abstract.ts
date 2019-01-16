@@ -1,4 +1,4 @@
-import { OnDestroy, EventEmitter, Input, Output, ContentChildren, QueryList, AfterContentInit, InjectionToken } from "@angular/core"
+import { OnDestroy, EventEmitter, Input, Output, ContentChildren, QueryList, AfterContentInit, InjectionToken, ElementRef } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
@@ -46,6 +46,7 @@ export interface ISelectionModel<T extends Model = Model> {
 export interface ISelectable<T extends Model = Model> {
     selected: SelectOrigin
     readonly selectedChange: Observable<SelectOrigin>
+    readonly el: ElementRef<HTMLElement>
 
     // egyedi azonosító, lehetőleg mindig maradjon meg az eredeti egy adott elemhez
     model: T

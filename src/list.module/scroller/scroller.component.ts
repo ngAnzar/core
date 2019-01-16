@@ -2,8 +2,8 @@ import { Component, Inject, ViewChild, ElementRef, AfterViewInit, HostListener }
 import { merge } from "rxjs"
 import { tap, debounceTime } from "rxjs/operators"
 
-import { ScrollerService, ScrollablePosition } from "./scroller.service"
-import { RectMutationService, Dimension } from "../../layout.module"
+import { ScrollerService, ScrollablePosition, ScrollVpEvent } from "./scroller.service"
+import { RectMutationService, Dimension, Rect } from "../../layout.module"
 
 
 
@@ -17,30 +17,29 @@ import { RectMutationService, Dimension } from "../../layout.module"
 export class ScrollerComponent implements AfterViewInit {
     @ViewChild("scrollable") protected readonly scrollable: ElementRef<HTMLElement>
 
-    private containerDim: Dimension
+    private containerDim: Rect
     private scrollableDim: Dimension
     private scrollPos: ScrollablePosition
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
-        @Inject(ScrollerService) public readonly scroller: ScrollerService,
+        @Inject(ScrollerService) public readonly service: ScrollerService,
         @Inject(RectMutationService) public readonly rectMutation: RectMutationService) {
-
     }
 
     public ngAfterViewInit() {
-        const scrollWatcher = this.scroller.destruct.subscription(this.scroller.scrollChanges)
-            .pipe(tap(event => this.scrollPos = this.scroller.position))
+        const scrollWatcher = this.service.destruct.subscription(this.service.scrollVp)
+            .pipe(tap(this._scroll))
 
         const dimWatchers = merge(
-            this.scroller.destruct.subscription(this.rectMutation.watchDimension(this.el))
+            this.service.destruct.subscription(this.rectMutation.watch(this.el))
                 .pipe(tap(dim => this.containerDim = dim)),
-            this.scroller.destruct.subscription(this.rectMutation.watchDimension(this.scrollable))
+            this.service.destruct.subscription(this.rectMutation.watchDimension(this.scrollable))
                 .pipe(tap(dim => this.scrollableDim = dim)))
 
         const allWatch = merge(scrollWatcher, dimWatchers)
 
-        this.scroller.destruct.subscription(allWatch)
+        this.service.destruct.subscription(allWatch)
             .pipe(debounceTime(5))
             .subscribe(this._updateScroll)
     }
@@ -50,15 +49,24 @@ export class ScrollerComponent implements AfterViewInit {
             return
         }
 
-        this.scroller.viewport = {
+        this.service.viewport = {
+            top: this.containerDim.top,
+            left: this.containerDim.left,
             width: this.containerDim.width,
             height: this.containerDim.height,
             scrollWidth: this.scrollableDim.width,
             scrollHeight: this.scrollableDim.height
         }
 
-        const pos = this.scroller.pxPosition
+        const pos = this.service.pxPosition
         this.scrollable.nativeElement.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
+    }
+
+    protected _scroll = (event: ScrollVpEvent) => {
+        this.scrollPos = this.service.position
+        this._updateScroll()
+        event.ack()
+        // setTimeout(event.ack.bind(event), 10)
     }
 
     @HostListener("wheel", ["$event"])
@@ -72,8 +80,8 @@ export class ScrollerComponent implements AfterViewInit {
                 deltaY = (event.deltaY < 0 ? -1 : 1) * 90
             }
 
-            const pos = this.scroller.pxPosition
-            this.scroller.scroll({
+            const pos = this.service.pxPosition
+            this.service.scroll({
                 px: {
                     left: pos.left + deltaX,
                     top: pos.top + deltaY

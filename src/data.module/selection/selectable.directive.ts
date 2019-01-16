@@ -56,8 +56,8 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
 
     public constructor(
         @Inject(SelectionModel) public readonly selection: SelectionModel<T>,
+        @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Inject(ElementRef) protected el: ElementRef<HTMLElement>,
         @Inject(DOCUMENT) protected doc: Document) {
     }
 

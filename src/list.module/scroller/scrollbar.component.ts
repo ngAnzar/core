@@ -153,22 +153,17 @@ export class ScrollbarComponent implements OnDestroy {
             if (this.orient === "horizontal") {
                 const trackWidth = self.btnVisible ? Math.max(0, this.width - self.size * 2) : this.width
                 self.barWidth = Math.min(trackWidth, this.width * 0.5)
-                self.barHeight = this.size
 
                 self.barTop = 0
                 self.barLeft = (self.btnVisible ? this.size : 0) + (trackWidth - self.barWidth) * this.position
 
                 self.btnWidth = this.size
-                self.btnHeight = this.size
             } else {
                 const trackHeight = self.btnVisible ? Math.max(0, this.height - self.size * 2) : this.height
-                self.barWidth = this.size
                 self.barHeight = Math.min(trackHeight, this.height * 0.5)
 
                 self.barTop = (self.btnVisible ? this.size : 0) + (trackHeight - self.barHeight) * this.position
-                self.barLeft = 0
 
-                self.btnWidth = this.size
                 self.btnHeight = this.size
             }
         }
