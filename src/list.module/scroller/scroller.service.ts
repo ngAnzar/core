@@ -34,6 +34,8 @@ export class ScrollEvent implements ScrollablePosition {
         public readonly scroller: ScrollerService,
         public readonly top: number,
         public readonly left: number,
+        public readonly deltaTop: number,
+        public readonly deltaLeft: number,
         public readonly orient: ScrollOrient,
         public readonly direction: number) {
     }
@@ -43,7 +45,11 @@ export class ScrollEvent implements ScrollablePosition {
 export class ScrollVpEvent extends ScrollEvent {
     public ack() {
         (this.scroller.scrollChanges as EventEmitter<ScrollEvent>)
-            .emit(new ScrollEvent(this.scroller, this.top, this.left, this.orient, this.direction))
+            .emit(new ScrollEvent(
+                this.scroller,
+                this.top, this.left,
+                this.deltaTop, this.deltaLeft,
+                this.orient, this.direction))
     }
 }
 
@@ -54,11 +60,19 @@ export class ScrollerService implements OnDestroy {
 
     public set viewport(val: ScrollableViewport) {
         let old = this._viewport
+
+        if (val) {
+            val.scrollWidth = Math.max(val.scrollWidth, val.width)
+            val.scrollHeight = Math.max(val.scrollHeight, val.height)
+        }
+
         if (!old || !val
+            || old.top !== val.top
+            || old.left !== val.left
             || old.width !== val.width
             || old.height !== val.height
             || old.scrollHeight !== val.scrollHeight
-            || old.scrollWidth !== val.scrollHeight) {
+            || old.scrollWidth !== val.scrollWidth) {
             this._viewport = val;
             (this.viewportChanges as EventEmitter<ScrollableViewport>).emit(val)
         }
@@ -99,7 +113,11 @@ export class ScrollerService implements OnDestroy {
 
             if (orient) {
                 (this.scrollVp as EventEmitter<ScrollVpEvent>)
-                    .emit(new ScrollVpEvent(this, val.top, val.left, orient, direction))
+                    .emit(new ScrollVpEvent(this,
+                        val.top, val.left,
+                        (old ? val.top - old.top : 0),
+                        (old ? val.left - old.left : 0),
+                        orient, direction))
             }
         }
     }
