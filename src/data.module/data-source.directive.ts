@@ -125,11 +125,11 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
 
     protected _updateFilter(silent?: boolean) {
         let f = {}
-        if (this._baseFilter) {
-            f = { ...f, ...this._baseFilter as any }
-        }
         if (this._filter) {
             f = { ...f, ...this._filter as any }
+        }
+        if (this._baseFilter) {
+            f = { ...f, ...this._baseFilter as any }
         }
         this.storage.filter.set(f, silent)
     }

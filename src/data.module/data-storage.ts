@@ -57,7 +57,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
                 s2.unsubscribe()
                 s3.unsubscribe()
             }
-        }).pipe(debounceTime(15))
+        }).pipe(debounceTime(5))
     }
 
     protected cache: { [key: number]: T } = {}
