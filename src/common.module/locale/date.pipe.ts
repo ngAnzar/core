@@ -11,7 +11,7 @@ export class DatePipe implements PipeTransform {
     public constructor(@Inject(LocaleService) protected readonly locale: LocaleService) {
     }
 
-    public transform(value: Date, format: DateFormat = "long+time"): string {
+    public transform(value: Date, format: DateFormat = "long+time", maxRelative: string = null): string {
         return this.locale.formatDate(value, format)
     }
 }

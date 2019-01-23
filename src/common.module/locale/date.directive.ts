@@ -1,5 +1,5 @@
 import { Directive, Pipe, PipeTransform, Input, Inject, ElementRef, AfterContentInit } from "@angular/core"
-import { isEqual, format } from "date-fns"
+import { isEqual, format, differenceInSeconds } from "date-fns"
 
 import { LocaleService, DateFormat } from "./locale.service"
 
@@ -20,6 +20,12 @@ export class DateDirective implements AfterContentInit {
     protected _date: Date
 
     public get formatted(): string {
+        if (this._format === "relative-to" || this._format === "relative-from") {
+            if (this._relativeMax && Math.abs(differenceInSeconds(new Date(), this._date)) >= this._relativeMax) {
+                return this.locale.formatDate(this._date, this._relativeAltFormat)
+            }
+        }
+
         return this.locale.formatDate(this._date, this._format)
     }
 
@@ -32,6 +38,26 @@ export class DateDirective implements AfterContentInit {
     }
     public get format(): DateFormat { return this._format }
     protected _format: DateFormat = "short"
+
+    @Input()
+    public set relativeMax(val: number) {
+        if (this._relativeMax !== val) {
+            this._relativeMax = val
+            this.update()
+        }
+    }
+    public get relativeMax(): number { return this._relativeMax }
+    private _relativeMax: number
+
+    @Input()
+    public set relativeAltFormat(val: DateFormat) {
+        if (this._relativeAltFormat !== val) {
+            this._relativeAltFormat = val
+            this.update()
+        }
+    }
+    public get relativeAltFormat(): DateFormat { return this._relativeAltFormat }
+    private _relativeAltFormat: DateFormat = "short+time"
 
     protected inited = false
     protected updater: any
