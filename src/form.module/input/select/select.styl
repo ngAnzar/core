@@ -33,10 +33,10 @@ $nz-select-item-height ?= nz-local-grid-size(5)
   height: $nz-select-item-height
   flex-direction: row
   align-items: center
-  background-color: $theme.background.lighter
+  background-color: $theme.base.light
   padding: 0 nz-local-grid-size(1) 0 nz-local-grid-size(3)
   cursor: default
 
   &[selected]
-    background-color: $theme.accent.default
-    color: $theme.accent.on.default
+    background-color: $theme.primary.state.selected
+    color: $theme.primary.state.on.selected

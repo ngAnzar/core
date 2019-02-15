@@ -34,8 +34,7 @@ $nz-button-height ?= nz-local-grid-size(9)
   margin: 0
   padding: 0
   overflow: hidden
-  transition: background-color $nz-button-transition-duration,
-              box-shadow $nz-button-transition-duration
+  transition: box-shadow 250ms
 
   .nz-icon + :not(.nz-icon)
     position: relative
@@ -43,15 +42,65 @@ $nz-button-height ?= nz-local-grid-size(9)
 
 
 // themes + variants
-.nz-button:not([disabled]), .nz-fab:not([disabled])
-  background-color: transparent
 
+.nz-button, .nz-fab
+  //nz-component-variants()
+  nz-theme-component-states($include:"base" "hover" "disabled")
+
+/*
+.nz-button:not([disabled]), .nz-fab:not([disabled])
   &[variant~="raised"]
     nz-elevation: 2
 
   &.cdk-keyboard-focused, &.cdk-program-focused
     nz-elevation: 5
 
+
+  background-color: $theme.base.state.normal
+  color: $theme.base.state.on.normal
+
+  &:hover .nz-ripple
+    background-color: $theme.base.state.hover
+    color: $theme.base.state.on.hover
+
+    .nz-ripple-effect
+      background-color: $theme.base.state.ripple
+
+  &[variant~="filled"]
+    background-color: $theme.primary.state.normal
+    color: $theme.primary.state.on.normal
+
+    &:hover .nz-ripple
+      background-color: $theme.primary.state.hover
+      color: $theme.primary.state.on.hover
+
+      .nz-ripple-effect
+        background-color: $theme.base.state.ripple
+
+  for $color, $value in nz-theme-colors($theme)
+    &{'[color="' + $color + '"]'}
+      background-color: $theme.base.state.normal
+      color: $value.state.on.normal
+
+      &:hover .nz-ripple
+        background-color: $value.state.hover
+        color: $value.state.on.hover
+
+        .nz-ripple-effect
+          background-color: $value.state.ripple
+
+      &[variant~="filled"]
+        background-color: $value.normal
+        color: $value.on.normal
+
+        &:hover .nz-ripple
+          background-color: $theme.primary.state.hover
+          color: $theme.primary.state.on.hover
+
+          .nz-ripple-effect
+            background-color: $theme.base.state.ripple
+*/
+  /*
   &:not([color])
 
     &[variant~="filled"]
@@ -93,15 +142,17 @@ $nz-button-height ?= nz-local-grid-size(9)
 
         .nz-ripple
           background-color: value.default
+  */
 
-
+/*
 .nz-button[disabled]
-  color: $theme.disabled.default
+  color: $theme.base.state.disabled
   cursor: default
 
   &[variant~="filled"]
     color: $theme.disabled.on.default
     background-color: $theme.disabled.default
+*/
 
 .nz-button
   min-width: $nz-button-min-width

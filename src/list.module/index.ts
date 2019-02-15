@@ -18,8 +18,9 @@ export { ListDirective, ListItemComponent, ListActionComponent, ListActionModel 
 
 import { MenuComponent } from "./menu/menu.component"
 import { MenuItemDirective, MenuItemActionEvent } from "./menu/menu-item.directive"
-import { MenuTriggerDirective } from "./menu/menu-trigger.directive"
-export { MenuComponent, MenuItemDirective, MenuTriggerDirective, MenuItemActionEvent }
+import { PopupMenuComponent } from "./popupmenu/popup-menu.component"
+import { PopupMenuDirective } from "./popupmenu/popup-menu.directive"
+export { MenuComponent, MenuItemDirective, MenuItemActionEvent, PopupMenuComponent, PopupMenuDirective }
 
 
 // import { ScrollableDirective, ScrollOrient } from "./scrollable.directive"
@@ -55,7 +56,8 @@ import { VirtualForDirective } from "./virtual-for.directive"
 
         MenuComponent,
         MenuItemDirective,
-        MenuTriggerDirective,
+        PopupMenuComponent,
+        PopupMenuDirective,
 
         // ScrollableNativeDirective,
         ScrollbarComponent,
@@ -70,7 +72,8 @@ import { VirtualForDirective } from "./virtual-for.directive"
 
         MenuComponent,
         MenuItemDirective,
-        MenuTriggerDirective,
+        PopupMenuComponent,
+        PopupMenuDirective,
 
         // ScrollableNativeDirective,
         ScrollbarComponent,

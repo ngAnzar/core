@@ -1,95 +1,136 @@
-import { Injectable, Inject, EventEmitter, TemplateRef, StaticProvider, Injector } from "@angular/core"
+import { Injectable, Inject, EventEmitter, TemplateRef, StaticProvider, Injector, EmbeddedViewRef } from "@angular/core"
 import { Router, NavigationEnd } from "@angular/router"
-import { Portal, ComponentType, ComponentPortal } from "@angular/cdk/portal"
-import { Observable } from "rxjs"
+import { Portal, ComponentType, ComponentPortal, TemplatePortal } from "@angular/cdk/portal"
+import { Observable, NEVER, of, Subject } from "rxjs"
+import { share, filter, map, startWith, switchMap } from "rxjs/operators"
 
-import { DataSource, Model } from "../data.module"
 
-
-export interface SearchConfig<T extends Model = Model> {
-    dataSource: DataSource<T>
-    label?: string
-    suggestTpl?: TemplateRef<any>
-    action?(value: T): void
+export interface VPItem {
+    area: string,
+    order: number,
+    tplRef: TemplateRef<any>,
+    viewRef: EmbeddedViewRef<any>
 }
 
 
-export interface RSComponent {
-    order: number,
-    portal: Portal<any>
+export const enum VPMenuStyle {
+    SLIDE = 1,
+    OVERLAY = 2
 }
 
 
 @Injectable()
 export class ViewportService {
-    public set title(value: string) {
-        if (this._title !== value) {
-            this._title = value;
-            (this.titleChange as EventEmitter<string>).emit(value)
+
+    public set menuDisabled(val: boolean) {
+        if (this._menuDisabled !== val) {
+            this._menuDisabled = val;
+            (this.menuChanges as EventEmitter<any>).emit()
         }
     }
-    public get title(): string { return this._title }
-    protected _title: string
-    public readonly titleChange: Observable<string> = new EventEmitter()
+    public get menuDisabled(): boolean { return this._menuDisabled }
+    private _menuDisabled: boolean
 
+    public set menuStyle(val: VPMenuStyle) {
+        if (this._menuStyle !== val) {
+            this._menuStyle = val
 
-    public set back(value: any[] | string) {
-        if (this._back !== value) {
-            this._back = value;
-            (this.backChange as EventEmitter<any[] | string>).emit(value)
+            if (this.menuOpened) {
+                this.closeMenu()
+                this.openMenu()
+            }
+
+            (this.menuChanges as EventEmitter<any>).emit()
         }
     }
-    public get back(): any[] | string { return this._back }
-    protected _back: any[] | string
-    public readonly backChange: Observable<any[] | string> = new EventEmitter()
+    public get menuStyle(): VPMenuStyle { return this._menuStyle }
+    private _menuStyle: VPMenuStyle = VPMenuStyle.OVERLAY // TODO: kis felbontáson overlay
 
+    public readonly menuOpened: boolean = false
 
-    // public set search(value: SearchConfig) {
-    //     if (this._search !== value) {
-    //         this._search = value;
-    //         (this.searchChange as EventEmitter<SearchConfig>).emit(value)
-    //     }
-    // }
-    // public get search(): SearchConfig { return this._search }
-    // protected _search: SearchConfig
-    // public readonly searchChange: Observable<SearchConfig> = new EventEmitter()
+    public readonly menuChanges: Observable<any> = new EventEmitter()
 
-    public get rightside(): Readonly<RSComponent[]> { return this._rightside }
+    private _items: VPItem[] = []
+    private _itemsObserver = new Observable<VPItem[]>(subscriber => {
+        this._emitItemChange = (area: string) => {
+            subscriber.next(this._items.filter(item => item.area === area))
+        }
+        return () => {
+            delete this._emitItemChange
+        }
+    }).pipe(share())
 
-    protected _rightside: RSComponent[] = []
+    private _emitItemChange: (area: string) => void
+
+    public query(area: string): Observable<Array<VPItem>> {
+        return this._itemsObserver
+            .pipe(
+                startWith(this._items),
+                map(items => {
+                    return items
+                        .filter(item => item.area === area)
+                }),
+                switchMap(items => items.length ? of(items) : NEVER)
+            )
+    }
 
     public constructor(
         @Inject(Router) router: Router,
         @Inject(Injector) protected readonly injector: Injector) {
-        // router.events.subscribe(event => {
-        //     console.log(event, (event as any).type, (event as any).id)
-        //     // if (event instanceof NavigationEnd) {
-        //     //     this.title = null
-        //     //     this.back = null
-        //     //     this.search = null
-        //     //     this._rightside = []
-        //     // }
-        // })
     }
 
-    public init(title: string, back?: string) {
-        this.title = title
-        this.back = back
-        this._rightside.length = 0
+    public addItem(area: string, order: number, tplRef: TemplateRef<any>): Readonly<VPItem> {
+        let item: VPItem = { area, order, tplRef, viewRef: null }
+        this._items.push(item)
+        this._items.sort((a, b) => a.order - b.order)
+        this._emitItemChange && this._emitItemChange(area)
+        return item
     }
 
-    public addToRight(portal: Portal<any>, order?: number) {
-        this._rightside.push({
-            order: order == null ? this._rightside.length : order,
-            portal
-        })
+    public delItem(item: VPItem): void {
+        if (item.viewRef) {
+            item.viewRef.destroy()
+        }
 
-        this._rightside = this._rightside.sort((a, b) => a.order - b.order)
+        let idx = this._items.indexOf(item)
+        if (idx !== -1) {
+            this._items.splice(idx, 1)
+            this._emitItemChange && this._emitItemChange(item.area)
+        }
     }
 
-    public addRightComponent(cmp: ComponentType<any>, order?: number, provides?: StaticProvider[]) {
-        let injector = provides ? Injector.create(provides, this.injector) : this.injector
-        let portal = new ComponentPortal(cmp, null, injector)
-        this.addToRight(portal, order)
+    public openMenu() {
+        if (this.menuOpened) {
+            return
+        }
+        (this as any).menuOpened = true;
+        (this.menuChanges as EventEmitter<any>).emit()
     }
+
+    public closeMenu() {
+        if (!this.menuOpened) {
+            return
+        }
+        (this as any).menuOpened = false;
+        (this.menuChanges as EventEmitter<any>).emit()
+    }
+
+    public toggleMenu() {
+        if (this.menuOpened) {
+            this.closeMenu()
+        } else {
+            this.openMenu()
+        }
+    }
+
+    // public addComponent(area: string, order: number, cmp: ComponentType<any>, provides?: StaticProvider[]): Readonly<VPItem> {
+    //     const injector = provides ? Injector.create(provides, this.injector) : this.injector
+    //     const portal = new ComponentPortal(cmp, null, injector)
+    //     return this.addItem(area, order, portal)
+    // }
+
+    // public addTemplate(area: string, order: number, tpl: TemplateRef<any>, vcr: ViewContainerRef, context?: any): Readonly<VPItem> {
+    //     const portal = new TemplatePortal(tpl, vcr, context)
+    //     return this.addItem(area, order, portal)
+    // }
 }

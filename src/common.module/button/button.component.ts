@@ -26,7 +26,7 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
     @Input()
     public type: string = "button"
 
-    protected boundedRipple: BoundedRippleRef
+    // protected boundedRipple: BoundedRippleRef
 
     constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLButtonElement>,
@@ -34,13 +34,13 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
         @Inject(RippleService) protected rippleService: RippleService) {
         super()
 
-        this.boundedRipple = rippleService.attach(el, el)
-        this.destruct.disposable(this.boundedRipple)
+        // this.boundedRipple = rippleService.attach(el, el)
+        // this.destruct.disposable(this.boundedRipple)
     }
 
     public ngOnInit() {
         this.destruct.subscription(this.focusMonitor.monitor(this.el.nativeElement)).subscribe((origin) => {
-            this.boundedRipple.handleFocus(origin)
+            // this.boundedRipple.handleFocus(origin)
             this.focusOrigin = origin
         })
         this.destruct.any(() => {

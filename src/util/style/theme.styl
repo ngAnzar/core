@@ -1,0 +1,290 @@
+$nz-colors-map = json("colors.json", { hash: true })
+$nz-colors-map["grey"] = $nz-colors-map["gray"]
+$nz-colors-map["blue-grey"] = $nz-colors-map["blue-gray"]
+
+$theme-dark-color ?= #000
+$theme-light-color ?= #FFF
+
+$theme ?= none
+
+
+nz-material-color(name, variant, contrast = false)
+  $color = $nz-colors-map["" + name]
+
+  if not $color
+    error("Undefined palette name: '" + name + "'")
+
+  $color-variant = $color["" + variant]
+  if not $color-variant
+    error("Undefined color variant: '" + variant + "'")
+
+  if contrast
+    if $color-variant["on"] == "dark"
+      return $theme-dark-color
+    else
+      return $theme-light-color
+  else
+    return $color-variant["color"]
+
+
+/**
+ * .something
+ *   nz-color: red 500
+ */
+nz-color(name, variant)
+  color: nz-material-color(name, variant, true)
+
+nz-background-color(name, variant)
+  background-color: nz-material-color(name, variant, false)
+
+
+/*
+  return {
+    normal: normal color, commonly used in background,
+    light: lighter color, commonly used in background,
+    dark: darker color, commonly used in background,
+    on: {
+      normal: normal color, commonly used in foreground,
+      light: lighter color, commonly used in foreground,
+      dark: darker color, commonly used in foreground,
+    },
+    state: { state colors
+      normal: normal state background
+      hover: hover state background
+      selected: selected state background
+      disabled: disabled state background
+      on: {
+        normal: normal state foreground
+        hover: normal state foreground
+        selected: normal state foreground
+        disabled: normal state foreground
+      }
+    }
+  }
+ */
+nz-theme-color(id, normal, light, dark, on-normal, on-light, on-dark)
+  palette = {
+    "isColor": true,
+    "id": id,
+    "normal": normal,
+    "light": light,
+    "dark": dark,
+    "on": {
+      "normal": on-normal,
+      "light": on-light,
+      "dark": on-dark
+    }
+  }
+  palette.state = nz-theme-state-color(palette)
+  return palette
+
+nz-theme-state-color(palette)
+  hoverBg = alpha(palette.on.normal, 0.15)
+  hoverFg = alpha(palette.on.normal)
+
+  selectedBg = palette.light
+  selectedFg = palette.on.light
+
+  disabledBg = alpha(palette.normal, 0.5)
+  disabledFg = alpha(palette.normal, 0.5)
+
+  return {
+    "normal": palette.normal,
+    "hover": hoverBg,
+    "selected": selectedBg,
+    "disabled": disabledBg,
+    "ripple": alpha(palette.on.normal, 0.3)
+    "on": {
+      "normal": palette.on.normal,
+      "hover": hoverFg,
+      "selected": selectedFg,
+      "disabled": disabledFg,
+      "ripple": alpha(palette.on.normal, 0.3)
+    }
+  }
+
+nz-theme-material-color(name, normal, light, dark)
+  return nz-theme-color(
+    isMat: true,
+    id: name,
+    normal: nz-material-color(name, normal, false),
+    light: nz-material-color(name, light, false),
+    dark: nz-material-color(name, dark, false),
+    on-normal: nz-material-color(name, normal, true),
+    on-light: nz-material-color(name, light, true),
+    on-dark: nz-material-color(name, dark, true),
+  )
+
+/*
+_nz-palette-on-color(bg, dark=$nz-palette-dark-color, light=$nz-palette-light-color)
+  r1 = contrast(dark, bg).ratio
+  r2 = contrast(light, bg).ratio
+  if r1 > r2
+    return dark
+  else
+    return light
+*/
+
+
+
+/*
+_nz-palette-set(palette)
+  hoverBg = lightness(palette.default, 93%)
+  hoverFg = _nz-palette-on-color(hoverBg, palette.darker, palette.on.lighter)
+
+  selectedBg = lightness(palette.default, 97%)
+  selectedFg = _nz-palette-on-color(selectedBg, palette.darker, palette.on.lighter)
+
+  palette.tri-state = {
+    "normal": { "fg": palette.darker, "bg": transparent },
+    "hover": { "fg": hoverFg, "bg": hoverBg },
+    "selected": { "fg": selectedFg, "bg": selectedBg }
+  }
+  return palette
+*/
+
+
+/*
+nz-theme(primary, accent, warn, critical, confirm, info, foreground, background, disabled, isLight)
+  return {
+    "primary": _nz-palette-set(primary),
+    "accent": _nz-palette-set(accent),
+    "warn": _nz-palette-set(warn),
+    "critical": _nz-palette-set(critical),
+    "confirm": _nz-palette-set(confirm),
+    "info": _nz-palette-set(info),
+    "disabled": _nz-palette-set(disabled),
+    "foreground": _nz-palette-set(foreground),
+    "background": _nz-palette-set(background),
+    "isLight": isLight
+  }
+*/
+
+/*
+nz-color-names(theme)
+  result = ()
+  for k, v in theme
+    if k != "isLight" and k != "foreground" and k != "background"
+      push(result, k)
+  return result
+
+
+nz-theme-colors(theme)
+  result = {}
+  for k in nz-color-names(theme)
+    result[k] = theme[k]
+  return result
+
+
+nz-each-color(theme, cb)
+  for k in nz-color-names(theme)
+    cb(k, theme[k])
+*/
+
+nz-theme-color-names(theme=$theme)
+  result = ()
+  for k, v in theme
+    if typeof(v) == "object" and v.isColor
+      push(result, k)
+  return result
+
+nz-theme-colors(theme=$theme)
+  result = {}
+  for k in nz-theme-color-names(theme)
+    result[k] = theme[k]
+  return result
+
+
+
+/*
+
+
+*/
+
+nz-theme-component-state-colors($color, $variant, $transparent)
+  if $transparent
+    return {
+      "bg": {
+        "default": "transparent",
+        "hover": alpha($color[$variant], 0.2),
+        "ripple": alpha($color[$variant], 0.5)
+      },
+      "fg": {
+        "default": $color[$variant],
+        "hover": $color[$variant],
+        "ripple": $color[$variant]
+      }
+    }
+  else
+    return {
+      "bg": {
+        "default": $color[$variant],
+        "hover": alpha($color.on[$variant], 0.2),
+        "ripple": alpha($color.on[$variant], 0.5)
+      },
+      "fg": {
+        "default": $color.on[$variant],
+        "hover": $color.on[$variant],
+        "ripple": $color.on[$variant]
+      }
+    }
+
+
+_nz-theme-component-states-base($color)
+  background-color: $color.bg.default
+  color: $color.fg.default
+
+_nz-theme-component-states-hover($color)
+  .nz-ripple-effect
+    background-color: $color.bg.ripple
+
+  &:hover .nz-ripple
+    background-color: $color.bg.hover
+
+_nz-theme-component-states-disabled()
+  &[disabled]
+    cursor: default !important
+    opacity: 0.3 !important
+
+    .nz-ripple
+      display: none !important
+
+_nz-theme-component-states($color, $variant, $include)
+  $normal = nz-theme-component-state-colors($theme[$color], $variant, true)
+  $filled = nz-theme-component-state-colors($theme[$color], $variant, false)
+
+
+  for $inc in $include
+    if $inc == "base"
+      _nz-theme-component-states-base($normal)
+      &[variant~="filled"]
+        _nz-theme-component-states-base($filled)
+
+    else if $inc == "hover"
+      _nz-theme-component-states-hover($normal)
+      &[variant~="filled"]
+        _nz-theme-component-states-hover($filled)
+
+
+_nz-theme-cs-color-name($color, $variant)
+  if $variant == "normal"
+    return $color
+  else
+    return $variant + "-" + $color
+
+_nz-theme-cs-color-selector($color, $variant)
+  return '[color="' + _nz-theme-cs-color-name($color, $variant) + '"]'
+
+nz-theme-component-states($default-color="base", $default-variant="normal", $include = "base" "disabled" "hover" "active" "focus" "selected")
+  // DISABLED STATE
+  if index($include, "disabled") isnt null
+    _nz-theme-component-states-disabled()
+
+  &, &{_nz-theme-cs-color-selector($default-color, $default-variant)}
+    _nz-theme-component-states($default-color, $default-variant, $include)
+
+  for $color in nz-theme-color-names()
+    for $variant in "normal" "light" "dark"
+      if $color != $default-color or $variant != $default-variant
+        &{_nz-theme-cs-color-selector($color, $variant)}
+          _nz-theme-component-states($color, $variant, $include)

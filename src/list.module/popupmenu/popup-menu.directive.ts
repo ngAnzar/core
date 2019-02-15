@@ -1,22 +1,26 @@
 import { Directive, Input, HostListener, Inject, Optional, Self, ViewContainerRef, ElementRef } from "@angular/core"
 
-import { LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective, LayerService } from "../../layer.module"
-import { MenuLayer } from "./menu-layer"
-import { MenuComponent } from "./menu.component"
+import { LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective, LayerService, DropdownLayer } from "../../layer.module"
+import { PopupMenuComponent } from "./popup-menu.component"
+
+
+export class MenuLayer extends DropdownLayer {
+
+}
 
 
 @Directive({
-    selector: "[nzMenuTrigger]",
+    selector: "[nzPopupMenu]",
     host: {
         "[style.cursor]": "'pointer'"
     }
 })
-export class MenuTriggerDirective extends LayerFactoryDirective {
+export class PopupMenuDirective extends LayerFactoryDirective {
     @Input()
-    public set nzMenuTrigger(val: MenuComponent) {
+    public set nzPopupMenu(val: PopupMenuComponent) {
         this._menu = val
     }
-    protected _menu: MenuComponent
+    protected _menu: PopupMenuComponent
 
     public constructor(
         @Inject(LevitateAnchorDirective) @Optional() @Self() levitateAnchor: LevitateAnchorDirective,

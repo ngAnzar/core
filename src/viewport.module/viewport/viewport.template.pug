@@ -1,0 +1,39 @@
+:stylus
+  .navbar
+    z-index: 10
+
+  .content-wrap
+    z-index: 5
+    position: relative
+
+  .sidenav
+    z-index: 10
+    width: 300px
+    position: absolute
+    top: 0
+    left: 0
+    bottom: 0
+
+  .content
+    z-index: 5
+
+  .overlay
+    z-index: 9
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    background: $theme.base.on.normal
+
+
+div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="center stretch")
+  .nz-navbar.navbar(fxFlex="none")
+
+  div.content-wrap(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch")
+    .nz-sidenav.sidenav(#sidenav, fxFlex="none", fxLayout="column", fxLayoutAlign="start stretch", [@animateSidenav]="animationState")
+
+    .nz-viewport-content.content(fxFlex="grow", [@animateContent]="animationState")
+      ng-content
+
+    .overlay([@animateOverlay]="animationState")

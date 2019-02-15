@@ -1,1 +1,15 @@
-ng-content
+div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px")
+  div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+    ng-template(nzViewportArea="topLeft")
+
+  div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px")
+    ng-template(nzViewportArea="topCenter")
+
+  div(fxFlex="grow", fxLayout="row", fxLayoutAlign="end center", fxLayoutGap="8px")
+    ng-template(nzViewportArea="topRight")
+
+
+ng-template(nzViewportItem="topLeft:10")
+  button.nz-fab(variant="medium", [disabled]="vps.menuDisabled", on-click="vps.toggleMenu()")
+    i.nz-icon(*ngIf="vps.menuOpened", class=icon("mdi/backburger"))
+    i.nz-icon(*ngIf="!vps.menuOpened", class=icon("mdi/menu"))

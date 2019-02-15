@@ -83,7 +83,7 @@ export class RippleRef implements IDisposable {
 
     public async hideAnim(): Promise<void> {
         if (this.rippleEl) {
-            this.rippleEl.style.opacity = "0"
+            //this.rippleEl.style.opacity = "0"
             this.rippleEl.style.transitionDuration = `${this.config.duration / 2}ms`
         }
 
@@ -95,7 +95,7 @@ export class RippleRef implements IDisposable {
     protected createElement(): HTMLElement {
         const el = this.renderer.createElement("span") as HTMLElement
 
-        el.classList.add("nz-ripple")
+        el.classList.add("nz-ripple-effect")
         el.style.display = "block"
         el.style.position = "absolute"
         el.style.borderRadius = "50%"

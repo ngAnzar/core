@@ -1,0 +1,36 @@
+@require "../../util"
+
+$nz-sidenav-link-height ?= nz-local-grid-size(8)
+$nz-sidenav-link-padding ?= 0 nz-local-grid-size(4)
+
+.nz-sidenav
+  .nz-panel
+    background-color: $theme.base.normal
+    min-width: nz-local-grid-size(60)
+
+/*
+.nz-sidenav-link
+  box-sizing: border-box
+  padding: $nz-sidenav-link-padding
+  margin: 0
+
+  display: block
+  outline: none
+  border: none
+  user-select: none
+  height: $nz-sidenav-link-height
+  line-height: $nz-sidenav-link-height
+
+  nz-typo: $typo.body2
+
+  color: $theme.accent.tri-state.normal.fg
+  text-decoration: none
+
+  &:hover
+    color: $theme.accent.tri-state.hover.fg
+    background-color: $theme.accent.tri-state.hover.bg
+
+  &.active
+    color: $theme.accent.tri-state.selected.fg
+    background-color: $theme.accent.tri-state.selected.bg
+*/

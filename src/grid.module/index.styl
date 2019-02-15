@@ -35,7 +35,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   user-select: none
 
   padding: 0 $nz-cell-padding
-  background-color: lighten($theme.foreground.default, 95%)
+  background-color: lighten($theme.base.on.normal, 95%)
 
   &:first-child
     padding-left: $nz-grid-padding
@@ -48,9 +48,10 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   display: grid
   justify-content: stretch
 
+  /*
   &:not([disabled])
     &:not([color])
-      color: $theme.foreground.tri-state.normal.fg
+      color: $theme.foreground.state.on.normal
 
       &[selected]:not(:hover)
         color: $theme.accent.tri-state.selected.fg
@@ -95,6 +96,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 
         .nz-ripple
           background-color: value.default
+    */
 
 
 .nz-data-grid-cell
@@ -109,7 +111,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   cursor: default
 
   padding: 0 $nz-cell-padding
-  border-bottom: 1px solid lighten($theme.foreground.default, 90%)
+  border-bottom: 1px solid lighten($theme.base.on.normal, 90%)
   transition: background-color 250ms, color 250ms
 
   &.first-cell
@@ -121,7 +123,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 
 .nz-grid-filter-layer
   box-sizing: border-box
-  background-color: $theme.background.default
+  background-color: $theme.base.normal
   padding: $nz-cell-padding
   overflow: hidden
 
@@ -132,7 +134,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   overflow: hidden
   align-items: center
   justify-content: flex-start
-  background-color: $theme.background.default
+  background-color: $theme.base.normal
   font-size: 14px
 
   border-radius: 3px

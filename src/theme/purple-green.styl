@@ -1,13 +1,23 @@
 @require "./new"
 
-$theme = nz-theme(
-  primary: nz-palette(purple, 700, 500, 800),
-  accent: nz-palette(green, A200, A100, A400),
-  warn: nz-palette(yellow, 700, 500, 800),
-  critical: nz-palette(red, 600, 400, 800),
-  confirm: nz-palette(teal, 600, 300, 800),
-  is-ligth: true
-)
+
+
+$theme = {
+  "base": nz-theme-color("base", #f2f2f2, #FFF, #dbdbdb, #262626, #000, #3a3a3a),
+  "common": nz-theme-material-color("gray", 300, 100, 500),
+  "primary": nz-theme-material-color("purple", 700, 500, 800),
+  "accent": nz-theme-material-color("green", A200, A100, A400),
+  "warn": nz-theme-material-color("yellow", 700, 500, 800),
+  "critical": nz-theme-material-color("red", 600, 400, 800),
+  "confirm": nz-theme-material-color("green", 700, 500, 900),
+  "info": nz-theme-material-color("light-blue", 200, 100, 300),
+  "isLight": true
+}
+
+// BACKGROUND_COLOR = $theme.base.light
+// TEXT_COLOR = $theme.base.on.light
+
+
 
 $font = nz-font("Roboto", 300, 400, 500)
 $typo = nz-typo-levels($font)
