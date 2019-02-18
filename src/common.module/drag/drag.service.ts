@@ -1,8 +1,8 @@
 import { Injectable, Inject, EventEmitter } from "@angular/core"
 import { Observable, Subscription } from "rxjs"
 
-import { Rect, Point } from "../../layout.module"
-import { DragEventService, DragEvent } from "./drag-event.service"
+import { Point } from "../../layout.module"
+import { DragEventService, DragEvent } from "../services/drag-event.service"
 
 
 export interface DraggingEvent extends DragEvent {

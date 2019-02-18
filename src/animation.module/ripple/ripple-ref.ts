@@ -15,7 +15,6 @@ export class RippleRef implements IDisposable {
     protected rippleEl: HTMLElement
 
     public disabled: boolean
-    protected destroyed: boolean
 
     constructor(public readonly config: RippleOptions,
         protected readonly container: HTMLElement,
@@ -72,11 +71,15 @@ export class RippleRef implements IDisposable {
         // enforce style recalculation
         window.getComputedStyle(this.rippleEl).getPropertyValue("opacity")
 
+        this.rippleEl.style.opacity = "1"
         this.rippleEl.style.transform = this.config.yoyo ? `scale(${YOYO_SCALE_1})` : "scale(1)"
 
         this.destruct.element(this.rippleEl)
 
         return new Promise<void>((resolve, reject) => {
+            setTimeout(() => {
+                this.rippleEl.style.opacity = "0"
+            }, this.config.duration / 2)
             setTimeout(resolve, this.config.duration)
         })
     }
@@ -104,11 +107,11 @@ export class RippleRef implements IDisposable {
         el.style.top = `${this.config.y - this.config.radius}px`
         el.style.width = `${this.config.radius * 2}px`
         el.style.height = `${this.config.radius * 2}px`
-        el.style.opacity = "0.2"
+        el.style.opacity = "0"
 
         el.style.transform = "scale(0)"
-        el.style.transition = `opacity, transform 0ms cubic-bezier(0, 0, 0.2, 1)`
-        el.style.transitionDuration = `${this.config.duration}ms`
+        el.style.transition = `opacity ${this.config.duration / 2}ms, transform ${this.config.duration}ms cubic-bezier(0, 0, 0.2, 1)`
+        // el.style.transitionDuration = `${this.config.duration}ms cubic-bezier(0, 0, 0.2, 1)`
 
         return el
     }

@@ -1,7 +1,6 @@
-import { Component, ElementRef, Inject, Input, Output, EventEmitter, HostListener, OnDestroy, OnInit, HostBinding } from "@angular/core"
-import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
+import { Component, ElementRef, Inject, Input, Output, EventEmitter, OnDestroy, OnInit, HostBinding } from "@angular/core"
+import { FocusMonitor } from "@angular/cdk/a11y"
 
-import { RippleService, BoundedRippleRef } from "../../animation.module"
 import { AnzarComponent } from "../abstract-component"
 
 
@@ -30,17 +29,12 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
 
     constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLButtonElement>,
-        @Inject(FocusMonitor) protected focusMonitor: FocusMonitor,
-        @Inject(RippleService) protected rippleService: RippleService) {
+        @Inject(FocusMonitor) protected focusMonitor: FocusMonitor) {
         super()
-
-        // this.boundedRipple = rippleService.attach(el, el)
-        // this.destruct.disposable(this.boundedRipple)
     }
 
     public ngOnInit() {
         this.destruct.subscription(this.focusMonitor.monitor(this.el.nativeElement)).subscribe((origin) => {
-            // this.boundedRipple.handleFocus(origin)
             this.focusOrigin = origin
         })
         this.destruct.any(() => {

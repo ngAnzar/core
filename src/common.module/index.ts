@@ -7,7 +7,7 @@ import { ButtonComponent } from "./button/button.component"
 export { ButtonComponent }
 
 
-import { DragEventService, DragEvent } from "./drag/drag-event.service"
+import { DragEventService, DragEvent } from "./services/drag-event.service"
 import { DragService } from "./drag/drag.service"
 import { DragHandleDirective } from "./drag/drag-handle.directive"
 export { DragEventService, DragEvent, DragService, DragHandleDirective }
@@ -35,12 +35,10 @@ import { CardComponent, CardHeaderComponent, CardActionsComponent } from "./card
 export { CardComponent, CardHeaderComponent, CardActionsComponent }
 
 
-import { FileDownloadService, FileDownloadEvent } from "./file-download.service"
-export { FileDownloadService, FileDownloadEvent }
-
-
-import { ScriptService } from "./script.service"
-export { ScriptService }
+import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
+import { PointerEventService } from "./services/pointer-event.service"
+import { ScriptService } from "./services/script.service"
+export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService }
 
 
 const content = [
@@ -79,7 +77,8 @@ const content = [
         LocaleService,
         FileDownloadService,
         ScriptService,
-        DragEventService
+        DragEventService,
+        PointerEventService
     ]
 })
 export class NzCommonModule { }

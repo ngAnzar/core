@@ -4,7 +4,7 @@ import { Observable, Observer, fromEvent } from "rxjs"
 import { share } from "rxjs/operators"
 
 
-import { ProgressEvent } from "../animation.module"
+import { ProgressEvent } from "../../animation.module"
 
 
 export interface FileDownloadEvent extends ProgressEvent {

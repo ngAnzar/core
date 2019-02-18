@@ -8,15 +8,14 @@ export { ProgressBarComponent, ProgressCircleComponent }
 
 
 import { RippleService } from "./ripple/ripple.service"
-// import { RippleDirective } from "./ripple/ripple.directive"
 import { RippleComponent } from "./ripple/ripple.component"
 export { RippleRef } from "./ripple/ripple-ref"
-export { BoundedRippleRef } from "./ripple/bounded-ripple-ref"
 export { RippleOptions } from "./ripple/ripple-options"
 export { RippleService, RippleComponent }
 
 
 import { Renderer } from "./renderer.service"
+import { PointerEventService } from "../common.module/services/pointer-event.service"
 
 
 @NgModule({
@@ -35,7 +34,8 @@ import { Renderer } from "./renderer.service"
     ],
     providers: [
         Renderer,
-        RippleService
+        RippleService,
+        PointerEventService
     ]
 })
 export class NzAnimationModule { }
