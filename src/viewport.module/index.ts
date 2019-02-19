@@ -1,14 +1,17 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations"
 import { FlexLayoutModule } from "@angular/flex-layout"
 
 import { NzCommonModule } from "../common.module"
 import { NzListModule } from "../list.module"
+import { NzFormModule } from "../form.module"
+import { NzDataModule } from "../data.module"
+import { NzLayerModule } from "../layer.module"
 
 
 import { NavbarComponent } from "./navbar/navbar.component"
-export { NavbarComponent }
+import { NavbarSearchComponent } from "./navbar/navbar-search.component"
+export { NavbarComponent, NavbarSearchComponent }
 
 import { SidenavComponent } from "./sidenav/sidenav.component"
 export { SidenavComponent }
@@ -21,23 +24,20 @@ import { ViewportContentComponent } from "./viewport/viewport-content.component"
 import { ViewportService } from "./viewport.service"
 export { ViewportService }
 
-// import { NavbarComponent } from "./navbar/navbar.component"
-// export { NavbarComponent }
-
-// import { NavbarSearchComponent } from "./navbar/navbar-search.component"
-// export { NavbarSearchComponent }
-
 
 @NgModule({
     imports: [
         CommonModule,
         FlexLayoutModule,
-        BrowserAnimationsModule,
         NzCommonModule,
-        NzListModule
+        NzListModule,
+        NzFormModule,
+        NzDataModule,
+        NzLayerModule
     ],
     declarations: [
         NavbarComponent,
+        NavbarSearchComponent,
         SidenavComponent,
         ViewportComponent,
         ViewportAreaDirective,
@@ -46,13 +46,11 @@ export { ViewportService }
     ],
     exports: [
         NavbarComponent,
+        NavbarSearchComponent,
         SidenavComponent,
         ViewportComponent,
         ViewportAreaDirective,
         ViewportItemDirective
-    ],
-    providers: [
-        ViewportService
     ]
 })
 export class NzViewportModule {

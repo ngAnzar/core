@@ -1,5 +1,6 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
+import { FlexLayoutModule } from "@angular/flex-layout"
 import { ReactiveFormsModule } from "@angular/forms"
 
 import { NzCommonModule } from "../common.module"
@@ -29,6 +30,7 @@ export {
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FlexLayoutModule,
         NzCommonModule,
         NzDataModule,
         NzAnimationModule,

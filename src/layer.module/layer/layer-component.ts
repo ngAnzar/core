@@ -1,4 +1,4 @@
-import { Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, Self, StaticProvider, ElementRef, OnDestroy, Attribute } from "@angular/core"
+import { Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, Self, StaticProvider, ElementRef, OnDestroy, Attribute, Host } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
 
 
@@ -21,7 +21,21 @@ export class TargetAnchorDirective {
 
     public readonly align: Align = { horizontal: "left", vertical: "top" }
 
-    @Input("nzTargetMargin") public margin: Margin
+    @Input("nzTargetMargin")
+    public margin: Margin
+
+    @Input("nzTargetEl")
+    public set targetEl(val: ElementRef<HTMLElement>) {
+        if (val && val.nativeElement == null && val instanceof HTMLElement) {
+            val = { nativeElement: val }
+        }
+
+        if (!this._targetEl || !val || this._targetEl.nativeElement !== val.nativeElement) {
+            this._targetEl = val
+        }
+    }
+    public get targetEl(): ElementRef<HTMLElement> { return this._targetEl }
+    private _targetEl: ElementRef<HTMLElement>
 
     public constructor(@Attribute("nzTargetAnchor") @Optional() align?: AlignInput | Align) {
         if (align) {
@@ -81,29 +95,28 @@ export class LayerFactoryDirective implements OnDestroy {
         }
     }
 
-    @Input("nzLayerTargetEl")
-    public targetEl: ElementRef<HTMLElement>
-
     public get isVisible(): boolean { return !!this.visibleRef }
+
+    public get targetEl(): ElementRef<HTMLElement> {
+        return this.targetAnchor ? this.targetAnchor.targetEl || this.el : this.el
+    }
 
     protected cmp: ComponentType<any>
     protected tpl: TemplateRef<any>
     protected visibleRef: LayerRef
 
     public constructor(
-        @Inject(LevitateAnchorDirective) @Optional() @Self() public readonly levitateAnchor: LevitateAnchorDirective,
-        @Inject(TargetAnchorDirective) @Optional() @Self() public readonly targetAnchor: TargetAnchorDirective,
+        @Inject(LevitateAnchorDirective) @Optional() @Host() public readonly levitateAnchor: LevitateAnchorDirective,
+        @Inject(TargetAnchorDirective) @Optional() @Host() public readonly targetAnchor: TargetAnchorDirective,
         @Inject(LayerService) protected readonly layerSvc: LayerService,
         @Inject(ViewContainerRef) protected readonly vcr: ViewContainerRef,
-        @Inject(ElementRef) el: ElementRef<HTMLElement>) {
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>) {
+
         if (!levitateAnchor) {
             this.levitateAnchor = new LevitateAnchorDirective()
         }
         if (!targetAnchor) {
             this.targetAnchor = new TargetAnchorDirective()
-        }
-        if (!this.targetEl) {
-            this.targetEl = el
         }
     }
 

@@ -15,7 +15,6 @@
     min-height: nz-local-grid-size(5)
     line-height: nz-local-grid-size(5)
     flex: 1
-    margin-right: 8px
     display: flex
     flex-wrap: wrap
     justify-content: flex-start
@@ -61,6 +60,7 @@
     text-align: center
     line-height: 22px
     color: inherit
+    margin-left: 8px
 
 
 
@@ -73,13 +73,13 @@ div.select-input
         ng-template(bind-ngTemplateOutlet="item.action.tpl")
       ng-template(#normalModel)
         ng-template(bind-ngTemplateOutlet="selectedTpl" bind-ngTemplateOutletContext="{$implicit:item,first:first,last:last}")
-  input.text-input(*ngIf="editable"
+  input.text-input(*ngIf="editable", type="text",
     #input
     bind-attr.tabindex="tabIndex"
     on-input="_onInput($event)"
     style="flex:1")
 
-div.trigger(on-click="_onTriggerClick($event)")
+div.trigger(*ngIf="!hideTrigger", on-click="_onTriggerClick($event)")
   i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/menu-down"))}'`)
 
 ng-template(#default_selected_single let-item)

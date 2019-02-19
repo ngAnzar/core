@@ -14,6 +14,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 
   align-items: stretch
   align-content: stretch
+  padding: $nz-grid-padding
 
 
 .nz-columns
@@ -47,56 +48,6 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 .nz-data-grid-row
   display: grid
   justify-content: stretch
-
-  /*
-  &:not([disabled])
-    &:not([color])
-      color: $theme.foreground.state.on.normal
-
-      &[selected]:not(:hover)
-        color: $theme.accent.tri-state.selected.fg
-        background-color: $theme.accent.tri-state.selected.bg
-
-      &:hover, &[focused]
-        color: $theme.foreground.tri-state.hover.fg
-        background-color: $theme.foreground.tri-state.hover.bg
-
-      &[focused]::before
-        content: ""
-        position: absolute
-        top: 0
-        bottom: 0
-        left: 0
-        width: 3px
-        background-color: $theme.accent.default
-
-      .nz-ripple
-        background-color: $theme.foreground.default
-
-    for color, value in nz-theme-colors($theme)
-      &{'[color="' + color + '"]'}
-        color: value.tri-state.normal.fg
-
-        &[selected]:not(:hover)
-          color: value.tri-state.selected.fg
-          background-color: value.tri-state.selected.bg
-
-        &:hover, &[focused]
-          color: value.tri-state.hover.fg
-          background-color: value.tri-state.hover.bg
-
-        &[focused]::before
-          content: ""
-          position: absolute
-          top: 0
-          bottom: 0
-          left: 0
-          width: 3px
-          background-color: value.darker
-
-        .nz-ripple
-          background-color: value.default
-    */
 
 
 .nz-data-grid-cell

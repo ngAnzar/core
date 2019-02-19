@@ -26,6 +26,15 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
     }
 
+    public set isBusy(val: boolean) {
+        if (this._isBusy !== val) {
+            this._isBusy = val;
+            (this.busy as EventEmitter<boolean>).emit(val)
+        }
+    }
+    public get isBusy(): boolean { return this._isBusy }
+    private _isBusy: boolean
+
     // public get all(): Observable<Items<T>> {
     //     return this.getRange(new Range(0, 1000))
     //     // if (this.endReached) {
@@ -175,16 +184,14 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected _setPending(r: NzRange, s: Observable<Items<T>>): Observable<Items<T>> {
         s = s.pipe(tap(() => {
             if (this.source.async) {
-                (this.busy as EventEmitter<boolean>).emit(true)
+                this.isBusy = true
             }
             let idx = this.pendingRanges.findIndex((v) => v[0] === r)
             if (idx !== -1) {
                 this.pendingRanges.splice(idx, 1)
             }
         }), finalize(() => {
-            if (this.source.async) {
-                (this.busy as EventEmitter<boolean>).emit(false)
-            }
+            this.isBusy = false
         }), shareReplay())
 
         this.pendingRanges.push([r, s])

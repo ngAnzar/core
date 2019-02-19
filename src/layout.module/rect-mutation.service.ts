@@ -83,7 +83,10 @@ export class RectMutationService {
             if (resizeObserver) {
                 const ro = new resizeObserver((entries: any) => {
                     for (const entry of entries) {
-                        observer.next({ width: entry.contentRect.right, height: entry.contentRect.bottom })
+                        observer.next({
+                            width: entry.contentRect.left + entry.contentRect.right,
+                            height: entry.contentRect.top + entry.contentRect.bottom
+                        })
                     }
 
                 })

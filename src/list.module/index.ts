@@ -1,5 +1,6 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
+import { FlexLayoutModule } from "@angular/flex-layout"
 
 import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
@@ -41,6 +42,7 @@ import { VirtualForDirective } from "./virtual-for.directive"
 @NgModule({
     imports: [
         CommonModule,
+        FlexLayoutModule,
         NzCommonModule,
         NzDataModule,
         NzAnimationModule,

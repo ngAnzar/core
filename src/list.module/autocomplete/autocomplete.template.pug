@@ -1,4 +1,6 @@
 :stylus
+  @require "../list/list"
+
   .list
     display: inline-grid
     grid-template-columns: 1fr
@@ -14,30 +16,37 @@
   .scroller
     display: inline-grid
 
-.notfound.nz-list(*ngIf="!source.storage || source.storage.total === 0")
-  .nz-list-item
-    i Nem található
+  .notfound
+    height: 48px
+    color: $theme.common.dark
+    padding: $nz-list-item-padding
 
-//- TODO: loading anim
 
-.nz-scroller.scroller(#scroller, *ngIf="source.storage")
-  .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
-    ng-template(bind-ngIf="actionsByPosition.first")
-      ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")
-        .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model" bind-selectionIndex="index + 1")
-          ng-template(bind-ngTemplateOutlet="action.tpl")
+div(fxFlex="grow", fxLayout="column inline")
 
-    ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
-      .nz-list-item.item(bind-style.gridRow="offset(index)" bind-selectable="virtual" bind-selectionIndex="offset(index)")
-        ng-template(
-          bind-ngTemplateOutlet="itemTpl"
-          bind-ngTemplateOutletContext="{$implicit:virtual}")
+  .notfound(*ngIf="source.storage && source.storage.total === 0 && !source.storage.isBusy", fxFlex="none", fxLayout="row", fxLayoutAlign="start center")
+    i Nem található {{ gridTemplateRows }}
 
-    ng-template(bind-ngIf="actionsByPosition.last")
-      ng-template(ngFor bind-ngForOf="actionsByPosition.last" let-action let-index="index")
-        .nz-list-item.item.action(
-          bind-style.gridRow="offset(index) + source.storage.total"
-          bind-selectableAction="action.model"
-          bind-selectionIndex="offset(index) + source.storage.total")
-          ng-template(bind-ngTemplateOutlet="action.tpl")
+  //- TODO: loading anim
+
+  .nz-scroller.scroller(#scroller, *ngIf="source.storage", fxFlex="grow")
+    .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
+      ng-template(bind-ngIf="actionsByPosition.first")
+        ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")
+          .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model" bind-selectionIndex="index + 1")
+            ng-template(bind-ngTemplateOutlet="action.tpl")
+
+      ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-index="index" let-first="first" let-last="last" bind-fixedItemHeight="48")
+        .nz-list-item.item(bind-style.gridRow="offset(index)" bind-selectable="virtual" bind-selectionIndex="offset(index)")
+          ng-template(
+            bind-ngTemplateOutlet="itemTpl"
+            bind-ngTemplateOutletContext="{$implicit:virtual}")
+
+      ng-template(bind-ngIf="actionsByPosition.last")
+        ng-template(ngFor bind-ngForOf="actionsByPosition.last" let-action let-index="index")
+          .nz-list-item.item.action(
+            bind-style.gridRow="offset(index) + source.storage.total"
+            bind-selectableAction="action.model"
+            bind-selectionIndex="offset(index) + source.storage.total")
+            ng-template(bind-ngTemplateOutlet="action.tpl")
 

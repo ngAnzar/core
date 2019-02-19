@@ -1,7 +1,7 @@
 import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
-    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy
+    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -46,6 +46,7 @@ export interface IAutocompleteModel {
 
 export type InputState = "typing" | "querying"
 export type SelectValue<T> = T | ID | T[] | ID[]
+export type AutoTrigger = "all" | "query" | null
 
 @Component({
     selector: ".nz-select",
@@ -91,37 +92,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ViewChild("default_selected_multi", { read: TemplateRef }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
     @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
-    // @ViewChild("chipSelection", { read: SelectionModel }) protected readonly chipSelection: SelectionModel
-
-    // @Input("data-source") //public readonly dataSource: DataSource<T>
-    // public set dataSource(val: DataSource<T>) {
-    //     if (this._dataSource !== val) {
-    //         this._dataSource = val
-    //         this.storage = val ? new DataStorage(val) : null
-    //         this._watchInputStream(this.editable)
-    //         this._detectChanges()
-    //     }
-    // }
-    // public get dataSource(): DataSource<T> { return this._dataSource }
-    // protected _dataSource: DataSource<T>
-
-    // public set storage(val: DataStorage<T>) {
-    //     if (this._storage !== val) {
-    //         this._storage = val
-    //         this.applyPendingValue()
-    //         this._detectChanges()
-    //     }
-    // }
-    // public get storage(): DataStorage<T> { return this._storage }
-    // protected _storage: DataStorage<T>
-
-    // @Input()
-    // public set filter(val: any) { this.storage.filter.set(val) }
-    // public get filter(): any { return this.storage.filter.get() }
-
-    // @Input()
-    // public set sorter(val: any) { this.storage.sorter.set(val) }
-    // public get sorter(): any { return this.storage.sorter.get() }
 
     public readonly displayField: string
     public readonly queryField: string
@@ -132,11 +102,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this._opened !== val) {
             this._opened = val
             this._updateDropDown()
-            this._detectChanges()
+            this._detectChanges();
+            (this.openedChanges as EventEmitter<boolean>).emit(val)
         }
     }
     public get opened(): boolean { return !this.disabled && this._opened }
     protected _opened: boolean = false
+
+    @Output("opened") public readonly openedChanges: Observable<boolean> = new EventEmitter<boolean>()
 
     @Input()
     public set editable(val: boolean) {
@@ -174,6 +147,41 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
     public get disabled(): boolean { return !this.source.storage || this._disabled }
     protected _disabled: boolean = false
+
+    @Input()
+    public set hideTrigger(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._hideTrigger !== val) {
+            this._hideTrigger = val
+            this._detectChanges()
+        }
+    }
+    public get hideTrigger(): boolean { return this._hideTrigger }
+    private _hideTrigger: boolean = false
+
+    @Input()
+    public set autoTrigger(val: AutoTrigger) {
+        if (!val || val.length === 0) {
+            val = "query"
+        }
+        if (this._autoTrigger !== val) {
+            this._autoTrigger = val
+            this._detectChanges()
+        }
+    }
+    public get autoTrigger(): AutoTrigger { return this._autoTrigger }
+    private _autoTrigger: AutoTrigger = null
+
+    public set isEmpty(val: boolean) {
+        if (this._isEmpty !== val) {
+            this._isEmpty = val;
+            (this.emptyChanges as EventEmitter<boolean>).emit(val)
+        }
+    }
+    public get isEmpty(): boolean { return this._isEmpty }
+    private _isEmpty: boolean = true
+
+    @Output("empty") public readonly emptyChanges: Observable<boolean> = new EventEmitter<boolean>()
 
     public set inputState(val: InputState) {
         if (this._inputState !== val) {
@@ -246,6 +254,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.opened = false
             }
 
+            this.isEmpty = selected.length === 0
             this._resetTextInput()
         })
 
@@ -266,6 +275,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.selection.keyboard.connect(el.nativeElement)
+    }
+
+    public reset() {
+        this.selection.items = []
+        if (this.input) {
+            (this.inputStream as Subject<string>).next(this.input.nativeElement.value = "")
+        }
     }
 
     public toggle() {
@@ -377,25 +393,28 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _updateDropDown() {
         if (this.opened) {
             this.selectedBeforeOpen = this.selected.slice(0)
-            let targetEl = (this.layerFactory.targetEl = (this.ffc ? this.ffc.el : this.el)).nativeElement
             let targetAnchor = this.layerFactory.targetAnchor
 
-            if (this.editable) {
-                if (!targetAnchor.nzTargetAnchor) {
-                    targetAnchor.nzTargetAnchor = "left bottom"
-                }
-                if (!targetAnchor.margin) {
-                    targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
-                }
-            } else {
-                if (!targetAnchor.nzTargetAnchor) {
-                    targetAnchor.nzTargetAnchor = "left top"
-                }
-                if (!targetAnchor.margin) {
-                    targetAnchor.margin = { left: 16, right: 16 }
+            if (!targetAnchor.targetEl) {
+                targetAnchor.targetEl = (this.ffc ? this.ffc.el : this.el)
+                if (this.editable) {
+                    if (!targetAnchor.nzTargetAnchor) {
+                        targetAnchor.nzTargetAnchor = "left bottom"
+                    }
+                    if (!targetAnchor.margin) {
+                        targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
+                    }
+                } else {
+                    if (!targetAnchor.nzTargetAnchor) {
+                        targetAnchor.nzTargetAnchor = "left top"
+                    }
+                    if (!targetAnchor.margin) {
+                        targetAnchor.margin = { left: 16, right: 16 }
+                    }
                 }
             }
 
+            const targetEl = targetAnchor.targetEl.nativeElement
             let layerRef = this.layerFactory.show(
                 new DropdownLayer({
                     backdrop: {
@@ -450,7 +469,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.opened = true
             }
         } else {
-            this.opened = false
+            // this.opened = false
             this._resetTextInput()
         }
     }
@@ -462,15 +481,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _querySuggestions = (text: string): void => {
-        // if (!text || text.length === 0) {
-        //     console.log("reset dd")
-        // }
-
+        const emptyQuery = !text || text.length === 0
+        this.isEmpty = this.selection.items.length === 0 && emptyQuery
         this.inputState = "querying"
-        this.source.filter = {
-            [this.queryField]: this.source.async ? text : { contains: text }
-        } as any
 
+        let filter = (this.source.filter || {}) as any
+        if (emptyQuery) {
+            delete filter[this.queryField]
+        } else {
+            filter[this.queryField] = this.source.async ? text : { contains: text }
+        }
+
+        this.source.filter = filter
         this.opened = true
     }
 
@@ -481,7 +503,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this._iss = this.destruct.subscription(this.inputStream)
                     .pipe(
                         debounceTime(this.source.async ? 400 : 50),
-                        filter(v => ml === 0 || (v && v.length >= ml))
+                        filter(v => ml === 0 || !v || v.length === 0 || (v && v.length >= ml))
                     )
                     .subscribe(this._querySuggestions)
             }

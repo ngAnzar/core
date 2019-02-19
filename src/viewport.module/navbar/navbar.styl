@@ -16,23 +16,18 @@ $nz-navbar-height ?= nz-local-grid-size(14)
   nz-typo: $typo.h6
   margin: 0
 
-/*
-.nz-navbar .nz-button:not([color]):not([disabled]):not([variant~="filled"]),
-.nz-navbar .nz-fab:not([color]):not([disabled]):not([variant~="filled"])
-  color: $theme.primary.on.default
-*/
-
 .nz-navbar-search
   position: relative
-  width: 200px
-  padding: 8px
+  padding: 8px 16px
   box-sizing: border-box
+  height: $nz-navbar-height - 16px
+  width: 100%
 
-  background: $theme.primary.dark
-  color: $theme.primary.on.dark
+  background: $theme.base.normal
+  color: $theme.base.on.normal
 
-  transition: width 200ms, color 200ms
-  border-radius: 2px
+  //transition: background-color 400ms, color 400ms
+  border-radius: 3px
 
   &:before
     position: absolute
@@ -41,14 +36,16 @@ $nz-navbar-height ?= nz-local-grid-size(14)
     bottom: 0
     left: 0
     content: " "
-    nz-elevation: 6
-    opacity: 0
-    transition: opacity 200ms
+    nz-elevation: 10
+    opacity: 0.1
+    transition: opacity 400ms
 
-  &[focused]
-    background: $theme.base.normal
-    color: $theme.base.on.normal
-    width: 500px
+  &[opened]
+    border-bottom-left-radius: 0px
+    border-bottom-right-radius: 0px
 
     &:before
       opacity: 1
+
+  &[focused]:before
+    opacity: 1

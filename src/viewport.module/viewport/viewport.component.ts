@@ -58,7 +58,6 @@ export class ViewportComponent implements AfterViewInit {
         }
 
         this.animationState = { value, params }
-        console.log(this.animationState)
         if (this.sidenav) {
             this.cdr.detectChanges()
         }

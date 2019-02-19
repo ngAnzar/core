@@ -21,7 +21,7 @@ export class ViewportItemDirective implements OnDestroy {
         this.area = parts[0]
         this.order = Number(parts[1])
 
-        // console.log("nzViewportItem", { area: this.area, order: this.order })
+        // console.log("nzViewportItem", { area: this.area, order: this.order }, vps)
 
         this.item = vps.addItem(this.area, this.order, tpl)
     }

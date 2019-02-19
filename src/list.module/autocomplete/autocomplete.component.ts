@@ -24,18 +24,6 @@ export class DDContext<T> {
 @Component({
     selector: "nz-autocomplete",
     templateUrl: "./autocomplete.template.pug",
-    styles: [
-        `nz-autocomplete {
-            background: #FFF;
-            overflow: hidden;
-            max-height: inherit;
-            max-width: inherit;
-            display: inline-grid;
-            grid-template: 1fr / 1fr;
-            justify-content: stretch;
-            align-content: stretch;
-        }`
-    ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit {
@@ -44,7 +32,15 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
 
     public get gridTemplateRows(): SafeStyle {
         const actionsLength = this.actions ? this.actions.length : 0
-        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex + actionsLength}, 48px)`)
+        let repeat = this.source.storage.lastIndex + actionsLength
+        let rowHeight = 48
+
+        if (repeat === 0) {
+            repeat = 1
+            rowHeight = 0
+        }
+
+        return this.sanitizer.bypassSecurityTrustStyle(`repeat(${repeat}, ${rowHeight}px)`)
     }
 
     protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}

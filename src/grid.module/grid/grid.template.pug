@@ -25,7 +25,7 @@
 
 ng-content(select=".nz-columns")
 
-div.nz-hbox.filter(*ngIf="filterSvc.filters.length" gap=8)
+div.filter(*ngIf="filterSvc.filters.length", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
   ng-template(ngFor bind-ngForOf="filterSvc.filters" let-editor)
     ng-template(bind-ngTemplateOutlet="editor.chip" bind-ngTemplateOutletContext="{$implicit:editor}")
 
