@@ -1,8 +1,6 @@
 @require "../../util"
 
-$nz-form-field-input-padding ?= 4px
-$nz-form-field-top-caption-height ?= 16px
-$nz-form-field-bottom-caption-height ?= 20px
+
 
 // variant=underlined
 // variant=filled
@@ -12,18 +10,6 @@ $nz-form-field-bottom-caption-height ?= 20px
   display: inline-block
   width: auto
   padding-top: $nz-form-field-top-caption-height
-
-  label
-    position: absolute
-    top: 0px
-    left: 0px
-    right: 0px
-    bottom: 0px
-    cursor: text
-    color: $theme.base.on.light
-    transition: all $nz-input-focus-transition-duration
-    user-select: none
-    pointer-events: none
 
   .underline
     height: 1px
@@ -41,7 +27,7 @@ $nz-form-field-bottom-caption-height ?= 20px
     transform-origin: 50%
     transform: scaleX(.5)
 
-    transition: transform $nz-input-focus-transition-duration, opacity $nz-input-focus-transition-duration
+    transition: transform $nz-form-field-anim-duration, opacity $nz-form-anim-duration
 
   &.nz-focused, &.nz-has-value
     label

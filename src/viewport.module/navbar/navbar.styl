@@ -5,19 +5,24 @@ $nz-navbar-height ?= nz-local-grid-size(14)
 .nz-navbar
   position: relative
   background: $theme.primary.normal
-  padding: 0 nz-local-grid-size(4)
+  padding: 0 nz-local-grid-size(2)
   height: $nz-navbar-height
   box-sizing: border-box
   nz-elevation: 3
   z-index: 10
+  transition: background-color 300ms
 
 .nz-navbar h1
   color: $theme.primary.on.normal
   nz-typo: $typo.h6
   margin: 0
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
 
 .nz-navbar-search
   position: relative
+  // padding: 8px 8px 8px 16px
   padding: 8px 16px
   box-sizing: border-box
   height: $nz-navbar-height - 16px
@@ -49,3 +54,11 @@ $nz-navbar-height ?= nz-local-grid-size(14)
 
   &[focused]:before
     opacity: 1
+
+  &[flat]
+    height: 100%
+    border-radius: 0
+    background: transparent none
+
+    &:before
+      display: none

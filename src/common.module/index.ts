@@ -38,7 +38,8 @@ export { CardComponent, CardHeaderComponent, CardActionsComponent }
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
 import { PointerEventService } from "./services/pointer-event.service"
 import { ScriptService } from "./services/script.service"
-export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService }
+import { KeyEventService, SpecialKey } from "./services/key-event.service"
+export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey }
 
 
 const content = [
@@ -78,7 +79,8 @@ const content = [
         FileDownloadService,
         ScriptService,
         DragEventService,
-        PointerEventService
+        PointerEventService,
+        KeyEventService
     ]
 })
 export class NzCommonModule { }

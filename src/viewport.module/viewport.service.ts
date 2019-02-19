@@ -47,8 +47,18 @@ export class ViewportService {
     private _menuStyle: VPMenuStyle = VPMenuStyle.OVERLAY // TODO: kis felbontáson overlay
 
     public readonly menuOpened: boolean = false
-
     public readonly menuChanges: Observable<any> = new EventEmitter()
+
+    public set navbarCenterOverlap(val: boolean) {
+        if (this._navbarCenterOverlap !== val) {
+            this._navbarCenterOverlap = val;
+            (this.navbarChanges as EventEmitter<boolean>).emit(val)
+        }
+    }
+    public get navbarCenterOverlap(): boolean { return this._navbarCenterOverlap }
+    private _navbarCenterOverlap: boolean = false
+
+    public readonly navbarChanges: Observable<boolean> = new EventEmitter<boolean>()
 
     private _items: VPItem[] = []
     private _itemsObserver = new Observable<VPItem[]>(subscriber => {
@@ -133,4 +143,5 @@ export class ViewportService {
     //     const portal = new TemplatePortal(tpl, vcr, context)
     //     return this.addItem(area, order, portal)
     // }
+
 }

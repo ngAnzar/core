@@ -1,0 +1,26 @@
+
+
+.nz-placeholder
+  position: relative
+
+  label
+    position: absolute
+    top: 0px
+    left: 0px
+    right: 0px
+    bottom: 0px
+    cursor: text
+    color: $theme.base.on.light
+    transition: all $nz-form-anim-duration
+    user-select: none
+    pointer-events: none
+    opacity: 1
+
+  &[variant="hide"][hidden]
+    label
+      opacity: 0
+
+  &[variant="translate"][hidden]
+    label
+      nz-typo: $typo.caption
+      transform: translateY(-100%)

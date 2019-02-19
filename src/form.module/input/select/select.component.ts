@@ -101,6 +101,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._opened !== val) {
             this._opened = val
+            if (val && this.input && this.input.nativeElement) {
+                this._focusMonitor.focusVia(this.input.nativeElement, this.focusOrigin)
+            }
             this._updateDropDown()
             this._detectChanges();
             (this.openedChanges as EventEmitter<boolean>).emit(val)
@@ -280,7 +283,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public reset() {
         this.selection.items = []
         if (this.input) {
-            (this.inputStream as Subject<string>).next(this.input.nativeElement.value = "")
+            this.input.nativeElement.value = ""
+            this.opened = false
+            this._updateFilter(null)
         }
     }
 
@@ -469,7 +474,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.opened = true
             }
         } else {
-            // this.opened = false
+            this.opened = false
             this._resetTextInput()
         }
     }
@@ -484,16 +489,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         const emptyQuery = !text || text.length === 0
         this.isEmpty = this.selection.items.length === 0 && emptyQuery
         this.inputState = "querying"
-
-        let filter = (this.source.filter || {}) as any
-        if (emptyQuery) {
-            delete filter[this.queryField]
-        } else {
-            filter[this.queryField] = this.source.async ? text : { contains: text }
-        }
-
-        this.source.filter = filter
         this.opened = true
+        this._updateFilter(text)
     }
 
     protected _watchInputStream(on: boolean) {
@@ -546,12 +543,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         } else {
             this.inputState = "querying"
             this.opened = true
-            let filter: any = this.source.filter
-            delete filter[this.queryField]
-            this.source.filter = filter
-        }
-        if (this.input) {
-            this._focusMonitor.focusVia(this.input.nativeElement, this.focusOrigin)
+            this._updateFilter(null)
         }
     }
 
@@ -647,5 +639,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+
+    private _updateFilter(qv: string | null) {
+        let filter = (this.source.filter || {}) as any
+        if (!qv || qv.length === 0) {
+            delete filter[this.queryField]
+        } else {
+            filter[this.queryField] = this.source.async ? qv : { contains: qv }
+        }
+        this.source.filter = filter
+        console.log("filter", filter[this.queryField])
     }
 }

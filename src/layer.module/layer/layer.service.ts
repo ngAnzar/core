@@ -82,10 +82,7 @@ export class LayerService {
         }
 
         if (!opt.constraint) {
-            opt.constraint = {
-                ref: "viewport",
-                inset: 16
-            }
+            opt.constraint = { ref: "viewport" }
         }
 
         return this.levitateSvc.levitate(base, opt.anchor, opt.constraint)

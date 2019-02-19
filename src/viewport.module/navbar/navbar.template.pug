@@ -1,13 +1,24 @@
-div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="8px")
+:stylus
+  .center-area
+    opacity: 1
+    transition: opacity 300ms
+
+
+div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="8px", fxLayoutGap.xs="0px")
+
   div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
     ng-template(nzViewportArea="topLeft")
 
-  div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px")
+  div.center-area(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px",
+      [ngStyle.xs]=`{
+        'pointer-events': vps.navbarCenterOverlap ? 'auto' : 'none',
+        'background-color': '#FFF',
+        'position': 'absolute', 'top': '0px', 'left': '0px', 'right': '0px', 'bottom': '0px',
+        'opacity': vps.navbarCenterOverlap ? 1 : 0}`)
     ng-template(nzViewportArea="topCenter")
 
   div(fxFlex="grow", fxLayout="row", fxLayoutAlign="end center", fxLayoutGap="8px")
     ng-template(nzViewportArea="topRight")
-
 
 ng-template(nzViewportItem="topLeft:10")
   button.nz-fab(variant="medium", [disabled]="vps.menuDisabled", on-click="vps.toggleMenu()")

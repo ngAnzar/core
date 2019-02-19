@@ -16,6 +16,7 @@ export class NavbarComponent implements OnDestroy {
         @Inject(ViewportService) protected readonly vps: ViewportService,
         @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef) {
         this.destruct.subscription(vps.menuChanges).subscribe(cdr.markForCheck.bind(cdr))
+        this.destruct.subscription(vps.navbarChanges).subscribe(cdr.markForCheck.bind(cdr))
     }
 
     public ngOnDestroy() {

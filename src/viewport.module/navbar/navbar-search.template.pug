@@ -1,22 +1,32 @@
 
-div(#container, fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="16px")
-  i.nz-icon(class=icon("mdi/magnify"))
+div(#container, fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+  i.nz-icon(fxShow, fxHide.xs, [class]="icon")
 
-  .nz-select(
-    #select,
-    fxFlex="grow",
-    editable,
-    hideTrigger,
-    autoTrigger,
-    [dataSource]="source",
-    [nzLayerFactory]="AutocompleteComponent",
-    [nzTargetEl]="container.parentElement"
-    nzTargetAnchor="center bottom",
-    nzLevitateAnchor="center top",
-    on-opened="opened=$event",
-    on-focused="focused=$event",
-    on-empty="empty=$event")
-    ng-content
+  .nz-fab(fxFlex="0 0 28px", fxHide, fxShow.xs, on-click="hideSearch()", variant="tiny filled")
+    i.nz-icon(class=icon("mdi/arrow-left"))
+
+  .nz-placeholder(fxFlex="grow", variant="hide")
+    label Keresés
+    .nz-select(
+      #select,
+      fxFlex="grow",
+      editable,
+      hideTrigger,
+      autoTrigger,
+      [dataSource]="source",
+      [nzLayerFactory]="AutocompleteComponent",
+      [nzTargetEl]="container.parentElement"
+      nzTargetAnchor="center bottom",
+      nzLevitateAnchor="center top",
+      on-opened="opened=$event",
+      on-focused="focused=$event",
+      on-empty="empty=$event")
+      ng-content
 
   .nz-fab(*ngIf="!empty", fxFlex="0 0 28px", variant="tiny filled", on-click="select.reset()")
     i.nz-icon(class=icon("mdi/close"))
+
+
+ng-template(nzViewportItem="topRight:-100")
+  button.nz-fab(variant="medium", fxHide, [fxShow.xs]="!vps.navbarCenterOverlap", on-click="showSearch()")
+    i.nz-icon([class]="icon")

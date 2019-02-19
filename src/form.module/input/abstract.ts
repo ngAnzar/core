@@ -75,7 +75,7 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,
         // @Inject(Renderer2) protected _renderer: Renderer2,
-        @Inject(ElementRef) protected el: ElementRef) {
+        @Inject(ElementRef) public readonly el: ElementRef) {
         super()
         this.control = (ngControl || ngModel) as any
     }

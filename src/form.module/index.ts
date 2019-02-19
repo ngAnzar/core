@@ -11,6 +11,9 @@ import { NzLayoutModule } from "../layout.module"
 import { FormFieldComponent } from "./field/form-field.component"
 export { FormFieldComponent }
 
+import { PlaceholderComponent } from "./placeholder/placeholder.component"
+export { PlaceholderComponent }
+
 import { CheckboxComponent } from "./input/checkbox/checkbox.component"
 import { CheckboxGroupDirective } from "./input/checkbox/checkbox-group.directive"
 export { CheckboxComponent, CheckboxGroupDirective }
@@ -46,6 +49,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
     ],
     declarations: [
         FormFieldComponent,
+        PlaceholderComponent,
 
         CheckboxComponent,
         CheckboxGroupDirective,
@@ -67,6 +71,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         ReactiveFormsModule,
 
         FormFieldComponent,
+        PlaceholderComponent,
 
         CheckboxComponent,
         CheckboxGroupDirective,
