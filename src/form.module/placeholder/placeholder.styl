@@ -10,7 +10,7 @@
     right: 0px
     bottom: 0px
     cursor: text
-    color: $theme.common.light
+    color: $theme.common.dark
     transition: all $nz-form-anim-duration
     user-select: none
     pointer-events: none
@@ -23,4 +23,6 @@
   &.hide-label[variant="translate"]
     label
       nz-typo: $typo.caption
-      transform: translateY(-100%)
+      top: -($nz-form-field-top-caption-height)
+      //transform-origin: 0
+      //transform: scale($typo.caption.font-size / $typo.body1.font-size) translateY(-110%)

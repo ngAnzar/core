@@ -1,7 +1,5 @@
 @require "../../util"
 
-
-
 // variant=underlined
 // variant=filled
 // variant=stroked
@@ -13,7 +11,7 @@
 
   .underline
     height: 1px
-    background-color: $theme.base.on.light
+    background-color: $theme.common.dark
     position: relative
 
   .nz-form-field-ripple
@@ -27,13 +25,7 @@
     transform-origin: 50%
     transform: scaleX(.5)
 
-    transition: transform $nz-form-field-anim-duration, opacity $nz-form-anim-duration
-
-  &.nz-focused, &.nz-has-value
-    label
-      nz-typo: $typo.caption
-      // color: $theme.primary.default
-      top: -($nz-form-field-top-caption-height + 2px)
+    transition: transform $nz-form-anim-duration, opacity $nz-form-anim-duration
 
   &.nz-focused
     .underline
@@ -50,8 +42,6 @@
     overflow: hidden
 
     color: $theme.base.on.light
-
-
 
 
 caption
