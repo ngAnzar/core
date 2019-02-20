@@ -6,21 +6,21 @@
   label
     position: absolute
     top: 0px
-    left: 0px
+    left: 2px
     right: 0px
     bottom: 0px
     cursor: text
-    color: $theme.base.on.light
+    color: $theme.common.light
     transition: all $nz-form-anim-duration
     user-select: none
     pointer-events: none
     opacity: 1
 
-  &[variant="hide"][hidden]
+  &.hide-label[variant="hide"]
     label
       opacity: 0
 
-  &[variant="translate"][hidden]
+  &.hide-label[variant="translate"]
     label
       nz-typo: $typo.caption
       transform: translateY(-100%)

@@ -71,6 +71,18 @@ export abstract class InputComponent<T> extends AbstractControlDirective impleme
     public get focused(): boolean { return this._focused }
     protected _focused: boolean = false
 
+    public get isEmpty(): boolean {
+        let val: any = this.value
+        if (typeof val === "string") {
+            return val.length === 0
+        } else if (typeof val === "number" || typeof val === "boolean") {
+            return false
+        } else if (Array.isArray(val)) {
+            return val.length === 0
+        }
+        return !val
+    }
+
     public constructor(
         @Inject(NgControl) @Optional() ngControl: NgControl,
         @Inject(NgModel) @Optional() ngModel: NgModel,

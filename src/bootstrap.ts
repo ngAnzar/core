@@ -35,13 +35,13 @@ function _bootstrap(moduleClass: any) {
 
 
 export function bootstrap(moduleClass: any) {
-    if (__HMR__) {
-        const main = () => {
-            _bootstrap(moduleClass)
-                .then(initModule)
-                .catch((err: any) => console.error(err))
-        }
+    const main = () => {
+        _bootstrap(moduleClass)
+            .then(initModule)
+            .catch((err: any) => console.error(err))
+    }
 
+    if (__HMR__) {
         const contentLoaded = () => {
             document.removeEventListener("DOMContentLoaded", contentLoaded, false)
             main()
@@ -58,8 +58,12 @@ export function bootstrap(moduleClass: any) {
                 main()
         }
     } else {
-        _bootstrap(moduleClass)
-            .then(initModule)
-            .catch((err: any) => console.error(err))
+        if (typeof (window as any).cordova !== "undefined") {
+            console.log("bootstrap device")
+            document.addEventListener("deviceready", main, false)
+        } else {
+            console.log("bootstrap normal")
+            main()
+        }
     }
 }

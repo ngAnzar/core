@@ -1,8 +1,11 @@
-import { Injectable, Inject, EventEmitter, TemplateRef, StaticProvider, Injector, EmbeddedViewRef } from "@angular/core"
+import { Injectable, Inject, EventEmitter, TemplateRef, Injector, EmbeddedViewRef, OnDestroy } from "@angular/core"
 import { Router, NavigationEnd } from "@angular/router"
 import { Portal, ComponentType, ComponentPortal, TemplatePortal } from "@angular/cdk/portal"
-import { Observable, NEVER, of, Subject } from "rxjs"
+import { Observable, NEVER, of, Subject, Subscription } from "rxjs"
 import { share, filter, map, startWith, switchMap } from "rxjs/operators"
+
+import { Destruct } from "../util"
+import { KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../common.module"
 
 
 export interface VPItem {
@@ -20,7 +23,8 @@ export const enum VPMenuStyle {
 
 
 @Injectable()
-export class ViewportService {
+export class ViewportService implements OnDestroy {
+    public readonly destruct = new Destruct()
 
     public set menuDisabled(val: boolean) {
         if (this._menuDisabled !== val) {
@@ -36,8 +40,8 @@ export class ViewportService {
             this._menuStyle = val
 
             if (this.menuOpened) {
-                this.closeMenu()
-                this.openMenu()
+                this.menuOpened = false
+                this.menuOpened = true
             }
 
             (this.menuChanges as EventEmitter<any>).emit()
@@ -46,12 +50,39 @@ export class ViewportService {
     public get menuStyle(): VPMenuStyle { return this._menuStyle }
     private _menuStyle: VPMenuStyle = VPMenuStyle.OVERLAY // TODO: kis felbontáson overlay
 
-    public readonly menuOpened: boolean = false
+
+    public set menuOpened(val: boolean) {
+        if (this._menuOpened !== val) {
+            this._menuOpened = val
+
+            console.log("menuOpened", val)
+
+            if (val) {
+                this._menuBackWatch.on()
+            } else {
+                this._menuBackWatch.off()
+            }
+
+            (this.menuChanges as EventEmitter<any>).emit()
+        }
+    }
+    public get menuOpened(): boolean { return this._menuOpened }
+    private _menuOpened: boolean = false
+    private _menuBackWatch: KeyWatcher
+
+
     public readonly menuChanges: Observable<any> = new EventEmitter()
 
     public set navbarCenterOverlap(val: boolean) {
         if (this._navbarCenterOverlap !== val) {
-            this._navbarCenterOverlap = val;
+            this._navbarCenterOverlap = val
+
+            if (val) {
+                if (this.menuStyle === VPMenuStyle.OVERLAY) {
+                    this.menuOpened = false
+                }
+            }
+
             (this.navbarChanges as EventEmitter<boolean>).emit(val)
         }
     }
@@ -86,7 +117,31 @@ export class ViewportService {
 
     public constructor(
         @Inject(Router) router: Router,
-        @Inject(Injector) protected readonly injector: Injector) {
+        @Inject(Injector) protected readonly injector: Injector,
+        @Inject(KeyEventService) protected readonly keyEvent: KeyEventService,
+        @Inject(MediaQueryService) protected readonly mq: MediaQueryService) {
+
+        this._menuBackWatch = this.destruct.disposable(keyEvent.newWatcher(SpecialKey.BackButton, () => {
+            this.menuOpened = false
+            return true
+        }))
+
+        this.destruct.subscription(router.events).subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                if (!this.menuDisabled) {
+                    this.menuOpened = false
+                }
+            }
+        })
+
+        this.destruct.subscription(mq.watch("xs")).subscribe(event => {
+            if (!event.matches) {
+                this.navbarCenterOverlap = false
+                this.menuStyle = VPMenuStyle.SLIDE
+            } else {
+                this.menuStyle = VPMenuStyle.OVERLAY
+            }
+        })
     }
 
     public addItem(area: string, order: number, tplRef: TemplateRef<any>): Readonly<VPItem> {
@@ -109,39 +164,7 @@ export class ViewportService {
         }
     }
 
-    public openMenu() {
-        if (this.menuOpened) {
-            return
-        }
-        (this as any).menuOpened = true;
-        (this.menuChanges as EventEmitter<any>).emit()
+    public ngOnDestroy() {
+        this.destruct.run()
     }
-
-    public closeMenu() {
-        if (!this.menuOpened) {
-            return
-        }
-        (this as any).menuOpened = false;
-        (this.menuChanges as EventEmitter<any>).emit()
-    }
-
-    public toggleMenu() {
-        if (this.menuOpened) {
-            this.closeMenu()
-        } else {
-            this.openMenu()
-        }
-    }
-
-    // public addComponent(area: string, order: number, cmp: ComponentType<any>, provides?: StaticProvider[]): Readonly<VPItem> {
-    //     const injector = provides ? Injector.create(provides, this.injector) : this.injector
-    //     const portal = new ComponentPortal(cmp, null, injector)
-    //     return this.addItem(area, order, portal)
-    // }
-
-    // public addTemplate(area: string, order: number, tpl: TemplateRef<any>, vcr: ViewContainerRef, context?: any): Readonly<VPItem> {
-    //     const portal = new TemplatePortal(tpl, vcr, context)
-    //     return this.addItem(area, order, portal)
-    // }
-
 }

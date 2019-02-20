@@ -38,8 +38,9 @@ export { CardComponent, CardHeaderComponent, CardActionsComponent }
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
 import { PointerEventService } from "./services/pointer-event.service"
 import { ScriptService } from "./services/script.service"
-import { KeyEventService, SpecialKey } from "./services/key-event.service"
-export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey }
+import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
+import { MediaQueryService } from "./services/media-query.service"
+export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService }
 
 
 const content = [
@@ -80,7 +81,8 @@ const content = [
         ScriptService,
         DragEventService,
         PointerEventService,
-        KeyEventService
+        KeyEventService,
+        MediaQueryService
     ]
 })
 export class NzCommonModule { }

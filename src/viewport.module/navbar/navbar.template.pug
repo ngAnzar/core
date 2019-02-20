@@ -9,7 +9,7 @@ div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="
   div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
     ng-template(nzViewportArea="topLeft")
 
-  div.center-area(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px",
+  div.center-area(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px", ngStyle.xs="opacity:0",
       [ngStyle.xs]=`{
         'pointer-events': vps.navbarCenterOverlap ? 'auto' : 'none',
         'background-color': '#FFF',
@@ -21,6 +21,6 @@ div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="
     ng-template(nzViewportArea="topRight")
 
 ng-template(nzViewportItem="topLeft:10")
-  button.nz-fab(variant="medium", [disabled]="vps.menuDisabled", on-click="vps.toggleMenu()")
+  button.nz-fab(variant="medium", [disabled]="vps.menuDisabled", on-click="vps.menuOpened=!vps.menuOpened")
     i.nz-icon(*ngIf="vps.menuOpened", class=icon("mdi/backburger"))
     i.nz-icon(*ngIf="!vps.menuOpened", class=icon("mdi/menu"))

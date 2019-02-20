@@ -178,7 +178,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public set isEmpty(val: boolean) {
         if (this._isEmpty !== val) {
             this._isEmpty = val;
-            (this.emptyChanges as EventEmitter<boolean>).emit(val)
+            (this.emptyChanges as EventEmitter<boolean>).emit(val);
+            (this.statusChanges as EventEmitter<any>).emit();
         }
     }
     public get isEmpty(): boolean { return this._isEmpty }
@@ -480,7 +481,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _onInput(event: Event): void {
-        (this.inputStream as Subject<string>).next(this.input.nativeElement.value)
+        const value = this.input.nativeElement.value;
+        (this.inputStream as Subject<string>).next(value)
+        this.isEmpty = this.selection.items.length === 0 && (!value || value.length === 0)
         // this.opened = true
         this.inputState = "typing"
     }
@@ -649,6 +652,5 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             filter[this.queryField] = this.source.async ? qv : { contains: qv }
         }
         this.source.filter = filter
-        console.log("filter", filter[this.queryField])
     }
 }

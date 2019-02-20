@@ -3,7 +3,7 @@ import { Component, Inject, ElementRef, Host, ViewChild, Input } from "@angular/
 
 import { Destruct } from "../../util"
 import { DataSourceDirective } from "../../data.module"
-import { PointerEventService, KeyEventService, SpecialKey } from "../../common.module"
+import { PointerEventService, KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../../common.module"
 import { AutocompleteComponent } from "../../list.module"
 import { ViewportService } from "../viewport.service"
 import { SelectComponent } from "../../form.module"
@@ -51,13 +51,20 @@ export class NavbarSearchComponent {
     private _icon: string
 
     public readonly AutocompleteComponent = AutocompleteComponent
+    private _backWatcher: KeyWatcher
 
     public constructor(
         @Inject(ViewportService) protected readonly vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<any>,
         @Inject(PointerEventService) pointerEvents: PointerEventService,
-        @Inject(KeyEventService) keyEvents: KeyEventService) {
+        @Inject(KeyEventService) keyEvents: KeyEventService,
+        @Inject(MediaQueryService) protected readonly mq: MediaQueryService) {
+
+        this._backWatcher = this.destruct.disposable(keyEvents.newWatcher(SpecialKey.BackButton, (event: KeyboardEvent) => {
+            this.hideSearch()
+            return true
+        }))
 
         this.destruct.subscription(pointerEvents.up(el.nativeElement)).subscribe(event => {
             if (this.select
@@ -70,22 +77,22 @@ export class NavbarSearchComponent {
             }
         })
 
-        this.destruct.subscription(keyEvents.watch(el.nativeElement, { type: "down", key: SpecialKey.BackButton }))
-            .subscribe(result => {
-                console.log(result)
-            })
+        this.destruct.subscription(mq.watch("xs")).subscribe(event => {
+            if (event.matches && this.select && this.select.opened) {
+                this.vps.navbarCenterOverlap = true
+            }
+        })
     }
 
     public showSearch() {
+        this._backWatcher.on()
         this.vps.navbarCenterOverlap = true
-
-        setTimeout(() => {
-            this.select.opened = true
-        }, 100)
+        setTimeout(() => this.select.opened = true, 200)
     }
 
     public hideSearch() {
-        this.vps.navbarCenterOverlap = false
+        this._backWatcher.off()
         this.select.reset()
+        setTimeout(() => this.vps.navbarCenterOverlap = false, 200)
     }
 }
