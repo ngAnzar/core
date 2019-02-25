@@ -73,15 +73,13 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
         }
     }
 
-    // prevent lose focusing on original element
-    @HostListener("mousedown", ["$event"])
-    public _onMouseDown(event: MouseEvent) {
-        this.selection.keyboard.handleMouseDown(event, this)
-    }
-
-    @HostListener("mouseup", ["$event"])
-    public _onMouseUp(event: MouseEvent) {
-        this.selection.keyboard.handleMouseUp(event, this)
+    @HostListener("tap", ["$event"])
+    public onTap(event: any) {
+        if (event.pointerType === "mouse") {
+            this.selection.keyboard.handleMouse(event.srcEvent, this)
+        } else {
+            this.selected = "mouse"
+        }
     }
 
     public _changeSelected(newValue: SelectOrigin) {

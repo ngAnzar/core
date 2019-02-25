@@ -83,11 +83,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
 
     }
 
-    public handleMouseDown = (event: MouseEvent, selectable: ISelectable) => {
-        event.preventDefault()
-    }
-
-    public handleMouseUp = (event: MouseEvent, selectable: ISelectable) => {
+    public handleMouse = (event: PointerEvent, selectable: ISelectable) => {
         let mode = this.determineMode(event.ctrlKey, event.shiftKey, true)
         this.addToSelection(selectable, mode, true)
     }

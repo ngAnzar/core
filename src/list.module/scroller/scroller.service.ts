@@ -222,9 +222,6 @@ export class ScrollerService implements OnDestroy {
     public get verticalOverflow(): number { return Math.max(0, this.vpImmediate.scrollHeight - this.vpImmediate.height) }
     public get horizontalOverflow(): number { return Math.max(0, this.vpImmediate.scrollWidth - this.vpImmediate.width) }
 
-    public readonly scroll: Observable<ScrollEvent>
-    public readonly primaryScroll: Observable<ScrollEvent>
-
     public velocityX: number = 1 // pixel / ms
     public velocityY: number = 1 // pixel / ms
     private activeMethod: ScrollingMethod = null
@@ -280,10 +277,10 @@ export class ScrollerService implements OnDestroy {
             }
         })
 
-        this.scroll = this.vpRender.scroll.pipe(share())
-        this.primaryScroll = this.scroll
-            .pipe(filter(v => v.directionY !== 0)) // TODO primary scroll config
-            .pipe(share())
+        // this.scroll = this.vpRender.scroll.pipe(share())
+        // this.primaryScroll = this.scroll
+        //     .pipe(filter(v => v.directionY !== 0)) // TODO primary scroll config
+        //     .pipe(share())
 
         this.destruct.subscription(this.vpImmediate.change).subscribe(event => {
             if (this.horizontalOverflow || this.verticalOverflow) {

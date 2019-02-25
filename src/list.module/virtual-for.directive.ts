@@ -112,9 +112,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     public ngOnInit() {
-        this.destruct.subscription(this.nzVirtualForOf.storage.invalidated).pipe(startWith(0)).subscribe(this._update)
+        this.destruct.subscription(this.nzVirtualForOf.storage.invalidated).subscribe(this._update)
 
-        this.destruct.subscription(this._scroller.primaryScroll).subscribe(event => {
+        this.destruct.subscription(this._scroller.vpImmediate.scroll).pipe(startWith(0)).subscribe(event => {
             let vr = this._getVisibleNzRange()
             this._setVisibleNzRange(vr)
         })
@@ -178,34 +178,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         }
     }
 
-    // protected _fixRendering() {
-    //     if (this.renderingNzRange) {
-    //         let items: T[] = []
-    //         let changes: Array<CollectionChangeItem<T>> = []
-
-    //         for (let i = this.renderingNzRange.begin, l = this.renderingNzRange.end; i < l; i++) {
-    //             let v: EmbeddedView<T> = this._vcr.get(this.itemIndexToElIndex(i)) as EmbeddedView<T>
-    //             if (!v || v.context.index === -1) {
-    //                 let item = this.nzVirtualForOf.get(i)
-    //                 if (item) {
-    //                     items.push(item)
-    //                     changes.push({ kind: "A", index: i, item: item })
-    //                 }
-    //             }
-    //         }
-
-    //         if (items.length) {
-    //             this._updateContent({
-    //                 changes: changes,
-    //                 items: items
-    //             })
-    //         }
-    //     }
-
-    // }
-
-
-
     protected _getViewForItem(index: number, item: T, range: NzRange): EmbeddedView<T> {
         let v = this.reusable.pop()
         if (v) {
@@ -216,17 +188,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         }
         return v
     }
-
-    // protected _itemContext(index: number, item: T): VirtualForContext<T> {
-    //     return {
-    //         $item: item,
-    //         index: index,
-    //         begin: 0,
-    //         end: 20,
-    //         first: index === 0,
-    //         last: index === 20
-    //     }
-    // }
 
     protected _updateContext(ctx: VirtualForContext<T>, index: number, item: T, range: NzRange): VirtualForContext<T> {
         ctx.$implicit = item
@@ -246,14 +207,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     protected _getVisibleNzRange(): NzRange {
-        const viewport = this._scroller.vpRender
+        const viewport = this._scroller.vpImmediate
         let begin: number = -1
         let end: number = -1
 
         if (this.fixedItemHeight > 0) {
-            begin = viewport.visible.top / this.fixedItemHeight
+            begin = Math.floor(viewport.visible.top / this.fixedItemHeight)
             end = begin + Math.ceil(viewport.visible.height / this.fixedItemHeight)
-            console.log({ begin, end })
             return new NzRange(begin, end)
         } else {
             let checked: any[] = []

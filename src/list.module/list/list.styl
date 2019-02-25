@@ -25,10 +25,8 @@ $nz-list-item-padding ?= 0 nz-local-grid-size(4)
   justify-content: space-between
   white-space: nowrap
 
-  transition: background-color 250ms, color 250ms
-
-
   nz-theme-component-states("common", "dark", $include:"base" "hover" "disabled")
+  nz-theme-component-states("accent", "normal", $include:"selected")
 
   /*
   &:not([disabled])

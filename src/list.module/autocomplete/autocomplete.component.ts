@@ -58,6 +58,8 @@ export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit
             const selectedComponents = selection.getSelectables(null, true)
             if (selectedComponents.length && this.scroller) {
                 const last = selectedComponents[selectedComponents.length - 1]
+                this.scroller.service.velocityX = 10
+                this.scroller.service.velocityY = 10
                 this.scroller.service.scrollIntoViewport(last.el.nativeElement)
             }
             this.cdr.detectChanges()

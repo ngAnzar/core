@@ -1,3 +1,5 @@
+@require "./elevation"
+
 $nz-colors-map = json("colors.json", { hash: true })
 $nz-colors-map["grey"] = $nz-colors-map["gray"]
 $nz-colors-map["blue-grey"] = $nz-colors-map["blue-gray"]
@@ -207,12 +209,14 @@ nz-theme-component-state-colors($color, $variant, $transparent)
       "bg": {
         "default": "transparent",
         "hover": alpha($color[$variant], 0.2),
-        "ripple": alpha($color[$variant], 0.3)
+        "ripple": alpha($color[$variant], 0.3),
+        "selected": alpha($color[$variant], 0.9)
       },
       "fg": {
         "default": $color[$variant],
         "hover": $color[$variant],
-        "ripple": $color[$variant]
+        "ripple": $color[$variant],
+        "selected": $color.on[$variant],
       }
     }
   else
@@ -220,17 +224,20 @@ nz-theme-component-state-colors($color, $variant, $transparent)
       "bg": {
         "default": $color[$variant],
         "hover": alpha($color.on[$variant], 0.2),
-        "ripple": alpha($color.on[$variant], 0.3)
+        "ripple": alpha($color.on[$variant], 0.3),
+        "selected": alpha($color.on[$variant], 0.9),
       },
       "fg": {
         "default": $color.on[$variant],
         "hover": $color.on[$variant],
-        "ripple": $color.on[$variant]
+        "ripple": $color.on[$variant],
+        "selected": $color[$variant],
       }
     }
 
 
 _nz-theme-component-states-base($color)
+  // transition: background-color 250ms, color 250ms
   background-color: $color.bg.default
   color: $color.fg.default
 
@@ -240,6 +247,16 @@ _nz-theme-component-states-hover($color)
 
   &:hover .nz-ripple
     background-color: $color.bg.hover
+
+_nz-theme-component-states-selected($color)
+  &[selected]
+    background-color: $color.bg.selected
+    color: $color.fg.selected
+
+  // &[selected="keyboard"]
+  //   z-index: 3
+  //   nz-elevation: 10
+
 
 _nz-theme-component-states-disabled()
   &[disabled]
@@ -253,7 +270,6 @@ _nz-theme-component-states($color, $variant, $include)
   $normal = nz-theme-component-state-colors($theme[$color], $variant, true)
   $filled = nz-theme-component-state-colors($theme[$color], $variant, false)
 
-
   for $inc in $include
     if $inc == "base"
       _nz-theme-component-states-base($normal)
@@ -264,6 +280,11 @@ _nz-theme-component-states($color, $variant, $include)
       _nz-theme-component-states-hover($normal)
       &[variant~="filled"]
         _nz-theme-component-states-hover($filled)
+
+    else if $inc == "selected"
+      _nz-theme-component-states-selected($normal)
+      &[variant~="filled"]
+        _nz-theme-component-states-selected($filled)
 
 
 _nz-theme-cs-color-name($color, $variant)

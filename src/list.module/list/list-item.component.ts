@@ -1,5 +1,5 @@
 import {
-    Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, Optional
+    Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, Optional, HostListener
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
@@ -31,5 +31,11 @@ export class ListItemComponent {
     public constructor(
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(SelectableDirective) @Optional() public readonly selectable: SelectableDirective) {
+    }
+
+    // prevent mouse focusing
+    @HostListener("mousedown", ["$event"])
+    public onMouseDown(event: Event) {
+        event.preventDefault()
     }
 }
