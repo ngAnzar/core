@@ -5,7 +5,6 @@ import {
 
 import { Destruct } from "../../util"
 import { DragService, DragEventService } from "../../common.module"
-import { Rect } from "../../layout.module"
 import { ScrollerService, ScrollOrient } from "./scroller.service"
 
 
@@ -74,6 +73,7 @@ export class ScrollbarComponent implements OnDestroy {
 
     public readonly destruct = new Destruct()
     protected _canScroll: boolean = false
+    public scrollRatio: number = 0
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
@@ -82,7 +82,7 @@ export class ScrollbarComponent implements OnDestroy {
         @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef,
         @Attribute("orient") public readonly orient: ScrollOrient) {
 
-        this.destruct.subscription(scroller.viewportChanges).subscribe(viewport => {
+        this.destruct.subscription(scroller.vpImmediate.change).subscribe(viewport => {
             let canScroll = true
             if (this.orient === "horizontal") {
                 this.width = viewport.width - 10
@@ -100,48 +100,41 @@ export class ScrollbarComponent implements OnDestroy {
             }
         })
 
-        this.destruct.subscription(scroller.scrollChanges).subscribe(scroll => {
+        this.destruct.subscription(scroller.vpRender.scroll).subscribe(scroll => {
             if (this.orient === "horizontal") {
-                this.position = scroll.left
+                this.position = scroll.percent.left
             } else {
-                this.position = scroll.top
+                this.position = scroll.percent.top
             }
         })
 
-        let scrollerBeginPosition = scroller.position
-        let mouseOffset = 0
+        let scrollerBeginPosition = scroller.scrollPosition
         this.destruct.subscription(dragEvent.watch(el.nativeElement)).subscribe(event => {
             switch (event.type) {
                 case "begin":
-                    scrollerBeginPosition = scroller.position
-
-                    let barRect = this.bar.nativeElement.getBoundingClientRect()
-                    if (this.orient === "horizontal") {
-                        mouseOffset = barRect.left - event.current.left
-                    } else {
-                        mouseOffset = barRect.top - event.current.top
-                    }
+                    scrollerBeginPosition = scroller.scrollPosition
                     break
 
                 case "drag":
-                    let box = el.nativeElement.getBoundingClientRect()
+                    if (!this.scroller.lockMethod("drag")) {
+                        return
+                    }
+                    this.scroller.velocityX = this.scroller.velocityY = 10
                     if (this.orient === "horizontal") {
-                        const width = (this.btnVisible ? Math.max(0, this.width - this.size * 2) : this.width) - this.barWidth
-                        const left = (event.current.left - box.left) + mouseOffset
-                        this.position = Math.min(1, Math.max(0, left / width))
-                        scroller.position = {
-                            left: this.position,
-                            top: scrollerBeginPosition.top
+                        scroller.scrollPosition = {
+                            top: scrollerBeginPosition.top,
+                            left: scrollerBeginPosition.left + (event.current.x - event.begin.x) * this.scrollRatio
                         }
                     } else {
-                        const height = (this.btnVisible ? Math.max(0, this.height - this.size * 2) : this.height) - this.barHeight
-                        const top = event.current.top - box.top + mouseOffset
-                        this.position = Math.min(1, Math.max(0, top / height))
-                        scroller.position = {
-                            left: scrollerBeginPosition.left,
-                            top: this.position
+                        scroller.scrollPosition = {
+                            top: scrollerBeginPosition.top + (event.current.y - event.begin.y) * this.scrollRatio,
+                            left: scrollerBeginPosition.left
                         }
                     }
+                    break
+
+                case "end":
+                    this.scroller.releaseMethod("drag")
                     break
             }
         })
@@ -157,6 +150,7 @@ export class ScrollbarComponent implements OnDestroy {
                 self.barLeft = 5 + (self.btnVisible ? this.size : 0) + (trackWidth - self.barWidth) * this.position
 
                 self.btnWidth = this.size
+                self.scrollRatio = self.scroller.vpImmediate.scrollWidth / (trackWidth - self.barWidth)
             } else {
                 const trackHeight = self.btnVisible ? Math.max(0, this.height - self.size * 2) : this.height
                 self.barHeight = Math.min(trackHeight, this.height * 0.5)
@@ -164,6 +158,7 @@ export class ScrollbarComponent implements OnDestroy {
                 self.barTop = 5 + (self.btnVisible ? this.size : 0) + (trackHeight - self.barHeight) * this.position
 
                 self.btnHeight = this.size
+                self.scrollRatio = self.scroller.vpImmediate.scrollHeight / (trackHeight - self.barHeight)
             }
         }
         this.cdr.markForCheck()

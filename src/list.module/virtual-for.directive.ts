@@ -246,14 +246,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     protected _getVisibleNzRange(): NzRange {
-        const position = this._scroller.position
-        const viewport = this._scroller.viewport
+        const viewport = this._scroller.vpRender
         let begin: number = -1
         let end: number = -1
 
         if (this.fixedItemHeight > 0) {
-            begin = Math.floor((viewport.scrollHeight * position.top) / this.fixedItemHeight)
-            end = begin + Math.ceil(viewport.height / this.fixedItemHeight)
+            begin = viewport.visible.top / this.fixedItemHeight
+            end = begin + Math.ceil(viewport.visible.height / this.fixedItemHeight)
+            console.log({ begin, end })
             return new NzRange(begin, end)
         } else {
             let checked: any[] = []

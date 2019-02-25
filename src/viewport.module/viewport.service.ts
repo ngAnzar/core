@@ -55,8 +55,6 @@ export class ViewportService implements OnDestroy {
         if (this._menuOpened !== val) {
             this._menuOpened = val
 
-            console.log("menuOpened", val)
-
             if (val) {
                 this._menuBackWatch.on()
             } else {

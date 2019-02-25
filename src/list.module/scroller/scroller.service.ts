@@ -1,219 +1,368 @@
-import { EventEmitter, OnDestroy } from "@angular/core"
-import { Observable } from "rxjs"
-import { filter, share } from "rxjs/operators"
+import { OnDestroy, NgZone, Inject } from "@angular/core"
+import { Observable, Subject, Subscription } from "rxjs"
+import { startWith, share, filter } from "rxjs/operators"
 
+import { Destruct, IDisposable } from "../../util"
 import { Rect } from "../../layout.module"
-import { Destruct } from "../../util"
+
 
 export type ScrollOrient = "horizontal" | "vertical"
 
 
-export interface ScrollableViewport {
-    top: number,
-    left: number,
-    width: number
-    height: number
-    scrollWidth: number
-    scrollHeight: number
+export interface ScrollPosition {
+    readonly top: number;
+    readonly left: number;
 }
 
 
-export interface ScrollablePosition {
-    /** percent */
+export type ScrollingMethod = "drag" | "wheel" | "pan"
+
+
+export class ScrollEvent {
+    public constructor(
+        public readonly percent: ScrollPosition,
+        public readonly position: ScrollPosition,
+        public readonly deltaTop: number,
+        public readonly deltaLeft: number,
+        public readonly directionX: number,
+        public readonly directionY: number) {
+    }
+}
+
+
+export interface ViewportDimensions {
+    readonly scrollWidth: number
+    readonly scrollHeight: number
+    readonly width: number
+    readonly height: number
     readonly top: number
-    /** percent */
     readonly left: number
 }
 
 
-export type ScrollBy = { percent: ScrollablePosition } | { px: ScrollablePosition }
+export abstract class Viewport implements ViewportDimensions, IDisposable {
+    public abstract readonly scrollWidth: number
+    public abstract readonly scrollHeight: number
+    public abstract readonly width: number
+    public abstract readonly height: number
+    public abstract readonly top: number
+    public abstract readonly left: number
+    public abstract readonly visible: Rect
+
+    public readonly scroll: Observable<ScrollEvent> = new Subject<ScrollEvent>()
+    protected _lastEvent: ScrollEvent
+
+    public set scrollPercent(val: ScrollPosition) {
+        const old = this._scrollPercent
+
+        const oldLeft = old ? old.left : 0
+        const oldTop = old ? old.top : 0
+        const left = val ? constrainPercent(val.left) : 0
+        const top = val ? constrainPercent(val.top) : 0
+        const directionX = oldLeft > left ? -1 : oldLeft === left ? 0 : 1
+        const directionY = oldTop > top ? -1 : oldTop === top ? 0 : 1
+
+        if (directionX || directionY) {
+            const deltaTop = oldTop - top
+            const deltaLeft = oldLeft - left
+
+            this._scrollPercent = { top, left }
+
+            const pxTop = Math.round(((this.scrollHeight - this.height) * top)) || 0
+            const pxLeft = Math.round(((this.scrollWidth - this.width) * left)) || 0
+
+            this._scrollPosition = {
+                top: pxTop,
+                left: pxLeft
+            }
+            this.visible.top = pxTop
+            this.visible.left = pxLeft;
+
+            (this.scroll as Subject<ScrollEvent>)
+                .next(this._lastEvent = new ScrollEvent(this._scrollPercent, this._scrollPosition, deltaTop, deltaLeft, directionX, directionY))
+        }
+    }
+    public get scrollPercent(): ScrollPosition { return this._scrollPercent }
+    protected _scrollPercent: ScrollPosition = { top: 0, left: 0 }
 
 
-export class ScrollEvent implements ScrollablePosition {
-    public constructor(
-        public readonly scroller: ScrollerService,
-        public readonly top: number,
-        public readonly left: number,
-        public readonly deltaTop: number,
-        public readonly deltaLeft: number,
-        public readonly orient: ScrollOrient,
-        public readonly direction: number) {
+    public set scrollPosition(val: ScrollPosition) {
+        const left = val ? val.left || 0 : 0
+        const top = val ? val.top || 0 : 0
+
+        this.scrollPercent = {
+            top: top / (this.scrollHeight - this.height),
+            left: left / (this.scrollHeight - this.height)
+        }
+    }
+    public get scrollPosition(): ScrollPosition { return this._scrollPosition }
+    protected _scrollPosition: ScrollPosition = { top: 0, left: 0 }
+
+    public dispose() {
+        (this.scroll as Subject<any>).complete()
+        delete (this as any).scroll
+    }
+
+    public abstract update(dim: ViewportDimensions): boolean;
+}
+
+
+export class ImmediateViewport extends Viewport {
+    public readonly scrollWidth: number = 0
+    public readonly scrollHeight: number = 0
+    public readonly width: number = 0
+    public readonly height: number = 0
+    public readonly top: number = 0
+    public readonly left: number = 0
+    public readonly visible: Rect = new Rect(0, 0, 0, 0)
+
+    public readonly change: Observable<Viewport> = new Subject<Viewport>()
+
+    public update(dim: ViewportDimensions): boolean {
+        dim = dim || {} as any
+
+        const top = dim.top || 0
+        const left = dim.left || 0
+        const width = dim.width || 0
+        const height = dim.height || 0
+        const scrollWidth = Math.max(dim.scrollWidth || 0, width)
+        const scrollHeight = Math.max(dim.scrollHeight || 0, height)
+
+        if (this.top !== top
+            || this.left !== left
+            || this.width !== left
+            || this.height !== height
+            || this.scrollWidth === scrollWidth
+            || this.scrollHeight === scrollHeight) {
+
+            this.visible.width = width
+            this.visible.height = height
+            Object.assign(this, {
+                top, left, width, height, scrollWidth, scrollHeight
+            })
+
+            const percent = this.scrollPercent
+            const pxTop = Math.round(((this.scrollHeight - this.height) * percent.top)) || 0
+            const pxLeft = Math.round(((this.scrollWidth - this.width) * percent.left)) || 0
+
+            this._scrollPosition = {
+                top: pxTop,
+                left: pxLeft
+            }
+            this.visible.top = pxTop
+            this.visible.left = pxLeft;
+
+            (this.change as Subject<Viewport>).next(this)
+            return true
+        }
+        return false
+    }
+
+    public dispose() {
+        (this.change as Subject<any>).complete()
+        delete (this as any).change
+        super.dispose()
     }
 }
 
 
-export class ScrollVpEvent extends ScrollEvent {
-    public ack() {
-        (this.scroller.scrollChanges as EventEmitter<ScrollEvent>)
-            .emit(new ScrollEvent(
-                this.scroller,
-                this.top, this.left,
-                this.deltaTop, this.deltaLeft,
-                this.orient, this.direction))
-    }
-}
+export class RenderedViewport extends Viewport {
+    public get scrollWidth(): number { return this.main.scrollWidth }
+    public get scrollHeight(): number { return this.main.scrollHeight }
+    public get width(): number { return this.main.width }
+    public get height(): number { return this.main.height }
+    public get top(): number { return this.main.top }
+    public get left(): number { return this.main.left }
+    public readonly visible: Rect = new Rect(0, 0, 0, 0)
 
+    protected vpChange: Subscription
 
-export class ScrollerService implements OnDestroy {
-    public orient: ScrollOrient = "vertical"
-    public readonly destruct = new Destruct()
+    public constructor(public readonly main: ImmediateViewport) {
+        super()
 
-    public set viewport(val: ScrollableViewport) {
-        let old = this._viewport
-
-        if (val) {
-            val.scrollWidth = Math.max(val.scrollWidth, val.width)
-            val.scrollHeight = Math.max(val.scrollHeight, val.height)
-        }
-
-        if (!old || !val
-            || old.top !== val.top
-            || old.left !== val.left
-            || old.width !== val.width
-            || old.height !== val.height
-            || old.scrollHeight !== val.scrollHeight
-            || old.scrollWidth !== val.scrollWidth) {
-            this._viewport = val;
-            (this.viewportChanges as EventEmitter<ScrollableViewport>).emit(val)
-        }
-    }
-    public get viewport(): ScrollableViewport { return this._viewport }
-    private _viewport: ScrollableViewport = { top: 0, left: 0, width: 0, height: 0, scrollWidth: 0, scrollHeight: 0 }
-    public readonly viewportChanges: Observable<ScrollableViewport> = this.destruct.subject(new EventEmitter())
-
-
-    public set position(val: ScrollablePosition) {
-        if (val) {
-            const old = this._position
-            this._position = val
-            let direction: number
-            let orient: ScrollOrient
-
-            if (old) {
-                let leftChanged = old.left !== val.left
-                let topChanged = old.top !== val.top
-
-
-                if (leftChanged || topChanged) {
-                    orient = this.orient === "horizontal" && leftChanged
-                        ? "horizontal"
-                        : this.orient === "vertical" && topChanged
-                            ? "vertical"
-                            : leftChanged
-                                ? "horizontal"
-                                : "vertical"
-
-                    if (orient === "horizontal") {
-                        direction = old.left <= val.left ? 1 : -1
-                    } else {
-                        direction = old.top <= val.top ? 1 : -1
-                    }
-                }
+        this.vpChange = main.change.pipe(startWith()).subscribe(() => {
+            this.visible.width = main.width
+            this.visible.height = main.height
+            if (this._lastEvent) {
+                (this.scroll as Subject<ScrollEvent>).next(this._lastEvent)
             }
+        })
+    }
 
-            if (orient) {
-                (this.scrollVp as EventEmitter<ScrollVpEvent>)
-                    .emit(new ScrollVpEvent(this,
-                        val.top, val.left,
-                        (old ? val.top - old.top : 0),
-                        (old ? val.left - old.left : 0),
-                        orient, direction))
-            }
+    public update(dim: ViewportDimensions): boolean {
+        throw new Error("can't update rendered viewport")
+    }
+
+    public dispose() {
+        if (this.vpChange) {
+            this.vpChange.unsubscribe()
+            delete this.vpChange
         }
-    }
-    public get position(): ScrollablePosition { return this._position }
-    private _position: ScrollablePosition = { left: 0, top: 0 }
-
-    public get pxPosition(): ScrollablePosition {
-        const viewport = this.viewport
-        return {
-            top: ((viewport.scrollHeight - viewport.height) * this.position.top) || 0,
-            left: ((viewport.scrollWidth - viewport.width) * this.position.left) || 0,
-        }
-    }
-
-    public readonly scrollVp: Observable<ScrollVpEvent> = this.destruct.subject(new EventEmitter())
-    public readonly scrollChanges: Observable<ScrollEvent> = this.destruct.subject(new EventEmitter())
-    public readonly primaryScroll: Observable<ScrollEvent> = this.scrollChanges
-        .pipe(filter(event => event.orient === this.orient), share())
-
-    public scroll(opt: ScrollBy) {
-        if ("percent" in opt) {
-            this.position = {
-                left: constrainPercent(opt.percent.left == null ? this.position.left : opt.percent.left),
-                top: constrainPercent(opt.percent.top == null ? this.position.top : opt.percent.top)
-            }
-        } else if ("px" in opt) {
-            const viewport = this.viewport
-            this.position = {
-                left: constrainPercent(opt.px.left == null ? this.position.left : opt.px.left / (viewport.scrollWidth - viewport.width)) || 0,
-                top: constrainPercent(opt.px.top == null ? this.position.top : opt.px.top / (viewport.scrollHeight - viewport.height)) || 0
-            }
-        }
-    }
-
-    public scrollIntoViewport(el: HTMLElement): void {
-        const visibleRect = this.getVisibleRect()
-        const elRect = this.getElementLocalRect(el)
-        let pxPos = this.pxPosition as { top: number, left: number }
-
-        let topSpace = elRect.top - visibleRect.top
-        if (topSpace < 0) {
-            pxPos.top -= Math.abs(topSpace)
-        } else {
-            let bottomSpace = visibleRect.bottom - elRect.bottom
-            if (bottomSpace < 0) {
-                pxPos.top -= bottomSpace
-            }
-        }
-
-        let leftSpace = elRect.left - visibleRect.left
-        if (leftSpace < 0) {
-            pxPos.left -= Math.abs(leftSpace)
-        } else {
-            let rightSpace = visibleRect.right - elRect.right
-            if (rightSpace < 0) {
-                pxPos.left -= rightSpace
-            }
-        }
-
-        this.scroll({ px: pxPos })
-    }
-
-    public elementIsVisible(el: HTMLElement): boolean {
-        // TODO: improve speed
-        const visibleRect = this.getVisibleRect()
-        const elRect = this.getElementLocalRect(el)
-        return visibleRect.contains(elRect)
-    }
-
-    public getElementLocalRect(el: HTMLElement): Rect {
-        const bbox = el.getBoundingClientRect()
-        const pxPos = this.pxPosition
-        return new Rect(
-            bbox.left - this.viewport.left + pxPos.left,
-            bbox.top - this.viewport.top + pxPos.top,
-            bbox.width,
-            bbox.height
-        )
-    }
-
-    public getVisibleRect(): Rect {
-        const pxPos = this.pxPosition
-        return new Rect(
-            pxPos.left,
-            pxPos.top,
-            this.viewport.width,
-            this.viewport.height
-        )
-    }
-
-    public ngOnDestroy() {
-        this.destruct.run()
     }
 }
 
 
 function constrainPercent(num: number): number {
     return Math.min(1, Math.max(0, num))
+}
+
+
+
+export class ScrollerService implements OnDestroy {
+    public readonly destruct = new Destruct()
+    public readonly vpImmediate: ImmediateViewport
+    public readonly vpRender: RenderedViewport
+
+    public set scrollPercent(val: ScrollPosition) { this.vpImmediate.scrollPercent = val }
+    public get scrollPercent(): ScrollPosition { return this.vpImmediate.scrollPercent }
+
+    public set scrollPosition(val: ScrollPosition) { this.vpImmediate.scrollPosition = val }
+    public get scrollPosition(): ScrollPosition { return this.vpImmediate.scrollPosition }
+
+    public get verticalOverflow(): number { return Math.max(0, this.vpImmediate.scrollHeight - this.vpImmediate.height) }
+    public get horizontalOverflow(): number { return Math.max(0, this.vpImmediate.scrollWidth - this.vpImmediate.width) }
+
+    public readonly scroll: Observable<ScrollEvent>
+    public readonly primaryScroll: Observable<ScrollEvent>
+
+    public velocityX: number = 1 // pixel / ms
+    public velocityY: number = 1 // pixel / ms
+    private activeMethod: ScrollingMethod = null
+    private rafId: any
+    private _animationTick: (timestamp: number) => void
+
+    public constructor(@Inject(NgZone) protected readonly zone: NgZone) {
+
+        this.zone.runOutsideAngular(() => {
+            (this as any).vpImmediate = this.destruct.disposable(new ImmediateViewport());
+            (this as any).vpRender = this.destruct.disposable(new RenderedViewport(this.vpImmediate))
+
+            let animBegin = 0
+            this._animationTick = (timestamp: number): void => {
+                if (this.destruct.done) {
+                    return
+                }
+
+                const tpos = (this.vpImmediate as any)._scrollPosition as ScrollPosition
+                const rpos = (this.vpRender as any)._scrollPosition as ScrollPosition
+
+                let topDiff = tpos.top - rpos.top
+                let leftDiff = tpos.left - rpos.left
+
+                if (topDiff !== 0 || leftDiff !== 0) {
+                    if (!animBegin) {
+                        animBegin = timestamp
+                    }
+
+                    const progress = timestamp - animBegin
+                    if (progress !== 0) {
+                        let nextTopDiff = Math.round(topDiff * this.velocityY / progress)
+                        let nextLeftDiff = Math.round(leftDiff * this.velocityX / progress)
+
+                        this.vpRender.scrollPosition = {
+                            top: rpos.top + (nextTopDiff === 0 ? topDiff : nextTopDiff),
+                            left: rpos.left + (nextLeftDiff === 0 ? leftDiff : nextLeftDiff)
+                        }
+                    }
+                    animBegin = timestamp
+                } else {
+                    animBegin = 0
+                }
+
+                this.rafId = requestAnimationFrame(this._animationTick)
+            }
+        })
+
+        this.destruct.any(() => {
+            if (this.rafId) {
+                cancelAnimationFrame(this.rafId)
+                delete this.rafId
+            }
+        })
+
+        this.scroll = this.vpRender.scroll.pipe(share())
+        this.primaryScroll = this.scroll
+            .pipe(filter(v => v.directionY !== 0)) // TODO primary scroll config
+            .pipe(share())
+
+        this.destruct.subscription(this.vpImmediate.change).subscribe(event => {
+            if (this.horizontalOverflow || this.verticalOverflow) {
+                if (!this.rafId) {
+                    this.zone.runOutsideAngular(() => {
+                        this.rafId = requestAnimationFrame(this._animationTick)
+                    })
+                }
+            } else if (this.rafId) {
+                cancelAnimationFrame(this.rafId)
+                delete this.rafId
+            }
+        })
+    }
+
+    public lockMethod(method: ScrollingMethod): boolean {
+        if (!this.activeMethod) {
+            this.activeMethod = method
+            // console.log("LOCKED", method)
+            return true
+        } else if (this.activeMethod === method) {
+            return true
+        }
+        return false
+    }
+
+    public releaseMethod(method: ScrollingMethod): void {
+        if (this.activeMethod && this.activeMethod === method) {
+            // console.log("RELEASE", method)
+            this.activeMethod = null
+        }
+    }
+
+    // TODO: át kell írni, hogy ne használjon renderelt információkat
+    public scrollIntoViewport(el: HTMLElement): void {
+        const visibleRect = this.vpRender.visible
+        const elRect = this.getElementRenderedRect(el)
+        let pos = { ...this.scrollPosition }
+
+        let topSpace = elRect.top - visibleRect.top
+        if (topSpace < 0) {
+            pos.top -= Math.abs(topSpace)
+        } else {
+            let bottomSpace = visibleRect.bottom - elRect.bottom
+            if (bottomSpace < 0) {
+                pos.top -= bottomSpace
+            }
+        }
+
+        let leftSpace = elRect.left - visibleRect.left
+        if (leftSpace < 0) {
+            pos.left -= Math.abs(leftSpace)
+        } else {
+            let rightSpace = visibleRect.right - elRect.right
+            if (rightSpace < 0) {
+                pos.left -= rightSpace
+            }
+        }
+
+        this.scrollPosition = pos
+    }
+
+    public elementIsVisible(el: HTMLElement): boolean {
+        const elRect = this.getElementRenderedRect(el)
+        return this.vpRender.visible.contains(elRect)
+    }
+
+    public getElementRenderedRect(el: HTMLElement): Rect {
+        const bbox = el.getBoundingClientRect()
+        const pos = this.vpRender.scrollPosition
+        return new Rect(
+            bbox.left - this.vpRender.left + pos.left,
+            bbox.top - this.vpRender.top + pos.top,
+            bbox.width,
+            bbox.height)
+    }
+
+
+    public ngOnDestroy() {
+        this.destruct.run()
+    }
 }

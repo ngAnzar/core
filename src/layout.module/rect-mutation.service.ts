@@ -1,4 +1,4 @@
-import { Injectable, ElementRef } from "@angular/core"
+import { Injectable, ElementRef, NgZone, Inject } from "@angular/core"
 import { Observable, Observer, animationFrameScheduler, merge, fromEvent } from "rxjs"
 import { debounceTime, finalize, share } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
@@ -14,6 +14,9 @@ export type Position = { x: number, y: number }
 export class RectMutationService {
     protected resizeWatchers: Watchers<Observable<Dimension>> = new Map()
     protected positionWatchers: Watchers<Observable<Position>> = new Map()
+
+    public constructor(@Inject(NgZone) protected readonly zone: NgZone) {
+    }
 
     public watch(element: HTMLElement | ElementRef<HTMLElement>): Observable<Rect> {
         if ("nativeElement" in element) {
@@ -78,35 +81,37 @@ export class RectMutationService {
     }
 
     protected createResizeWatcher(element: HTMLElement): Observable<Dimension> {
-        return Observable.create((observer: Observer<Dimension>) => {
-            const resizeObserver = (window as any).ResizeObserver as any
-            if (resizeObserver) {
-                const ro = new resizeObserver((entries: any) => {
-                    for (const entry of entries) {
-                        observer.next({
-                            width: entry.contentRect.left + entry.contentRect.right,
-                            height: entry.contentRect.top + entry.contentRect.bottom
-                        })
+        return this.zone.runOutsideAngular(() => {
+            return Observable.create((observer: Observer<Dimension>) => {
+                const resizeObserver = (window as any).ResizeObserver as any
+                if (resizeObserver) {
+                    const ro = new resizeObserver((entries: any) => {
+                        for (const entry of entries) {
+                            observer.next({
+                                width: entry.contentRect.left + entry.contentRect.right,
+                                height: entry.contentRect.top + entry.contentRect.bottom
+                            })
+                        }
+
+                    })
+                    ro.observe(element)
+
+                    return () => {
+                        ro.disconnect()
                     }
+                } else {
+                    const detector = resizeDetector({ strategy: "scroll" })
+                    const listener = (v: any) => {
+                        observer.next({ width: element.offsetWidth, height: element.offsetHeight })
+                    }
+                    detector.listenTo(element, listener)
 
-                })
-                ro.observe(element)
-
-                return () => {
-                    ro.disconnect()
+                    return () => {
+                        detector.uninstall(element)
+                    }
                 }
-            } else {
-                const detector = resizeDetector({ strategy: "scroll" })
-                const listener = (v: any) => {
-                    observer.next({ width: element.offsetWidth, height: element.offsetHeight })
-                }
-                detector.listenTo(element, listener)
-
-                return () => {
-                    detector.uninstall(element)
-                }
-            }
-        }).pipe(debounceTime(0, animationFrameScheduler), share())
+            }).pipe(debounceTime(0, animationFrameScheduler), share())
+        })
     }
 
     protected getResizeWatcher(element: HTMLElement): Observable<Dimension> {
@@ -126,25 +131,27 @@ export class RectMutationService {
     }
 
     protected createPositionWatcher(element: HTMLElement): Observable<Position> {
-        return Observable.create((observer: Observer<Position>) => {
-            let rect = element.getBoundingClientRect()
-            let rafId: any
+        return this.zone.runOutsideAngular(() => {
+            return Observable.create((observer: Observer<Position>) => {
+                let rect = element.getBoundingClientRect()
+                let rafId: any
 
-            const watcher = () => {
-                let current = element.getBoundingClientRect()
-                if (current.top !== rect.top || current.left !== rect.left) {
-                    rect = current
-                    observer.next({ x: current.left, y: current.top })
+                const watcher = () => {
+                    let current = element.getBoundingClientRect()
+                    if (current.top !== rect.top || current.left !== rect.left) {
+                        rect = current
+                        observer.next({ x: current.left, y: current.top })
+                    }
+                    rafId = requestAnimationFrame(watcher)
                 }
+
                 rafId = requestAnimationFrame(watcher)
-            }
 
-            rafId = requestAnimationFrame(watcher)
-
-            return () => {
-                cancelAnimationFrame(rafId)
-            }
-        }).pipe(share())
+                return () => {
+                    cancelAnimationFrame(rafId)
+                }
+            }).pipe(share())
+        })
     }
 
     protected getPositonWatcher(element: HTMLElement): Observable<Position> {

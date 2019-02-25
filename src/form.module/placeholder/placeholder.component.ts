@@ -19,7 +19,6 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
     public set hideLabel(val: boolean) {
         if (this._hideLabel !== val) {
             this._hideLabel = val
-            console.log("hideLabel", val)
             this.cdr.markForCheck()
         }
     }

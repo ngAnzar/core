@@ -21,7 +21,14 @@ export type KeyWatch = {
     shift?: boolean,
     alt?: boolean,
     key: Key,
-    type: "up" | "down"
+    type: "up" | "down",
+
+    // TODO: implement,
+    // egymás utáni gomb nyomásokat figyel, hogy ugyan az legyen mondjuk 2x
+    continous?: {
+        count: number,
+        duration: number
+    }
 }
 
 export type KeyWatchDef = KeyWatch | KeyWatch[] | Key | Key[]

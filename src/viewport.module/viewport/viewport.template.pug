@@ -1,9 +1,13 @@
 :stylus
+  .viewport
+    position: relative
+
   .navbar
     z-index: 10
 
   .content-wrap
     z-index: 5
+    max-height: calc(100% - 56px)
     position: relative
 
   .sidenav
@@ -27,10 +31,10 @@
     background: $theme.base.on.normal
 
 
-div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="center stretch")
+div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .nz-navbar.navbar(fxFlex="none")
 
-  div.content-wrap(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch")
+  div.content-wrap(fxFlex="1 1 0", fxLayout="row", fxLayoutAlign="start stretch")
     .nz-sidenav.sidenav(#sidenav, fxFlex="none", fxLayout="column", fxLayoutAlign="start stretch", [@animateSidenav]="animationState")
 
     .nz-viewport-content.content(fxFlex="grow", [@animateContent]="animationState")

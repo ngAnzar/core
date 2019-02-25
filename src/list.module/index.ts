@@ -29,10 +29,9 @@ export { MenuComponent, MenuItemDirective, MenuItemActionEvent, PopupMenuCompone
 // import { Scrollable, ScrollableNativeDirective } from "./scroller/scrollable.directive"
 import { ScrollbarComponent } from "./scroller/scrollbar.component"
 import { ScrollerComponent } from "./scroller/scroller.component"
-import { ScrollBy, ScrollEvent, ScrollOrient, ScrollerService } from "./scroller/scroller.service"
+import { ScrollEvent, ScrollOrient, ScrollerService } from "./scroller/scroller.service"
 export {
-    ScrollBy, ScrollEvent, ScrollOrient, ScrollerService, ScrollbarComponent, ScrollerComponent,
-    // Scrollable, ScrollableNativeDirective
+    ScrollEvent, ScrollOrient, ScrollerService, ScrollbarComponent, ScrollerComponent
 }
 
 

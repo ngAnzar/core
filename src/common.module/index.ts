@@ -43,6 +43,9 @@ import { MediaQueryService } from "./services/media-query.service"
 export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService }
 
 
+import { HAMMER_CONFIG } from "./hammer"
+
+
 const content = [
     ButtonComponent,
 
@@ -76,6 +79,7 @@ const content = [
     declarations: content,
     exports: content,
     providers: [
+        HAMMER_CONFIG,
         LocaleService,
         FileDownloadService,
         ScriptService,

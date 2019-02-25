@@ -1,9 +1,11 @@
 import { Component, Inject, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core"
 import { merge } from "rxjs"
-import { tap, debounceTime } from "rxjs/operators"
+import { tap, debounceTime, race } from "rxjs/operators"
 
-import { ScrollerService, ScrollablePosition, ScrollVpEvent } from "./scroller.service"
+import { ScrollerService } from "./scroller.service"
 import { RectMutationService, Dimension, Rect } from "../../layout.module"
+import { ScrollEvent, ScrollPosition } from "./scroller.service";
+
 
 
 
@@ -11,15 +13,14 @@ import { RectMutationService, Dimension, Rect } from "../../layout.module"
     selector: ".nz-scroller",
     templateUrl: "./scroller.template.pug",
     providers: [
-        { provide: ScrollerService, useClass: ScrollerService }
+        ScrollerService
     ]
 })
 export class ScrollerComponent implements AfterViewInit {
     @ViewChild("scrollable") protected readonly scrollable: ElementRef<HTMLElement>
 
-    private containerDim: Rect
-    private scrollableDim: Dimension
-    private scrollPos: ScrollablePosition
+    private _containerDim: Rect
+    private _scrollableDim: Dimension
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
@@ -28,49 +29,44 @@ export class ScrollerComponent implements AfterViewInit {
     }
 
     public ngAfterViewInit() {
-        const scrollWatcher = this.service.destruct.subscription(this.service.scrollVp)
-            .pipe(tap(this._scroll))
+        this.service.destruct.subscription(this.service.vpRender.scroll)
+            .subscribe(this._scroll)
 
-        const dimWatchers = merge(
-            this.service.destruct.subscription(this.rectMutation.watch(this.el))
-                .pipe(tap(dim => this.containerDim = dim)),
-            this.service.destruct.subscription(this.rectMutation.watchDimension(this.scrollable))
-                .pipe(tap(dim => this.scrollableDim = dim)))
+        this.service.destruct.subscription(this.rectMutation.watch(this.el))
+            .pipe(tap(v => this._containerDim = v))
+            .subscribe(this._updateScroll)
 
-        const allWatch = merge(scrollWatcher, dimWatchers)
-
-        this.service.destruct.subscription(allWatch)
-            .pipe(debounceTime(5))
+        this.service.destruct.subscription(this.rectMutation.watchDimension(this.scrollable))
+            .pipe(tap(v => this._scrollableDim = v))
             .subscribe(this._updateScroll)
     }
 
     protected _updateScroll = () => {
-        if (!this.scrollableDim || !this.containerDim) {
+        if (!this._scrollableDim || !this._containerDim) {
             return
         }
 
-        this.service.viewport = {
-            top: this.containerDim.top,
-            left: this.containerDim.left,
-            width: this.containerDim.width,
-            height: this.containerDim.height,
-            scrollWidth: this.scrollableDim.width,
-            scrollHeight: this.scrollableDim.height
-        }
-
-        const pos = this.service.pxPosition
-        this.scrollable.nativeElement.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
+        this.service.vpImmediate.update({
+            top: this._containerDim.top,
+            left: this._containerDim.left,
+            width: this._containerDim.width,
+            height: this._containerDim.height,
+            scrollWidth: this._scrollableDim.width,
+            scrollHeight: this._scrollableDim.height
+        })
     }
 
-    protected _scroll = (event: ScrollVpEvent) => {
-        this.scrollPos = this.service.position
-        this._updateScroll()
-        event.ack()
-        // setTimeout(event.ack.bind(event), 10)
+    protected _scroll = (event: ScrollEvent) => {
+        const pos = this.service.vpRender.scrollPosition
+        this.scrollable.nativeElement.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
     }
 
     @HostListener("wheel", ["$event"])
     public onMouseScroll(event: WheelEvent) {
+        if (!this.service.lockMethod("wheel")) {
+            return
+        }
+
         if (event.deltaY) {
             let deltaX = 0
             let deltaY = 0
@@ -80,13 +76,57 @@ export class ScrollerComponent implements AfterViewInit {
                 deltaY = (event.deltaY < 0 ? -1 : 1) * 90
             }
 
-            const pos = this.service.pxPosition
-            this.service.scroll({
-                px: {
-                    left: pos.left + deltaX,
-                    top: pos.top + deltaY
-                }
-            })
+            this.service.velocityX = 1
+            this.service.velocityY = 1
+
+            const pos = this.service.scrollPosition
+            this.service.scrollPosition = {
+                top: pos.top + deltaY,
+                left: pos.left + deltaX
+            }
+        }
+
+        this.service.releaseMethod("wheel")
+    }
+
+    private _panStartPos: ScrollPosition
+
+    @HostListener("panstart", ["$event"])
+    public onPanStart(event: any) {
+        if (this.service.lockMethod("pan")) {
+            this._panStartPos = this.service.scrollPosition
+        }
+    }
+
+    @HostListener("pan", ["$event"])
+    public onPan(event: any) {
+        if (!this.service.lockMethod("pan")) {
+            return
+        }
+
+        let velocity = 5
+        let modifierX = 1
+        let modifierY = 1
+
+        if (event.isFinal) {
+            velocity = Math.abs(event.velocity)
+            if (event.additionalEvent === "panup" || event.additionalEvent === "pandown") {
+                modifierY = velocity * 5
+            } else {
+                modifierX = velocity * 5
+            }
+            velocity = 2
+        }
+
+        this.service.velocityX = this.service.velocityY = velocity
+
+        let top = this._panStartPos.top - (event.deltaY * modifierY)
+        let left = this._panStartPos.top - (event.deltaX * modifierX)
+
+        this.service.scrollPosition = { top, left }
+
+        if (event.isFinal) {
+            this.service.releaseMethod("pan")
         }
     }
 }

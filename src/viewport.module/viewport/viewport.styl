@@ -12,3 +12,11 @@
 .nz-viewport-content
   position: relative
   background-color: $theme.base.light
+
+  > *
+    max-height: 100% !important
+    max-width: 100% !important
+
+  &.ng-animating
+    .nz-scrollbar
+      display: none

@@ -2,12 +2,7 @@
   .menu-item
     cursor: pointer
 
-  .scroller
-    max-height: inherit
-    max-width: inherit
-
-
-.nz-list.nz-scroller.scroller
+.nz-list.nz-scroller.scroller(fxFlex="grow")
   ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
     .nz-list-item.menu-item
       ng-template(bind-ngTemplateOutlet="menuItem.tpl")

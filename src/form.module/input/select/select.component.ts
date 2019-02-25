@@ -535,8 +535,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _onKeyup(event: KeyboardEvent) {
         this.lastKeyup = event.keyCode
         if (event.keyCode === ESCAPE) {
-            event.preventDefault()
-            event.stopImmediatePropagation()
+            //event.preventDefault()
+            //event.stopImmediatePropagation()
         }
     }
 
