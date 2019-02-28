@@ -10,5 +10,5 @@ mixin nz-select-field(name, label, data)
     label= label
     .nz-select(bind-data-source=data)&attributes(selectAttrs)
     .nz-postfix
-      i.nz-arrow-down(on-click=`${selectId}.opened=!${selectId}.opened`)
+      i.nz-arrow-down(on-tap=`${selectId}.opened=!${selectId}.opened`)
     block

@@ -31,7 +31,7 @@
   div.text-container(#info)
     span.text {{ infoText || "" }}
 
-  button.nz-fab.hidebutton(*ngIf="state === 'failure'" on-click="layerRef.hide()" color="accent")
+  button.nz-fab.hidebutton(*ngIf="state === 'failure'" on-tap="layerRef.hide()" color="accent")
     i.nz-icon(class=icon("mdi/close"))
 
   //- div.text(#success bind-innerHTML="options.success")

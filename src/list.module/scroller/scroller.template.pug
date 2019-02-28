@@ -1,15 +1,12 @@
 :stylus
   .scrollable
-    //transition: transform 10ms
-    //- min-width: 100%
-    //- min-height: 100%
-    display: grid
-
-
-//- div {{ lastEvent.type }} -- {{ lastEvent.additionalEvent }}
+    min-width: 100%
+    min-height: 100%
+    display: inline-block
 
 div.scrollable(#scrollable)
   ng-content
 
-.nz-scrollbar(orient="horizontal")
-.nz-scrollbar(orient="vertical")
+ng-template([ngIf]="!hideScrollbar")
+  .nz-scrollbar(orient="horizontal")
+  .nz-scrollbar(orient="vertical")

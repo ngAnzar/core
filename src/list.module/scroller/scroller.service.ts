@@ -92,7 +92,7 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
 
         this.scrollPercent = {
             top: top / (this.scrollHeight - this.height),
-            left: left / (this.scrollHeight - this.height)
+            left: left / (this.scrollWidth - this.width)
         }
     }
     public get scrollPosition(): ScrollPosition { return this._scrollPosition }

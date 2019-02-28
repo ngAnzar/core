@@ -21,6 +21,6 @@ div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="
     ng-template(nzViewportArea="topRight")
 
 ng-template(nzViewportItem="topLeft:10")
-  button.nz-fab(variant="medium", [disabled]="vps.menuDisabled", on-click="vps.menuOpened=!vps.menuOpened")
+  button.nz-fab(fxFlex="none", variant="medium", [disabled]="vps.menuDisabled", on-tap="vps.menuOpened=!vps.menuOpened")
     i.nz-icon(*ngIf="vps.menuOpened", class=icon("mdi/backburger"))
     i.nz-icon(*ngIf="!vps.menuOpened", class=icon("mdi/menu"))

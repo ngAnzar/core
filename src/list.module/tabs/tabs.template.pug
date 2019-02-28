@@ -1,0 +1,39 @@
+:stylus
+  @require "./tabs"
+
+  .tabcontents
+    position: relative
+
+  .label-scroller
+    height: $nz-tab-label-height
+
+
+
+div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
+  .nz-scroller.label-scroller(fxFlex="none", hideScrollbar)
+    .nz-tab-labels(fxLayout="row", fxLayoutAlign="start stretch")
+      .nz-tab-label(
+        fxFlex="noshrink",
+        fxLayout="row",
+        fxLayoutAlign="center center",
+        *ngFor="let tab of tabs; let i=index",
+        on-tap="selectedIndex=i",
+        [attr.disabled]="tab.disabled ? '' : null")
+        ng-template([ngTemplateOutlet]="tab.labelTpl")
+        .nz-ripple
+
+      .nz-tab-underline(
+        #underline,
+        [style.left.px]="underline.parentNode.children[selectedIndex]!.offsetLeft",
+        [style.width.px]="underline.parentNode.children[selectedIndex]!.offsetWidth")
+
+  .tabcontents(fxFlex="grow", fxLayout="row", fxLayoutAlign="start stretch")
+    .nz-tab-content(
+      fxFlex="grow",
+      fxLayout="column",
+      fxLayoutAlign="start stretch",
+      *ngFor="let tab of tabs; let i=index",
+      style="visibility: hidden",
+      [@tabSwitch]="tabSwitch[i]")
+      ng-template([ngIf]="tabSwitch[i]")
+        ng-template([ngTemplateOutlet]="tab.contentTpl")

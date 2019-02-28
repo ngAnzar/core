@@ -1,0 +1,59 @@
+@require "../../util"
+
+$nz-tab-label-height ?= nz-local-grid-size(12)
+$nz-tab-label-padding ?= 0 nz-local-grid-size(4)
+
+
+.nz-tab-label
+  position: relative
+  height: $nz-tab-label-height
+  padding: $nz-tab-label-padding
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+  cursor: pointer
+  nz-typo: $typo.button
+
+.nz-tab-labels
+  height: $nz-tab-label-height
+  position: relative
+
+.nz-tab-underline
+  position: absolute
+  bottom: -1px
+  height: 2px
+  transition: all 400ms
+
+.nz-tab-content
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+
+
+__nz-tabs-color-theme($color)
+  .nz-tab-labels
+    color: $color.fg.default
+    background-color: $color.bg.default
+    border-bottom: 1px solid $color.bg.hover
+
+  .nz-tab-label
+    .nz-ripple-effect
+      background-color: $color.bg.ripple
+
+    &:hover .nz-ripple
+      background-color: $color.bg.hover
+
+  .nz-tab-underline
+    background-color: $color.line.default
+
+.nz-tabs
+  nz-theme-component-colors(__nz-tabs-color-theme)
+
+  .nz-tab-label[disabled]
+    cursor: default !important
+    opacity: 0.3 !important
+
+    .nz-ripple
+      display: none !important

@@ -5,4 +5,4 @@ mixin nz-select-field(label, source, width)
     label= label
     .nz-select(bind-data-source=source #select)
     .nz-postfix
-      i.nz-arrow-down(on-click="select.opened=!select.opened")
+      i.nz-arrow-down(on-tap="select.opened=!select.opened")

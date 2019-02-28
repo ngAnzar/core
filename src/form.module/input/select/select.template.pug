@@ -79,7 +79,7 @@ div.select-input
     on-input="_onInput($event)"
     style="flex:1")
 
-div.trigger(*ngIf="!hideTrigger", on-click="_onTriggerClick($event)")
+div.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)")
   i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/menu-down"))}'`)
 
 ng-template(#default_selected_single let-item)

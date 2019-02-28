@@ -40,5 +40,5 @@ block buttons
         bind-color="button.color"
         bind-attr.variant="button.variant"
         bind-attr.type="button.type"
-        on-click="_handleButtonClick($event, button.role)") {{ button.label }}
+        on-tap="_handleButtonClick($event, button.role)") {{ button.label }}
       div.spacer(*ngIf="button.role === 'spacer'")

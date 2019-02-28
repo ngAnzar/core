@@ -72,7 +72,7 @@ export class RippleRef implements IDisposable {
         window.getComputedStyle(this.rippleEl).getPropertyValue("opacity")
 
         this.rippleEl.style.opacity = "1"
-        this.rippleEl.style.transform = this.config.yoyo ? `scale(${YOYO_SCALE_1})` : "scale(1)"
+        this.rippleEl.style.transform = this.config.yoyo ? `scale(${YOYO_SCALE_1})` : "scale(1.1)"
 
         this.destruct.element(this.rippleEl)
 

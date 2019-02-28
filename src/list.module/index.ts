@@ -35,6 +35,11 @@ export {
 }
 
 
+import { TabsComponent } from "./tabs/tabs.component"
+import { TabComponent } from "./tabs/tab.component"
+export { TabsComponent, TabComponent }
+
+
 import { VirtualForDirective } from "./virtual-for.directive"
 
 
@@ -63,6 +68,10 @@ import { VirtualForDirective } from "./virtual-for.directive"
         // ScrollableNativeDirective,
         ScrollbarComponent,
         ScrollerComponent,
+
+        TabsComponent,
+        TabComponent,
+
         VirtualForDirective
     ],
     exports: [
@@ -79,6 +88,10 @@ import { VirtualForDirective } from "./virtual-for.directive"
         // ScrollableNativeDirective,
         ScrollbarComponent,
         ScrollerComponent,
+
+        TabsComponent,
+        TabComponent,
+
         VirtualForDirective
     ],
     entryComponents: [

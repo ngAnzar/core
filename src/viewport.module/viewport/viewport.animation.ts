@@ -40,8 +40,6 @@ export const VPSidenavAnimation: AnimationTriggerMetadata = trigger("animateSide
     ]),
 ])
 
-console.log({ VPSidenavAnimation })
-
 
 export const VPContentAnimation: AnimationTriggerMetadata = trigger("animateContent", [
     state(`void, ${VPAnimState.MENU_CLOSE_SLIDE}, ${VPAnimState.MENU_CLOSE_OVERLAY}`, style({

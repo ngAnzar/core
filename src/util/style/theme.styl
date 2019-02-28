@@ -217,9 +217,22 @@ nz-theme-component-state-colors($color, $variant, $transparent)
         "hover": $color[$variant],
         "ripple": $color[$variant],
         "selected": $color.on[$variant],
+      },
+      "line": {
+        "default": $color[$variant],
+        "hover": $color[$variant],
+        "ripple": $color[$variant],
+        "selected": $color[$variant]
       }
     }
   else
+    if $color.on[$variant] == $theme.base[$variant]
+      if $color[$variant] == $theme.primary[$variant]
+        $line-color = $theme.accent[$variant]
+      else
+        $line-color = $theme.primary[$variant]
+    else
+      $line-color = $color.on[$variant]
     return {
       "bg": {
         "default": $color[$variant],
@@ -232,6 +245,12 @@ nz-theme-component-state-colors($color, $variant, $transparent)
         "hover": $color.on[$variant],
         "ripple": $color.on[$variant],
         "selected": $color[$variant],
+      },
+      "line": {
+        "default": $line-color,
+        "hover": $line-color,
+        "ripple": $line-color,
+        "selected": $line-color
       }
     }
 
@@ -293,19 +312,32 @@ _nz-theme-cs-color-name($color, $variant)
   else
     return $variant + "-" + $color
 
-_nz-theme-cs-color-selector($color, $variant)
+nz-theme-color-selector($color, $variant)
   return '[color="' + _nz-theme-cs-color-name($color, $variant) + '"]'
+
+nz-theme-component-colors(fn)
+  for $color in nz-theme-color-names()
+    for $variant in "normal" "light" "dark"
+      &{nz-theme-color-selector($color, $variant)}
+        $normal = nz-theme-component-state-colors($theme[$color], $variant, true)
+        fn($normal)
+
+        &[variant~="filled"]
+          $filled = nz-theme-component-state-colors($theme[$color], $variant, false)
+          fn($filled)
 
 nz-theme-component-states($default-color="base", $default-variant="normal", $include = "base" "disabled" "hover" "active" "focus" "selected")
   // DISABLED STATE
   if index($include, "disabled") isnt null
     _nz-theme-component-states-disabled()
 
-  &, &{_nz-theme-cs-color-selector($default-color, $default-variant)}
+  &, &{nz-theme-color-selector($default-color, $default-variant)}
     _nz-theme-component-states($default-color, $default-variant, $include)
 
   for $color in nz-theme-color-names()
     for $variant in "normal" "light" "dark"
       if $color != $default-color or $variant != $default-variant
-        &{_nz-theme-cs-color-selector($color, $variant)}
+        &{nz-theme-color-selector($color, $variant)}
           _nz-theme-component-states($color, $variant, $include)
+
+

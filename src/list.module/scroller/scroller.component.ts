@@ -1,5 +1,5 @@
-import { Component, Inject, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core"
-import { merge } from "rxjs"
+import { Component, Inject, ViewChild, ElementRef, AfterViewInit, HostListener, Input } from "@angular/core"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { tap, debounceTime, race } from "rxjs/operators"
 
 import { ScrollerService } from "./scroller.service"
@@ -18,6 +18,16 @@ import { ScrollEvent, ScrollPosition } from "./scroller.service";
 })
 export class ScrollerComponent implements AfterViewInit {
     @ViewChild("scrollable") protected readonly scrollable: ElementRef<HTMLElement>
+
+    @Input()
+    public set hideScrollbar(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._hideScrollbar !== val) {
+            this._hideScrollbar = val
+        }
+    }
+    public get hideScrollbar(): boolean { return this._hideScrollbar }
+    private _hideScrollbar: boolean = false
 
     private _containerDim: Rect
     private _scrollableDim: Dimension
@@ -100,6 +110,7 @@ export class ScrollerComponent implements AfterViewInit {
 
     @HostListener("pan", ["$event"])
     public onPan(event: any) {
+        console.log(event.type, event.additionalEvent, { dx: event.deltaX, dy: event.deltaY })
         if (!this.service.lockMethod("pan")) {
             return
         }
@@ -111,9 +122,9 @@ export class ScrollerComponent implements AfterViewInit {
         if (event.isFinal) {
             velocity = Math.abs(event.velocity)
             if (event.additionalEvent === "panup" || event.additionalEvent === "pandown") {
-                modifierY = velocity * 5
+                modifierY = Math.max(1, velocity * 5)
             } else {
-                modifierX = velocity * 5
+                modifierX = Math.max(1, velocity * 5)
             }
             velocity = 2
         }
@@ -121,8 +132,9 @@ export class ScrollerComponent implements AfterViewInit {
         this.service.velocityX = this.service.velocityY = velocity
 
         let top = this._panStartPos.top - (event.deltaY * modifierY)
-        let left = this._panStartPos.top - (event.deltaX * modifierX)
+        let left = this._panStartPos.left - (event.deltaX * modifierX)
 
+        console.log({ top, left })
         this.service.scrollPosition = { top, left }
 
         if (event.isFinal) {
