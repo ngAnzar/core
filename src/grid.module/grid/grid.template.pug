@@ -30,7 +30,7 @@ div.filter(*ngIf="filterSvc.filters.length", fxLayout="row", fxLayoutGap="8px", 
     ng-template(bind-ngTemplateOutlet="editor.chip" bind-ngTemplateOutletContext="{$implicit:editor}")
 
 div.nz-scroller.body
-  .nz-list.rows(bind-style.gridTemplate="gtRows")
+  .nz-list.rows(bind-style.gridTemplate="gtRows", scrollable)
     ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-row="index" bind-fixedItemHeight="_rowHeight")
       .nz-data-grid-row(
         bind-style.gridTemplate="gtRow"

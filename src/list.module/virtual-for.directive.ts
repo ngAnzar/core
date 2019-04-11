@@ -50,7 +50,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     @Input()
     public set fixedItemHeight(value: number) { this._fixedItemHeight = parseInt(value as any, 10) }
     public get fixedItemHeight(): number { return this._fixedItemHeight }
-    protected _fixedItemHeight?: number
+    protected _fixedItemHeight: number = 0
 
     public get rendered(): Items<T> {
         let contexts: Array<VirtualForContext<T>> = []
@@ -211,11 +211,17 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         let begin: number = -1
         let end: number = -1
 
-        if (this.fixedItemHeight > 0) {
-            begin = Math.floor(viewport.visible.top / this.fixedItemHeight)
-            end = begin + Math.ceil(viewport.visible.height / this.fixedItemHeight)
+        if (this._fixedItemHeight > 0) {
+            begin = Math.floor(viewport.visible.top / this._fixedItemHeight)
+            end = begin + Math.ceil(viewport.visible.height / this._fixedItemHeight)
             return new NzRange(begin, end)
         } else {
+
+            // TODO: ...
+            return new NzRange(0, 1000)
+
+            /*
+
             let checked: any[] = []
 
             for (let i = 0, l = this._vcr.length; i < l; i++) {
@@ -238,6 +244,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             return new NzRange(
                 this.elIndexToItemIndex(begin) || 0,
                 this.elIndexToItemIndex(end) || 0)
+            */
         }
     }
 

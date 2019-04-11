@@ -126,19 +126,24 @@ export class ViewportService implements OnDestroy {
 
         this.destruct.subscription(router.events).subscribe(event => {
             if (event instanceof NavigationEnd) {
-                if (!this.menuDisabled) {
+                if (!this.menuDisabled && this.menuStyle != VPMenuStyle.SLIDE) {
                     this.menuOpened = false
                 }
             }
         })
 
+        let first = true
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
             if (!event.matches) {
                 this.navbarCenterOverlap = false
                 this.menuStyle = VPMenuStyle.SLIDE
+                if (first) {
+                    this.menuOpened = true
+                }
             } else {
                 this.menuStyle = VPMenuStyle.OVERLAY
             }
+            first = false
         })
     }
 

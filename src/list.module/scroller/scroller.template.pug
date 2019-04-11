@@ -1,11 +1,4 @@
-:stylus
-  .scrollable
-    min-width: 100%
-    min-height: 100%
-    display: inline-block
-
-div.scrollable(#scrollable)
-  ng-content
+ng-content
 
 ng-template([ngIf]="!hideScrollbar")
   .nz-scrollbar(orient="horizontal")

@@ -1,11 +1,11 @@
-import { Component, Inject, ViewChild, ElementRef, AfterViewInit, HostListener, Input } from "@angular/core"
+import { Component, Inject, ElementRef, HostListener, Input, ContentChild } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { tap, debounceTime, race } from "rxjs/operators"
+import { tap } from "rxjs/operators"
 
 import { ScrollerService } from "./scroller.service"
 import { RectMutationService, Dimension, Rect } from "../../layout.module"
-import { ScrollEvent, ScrollPosition } from "./scroller.service";
-
+import { ScrollPosition } from "./scroller.service";
+import { ScrollableDirective } from "./scrollable.directive"
 
 
 
@@ -16,8 +16,8 @@ import { ScrollEvent, ScrollPosition } from "./scroller.service";
         ScrollerService
     ]
 })
-export class ScrollerComponent implements AfterViewInit {
-    @ViewChild("scrollable") protected readonly scrollable: ElementRef<HTMLElement>
+export class ScrollerComponent {
+    @ContentChild(ScrollableDirective) protected readonly scrollable: ScrollableDirective
 
     @Input()
     public set hideScrollbar(val: boolean) {
@@ -29,46 +29,14 @@ export class ScrollerComponent implements AfterViewInit {
     public get hideScrollbar(): boolean { return this._hideScrollbar }
     private _hideScrollbar: boolean = false
 
-    private _containerDim: Rect
-    private _scrollableDim: Dimension
-
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ScrollerService) public readonly service: ScrollerService,
-        @Inject(RectMutationService) public readonly rectMutation: RectMutationService) {
-    }
+        @Inject(RectMutationService) rectMutation: RectMutationService) {
 
-    public ngAfterViewInit() {
-        this.service.destruct.subscription(this.service.vpRender.scroll)
-            .subscribe(this._scroll)
-
-        this.service.destruct.subscription(this.rectMutation.watch(this.el))
-            .pipe(tap(v => this._containerDim = v))
-            .subscribe(this._updateScroll)
-
-        this.service.destruct.subscription(this.rectMutation.watchDimension(this.scrollable))
-            .pipe(tap(v => this._scrollableDim = v))
-            .subscribe(this._updateScroll)
-    }
-
-    protected _updateScroll = () => {
-        if (!this._scrollableDim || !this._containerDim) {
-            return
-        }
-
-        this.service.vpImmediate.update({
-            top: this._containerDim.top,
-            left: this._containerDim.left,
-            width: this._containerDim.width,
-            height: this._containerDim.height,
-            scrollWidth: this._scrollableDim.width,
-            scrollHeight: this._scrollableDim.height
+        this.service.destruct.subscription(rectMutation.watchDimension(this.el)).subscribe(dim => {
+            this.service.vpImmediate.update(dim)
         })
-    }
-
-    protected _scroll = (event: ScrollEvent) => {
-        const pos = this.service.vpRender.scrollPosition
-        this.scrollable.nativeElement.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
     }
 
     @HostListener("wheel", ["$event"])
@@ -110,7 +78,6 @@ export class ScrollerComponent implements AfterViewInit {
 
     @HostListener("pan", ["$event"])
     public onPan(event: any) {
-        console.log(event.type, event.additionalEvent, { dx: event.deltaX, dy: event.deltaY })
         if (!this.service.lockMethod("pan")) {
             return
         }
@@ -134,7 +101,6 @@ export class ScrollerComponent implements AfterViewInit {
         let top = this._panStartPos.top - (event.deltaY * modifierY)
         let left = this._panStartPos.left - (event.deltaX * modifierX)
 
-        console.log({ top, left })
         this.service.scrollPosition = { top, left }
 
         if (event.isFinal) {

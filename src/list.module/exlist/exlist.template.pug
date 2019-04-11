@@ -1,0 +1,11 @@
+
+ng-template([ngIf]="tplItem")
+  .nz-scroller
+    .nz-list(
+      scrollable,
+      [style.padding-top.px]="paddingTop",
+      [style.padding-left.px]="paddingLeft",
+      [style.padding-right.px]="paddingRight",
+      [style.padding-bottom.px]="paddingBottom")
+      ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-row="index")
+        .nz-exlist-item([data]="virtual", [index]="index")

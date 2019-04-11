@@ -1,9 +1,10 @@
 import { OnDestroy, NgZone, Inject } from "@angular/core"
 import { Observable, Subject, Subscription } from "rxjs"
-import { startWith, share, filter } from "rxjs/operators"
+import { startWith } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
 import { Rect } from "../../layout.module"
+import { ScrollableDirective } from "./scrollable.directive"
 
 
 export type ScrollOrient = "horizontal" | "vertical"
@@ -68,15 +69,7 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
 
             this._scrollPercent = { top, left }
 
-            const pxTop = Math.round(((this.scrollHeight - this.height) * top)) || 0
-            const pxLeft = Math.round(((this.scrollWidth - this.width) * left)) || 0
-
-            this._scrollPosition = {
-                top: pxTop,
-                left: pxLeft
-            }
-            this.visible.top = pxTop
-            this.visible.left = pxLeft;
+            this._recalcPosition();
 
             (this.scroll as Subject<ScrollEvent>)
                 .next(this._lastEvent = new ScrollEvent(this._scrollPercent, this._scrollPosition, deltaTop, deltaLeft, directionX, directionY))
@@ -103,7 +96,20 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
         delete (this as any).scroll
     }
 
-    public abstract update(dim: ViewportDimensions): boolean;
+    public abstract update(dim: ViewportDimensions): boolean
+
+    protected _recalcPosition() {
+        const percent = this._scrollPercent
+        const pxTop = Math.round(((this.scrollHeight - this.height) * percent.top)) || 0
+        const pxLeft = Math.round(((this.scrollWidth - this.width) * percent.left)) || 0
+
+        this._scrollPosition = {
+            top: pxTop,
+            left: pxLeft
+        }
+        this.visible.top = pxTop
+        this.visible.left = pxLeft;
+    }
 }
 
 
@@ -118,44 +124,31 @@ export class ImmediateViewport extends Viewport {
 
     public readonly change: Observable<Viewport> = new Subject<Viewport>()
 
-    public update(dim: ViewportDimensions): boolean {
+    public update(dim: Partial<ViewportDimensions>): boolean {
         dim = dim || {} as any
 
-        const top = dim.top || 0
-        const left = dim.left || 0
-        const width = dim.width || 0
-        const height = dim.height || 0
-        const scrollWidth = Math.max(dim.scrollWidth || 0, width)
-        const scrollHeight = Math.max(dim.scrollHeight || 0, height)
-
-        if (this.top !== top
-            || this.left !== left
-            || this.width !== left
-            || this.height !== height
-            || this.scrollWidth === scrollWidth
-            || this.scrollHeight === scrollHeight) {
-
-            this.visible.width = width
-            this.visible.height = height
-            Object.assign(this, {
-                top, left, width, height, scrollWidth, scrollHeight
-            })
-
-            const percent = this.scrollPercent
-            const pxTop = Math.round(((this.scrollHeight - this.height) * percent.top)) || 0
-            const pxLeft = Math.round(((this.scrollWidth - this.width) * percent.left)) || 0
-
-            this._scrollPosition = {
-                top: pxTop,
-                left: pxLeft
+        let changed = false
+        for (const k in dim) {
+            if ((this as any)[k] !== (dim as any)[k]) {
+                changed = true
+                break
             }
-            this.visible.top = pxTop
-            this.visible.left = pxLeft;
+        }
+
+        if (changed) {
+            Object.assign(this, dim);
+            (this as any).scrollWidth = Math.max(this.scrollWidth || 0, this.width);
+            (this as any).scrollHeight = Math.max(this.scrollHeight || 0, this.height);
+
+            this.visible.width = this.width
+            this.visible.height = this.height
+
+            this._recalcPosition();
 
             (this.change as Subject<Viewport>).next(this)
-            return true
         }
-        return false
+
+        return changed
     }
 
     public dispose() {
@@ -222,6 +215,8 @@ export class ScrollerService implements OnDestroy {
     public get verticalOverflow(): number { return Math.max(0, this.vpImmediate.scrollHeight - this.vpImmediate.height) }
     public get horizontalOverflow(): number { return Math.max(0, this.vpImmediate.scrollWidth - this.vpImmediate.width) }
 
+    public scrollable: ScrollableDirective
+
     public velocityX: number = 1 // pixel / ms
     public velocityY: number = 1 // pixel / ms
     private activeMethod: ScrollingMethod = null
@@ -229,7 +224,6 @@ export class ScrollerService implements OnDestroy {
     private _animationTick: (timestamp: number) => void
 
     public constructor(@Inject(NgZone) protected readonly zone: NgZone) {
-
         this.zone.runOutsideAngular(() => {
             (this as any).vpImmediate = this.destruct.disposable(new ImmediateViewport());
             (this as any).vpRender = this.destruct.disposable(new RenderedViewport(this.vpImmediate))
@@ -277,11 +271,6 @@ export class ScrollerService implements OnDestroy {
             }
         })
 
-        // this.scroll = this.vpRender.scroll.pipe(share())
-        // this.primaryScroll = this.scroll
-        //     .pipe(filter(v => v.directionY !== 0)) // TODO primary scroll config
-        //     .pipe(share())
-
         this.destruct.subscription(this.vpImmediate.change).subscribe(event => {
             if (this.horizontalOverflow || this.verticalOverflow) {
                 if (!this.rafId) {
@@ -299,7 +288,6 @@ export class ScrollerService implements OnDestroy {
     public lockMethod(method: ScrollingMethod): boolean {
         if (!this.activeMethod) {
             this.activeMethod = method
-            // console.log("LOCKED", method)
             return true
         } else if (this.activeMethod === method) {
             return true
@@ -309,15 +297,13 @@ export class ScrollerService implements OnDestroy {
 
     public releaseMethod(method: ScrollingMethod): void {
         if (this.activeMethod && this.activeMethod === method) {
-            // console.log("RELEASE", method)
             this.activeMethod = null
         }
     }
 
-    // TODO: át kell írni, hogy ne használjon renderelt információkat
     public scrollIntoViewport(el: HTMLElement): void {
-        const visibleRect = this.vpRender.visible
-        const elRect = this.getElementRenderedRect(el)
+        const visibleRect = this.vpImmediate.visible
+        const elRect = this.getElementImmediateRect(el)
         let pos = { ...this.scrollPosition }
 
         let topSpace = elRect.top - visibleRect.top
@@ -349,13 +335,19 @@ export class ScrollerService implements OnDestroy {
     }
 
     public getElementRenderedRect(el: HTMLElement): Rect {
-        const bbox = el.getBoundingClientRect()
-        const pos = this.vpRender.scrollPosition
-        return new Rect(
-            bbox.left - this.vpRender.left + pos.left,
-            bbox.top - this.vpRender.top + pos.top,
-            bbox.width,
-            bbox.height)
+        return this.scrollable!.getElementRect(el)
+    }
+
+    public getElementImmediateRect(el: HTMLElement) {
+        const renderedRect = this.scrollable!.getElementRect(el)
+        const immediatePos = this.vpImmediate.scrollPosition
+        const renderedPos = this.vpRender.scrollPosition
+        const topDiff = immediatePos.top - renderedPos.top
+        const leftDiff = immediatePos.left - renderedPos.left
+
+        renderedRect.top -= topDiff
+        renderedRect.left -= leftDiff
+        return renderedRect
     }
 
 

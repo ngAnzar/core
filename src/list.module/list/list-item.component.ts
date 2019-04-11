@@ -9,8 +9,7 @@ import { SelectableDirective } from "../../data.module"
 @Component({
     selector: ".nz-list-item",
     host: {
-        "[attr.focused]": "focused ? '' : null",
-        "[attr.tabindex]": "-1"
+        "[attr.focused]": "focused ? '' : null"
     },
     templateUrl: "./list-item.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -34,8 +33,8 @@ export class ListItemComponent {
     }
 
     // prevent mouse focusing
-    @HostListener("mousedown", ["$event"])
-    public onMouseDown(event: Event) {
-        event.preventDefault()
-    }
+    // @HostListener("mousedown", ["$event"])
+    // public onMouseDown(event: Event) {
+    //     event.preventDefault()
+    // }
 }

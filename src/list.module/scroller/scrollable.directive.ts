@@ -1,74 +1,52 @@
-import { Directive, Inject, ElementRef } from "@angular/core"
-import { fromEvent } from "rxjs"
+import { Directive, Inject, ElementRef, NgZone } from "@angular/core"
 
-import { RectMutationService } from "../../layout.module"
-import { ScrollerService } from "./scroller.service"
-
-
-export abstract class Scrollable {
-    // public abstract scroll(hPercent: number, vPercent: number): void
-}
+import { RectMutationService, Rect } from "../../layout.module"
+import { ScrollerService, ScrollEvent } from "./scroller.service"
 
 
 @Directive({
-    selector: "[nzScrollable='native']",
-    providers: [
-        { provide: Scrollable, useExisting: ScrollableNativeDirective }
-    ]
+    selector: "[scrollable]",
+    host: {
+        "[style.position]": "'relative'"
+    }
 })
-export class ScrollableNativeDirective extends Scrollable {
+export class ScrollableDirective {
     public constructor(
-        @Inject(ElementRef) el: ElementRef<HTMLElement>,
-        @Inject(ScrollerService) public readonly scroller: ScrollerService,
+        @Inject(NgZone) zone: NgZone,
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
+        @Inject(ScrollerService) service: ScrollerService,
         @Inject(RectMutationService) rectMutation: RectMutationService) {
-        super()
+        service.scrollable = this
 
         const nativeEl = el.nativeElement
-        let firstDimenionChange = true
 
-        console.log({ nativeEl })
+        zone.runOutsideAngular(() => {
+            service.destruct.subscription(service.vpRender.scroll).subscribe(event => {
+                const pos = event.position
+                nativeEl.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
+            })
 
-        scroller.destruct.subscription(rectMutation.watchDimension(nativeEl)).subscribe(dim => {
-            scroller.viewport = {
-                width: dim.width,
-                height: dim.height,
-                scrollHeight: nativeEl.scrollHeight,
-                scrollWidth: nativeEl.scrollWidth
-            }
-
-            if (firstDimenionChange) {
-                firstDimenionChange = false
-                scroller.scroll({
-                    px: {
-                        left: nativeEl.scrollLeft,
-                        top: nativeEl.scrollTop,
-                    }
+            service.destruct.subscription(rectMutation.watchDimension(el)).subscribe(dim => {
+                service.vpImmediate.update({
+                    scrollWidth: dim.width,
+                    scrollHeight: dim.height
                 })
-            }
-        })
-
-        scroller.destruct.subscription(fromEvent(nativeEl, "scroll")).subscribe(event => {
-            scroller.scroll({
-                px: {
-                    left: nativeEl.scrollLeft,
-                    top: nativeEl.scrollTop,
-                }
             })
         })
+    }
 
-        scroller.destruct.subscription(scroller.scrollChanges).subscribe(scroll => {
-            nativeEl.scrollTop = nativeEl.scrollHeight * scroll.top
-            nativeEl.scrollLeft = nativeEl.scrollWidth * scroll.left
-        })
+    public getElementRect(el: HTMLElement) {
+        let top = 0
+        let left = 0
+        let end = this.el.nativeElement
+        let current = el
+
+        while (current && current !== end) {
+            top += el.offsetTop
+            left = el.offsetLeft
+            current = current.offsetParent as HTMLElement
+        }
+
+        return new Rect(left, top, el.offsetWidth, el.offsetHeight)
     }
 }
-
-
-// @Directive({
-//     selector: "[nzScrollable='translate']",
-//     providers: [
-//         { provide: Scrollable, useExisting: ScrollableTranslateDirective }
-//     ]
-// })
-// export class ScrollableTranslateDirective extends Scrollable {
-// }

@@ -10,6 +10,9 @@ import { NzLayerModule } from "../layer.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "./autocomplete/autocomplete.component"
 export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL }
 
+import { ExlistComponent } from "./exlist/exlist.component"
+import { ExlistItemComponent } from "./exlist/exlist-item.component"
+export { ExlistComponent, ExlistItemComponent }
 
 import { ListDirective } from "./list/list.directive"
 import { ListItemComponent } from "./list/list-item.component"
@@ -29,9 +32,10 @@ export { MenuComponent, MenuItemDirective, MenuItemActionEvent, PopupMenuCompone
 // import { Scrollable, ScrollableNativeDirective } from "./scroller/scrollable.directive"
 import { ScrollbarComponent } from "./scroller/scrollbar.component"
 import { ScrollerComponent } from "./scroller/scroller.component"
+import { ScrollableDirective } from "./scroller/scrollable.directive"
 import { ScrollEvent, ScrollOrient, ScrollerService } from "./scroller/scroller.service"
 export {
-    ScrollEvent, ScrollOrient, ScrollerService, ScrollbarComponent, ScrollerComponent
+    ScrollEvent, ScrollOrient, ScrollerService, ScrollbarComponent, ScrollerComponent, ScrollableDirective
 }
 
 
@@ -55,6 +59,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
     declarations: [
         AutocompleteComponent,
 
+        ExlistComponent,
+        ExlistItemComponent,
+
         ListDirective,
         ListItemComponent,
         ListActionComponent,
@@ -65,9 +72,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         PopupMenuComponent,
         PopupMenuDirective,
 
-        // ScrollableNativeDirective,
         ScrollbarComponent,
         ScrollerComponent,
+        ScrollableDirective,
 
         TabsComponent,
         TabComponent,
@@ -75,6 +82,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         VirtualForDirective
     ],
     exports: [
+        ExlistComponent,
+        ExlistItemComponent,
+
         ListDirective,
         ListItemComponent,
         ListActionComponent,
@@ -85,9 +95,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         PopupMenuComponent,
         PopupMenuDirective,
 
-        // ScrollableNativeDirective,
         ScrollbarComponent,
         ScrollerComponent,
+        ScrollableDirective,
 
         TabsComponent,
         TabComponent,

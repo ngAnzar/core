@@ -1,0 +1,36 @@
+:stylus
+  .expanded
+    width: 100%
+
+  .header
+    position: relative
+    min-height: 52px
+    background-color: $theme.base.normal
+    border-bottom: 1px solid $theme.base.dark
+    z-index: 15
+
+  .content
+    position: relative
+    z-index: 5
+
+  .footer
+    position: relative
+    background-color: $theme.base.dark
+    color: $theme.base.on.dark
+    z-index: 10
+
+
+ng-template([ngIf]="!_selected", [ngIfElse]="selectedTpl")
+  ng-template([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
+
+ng-template(#selectedTpl)
+  div.expanded(fxLayout="column", fxLayoutAlign="start stretch")
+    div.header(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", #header)
+      ng-template([ngTemplateOutlet]="list.tplExHeader || list.tplItem", [ngTemplateOutletContext]="this")
+
+    div.content(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", #content)
+      ng-template([ngTemplateOutlet]="list.tplExContent", [ngTemplateOutletContext]="this")
+
+    ng-template([ngIf]="list.tplExFooter")
+      div.footer(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", #footer)
+        ng-template([ngTemplateOutlet]="list.tplExFooter", [ngTemplateOutletContext]="this")

@@ -74,7 +74,33 @@ export function parseMargin(val: Margin): MarginParsed {
     } else {
         let m = { top: 0, right: 0, bottom: 0, left: 0 }
         if (typeof val === "string") {
-            throw new Error("TODOD margin string parse")
+            let parts = val.replace(/px/g, "").split(/\s+/).map(Number)
+            switch (parts.length) {
+                case 1:
+                    m.top = m.left = m.right = m.bottom = parts[0]
+                    break
+
+                case 2:
+                    m.top = m.bottom = parts[0]
+                    m.left = m.right = parts[1]
+                    break
+
+                case 3:
+                    m.top = parts[0]
+                    m.left = m.right = parts[1]
+                    m.bottom = parts[2]
+                    break
+
+                case 4:
+                    m.top = parts[0]
+                    m.right = parts[1]
+                    m.bottom = parts[2]
+                    m.left = parts[3]
+                    break
+
+                default:
+                    throw new Error(`Invalid value: ${val}`)
+            }
         } else if (val) {
             m.top = val.top || 0
             m.right = val.right || 0

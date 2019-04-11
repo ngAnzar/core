@@ -1,5 +1,5 @@
 import { Provider } from "@angular/core"
-import { HAMMER_GESTURE_CONFIG, HammerGestureConfig } from "@angular/platform-browser/"
+import { HAMMER_GESTURE_CONFIG, HammerGestureConfig } from "@angular/platform-browser"
 
 
 import "hammerjs"

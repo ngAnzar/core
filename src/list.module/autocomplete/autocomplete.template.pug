@@ -9,6 +9,7 @@
     cursor: pointer
     user-select: none
     grid-column: 1
+    padding: 0 12px
 
   .action
     font-style: italic
@@ -30,7 +31,7 @@ div(fxFlex="grow", fxLayout="column inline")
   //- TODO: loading anim
 
   .nz-scroller.scroller(#scroller, *ngIf="source.storage", fxFlex="grow")
-    .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows")
+    .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows", scrollable)
       ng-template(bind-ngIf="actionsByPosition.first")
         ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")
           .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model" bind-selectionIndex="index + 1")

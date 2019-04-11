@@ -2,7 +2,8 @@
   .menu-item
     cursor: pointer
 
-.nz-list.nz-scroller.scroller(fxFlex="grow")
-  ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
-    .nz-list-item.menu-item
-      ng-template(bind-ngTemplateOutlet="menuItem.tpl")
+.nz-scroller(fxFlex="grow")
+  .nz-list(scrollable)
+    ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
+      .nz-list-item.menu-item(fxLayout="row", fxLayoutAlign="start stretch")
+        ng-template(bind-ngTemplateOutlet="menuItem.tpl")

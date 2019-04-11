@@ -1,5 +1,6 @@
-import { Component, Inject, ElementRef, OnInit, OnDestroy } from "@angular/core"
+import { Component, Inject, ElementRef, OnInit, OnDestroy, NgZone } from "@angular/core"
 import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
+import "hammerjs"
 
 
 import { Destruct } from "../../util"
@@ -14,16 +15,23 @@ import { RippleRef } from "./ripple-ref"
     template: ""
 })
 export class RippleComponent implements OnInit, OnDestroy {
-    public readonly destruct = new Destruct()
+    public readonly destruct = new Destruct(() => {
+        if (this.hammer) {
+            this.hammer.destroy()
+            delete this.hammer
+        }
+    })
 
     protected _focus: RippleRef;
+
+    protected hammer: HammerManager
 
     public constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
         @Inject(RippleService) protected readonly service: RippleService,
         @Inject(FocusMonitor) protected readonly focusMonitor: FocusMonitor,
-        @Inject(PointerEventService) protected readonly pointerEvents: PointerEventService) {
-
+        @Inject(PointerEventService) protected readonly pointerEvents: PointerEventService,
+        @Inject(NgZone) protected readonly zone: NgZone) {
         this.destruct.any(this.hideFocus)
     }
 
@@ -37,6 +45,14 @@ export class RippleComponent implements OnInit, OnDestroy {
                 this.hideFocus()
             }
         })
+
+        // this.zone.runOutsideAngular(() => {
+        //     this.hammer = new Hammer(trigger, {})
+        //     this.hammer.on("touch", (event) => {
+        //         console.log(event)
+        //     })
+        // })
+
 
         this.destruct.subscription(this.pointerEvents.down(trigger)).subscribe(event => {
             if (event.defaultPrevented) {
