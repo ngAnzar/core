@@ -7,7 +7,7 @@
     max-width: inherit
 
 ng-template(#layer let-trigger)
-  .nz-scroller.scroller
+  .nz-scroller.scroller.nz-popup-menu-content
     .nz-list(scrollable)
       ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
         .nz-list-item.menu-item(on-tap="!$event.defaultPrevented && trigger.hide()" #listItem)
