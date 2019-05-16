@@ -63,8 +63,6 @@ export abstract class DataSource<T extends Model> {
         return this._get(id).pipe(map(value => this.makeModel(value))) as any
     }
 
-    public abstract getPosition(id: ID): Observable<number>
-
     public save(model: T): Observable<T> {
         return this._save(model).pipe(map(value => this.makeModel(value)))
     }
@@ -73,6 +71,8 @@ export abstract class DataSource<T extends Model> {
         return this._delete(model instanceof Model ? model.id : model)
             .pipe(map(value => !!value))
     }
+
+    public abstract getPosition(id: ID): Observable<number>
 
     protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<any[]>
 
