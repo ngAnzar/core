@@ -15,10 +15,10 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     }
 
     public constructor(
-        public readonly model: ModelClass<T>,
+        model: ModelClass<T>,
         data: Array<Readonly<RawData<T>>>) {
         super()
-        this.data = data.map(this.makeModel.bind(this))
+        this.data = data.map(item => new model(item))
     }
 
     public getPosition(id: ID): Observable<number> {
@@ -35,7 +35,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         throw new Error("StaticSource not supports save")
     }
 
-    protected _delete(id: ID): Observable<boolean> {
+    protected _remove(id: ID): Observable<boolean> {
         throw new Error("StaticSource not supports delete")
     }
 

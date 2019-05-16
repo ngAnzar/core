@@ -50,26 +50,29 @@ export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
     public abstract readonly async: boolean
-    public abstract readonly model: ModelClass<T>
+    // public abstract readonly model: ModelClass<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<Items<T>> {
         if (r && r.end - r.begin <= 0) {
             return of(new Items([], r))
         }
-        return this._search(f, s, r).pipe(map(value => this.makeModels(value, r))) as any
+        return this._search(f, s, r).pipe(map(items => {
+            let total = items ? (items as any).total : null
+            let range = r ? new NzRange(r.begin, r.begin + items.length) : new NzRange(0, items.length)
+            return new Items(items, range, total)
+        })) as any
     }
 
     public get(id: ID): Observable<T> {
-        return this._get(id).pipe(map(value => this.makeModel(value))) as any
+        return this._get(id) as any
     }
 
     public save(model: T): Observable<T> {
-        return this._save(model).pipe(map(value => this.makeModel(value)))
+        return this._save(model)
     }
 
-    public delete(model: T | ID): Observable<boolean> {
-        return this._delete(model instanceof Model ? model.id : model)
-            .pipe(map(value => !!value))
+    public remove(model: T | ID): Observable<boolean> {
+        return this._remove(model instanceof Model ? model.id : model)
     }
 
     public abstract getPosition(id: ID): Observable<number>
@@ -80,7 +83,7 @@ export abstract class DataSource<T extends Model> {
 
     protected abstract _save(model: T): Observable<T>
 
-    protected abstract _delete(id: ID): Observable<boolean>
+    protected abstract _remove(id: ID): Observable<boolean>
 
     protected setBusy(busy: boolean) {
         if (this.busy !== busy) {
@@ -89,64 +92,64 @@ export abstract class DataSource<T extends Model> {
         }
     }
 
-    public makeModel(item: any): T {
-        return this.model ? Model.create(this.model, item) : item
-    }
+    // public makeModel(item: any): T {
+    //     return this.model ? Model.create(this.model, item) : item
+    // }
 
-    protected makeModels(items: any[], range?: NzRange): T[] {
-        let total = items ? (items as any).total : null
-        range = range ? new NzRange(range.begin, range.begin + items.length) : new NzRange(0, items.length)
-        return new Items(items.map(this.makeModel.bind(this)), range, total)
-    }
+    // protected makeModels(items: any[], range?: NzRange): T[] {
+    //     let total = items ? (items as any).total : null
+    //     range = range ? new NzRange(range.begin, range.begin + items.length) : new NzRange(0, items.length)
+    //     return new Items(items.map(this.makeModel.bind(this)), range, total)
+    // }
 
-    protected getLoadFields(l?: LoadFieldsArg) {
-        if (Array.isArray(l)) {
-            return l
-        } else {
-            let model = l || this.model
-            if (model) {
-                let fields = Model.getFields(model)
-                let r: any[] = []
-                let f = {}
-                this._makeLoadFields(fields, f, r)
-                return this._flattenLoadFields(f)
-            }
-        }
-    }
+    // protected getLoadFields(l?: LoadFieldsArg) {
+    //     if (Array.isArray(l)) {
+    //         return l
+    //     } else {
+    //         let model = l || this.model
+    //         if (model) {
+    //             let fields = Model.getFields(model)
+    //             let r: any[] = []
+    //             let f = {}
+    //             this._makeLoadFields(fields, f, r)
+    //             return this._flattenLoadFields(f)
+    //         }
+    //     }
+    // }
 
-    private _makeLoadFields(fields: Fields, target: { [key: string]: any }, recursive: any[]) {
-        if (recursive.indexOf(fields) !== -1) {
-            return
-        }
-        recursive.push(fields)
+    // private _makeLoadFields(fields: Fields, target: { [key: string]: any }, recursive: any[]) {
+    //     if (recursive.indexOf(fields) !== -1) {
+    //         return
+    //     }
+    //     recursive.push(fields)
 
-        for (const field of fields) {
-            if (field.fields.length) {
-                target[field.sourceName] = {}
-                for (const subF of field.fields) {
-                    this._makeLoadFields(subF, target[field.sourceName], recursive)
-                }
-            } else {
-                target[field.sourceName] = true
-            }
-        }
+    //     for (const field of fields) {
+    //         if (field.fields.length) {
+    //             target[field.sourceName] = {}
+    //             for (const subF of field.fields) {
+    //                 this._makeLoadFields(subF, target[field.sourceName], recursive)
+    //             }
+    //         } else {
+    //             target[field.sourceName] = true
+    //         }
+    //     }
 
-        recursive.pop()
-    }
+    //     recursive.pop()
+    // }
 
-    private _flattenLoadFields(f: { [key: string]: any }): LoadFields {
-        let result: LoadFields = []
+    // private _flattenLoadFields(f: { [key: string]: any }): LoadFields {
+    //     let result: LoadFields = []
 
-        for (const k in f) {
-            if (f[k] === true) {
-                result.push(k)
-            } else {
-                result.push({ [k]: this._flattenLoadFields(f[k]) })
-            }
-        }
+    //     for (const k in f) {
+    //         if (f[k] === true) {
+    //             result.push(k)
+    //         } else {
+    //             result.push({ [k]: this._flattenLoadFields(f[k]) })
+    //         }
+    //     }
 
-        return result
-    }
+    //     return result
+    // }
 }
 
 

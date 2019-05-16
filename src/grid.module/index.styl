@@ -14,8 +14,6 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 
   align-items: stretch
   align-content: stretch
-  padding: $nz-grid-padding
-
 
 .nz-columns
   box-sizing: border-box
@@ -23,6 +21,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   justify-content: stretch
   flex: none
   height: $nz-data-grid-header-height
+  padding: $nz-grid-padding
 
 .nz-column
   position: relative
@@ -49,6 +48,24 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   display: grid
   justify-content: stretch
 
+  position: relative
+  padding: 0
+  box-sizing: border-box
+
+  background-color: $theme.base.normal
+
+  &:before
+    display: block
+    content: " "
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    box-shadow: 0 -1px 0 $theme.base.dark,
+      0 0 2px rgba(0, 0, 0, .12),
+      0 2px 4px rgba(0, 0, 0, .24)
+
 
 .nz-data-grid-cell
   nz-typo: $typo.body2
@@ -62,7 +79,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   cursor: default
 
   padding: 0 $nz-cell-padding
-  border-bottom: 1px solid lighten($theme.base.on.normal, 90%)
+  // border-bottom: 1px solid lighten($theme.base.on.normal, 90%)
   transition: background-color 250ms, color 250ms
 
   &.first-cell
