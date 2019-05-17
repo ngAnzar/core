@@ -7,10 +7,11 @@ import { GridCellDirective } from "./grid-cell.directive"
 @Component({
     selector: ".nz-data-grid-row",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `<ng-content></ng-content>`,
+    template: `<ng-content></ng-content><div class="nz-ripple"></div>`,
     host: {
         "[style.grid-row]": "row + 1",
         "[style.grid-column]": "1",
+        "[attr.variant]": "selectable.selected ? null : 'filled'"
     }
 })
 export class GridRowDirective<T extends Model = Model> {

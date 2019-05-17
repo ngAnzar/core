@@ -24,8 +24,8 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
 
       .nz-tab-underline(
         #underline,
-        [style.left.px]="underline.parentNode.children[selectedIndex]!.offsetLeft",
-        [style.width.px]="underline.parentNode.children[selectedIndex]!.offsetWidth")
+        [style.left.px]="underline.parentNode.children[selectedIndex + 1]!.offsetLeft",
+        [style.width.px]="underline.parentNode.children[selectedIndex + 1]!.offsetWidth")
 
   .tabcontents(fxFlex="grow", fxLayout="row", fxLayoutAlign="start stretch")
     .nz-tab-content(

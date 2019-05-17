@@ -236,8 +236,8 @@ nz-theme-component-state-colors($color, $variant, $transparent)
     return {
       "bg": {
         "default": $color[$variant],
-        "hover": alpha($color.on[$variant], 0.2),
-        "ripple": alpha($color.on[$variant], 0.3),
+        "hover": alpha($color.on[$variant], 0.1),
+        "ripple": alpha($color.on[$variant], 0.2),
         "selected": alpha($color.on[$variant], 0.9),
       },
       "fg": {
@@ -332,7 +332,7 @@ nz-theme-component-states($default-color="base", $default-variant="normal", $inc
     _nz-theme-component-states-disabled()
 
   &, &{nz-theme-color-selector($default-color, $default-variant)}
-    _nz-theme-component-states($default-color, $default-variant, $include)
+    _nz-theme-component-states($default-color, $default-variant, $include, $filled)
 
   for $color in nz-theme-color-names()
     for $variant in "normal" "light" "dark"
