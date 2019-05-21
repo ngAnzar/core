@@ -54,15 +54,7 @@
     margin-bottom: 8px
 
   .trigger
-    width: 20px
-    height: 20px
-    cursor: default
-    text-align: center
-    line-height: 22px
-    color: inherit
-    margin-left: 8px
-
-
+    margin: -12px 4px -10px 4px
 
 input(#hidden type="hidden")
 
@@ -79,8 +71,8 @@ div.select-input
     on-input="_onInput($event)"
     style="flex:1")
 
-div.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)")
-  i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/menu-down"))}'`)
+button.nz-fab.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)", tabindex="-1", variant="tiny filled", style="background-color:transparent")
+  i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/chevron-down"))}'`)
 
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}

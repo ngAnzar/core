@@ -89,11 +89,11 @@ export class ScrollerComponent {
         if (event.isFinal) {
             velocity = Math.abs(event.velocity)
             if (event.additionalEvent === "panup" || event.additionalEvent === "pandown") {
-                modifierY = Math.max(1, velocity * 5)
+                modifierY = Math.max(1, velocity * 2)
             } else {
-                modifierX = Math.max(1, velocity * 5)
+                modifierX = Math.max(1, velocity * 2)
             }
-            velocity = 2
+            velocity = 1
         }
 
         this.service.velocityX = this.service.velocityY = velocity

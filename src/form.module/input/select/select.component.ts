@@ -412,10 +412,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     }
                 } else {
                     if (!targetAnchor.nzTargetAnchor) {
-                        targetAnchor.nzTargetAnchor = "left top"
+                        targetAnchor.nzTargetAnchor = "left bottom"
                     }
                     if (!targetAnchor.margin) {
-                        targetAnchor.margin = { left: 16, right: 16 }
+                        targetAnchor.margin = { left: 16, right: 16, bottom: this.ffc ? -19 : 0 }
                     }
                 }
             }
@@ -462,19 +462,15 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         const skip = this.focused === f
         super._handleFocus(f)
 
-        if (skip) {
-            return
-        }
-
-        if (this.input && f) {
-            this.input.nativeElement.focus()
-        }
-
         if (f) {
-            if (this.focusOrigin === "mouse" && (!this.source.async || !this.editable)) {
+            if (this.input && !skip) {
+                this.input.nativeElement.focus()
+            }
+
+            if (f && this.focusOrigin === "mouse" && (!this.source.async || !this.editable)) {
                 this.opened = true
             }
-        } else {
+        } else if (!skip) {
             // this.opened = false
             this._resetTextInput()
         }
@@ -550,12 +546,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    @HostListener("click")
-    protected _onClick() {
-        if (!this.source.async || !this.editable) {
-            this.opened = true
-        }
-    }
+    // @HostListener("click")
+    // protected _onClick() {
+    //     if (!this.source.async || !this.editable) {
+    //         this.opened = true
+    //     }
+    // }
 
     protected _applySelected() {
         let value = this.valueField

@@ -42,7 +42,7 @@ export class PopupMenuDirective extends LayerFactoryDirective {
             el)
     }
 
-    @HostListener("click", ["$event"])
+    @HostListener("tap", ["$event"])
     protected onClick(event: MouseEvent) {
         event.preventDefault()
 

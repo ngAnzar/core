@@ -5,13 +5,14 @@
 // variant=stroked
 
 .nz-form-field
+  position: relative
   display: inline-block
   width: auto
   padding-top: $nz-form-field-top-caption-height
 
   .underline
     height: 1px
-    background-color: $theme.common.dark
+    background-color: $theme.base.on.normal
     position: relative
 
   .nz-form-field-ripple
@@ -47,3 +48,8 @@
 caption
   box-sizing: border-box
   // margin: 0
+
+.nz-form-field
+  .nz-fab[variant~="tiny"][nzslot]
+    margin: -4px 4px -20px 4px
+

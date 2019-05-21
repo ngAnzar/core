@@ -1,4 +1,4 @@
-import { Component, Inject, ContentChildren, QueryList, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, ElementRef } from "@angular/core"
+import { Component, Inject, ContentChildren, QueryList, AfterContentInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, ElementRef } from "@angular/core"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
@@ -13,7 +13,7 @@ import { AnimateSwitch } from "./tab.animation"
     animations: [AnimateSwitch],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TabsComponent implements AfterContentInit, OnDestroy {
+export class TabsComponent implements AfterContentInit, AfterViewInit, OnDestroy {
     public readonly destruct = new Destruct()
     public readonly tabSwitch: string[] = []
 
@@ -27,16 +27,22 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
             return
         }
 
-        if (this._selectedIndex !== val) {
-            const dir = old > val ? "right" : "left"
-            this.tabSwitch[old] = `${dir}-out`
-            this.tabSwitch[val] = `${dir}-in`
-            this._selectedIndex = val
-            this.cdr.detectChanges()
+        if (this._viewReady === false) {
+            this._pendingSelectedIndex = val
+        } else {
+            if (this._selectedIndex !== val) {
+                const dir = old > val ? "right" : "left"
+                this.tabSwitch[old] = `${dir}-out`
+                this.tabSwitch[val] = `${dir}-in`
+                this._selectedIndex = val
+                this.cdr.detectChanges()
+            }
         }
     }
     public get selectedIndex(): number { return this._selectedIndex }
     private _selectedIndex: number
+    private _pendingSelectedIndex: number
+    private _viewReady: Boolean = false
 
     // protected readonly labels: Array<TemplateRef<any>> = []
     // protected readonly contents: Array<TemplateRef<any>> = []
@@ -51,11 +57,16 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
     public ngAfterContentInit() {
         this.destruct.subscription(this.tabs.changes).pipe(startWith(null)).subscribe(() => {
-            if (isNaN(this.selectedIndex)) {
-                this.selectedIndex = 0
+            if (!this._pendingSelectedIndex) {
+                this._pendingSelectedIndex = 0
             }
         })
+    }
 
+    public ngAfterViewInit() {
+        console.log("ngAfterViewChecked")
+        this._viewReady = true
+        this.selectedIndex = this._pendingSelectedIndex
     }
 
     public ngOnDestroy() {

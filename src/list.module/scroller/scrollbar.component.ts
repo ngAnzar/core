@@ -119,7 +119,7 @@ export class ScrollbarComponent implements OnDestroy {
                     if (!this.scroller.lockMethod("drag")) {
                         return
                     }
-                    this.scroller.velocityX = this.scroller.velocityY = 10
+                    this.scroller.velocityX = this.scroller.velocityY = 1
                     if (this.orient === "horizontal") {
                         scroller.scrollPosition = {
                             top: scrollerBeginPosition.top,

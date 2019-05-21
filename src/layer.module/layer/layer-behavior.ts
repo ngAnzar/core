@@ -116,7 +116,8 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
             initialWidth: `${this.options.initialWidth || 0}px`,
             initialHeight: `${this.options.initialHeight || 0}px`,
             finalWidth: `${layer.container.offsetWidth}px`,
-            finalHeight: `${layer.container.offsetHeight}px`
+            finalHeight: `${layer.container.offsetHeight}px`,
+            origin: `${this.levitate.position.origin.vertical} center`
         }
         return this.playAnimation(layer, ddAnimation.show, { params })
             .then(() => super.animateShow(layer))

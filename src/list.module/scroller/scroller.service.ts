@@ -1,5 +1,5 @@
 import { OnDestroy, NgZone, Inject } from "@angular/core"
-import { Observable, Subject, Subscription } from "rxjs"
+import { Observable, Subject, Subscription, merge } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
@@ -228,7 +228,13 @@ export class ScrollerService implements OnDestroy {
             (this as any).vpImmediate = this.destruct.disposable(new ImmediateViewport());
             (this as any).vpRender = this.destruct.disposable(new RenderedViewport(this.vpImmediate))
 
+            const easeOutQuart = (t: number) => { return 1 - (--t) * t * t * t }
+            const easeOutCubic = (t: number) => { return (--t) * t * t + 1 }
+
             let animBegin = 0
+            let lastImmediatePos: ScrollPosition
+            let lastRenderPos: ScrollPosition
+            let animDuration = 400
             this._animationTick = (timestamp: number): void => {
                 if (this.destruct.done) {
                     return
@@ -237,31 +243,77 @@ export class ScrollerService implements OnDestroy {
                 const tpos = (this.vpImmediate as any)._scrollPosition as ScrollPosition
                 const rpos = (this.vpRender as any)._scrollPosition as ScrollPosition
 
-                let topDiff = tpos.top - rpos.top
-                let leftDiff = tpos.left - rpos.left
-
-                if (topDiff !== 0 || leftDiff !== 0) {
-                    if (!animBegin) {
-                        animBegin = timestamp
-                    }
-
-                    const progress = timestamp - animBegin
-                    if (progress !== 0) {
-                        let nextTopDiff = Math.round(topDiff * this.velocityY / progress)
-                        let nextLeftDiff = Math.round(leftDiff * this.velocityX / progress)
-
-                        this.vpRender.scrollPosition = {
-                            top: rpos.top + (nextTopDiff === 0 ? topDiff : nextTopDiff),
-                            left: rpos.left + (nextLeftDiff === 0 ? leftDiff : nextLeftDiff)
-                        }
-                    }
+                if (!lastRenderPos || !lastImmediatePos || lastImmediatePos.left !== tpos.left || lastImmediatePos.top !== tpos.top) {
+                    lastImmediatePos = tpos
+                    lastRenderPos = rpos
                     animBegin = timestamp
-                } else {
-                    animBegin = 0
                 }
 
-                this.rafId = requestAnimationFrame(this._animationTick)
+                let topDiff = lastImmediatePos.top - lastRenderPos.top
+                let leftDiff = lastImmediatePos.left - lastRenderPos.left
+
+                if (topDiff !== 0 || leftDiff !== 0) {
+                    let progress = (timestamp - animBegin) / animDuration * this.velocityY
+                    if (progress <= 1.0) {
+                        // let easing = easeOutQuart(progress)
+                        let easing = easeOutCubic(progress)
+
+                        this.vpRender.scrollPosition = {
+                            top: lastRenderPos.top + topDiff * easing,
+                            left: lastRenderPos.left + leftDiff * easing
+                        }
+
+                        this.rafId = requestAnimationFrame(this._animationTick)
+                        return
+                    } else {
+                        this.vpRender.scrollPosition = {
+                            top: lastRenderPos.top + topDiff,
+                            left: lastRenderPos.left + leftDiff
+                        }
+                    }
+                }
+
+                if (this.rafId) {
+                    cancelAnimationFrame(this.rafId)
+                    delete this.rafId
+                }
             }
+
+            // this._animationTick = (timestamp: number): void => {
+            //     if (this.destruct.done) {
+            //         return
+            //     }
+
+            //     const tpos = (this.vpImmediate as any)._scrollPosition as ScrollPosition
+            //     const rpos = (this.vpRender as any)._scrollPosition as ScrollPosition
+
+            //     let topDiff = tpos.top - rpos.top
+            //     let leftDiff = tpos.left - rpos.left
+
+            //     console.log({ topDiff, leftDiff})
+
+            //     if (topDiff !== 0 || leftDiff !== 0) {
+            //         if (!animBegin) {
+            //             animBegin = timestamp
+            //         }
+
+            //         const progress = timestamp - animBegin
+            //         if (progress !== 0) {
+            //             let nextTopDiff = Math.round(topDiff * this.velocityY / progress)
+            //             let nextLeftDiff = Math.round(leftDiff * this.velocityX / progress)
+
+            //             this.vpRender.scrollPosition = {
+            //                 top: rpos.top + (nextTopDiff === 0 ? topDiff : nextTopDiff),
+            //                 left: rpos.left + (nextLeftDiff === 0 ? leftDiff : nextLeftDiff)
+            //             }
+            //         }
+            //         animBegin = timestamp
+            //     } else {
+            //         animBegin = 0
+            //     }
+
+            //     this.rafId = requestAnimationFrame(this._animationTick)
+            // }
         })
 
         this.destruct.any(() => {
@@ -271,7 +323,7 @@ export class ScrollerService implements OnDestroy {
             }
         })
 
-        this.destruct.subscription(this.vpImmediate.change).subscribe(event => {
+        this.destruct.subscription(merge(this.vpImmediate.change, this.vpImmediate.scroll)).subscribe(event => {
             if (this.horizontalOverflow || this.verticalOverflow) {
                 if (!this.rafId) {
                     this.zone.runOutsideAngular(() => {

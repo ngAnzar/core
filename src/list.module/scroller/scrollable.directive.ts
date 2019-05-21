@@ -1,7 +1,7 @@
 import { Directive, Inject, ElementRef, NgZone } from "@angular/core"
 
 import { RectMutationService, Rect } from "../../layout.module"
-import { ScrollerService, ScrollEvent } from "./scroller.service"
+import { ScrollerService } from "./scroller.service"
 
 
 @Directive({
