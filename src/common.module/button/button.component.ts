@@ -10,7 +10,7 @@ export interface ButtonEvent {
 
 
 @Component({
-    selector: ".nz-button, .nz-icon-button, .nz-fab",
+    selector: ".nz-button, .nz-fab",
     templateUrl: "./button.pug",
     host: {
         "(click)": "_preventEvent($event)",

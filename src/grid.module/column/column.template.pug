@@ -24,6 +24,6 @@
   nz-icon(*ngIf="sortDirection==='asc'" class=icon("mdi/sort-ascending", 20))
   nz-icon(*ngIf="sortDirection==='desc'" class=icon("mdi/sort-descending", 20))
 
-.nz-fab.filter(*ngIf="filter" on-tap="showFilter($event)")
+.nz-button.filter(*ngIf="filter", on-tap="showFilter($event)", variant="icon")
   nz-icon(*ngIf="filter.isEmpty" class=icon("mdi/filter-outline", 20))
   nz-icon(*ngIf="!filter.isEmpty" class=icon("mdi/filter", 20))

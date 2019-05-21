@@ -8,7 +8,7 @@ import { Destruct, IDisposable } from "../../util"
 import "./layer.styl"
 
 
-@Injectable()
+@Injectable({ providedIn: "root" })
 export class LayerContainer implements OnDestroy {
     public readonly zIndexBegin = 1000000
     private _containers: LayerContainerRef[] = []

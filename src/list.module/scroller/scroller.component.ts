@@ -1,12 +1,10 @@
 import { Component, Inject, ElementRef, HostListener, Input, ContentChild } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { tap } from "rxjs/operators"
 
 import { ScrollerService } from "./scroller.service"
-import { RectMutationService, Dimension, Rect } from "../../layout.module"
+import { RectMutationService } from "../../layout.module"
 import { ScrollPosition } from "./scroller.service";
 import { ScrollableDirective } from "./scrollable.directive"
-
 
 
 @Component({

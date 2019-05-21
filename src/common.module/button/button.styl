@@ -5,7 +5,7 @@ $nz-button-min-width ?= nz-local-grid-size(22)
 $nz-button-height ?= nz-local-grid-size(9)
 
 
-.nz-button, .nz-fab, .nz-icon-button
+.nz-button
   cursor: pointer
   outline: none
   border: none
@@ -18,8 +18,11 @@ $nz-button-height ?= nz-local-grid-size(9)
 
   nz-typo: $typo.button
 
-  box-sizing: border-box
   position: relative
+  min-width: $nz-button-min-width
+  padding: $nz-button-padding
+
+  nz-rounded-rect: auto, $nz-button-height, small
 
   display: inline-flex
   flex-wrap: nowrap
@@ -40,146 +43,33 @@ $nz-button-height ?= nz-local-grid-size(9)
     position: relative
     top: 1px
 
-
-// themes + variants
-
-.nz-button, .nz-fab
-  //nz-component-variants()
   nz-theme-component-states($include:"base" "hover" "disabled")
 
-/*
-.nz-button:not([disabled]), .nz-fab:not([disabled])
-  &[variant~="raised"]
-    nz-elevation: 2
+  &[variant~="icon"]
+    min-width: 0
+    padding: 0
 
-  &.cdk-keyboard-focused, &.cdk-program-focused
-    nz-elevation: 5
+    &[variant~="tiny"]
+      nz-circle: (nz-local-grid-size(7) / 2)
 
+    &[variant~="small"], &
+      nz-circle: (nz-local-grid-size(9) / 2)
 
-  background-color: $theme.base.state.normal
-  color: $theme.base.state.on.normal
+    &[variant~="medium"]
+      nz-circle: (nz-local-grid-size(12) / 2)
 
-  &:hover .nz-ripple
-    background-color: $theme.base.state.hover
-    color: $theme.base.state.on.hover
-
-    .nz-ripple-effect
-      background-color: $theme.base.state.ripple
-
-  &[variant~="filled"]
-    background-color: $theme.primary.state.normal
-    color: $theme.primary.state.on.normal
-
-    &:hover .nz-ripple
-      background-color: $theme.primary.state.hover
-      color: $theme.primary.state.on.hover
-
-      .nz-ripple-effect
-        background-color: $theme.base.state.ripple
-
-  for $color, $value in nz-theme-colors($theme)
-    &{'[color="' + $color + '"]'}
-      background-color: $theme.base.state.normal
-      color: $value.state.on.normal
-
-      &:hover .nz-ripple
-        background-color: $value.state.hover
-        color: $value.state.on.hover
-
-        .nz-ripple-effect
-          background-color: $value.state.ripple
-
-      &[variant~="filled"]
-        background-color: $value.normal
-        color: $value.on.normal
-
-        &:hover .nz-ripple
-          background-color: $theme.primary.state.hover
-          color: $theme.primary.state.on.hover
-
-          .nz-ripple-effect
-            background-color: $theme.base.state.ripple
-*/
-  /*
-  &:not([color])
-
-    &[variant~="filled"]
-      color: $theme.background.tri-state.normal.fg
-      background-color: $theme.foreground.tri-state.normal.bg
-
-      &:hover
-        color: $theme.background.tri-state.hover.fg
-        background-color: $theme.background.tri-state.hover.bg
-
-      .nz-ripple
-        background-color: $theme.background.default
-
-    &:not([variant~="filled"])
-      color: $theme.foreground.tri-state.normal.fg
-
-      &:hover
-        color: $theme.foreground.tri-state.hover.fg
-        background-color: $theme.foreground.tri-state.hover.bg
-
-      .nz-ripple
-        background-color: $theme.foreground.default
-
-  for color, value in nz-theme-colors($theme)
-    &{'[color="' + color + '"]'}
-      color: value.tri-state.normal.fg
-
-      &[variant~="filled"]
-        color: value.on.default
-        background-color: value.default
-
-        .nz-ripple
-          background-color: #FFF
-
-      &:not([variant~="filled"])
-        &:hover
-          color: value.tri-state.hover.fg
-          background-color: value.tri-state.hover.bg
-
-        .nz-ripple
-          background-color: value.default
-  */
-
-/*
-.nz-button[disabled]
-  color: $theme.base.state.disabled
-  cursor: default
-
-  &[variant~="filled"]
-    color: $theme.disabled.on.default
-    background-color: $theme.disabled.default
-*/
-
-.nz-button
-  min-width: $nz-button-min-width
-  padding: $nz-button-padding
-
-  nz-rounded-rect: auto, $nz-button-height, small
+    &[variant~="large"]
+      nz-circle: (nz-local-grid-size(15) / 2)
 
 
 .nz-fab
-  padding: 0
-
-  &[variant~="tiny"]
-    nz-circle: (nz-local-grid-size(7) / 2)
-
-  &[variant~="small"], &
-    nz-circle: (nz-local-grid-size(9) / 2)
-
-  &[variant~="medium"]
-    nz-circle: (nz-local-grid-size(12) / 2)
-
-  &[variant~="large"]
-    nz-circle: (nz-local-grid-size(15) / 2)
+  @extend .nz-button[variant~="icon"]
 
   &[position="BR"]
     position: absolute
     bottom: nz-local-grid-size(6)
     right: nz-local-grid-size(6)
+
   &[position="TR"]
     position: absolute
     top: nz-local-grid-size(6)
