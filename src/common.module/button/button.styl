@@ -35,7 +35,6 @@ $nz-button-height ?= nz-local-grid-size(9)
   text-align: center
 
   margin: 0
-  padding: 0
   overflow: hidden
   transition: box-shadow 250ms
 
@@ -45,7 +44,7 @@ $nz-button-height ?= nz-local-grid-size(9)
 
   nz-theme-component-states($include:"base" "hover" "disabled")
 
-  &[variant~="icon"]
+  &[variant~="icon"], &[variant~="fab"]
     min-width: 0
     padding: 0
 
@@ -61,19 +60,16 @@ $nz-button-height ?= nz-local-grid-size(9)
     &[variant~="large"]
       nz-circle: (nz-local-grid-size(15) / 2)
 
+  &[variant~="fab"]
+    &[position="BR"]
+      position: absolute
+      bottom: nz-local-grid-size(6)
+      right: nz-local-grid-size(6)
 
-.nz-fab
-  @extend .nz-button[variant~="icon"]
-
-  &[position="BR"]
-    position: absolute
-    bottom: nz-local-grid-size(6)
-    right: nz-local-grid-size(6)
-
-  &[position="TR"]
-    position: absolute
-    top: nz-local-grid-size(6)
-    right: nz-local-grid-size(6)
+    &[position="TR"]
+      position: absolute
+      top: nz-local-grid-size(6)
+      right: nz-local-grid-size(6)
 
 .nz-button-bar
   padding: nz-local-grid-size(2)
