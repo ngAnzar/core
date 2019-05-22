@@ -1,10 +1,12 @@
-import { Component, Inject, HostListener, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, EventEmitter, OnDestroy, NgZone, ViewChild } from "@angular/core"
+import { Component, Inject, HostListener, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, EventEmitter, OnDestroy, NgZone, ViewChild, AfterViewChecked } from "@angular/core"
+import { EventManager } from "@angular/platform-browser"
 import { Observable, Subscription } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { ISelectable, Model, SelectOrigin } from "../../data.module"
 import { ScrollerService } from "../scroller/scroller.service"
 import { ExlistComponent, RowTplContext } from "./exlist.component"
+import { Destruct } from "@anzar/core/util"
 // import { ExlistItemAnimation } from "./exlist.animation"
 
 
@@ -20,7 +22,7 @@ import { ExlistComponent, RowTplContext } from "./exlist.component"
         "[style.height.px]": "_selected ? null : 48",
     }
 })
-export class ExlistItemComponent<T extends Model = Model> implements RowTplContext<T>, ISelectable<T>, OnDestroy {
+export class ExlistItemComponent<T extends Model = Model> implements RowTplContext<T>, ISelectable<T>, OnDestroy, AfterViewChecked {
     @ViewChild("header", { read: ElementRef })
     public set elHeader(val: HTMLElement) {
         if (!this._elHeader || !val || this._elHeader !== (val as any).nativeElement) {
@@ -81,17 +83,29 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public get isAccessible(): boolean { return true }
 
     private _scroll: Subscription
+    private _rebindAfterCheck: boolean = false
 
     public constructor(
         @Inject(NgZone) protected readonly zone: NgZone,
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ExlistComponent) protected readonly list: ExlistComponent,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(ScrollerService) protected readonly scroller: ScrollerService) {
+        @Inject(ScrollerService) protected readonly scroller: ScrollerService,
+        @Inject(EventManager) protected readonly eventManager: EventManager) {
     }
 
-    @HostListener("tap", ["$event"])
-    public onTouch(event: any) {
+    public ngAfterViewInit() {
+        this._rebindTap()
+    }
+
+    public ngAfterViewChecked() {
+        if (this._rebindAfterCheck) {
+            this._rebindAfterCheck = false
+            this._rebindTap()
+        }
+    }
+
+    public onTap = (event: any) => {
         if (!this.list.tplExContent) {
             return
         }
@@ -129,6 +143,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         }
         (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue);
         this.cdr.markForCheck()
+        this._rebindAfterCheck = true
     }
 
     public _canChangeSelected(newValue: SelectOrigin): boolean {
@@ -168,5 +183,19 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
             this._scroll.unsubscribe()
             delete this._scroll
         }
+        if (this._offTap) {
+            this._offTap()
+            delete this._offTap
+        }
+    }
+
+    private _offTap: any
+    private _rebindTap() {
+        if (this._offTap) {
+            this._offTap()
+            delete this._offTap
+        }
+
+        this._offTap = this.eventManager.addEventListener(this.el.nativeElement, "tap", this.onTap)
     }
 }

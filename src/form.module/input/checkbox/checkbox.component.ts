@@ -27,7 +27,7 @@ export interface CheckboxChangeEvent<T> {
     templateUrl: "./checkbox.template.pug",
     host: {
         "[class.nz-checkbox-checked]": "checked",
-        "(click)": "_handleClick($event)"
+        "(tap)": "_handleTap($event)"
     },
     providers: [
         { provide: InputComponent, useExisting: CheckboxComponent },
@@ -109,6 +109,8 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         if (group) {
             group.addCheckbox(this)
         }
+
+        console.log("NEW CHECKBOX")
     }
 
     public get type(): string { return "checkbox" }
@@ -123,11 +125,16 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         // console.log(this.input)
     }
 
-    protected _changeHandler(event: Event) {
-        event.stopPropagation()
-    }
+    // protected _changeHandler(event: Event) {
+    //     event.stopPropagation()
+    // }
 
-    protected _handleClick(event: Event) {
+    protected _handleTap(event: HammerInput) {
+        if (event.srcEvent && (event.srcEvent as Event).defaultPrevented) {
+            return
+        }
+        event.srcEvent.preventDefault()
+        // event.srcEvent.stopImmediatePropagation()
         if (!this.noninteractive) {
             this.checked = !this.checked
         }

@@ -17,6 +17,9 @@ export class HammerConfig extends HammerGestureConfig {
             enable: false
         }
     }
+    // options = {
+    //     domEvents: true
+    // }
 }
 
 

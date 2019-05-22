@@ -141,4 +141,15 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         }
         return null
     }
+
+    public add(model: T) {
+        this.data.push(model)
+    }
+
+    public del(model: T) {
+        let idx = this.data.indexOf(model)
+        if (idx !== -1) {
+            this.data.splice(idx, 1)
+        }
+    }
 }

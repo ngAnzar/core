@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, Input, Output, EventEmitter, OnDestroy, OnInit, HostBinding } from "@angular/core"
+import { Component, ElementRef, Inject, Input, Output, EventEmitter, OnDestroy, OnInit, HostBinding, HostListener } from "@angular/core"
 import { FocusMonitor } from "@angular/cdk/a11y"
 
 import { AnzarComponent } from "../abstract-component"
@@ -40,6 +40,16 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
         this.destruct.any(() => {
             this.focusMonitor.stopMonitoring(this.el.nativeElement)
         })
+    }
+
+    @HostListener("tap", ["$event"])
+    protected _handleTap(event: any) {
+        if (event.srcEvent) {
+            event.srcEvent.preventDefault()
+            if (this.disabled) {
+                event.srcEvent.stopImmediatePropagation()
+            }
+        }
     }
 
     protected _preventEvent(event: Event) {
