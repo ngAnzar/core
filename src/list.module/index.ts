@@ -6,6 +6,7 @@ import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
 import { NzAnimationModule } from "../animation.module"
 import { NzLayerModule } from "../layer.module"
+import { NzLayoutModule } from "../layout.module"
 
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "./autocomplete/autocomplete.component"
 export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL }
@@ -54,7 +55,8 @@ import { VirtualForDirective } from "./virtual-for.directive"
         NzCommonModule,
         NzDataModule,
         NzAnimationModule,
-        NzLayerModule
+        NzLayerModule,
+        NzLayoutModule
     ],
     declarations: [
         AutocompleteComponent,

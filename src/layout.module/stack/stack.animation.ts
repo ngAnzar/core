@@ -7,7 +7,7 @@ import { AnimationTriggerMetadata, trigger, state, style, animate, transition, q
 export const ANIM_DURATION = "400ms cubic-bezier(0.215, 0.61, 0.355, 1)"
 // export const ANIM_DURATION = "550ms cubic-bezier(0.68, -0.55, 0.265, 1.55)"
 
-export const AnimateSwitch: AnimationTriggerMetadata = trigger("tabSwitch", [
+export const AnimateSwitch: AnimationTriggerMetadata = trigger("childSwitch", [
     state(`void`, style({ visibility: "hidden" })),
     state(`left-out`, style({ visibility: "hidden", transform: "translateX(-100%)" })),
     state(`right-out`, style({ visibility: "hidden", transform: "translateX(100%)" })),

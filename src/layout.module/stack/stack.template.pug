@@ -1,0 +1,7 @@
+ng-template(ngFor, [ngForOf]="children", let-child, let-i="index")
+  ng-template([ngIf]="childSwitch[i]")
+    .nz-stack-child(
+      fxLayout="column",
+      fxLayoutAlign="start stretch",
+      [@childSwitch]="childSwitch[i]")
+      ng-template([ngTemplateOutlet]="child")

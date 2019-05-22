@@ -109,8 +109,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         if (group) {
             group.addCheckbox(this)
         }
-
-        console.log("NEW CHECKBOX")
     }
 
     public get type(): string { return "checkbox" }
