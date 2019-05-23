@@ -25,16 +25,17 @@ import { StackComponent } from "./stack/stack.component"
         FlexLayoutModule
     ],
     declarations: [
-        VboxDirective,
-        HboxDirective,
-        FlexibleDirective,
+        // VboxDirective,
+        // HboxDirective,
+        // FlexibleDirective,
         StackComponent
     ],
     exports: [
-        VboxDirective,
-        HboxDirective,
-        FlexibleDirective,
-        StackComponent
+        // VboxDirective,
+        // HboxDirective,
+        // FlexibleDirective,
+        StackComponent,
+        FlexLayoutModule
     ],
     providers: [
         RectMutationService,

@@ -3,5 +3,7 @@ ng-template(ngFor, [ngForOf]="children", let-child, let-i="index")
     .nz-stack-child(
       fxLayout="column",
       fxLayoutAlign="start stretch",
-      [@childSwitch]="childSwitch[i]")
+      [@childSwitch]="childSwitch[i]",
+      (@childSwitch.start)="_startChildAnim(i)",
+      (@childSwitch.done)="_doneChildAnim(i)")
       ng-template([ngTemplateOutlet]="child")

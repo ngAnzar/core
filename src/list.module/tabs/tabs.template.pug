@@ -17,10 +17,12 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
           fxFlex="noshrink",
           fxLayout="row",
           fxLayoutAlign="center center",
+          [attr.selected]="selectedIndex==i ? '' : null",
           *ngFor="let tab of tabs; let i=index",
           on-tap="selectedIndex=i",
           [attr.disabled]="tab.disabled ? '' : null")
-          ng-template([ngTemplateOutlet]="tab.labelTpl")
+          div.nz-tab-label-content
+            ng-template([ngTemplateOutlet]="tab.labelTpl")
           .nz-ripple
 
         .nz-tab-underline(

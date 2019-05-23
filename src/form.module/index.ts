@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { ReactiveFormsModule } from "@angular/forms"
-import { FlexLayoutModule } from "@angular/flex-layout"
+// import { FlexLayoutModule } from "@angular/flex-layout"
 
 import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
@@ -42,7 +42,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 @NgModule({
     imports: [
         CommonModule,
-        FlexLayoutModule,
+        // FlexLayoutModule,
         ReactiveFormsModule,
         NzCommonModule,
         NzDataModule,

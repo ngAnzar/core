@@ -1,12 +1,13 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
-import { FlexLayoutModule } from "@angular/flex-layout"
+// import { FlexLayoutModule } from "@angular/flex-layout"
 
 import { NzCommonModule } from "../common.module"
 import { NzListModule } from "../list.module"
 import { NzFormModule } from "../form.module"
 import { NzDataModule } from "../data.module"
 import { NzLayerModule } from "../layer.module"
+import { NzLayoutModule } from "../layout.module"
 
 
 import { NavbarComponent } from "./navbar/navbar.component"
@@ -28,12 +29,13 @@ export { ViewportService }
 @NgModule({
     imports: [
         CommonModule,
-        FlexLayoutModule,
+        // FlexLayoutModule,
         NzCommonModule,
         NzListModule,
         NzFormModule,
         NzDataModule,
-        NzLayerModule
+        NzLayerModule,
+        NzLayoutModule
     ],
     declarations: [
         NavbarComponent,
