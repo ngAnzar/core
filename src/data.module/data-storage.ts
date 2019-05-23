@@ -35,24 +35,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public get isBusy(): boolean { return this._isBusy }
     private _isBusy: boolean
 
-    // public get all(): Observable<Items<T>> {
-    //     return this.getRange(new Range(0, 1000))
-    //     // if (this.endReached) {
-
-    //     // }
-
-    //     // return this.source.search(this.filter.get(), this.sorter.get())
-    //     //     .pipe(map(items => {
-    //     //         (this as any).range = new Range(0, items.length);
-    //     //         (this as any).endReached = true;
-    //     //         (this as any).lastIndex = items.length;
-    //     //         (this as any).total = items.length
-
-    //     //         this._cacheItems(items, this.range, [] as any)
-    //     //         return this._collectRange(this.range, [] as any)
-    //     //     }))
-    // }
-
+    public readonly isEmpty: boolean = true
     public readonly reseted: Observable<void> = new EventEmitter()
     public readonly busy: Observable<boolean> = new EventEmitter()
 
@@ -144,6 +127,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.total = 0;
         (this as any).lastIndex = 0;
         (this as any).endReached = false;
+        (this as any).isEmpty = true;
         if (skipEvent !== true) {
             (this.reseted as EventEmitter<void>).emit()
         }
@@ -155,6 +139,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }
         this.cachedRanges = this.cachedRanges.merge(r);
         (this as any).range = this.cachedRanges.span();
+        (this as any).isEmpty = this.range.length === 0;
         (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length);
         // (this as any).endReached = this.endReached || items.length === 0 || items.length !== r.length
         let newItems = this._collectRange(r);

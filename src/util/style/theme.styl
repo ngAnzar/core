@@ -21,7 +21,8 @@ nz-material-color(name, variant, contrast = false)
     error("Undefined color variant: '" + variant + "'")
 
   if contrast
-    if $color-variant["on"] == "dark"
+    // warn("contrast of " + name + " " + variant + " " + $color-variant["on"])
+    if $color-variant["on"] == dark
       return $theme-dark-color
     else
       return $theme-light-color

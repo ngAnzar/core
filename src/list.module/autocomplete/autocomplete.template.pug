@@ -20,12 +20,12 @@
   .notfound
     height: 48px
     color: $theme.common.dark
-    padding: $nz-list-item-padding
+    padding: 0 12px
 
 
 div(fxFlex="grow", fxLayout="column inline")
 
-  .notfound(*ngIf="source.storage && source.storage.total === 0 && !source.storage.isBusy", fxFlex="none", fxLayout="row", fxLayoutAlign="start center")
+  .notfound(*ngIf="source.storage && source.storage.isEmpty && !source.storage.isBusy", fxFlex="none", fxLayout="row", fxLayoutAlign="start center")
     i Nem található
 
   //- TODO: loading anim

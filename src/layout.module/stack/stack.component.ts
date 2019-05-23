@@ -79,13 +79,12 @@ export class StackComponent implements AfterViewInit, OnDestroy {
         this.destruct.run()
     }
 
-    protected _startChildAnim(idx: number) {
+    protected _startChildAnim(event: any, idx: number) {
         this._pendingIndex = -1
         this._viewReady = false
 
         if (this._dynamicHeight) {
-            const children = this.el.nativeElement.children as any as Array<HTMLElement>
-            const el = children[idx]
+            const el = event.element as HTMLElement
 
             if (idx === this._selectedIndex) {
                 el.style.position = "relative"
@@ -99,9 +98,9 @@ export class StackComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    protected _doneChildAnim(idx: number) {
+    protected _doneChildAnim(event: any, idx: number) {
         if (this._dynamicHeight) {
-            const el = this.el.nativeElement.children[idx] as HTMLElement
+            const el = event.element as HTMLElement
 
             if (idx === this._selectedIndex) {
                 this.el.nativeElement.style.height = ''

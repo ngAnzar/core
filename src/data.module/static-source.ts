@@ -14,6 +14,10 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         return this.data.length
     }
 
+    public get isEmpty(): boolean {
+        return this.data.length === 0
+    }
+
     public constructor(
         model: ModelClass<T>,
         data: Array<Readonly<RawData<T>>>) {
