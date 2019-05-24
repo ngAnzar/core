@@ -15,6 +15,10 @@ import { ExlistComponent } from "./exlist/exlist.component"
 import { ExlistItemComponent } from "./exlist/exlist-item.component"
 export { ExlistComponent, ExlistItemComponent }
 
+import { FabmenuComponent } from "./fabmenu/fabmenu.component"
+import { FabmenuTriggerDirective } from "./fabmenu/fabmenu-trigger.directive"
+export { FabmenuComponent, FabmenuTriggerDirective }
+
 import { ListDirective } from "./list/list.directive"
 import { ListItemComponent } from "./list/list-item.component"
 import { ListActionComponent, ListActionModel, SelectableActionDirective } from "./list/list-action.component"
@@ -44,7 +48,6 @@ import { TabsComponent } from "./tabs/tabs.component"
 import { TabComponent } from "./tabs/tab.component"
 export { TabsComponent, TabComponent }
 
-
 import { VirtualForDirective } from "./virtual-for.directive"
 
 
@@ -63,6 +66,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
 
         ExlistComponent,
         ExlistItemComponent,
+
+        FabmenuComponent,
+        FabmenuTriggerDirective,
 
         ListDirective,
         ListItemComponent,
@@ -86,6 +92,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
     exports: [
         ExlistComponent,
         ExlistItemComponent,
+
+        FabmenuComponent,
+        FabmenuTriggerDirective,
 
         ListDirective,
         ListItemComponent,
