@@ -12,7 +12,13 @@ export type MarginParsed = { top: number, right: number, bottom: number, left: n
 export type Margin = Partial<MarginParsed> | number | string
 
 const CENTER_ALIGN: Align = { horizontal: "center", vertical: "center" }
-
+export const OPPOSITE_ALIGN: { [key: string]: string } = {
+    "left": "right",
+    "right": "left",
+    "top": "bottom",
+    "bottom": "top",
+    "center": "center"
+}
 
 export function parseAlign(align: Align | AlignInput): Align {
     if (typeof align !== "string") {

@@ -43,7 +43,6 @@ export class FabmenuComponent {
     }
 
     protected toggle() {
-        console.log("toggle")
         if (!this.layerRef || !this.layerRef.isVisible) {
             let behavior = new DropdownLayer({
                 backdrop: { type: "empty", hideOnClick: true },
@@ -59,6 +58,13 @@ export class FabmenuComponent {
             this.layerRef = this.layerSvc.createFromTemplate(this.layerTpl, this.vcr, behavior)
             this.layerRef.show()
         } else {
+            this.layerRef.hide()
+            delete this.layerRef
+        }
+    }
+
+    protected hide() {
+        if (this.layerRef && this.layerRef.isVisible) {
             this.layerRef.hide()
             delete this.layerRef
         }

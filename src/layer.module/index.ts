@@ -32,6 +32,13 @@ export { MaskService }
 export { MaskRef } from "./mask/mask-ref"
 
 
+import { QtipDirective } from "./qtip/qtip.directive"
+import { QtipComponent } from "./qtip/qtip.component"
+import { QtipBehavior } from "./qtip/qtip.behavior"
+import { QtipAlignDirective } from "./qtip/qtip-align.directive"
+export { QtipDirective, QtipComponent, QtipBehavior, QtipAlignDirective }
+
+
 import { ToastService } from "./toast/toast.service"
 import { ToastComponent } from "./toast/toast.component"
 import { ToastProgressComponent } from "./toast/toast-progress.component"
@@ -61,6 +68,9 @@ export {
         TargetAnchorDirective,
         LevitateAnchorDirective,
         DialogComponent,
+        QtipDirective,
+        QtipComponent,
+        QtipAlignDirective,
         ToastComponent,
         ToastProgressComponent,
         LayerMessageComponent
@@ -69,6 +79,8 @@ export {
         LayerFactoryDirective,
         TargetAnchorDirective,
         LevitateAnchorDirective,
+        QtipDirective,
+        QtipAlignDirective
     ],
     providers: [
         LevitateService,
@@ -82,7 +94,8 @@ export {
         DialogComponent,
         ToastComponent,
         ToastProgressComponent,
-        LayerMessageComponent
+        LayerMessageComponent,
+        QtipComponent
     ]
 })
 export class NzLayerModule { }

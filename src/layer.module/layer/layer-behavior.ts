@@ -26,6 +26,10 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
         if (this.options.elevation) {
             layer.container.setAttribute("elevation", String(this.options.elevation))
         }
+        if (this.options.rounded) {
+            layer.container.style.borderRadius = `${this.options.rounded}px`
+            layer.container.style.overflow = "hidden"
+        }
     }
 
     public animateShow(layer: LayerRef): Promise<void> {

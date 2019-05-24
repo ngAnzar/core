@@ -27,6 +27,7 @@ export interface LayerOptions {
     minWidth?: number
     minHeight?: number
     elevation?: number
+    rounded?: number
 }
 
 

@@ -8,7 +8,7 @@ import { FlexibleDirective, VboxDirective, HboxDirective } from "./flex/flex.dir
 
 export { Rect } from "./geometry/rect"
 export { Point } from "./geometry/point"
-export { Align, AlignInput, VAlign, HAlign, parseAlign, Margin, MarginParsed, parseMargin } from "./geometry/align"
+export { Align, AlignInput, VAlign, HAlign, parseAlign, Margin, MarginParsed, parseMargin, OPPOSITE_ALIGN } from "./geometry/align"
 
 
 import { RectMutationService } from "./rect-mutation.service"
