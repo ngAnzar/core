@@ -3,7 +3,7 @@ import { Directive, Input, Inject, ChangeDetectorRef, ElementRef, OnDestroy, Opt
 import { EventManager } from "@angular/platform-browser"
 
 import { LayerService } from "../layer/layer.service"
-import { ComponentLayerRef } from "../layer/layer-ref"
+import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
 import { Destruct } from "../../util"
 import { Align } from "../../layout.module"
 
@@ -37,7 +37,8 @@ export class QtipDirective implements OnDestroy {
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(EventManager) protected readonly eventMgr: EventManager,
         @Inject(LayerService) protected readonly layerSvc: LayerService,
-        @Inject(QtipAlignDirective) @Optional() protected readonly align: QtipAlignDirective) {
+        @Inject(QtipAlignDirective) @Optional() protected readonly align: QtipAlignDirective,
+        @Inject(LayerRef) @Optional() protected readonly parentlayer: LayerRef) {
 
         this.destruct.any(eventMgr.addEventListener(el.nativeElement, "mouseenter", this.show.bind(this)) as any)
         this.destruct.any(eventMgr.addEventListener(el.nativeElement, "mouseleave", this.hide.bind(this)) as any)
@@ -67,7 +68,7 @@ export class QtipDirective implements OnDestroy {
                     }
                 }
             })
-            this._layerRef = this.layerSvc.createFromComponent(QtipComponent, behavior)
+            this._layerRef = this.layerSvc.createFromComponent(QtipComponent, behavior, this.parentlayer)
             this._layerRef.show()
             this._layerRef.component.instance.text = this.text
         }

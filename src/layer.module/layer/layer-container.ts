@@ -71,8 +71,9 @@ export class LayerContainer implements OnDestroy {
     }
 
     protected _updateZIndex() {
+        // TODO: manage opener
         this._containers
-            .sort((a, b) => a.alwaysOnTop ? b.alwaysOnTop ? 0 : 1 : -1)
+            // .sort((a, b) => a.alwaysOnTop ? b.alwaysOnTop ? 0 : 1 : -1)
             .forEach((c, i) => {
                 if (!c.skipZIndexManagement) {
                     c.zIndex = this.zIndexBegin + i
