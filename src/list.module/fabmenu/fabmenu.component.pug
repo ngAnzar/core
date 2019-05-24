@@ -2,6 +2,6 @@ ng-template([ngIf]="trigger")
   ng-template([ngTemplateOutlet]="trigger.tpl")
 
 ng-template(#layer)
-  div.nz-fab-popup(fxLayout="column", fxLayoutAlign="start center", fxLayoutGap="16px")
+  div.nz-fab-popup(fxLayout="column inline", fxLayoutAlign="start center", fxLayoutGap="16px")
     ng-template(ngFor, [ngForOf]="buttons", let-btn, let-i="index")
       ng-template([ngTemplateOutlet]="btn.tpl")

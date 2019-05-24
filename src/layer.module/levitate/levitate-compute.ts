@@ -29,6 +29,7 @@ function drawRect(r: Rect, color: string) {
     div.setAttribute("origin", `${r.origin.horizontal}:${r.origin.vertical}/X:${r.x} Y:${r.y}`)
     // div.innerHTML = ``
     document.body.appendChild(div)
+    console.log(color, r)
 }
 
 
@@ -149,14 +150,27 @@ for (let a1 of aligns) {
 }
 
 
-function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, constraint: Rect, connect?: Rect): LevitatePosition {
+function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, constraint: Rect, connect: Rect): LevitatePosition {
     // drawRect(levitate, "red")
 
     let rect = levitate.copy()
     rect.setOrigin({ horizontal: pA.levitate as HAlign, vertical: pV.levitate as VAlign })
 
-    rect[pA.levitate] = constraint[pA.levitate]
-    rect[pV.levitate] = constraint[pV.levitate]
+    let x = pA.target === "center" ? connect.centerHorizontal : connect[pA.target]
+    let y = pV.target === "center" ? connect.centerVertical : connect[pV.target]
+
+    if (pA.levitate === "center") {
+        rect.centerHorizontal = x
+    } else {
+        rect[pA.levitate] = x
+    }
+
+    if (pV.levitate === "center") {
+        rect.centerVertical = y
+    } else {
+        rect[pV.levitate] = y
+    }
+
     rect = constraint.constraint(rect)
 
 

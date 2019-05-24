@@ -30,6 +30,12 @@ export class Rect {
     public get x(): number { return this._x }
     public get y(): number { return this._y }
 
+    public get centerHorizontal(): number { return this.left + this.width / 2 }
+    public set centerHorizontal(val: number) { this.left = val - this.width / 2 }
+
+    public get centerVertical(): number { return this.top + this.height / 2 }
+    public set centerVertical(val: number) { this.top = val - this.height / 2 }
+
     public get area(): number { return this.width * this.height }
 
     public readonly origin: Align

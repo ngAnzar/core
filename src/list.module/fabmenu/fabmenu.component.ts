@@ -43,13 +43,15 @@ export class FabmenuComponent {
     }
 
     protected toggle() {
+        console.log("toggle")
         if (!this.layerRef || !this.layerRef.isVisible) {
             let behavior = new DropdownLayer({
                 backdrop: { type: "empty", hideOnClick: true },
                 position: {
                     anchor: {
                         ref: this.el.nativeElement,
-                        align: "top center"
+                        align: "top center",
+                        margin: 16
                     },
                     align: "bottom center"
                 }
