@@ -15,7 +15,7 @@ export const ExlistItemAnimation: AnimationTriggerMetadata = trigger("animation"
         "margin": "{{ marginTop }}px {{ marginRight }}px {{ marginBottom }}px {{ marginLeft }}px"
     }), {
             params: {
-                marginTop: 48,
+                // marginTop: 48,
                 marginRight: -24,
                 marginBottom: 48,
                 marginLeft: -24,

@@ -140,6 +140,7 @@ export class ScrollbarComponent implements OnDestroy {
         })
     }
 
+    // TODO: remove detect changes...
     protected _layout() {
         if (this.isVisible) {
             const self = this as Writeable<ScrollbarComponent>
@@ -161,26 +162,8 @@ export class ScrollbarComponent implements OnDestroy {
                 self.scrollRatio = self.scroller.vpImmediate.scrollHeight / (trackHeight - self.barHeight)
             }
         }
-        this.cdr.markForCheck()
+        this.cdr.detectChanges()
     }
-
-    // protected _getBarPosition(): number {
-    //     if (this.orient === "horizontal") {
-    //         const width = (this.btnVisible ? Math.max(0, this.width - this.size * 2) : this.width) - this.barWidth
-    //         return this.barLeft / width
-    //     } else {
-    //         const height = (this.btnVisible ? Math.max(0, this.height - this.size * 2) : this.height) - this.barHeight
-    //         return this.barTop / height
-    //     }
-    // }
-
-    // private _updateProp(name: string, newValue: any): void {
-    //     const old = (this as any)[name]
-    //     if (old !== newValue) {
-    //         (this as any)[name] = newValue
-    //         this.cdr.markForCheck()
-    //     }
-    // }
 
     public ngOnDestroy() {
         this.destruct.run()

@@ -1,9 +1,4 @@
-:stylus
-  .menu-item
-    cursor: pointer
-
 .nz-scroller(fxFlex="grow")
-  .nz-list(scrollable)
+  div(scrollable, fxLayout="column", fxLayoutAlign="start stretch")
     ng-template(ngFor bind-ngForOf="menuItems" let-menuItem)
-      .nz-list-item.menu-item(fxLayout="row", fxLayoutAlign="start stretch")
-        ng-template(bind-ngTemplateOutlet="menuItem.tpl")
+      ng-template(bind-ngTemplateOutlet="menuItem.tpl")

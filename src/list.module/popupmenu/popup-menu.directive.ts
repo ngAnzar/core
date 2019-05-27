@@ -18,6 +18,7 @@ export class MenuLayer extends DropdownLayer {
 export class PopupMenuDirective extends LayerFactoryDirective {
     @Input()
     public set nzPopupMenu(val: PopupMenuComponent) {
+        console.log("nzPopupMenu", val)
         this._menu = val
     }
     protected _menu: PopupMenuComponent

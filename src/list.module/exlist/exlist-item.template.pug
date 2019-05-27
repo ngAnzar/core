@@ -21,6 +21,7 @@
 
 
 ng-template([ngIf]="!_selected", [ngIfElse]="selectedTpl")
+  p {{ selectionIndex }}
   ng-template([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
 
 ng-template(#selectedTpl)

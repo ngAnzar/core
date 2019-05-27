@@ -278,42 +278,6 @@ export class ScrollerService implements OnDestroy {
                     delete this.rafId
                 }
             }
-
-            // this._animationTick = (timestamp: number): void => {
-            //     if (this.destruct.done) {
-            //         return
-            //     }
-
-            //     const tpos = (this.vpImmediate as any)._scrollPosition as ScrollPosition
-            //     const rpos = (this.vpRender as any)._scrollPosition as ScrollPosition
-
-            //     let topDiff = tpos.top - rpos.top
-            //     let leftDiff = tpos.left - rpos.left
-
-            //     console.log({ topDiff, leftDiff})
-
-            //     if (topDiff !== 0 || leftDiff !== 0) {
-            //         if (!animBegin) {
-            //             animBegin = timestamp
-            //         }
-
-            //         const progress = timestamp - animBegin
-            //         if (progress !== 0) {
-            //             let nextTopDiff = Math.round(topDiff * this.velocityY / progress)
-            //             let nextLeftDiff = Math.round(leftDiff * this.velocityX / progress)
-
-            //             this.vpRender.scrollPosition = {
-            //                 top: rpos.top + (nextTopDiff === 0 ? topDiff : nextTopDiff),
-            //                 left: rpos.left + (nextLeftDiff === 0 ? leftDiff : nextLeftDiff)
-            //             }
-            //         }
-            //         animBegin = timestamp
-            //     } else {
-            //         animBegin = 0
-            //     }
-
-            //     this.rafId = requestAnimationFrame(this._animationTick)
-            // }
         })
 
         this.destruct.any(() => {

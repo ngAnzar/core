@@ -1,8 +1,42 @@
+@require "../../util"
 
+
+$nz-menu-item-height ?= nz-local-grid-size(12)
 
 .nz-menu
   overflow: hidden
 
+  .nz-button
+    border-radius: 0
+    text-align: left
+    justify-content: stretch
+    flex: 1 0 auto
+
 
 .nz-popup-menu-content
   background: $theme.base.normal
+
+  .nz-button
+    border-radius: 0
+    text-align: left
+    justify-content: stretch
+    flex: 1 0 auto
+
+// .nz-menu-item
+//   position: relative
+//   margin: 0
+//   padding: 0
+//   height: $nz-menu-item-height
+//   background: $theme.base.normal
+
+//   display: flex
+//   align-items: center
+//   justify-content: space-between
+//   white-space: nowrap
+//   flex: 1 1 100%
+
+//   nz-theme-component-states("common", "dark", $include:"base" "hover" "disabled")
+//   nz-theme-component-states("accent", "normal", $include:"selected")
+
+//   cursor: pointer
+//   padding: 0 16px
