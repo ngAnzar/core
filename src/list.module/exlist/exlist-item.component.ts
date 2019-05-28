@@ -135,11 +135,11 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
                 .subscribe(this._updateByScroll))
             setTimeout(this._updateByScroll, 210)
         } else {
-            let spos = this.scroller.scrollPosition
-            this.scroller.scrollPosition = {
-                left: spos.left,
-                top: spos.top - this.el.nativeElement.offsetHeight - 48
-            }
+            // let spos = this.scroller.scrollPosition
+            // this.scroller.scrollPosition = {
+            //     left: spos.left,
+            //     top: spos.top - this.el.nativeElement.offsetHeight - 48
+            // }
         }
         (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue);
         this.cdr.markForCheck()

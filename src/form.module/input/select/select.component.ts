@@ -68,9 +68,9 @@ export type AutoTrigger = "all" | "query" | null
 export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy {
     public get type(): string { return "select" }
 
-    @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<T>
-    @ContentChild("item", { read: TemplateRef }) public readonly itemTpl: SelectTemplateRef<T>
-    @ContentChildren(ListActionComponent) public readonly actions: QueryList<ListActionComponent>
+    @ContentChild("selected", { read: TemplateRef }) @Input() public readonly selectedTpl: SelectTemplateRef<T>
+    @ContentChild("item", { read: TemplateRef }) @Input() public readonly itemTpl: SelectTemplateRef<T>
+    @ContentChildren(ListActionComponent) @Input() public readonly actions: QueryList<ListActionComponent>
 
     @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLInputElement>
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>

@@ -15,13 +15,15 @@ div(#container, fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxL
       autoTrigger,
       [dataSource]="source",
       [nzLayerFactory]="AutocompleteComponent",
-      [nzTargetEl]="container.parentElement"
+      [nzTargetEl]="container.parentElement",
+      [selectedTpl]="selectedTpl",
+      [itemTpl]="itemTpl",
       nzTargetAnchor="center bottom",
       nzLevitateAnchor="center top",
       on-opened="opened=$event",
       on-focused="focused=$event",
       on-empty="empty=$event")
-      ng-content
+
 
   .nz-button(*ngIf="!empty", fxFlex="0 0 28px", variant="tiny filled icon", on-tap="select.reset()")
     i.nz-icon(class=icon("mdi/close"))
