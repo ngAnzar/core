@@ -35,6 +35,10 @@ import { CardComponent, CardHeaderComponent, CardActionsComponent } from "./card
 export { CardComponent, CardHeaderComponent, CardActionsComponent }
 
 
+import { ChipComponent } from "./chip/chip.component"
+export { ChipComponent }
+
+
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
 import { PointerEventService } from "./services/pointer-event.service"
 import { ScriptService } from "./services/script.service"
@@ -66,6 +70,8 @@ const content = [
     CardComponent,
     CardHeaderComponent,
     CardActionsComponent,
+
+    ChipComponent,
 
     DragHandleDirective
 ]

@@ -50,15 +50,16 @@
   */
 
   .chip-item
-    margin-right: 8px
-    margin-bottom: 8px
+    margin-right: 4px
+    margin-bottom: 4px
 
   .trigger
     margin: -12px 4px -10px 4px
+    align-self: start
 
 input(#hidden type="hidden")
 
-div.select-input
+div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
   ng-template(bind-ngIf="!editable || selection.type !== 'single'")
     ng-template(ngFor bind-ngForOf="selection.items" let-item let-first="first" let-last="last")
       ng-template(bind-ngIf="item.isListAction" bind-ngIfElse="normalModel")
@@ -77,8 +78,8 @@ button.nz-button.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)",
 ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}
 
-ng-template(#default_selected_multi let-item let-first="first")
-  span.nz-chip.chip-item(bind-class.first="first" bind-selectable="item" bind-selection="chipSelection") {{ item[displayField] }}
+ng-template(#default_selected_multi let-item)
+  span.nz-chip.chip-item([selectable]="item", [selection]="selection", removable) {{ item[displayField] }}
 
 ng-template(#default_item let-item)
   span {{ item[displayField] }}

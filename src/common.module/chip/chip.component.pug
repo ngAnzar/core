@@ -1,0 +1,8 @@
+:stylus
+  .remove
+    margin-left: 8px
+    margin-right: -8px
+
+ng-content
+.nz-button.remove(*ngIf="removable", on-tap="remove($event)", color="light-common", variant="very-tiny filled icon")
+  i.nz-icon(class=icon("mdi/close", 16))

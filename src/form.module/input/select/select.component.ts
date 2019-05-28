@@ -225,7 +225,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected inputStream: Observable<string> = new Subject()
     protected lastKeyup: number
     protected pendingValue: any
-    protected readonly chipSelection: SelectionModel = new SingleSelection()
+    // protected readonly chipSelection: SelectionModel = new SingleSelection()
     protected selectedBeforeOpen: T[]
 
     public constructor(
@@ -259,6 +259,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
             this.isEmpty = selected.length === 0
             this._resetTextInput()
+            if (!this.input && this.cdr) {
+                this.cdr.detectChanges()
+            }
         })
 
         this.displayField = displayField || "label"
@@ -632,7 +635,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     private _x: string = Math.random().toString(36)
     protected _detectChanges() {
-        this.cdr && this.cdr.markForCheck()
+        this.cdr && this.cdr.detectChanges()
     }
 
     public ngOnDestroy() {

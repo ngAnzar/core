@@ -30,7 +30,6 @@ import { RadioGroupDirective } from "./input/radio/radio-group.directive"
 export { RadioComponent, RadioGroupDirective }
 
 import { SelectComponent } from "./input/select/select.component"
-import { ChipComponent } from "./input/select/chip.component"
 export { SelectComponent }
 export { IAutocompleteModel, Match } from "./input/select/select.component"
 
@@ -64,7 +63,6 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         RadioGroupDirective,
 
         SelectComponent,
-        ChipComponent,
 
         TextFieldComponent,
         TextareaComponent
