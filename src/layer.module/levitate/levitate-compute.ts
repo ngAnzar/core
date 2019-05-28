@@ -17,6 +17,9 @@ export type Rects = {
 }
 
 
+export type CalculatedPlacement = { placements: [Placement, Placement], rect: Rect }
+
+
 function drawRect(r: Rect, color: string) {
     let div = document.createElement("div")
     div.style.position = "absolute"
@@ -65,18 +68,26 @@ export class MagicCarpet {
             constraint = rects.constraint
             primaryHAlign = `${lAlign.horizontal}-${cAlign.horizontal}`
             primaryVAlign = `${lAlign.vertical}-${cAlign.vertical}`
+
+            oppositeHAlign = `${opposite[lAlign.horizontal]}-${opposite[cAlign.horizontal]}`
+            oppositeVAlign = `${opposite[lAlign.vertical]}-${opposite[cAlign.vertical]}`
         } else if (this.ref.constraint) {
             anchor = constraint = rects.constraint
             primaryHAlign = `${lAlign.horizontal}-${lAlign.horizontal}`
             primaryVAlign = `${lAlign.vertical}-${lAlign.vertical}`
+
+            oppositeHAlign = `${opposite[lAlign.horizontal]}-${opposite[lAlign.horizontal]}`
+            oppositeVAlign = `${opposite[lAlign.vertical]}-${opposite[lAlign.vertical]}`
         }
 
         let hPlacements = [
-            calcPlacementH[primaryHAlign](levitate, anchor, constraint)
+            calcPlacementH[primaryHAlign](levitate, anchor, constraint),
+            calcPlacementH[oppositeHAlign](levitate, anchor, constraint),
         ]
 
         let vPlacements = [
-            calcPlacementH[primaryVAlign](levitate, anchor, constraint)
+            calcPlacementV[primaryVAlign](levitate, anchor, constraint),
+            calcPlacementV[oppositeVAlign](levitate, anchor, constraint)
         ]
 
         let result = []
@@ -139,7 +150,7 @@ const opposite: { [key: string]: HAlign | VAlign } = {
     right: "left",
     bottom: "top",
     left: "right",
-    center: null
+    center: "center"
 }
 
 for (let a1 of aligns) {
