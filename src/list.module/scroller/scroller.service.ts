@@ -141,9 +141,9 @@ export class ImmediateViewport extends Viewport {
             (this as any).scrollHeight = Math.max(this.scrollHeight || 0, this.height);
 
             this.visible.width = this.width
-            this.visible.height = this.height
+            this.visible.height = this.height;
 
-            this._recalcPosition();
+            // this._recalcPosition();
 
             (this.change as Subject<Viewport>).next(this)
         }

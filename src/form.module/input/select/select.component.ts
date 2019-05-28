@@ -93,8 +93,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
 
-    public readonly displayField: string
-    public readonly queryField: string
+    public displayField: string
+    public queryField: string
 
     @Input()
     public set opened(val: boolean) {
@@ -241,7 +241,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
         @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
         @Attribute("displayField") displayField: string,
-        @Attribute("valueField") protected readonly valueField: string,
+        @Attribute("valueField") public valueField: string,
         @Attribute("queryField") queryField: string,
         @Attribute("triggerIcon") public readonly triggerIcon: string) {
         super(ngControl, ngModel, el)
@@ -251,7 +251,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
-            // console.log(this.selection.type, selected[0] ? this.selection.getSelectOrigin(selected[0].id) : null)
             if (this.selection.type === "single" &&
                 selected[0] &&
                 this.selection.getSelectOrigin(selected[0].id) === "mouse") {

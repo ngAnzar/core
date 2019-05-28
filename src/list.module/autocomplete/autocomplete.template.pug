@@ -46,8 +46,9 @@ div(fxFlex="grow", fxLayout="column inline")
       ng-template(bind-ngIf="actionsByPosition.last")
         ng-template(ngFor bind-ngForOf="actionsByPosition.last" let-action let-index="index")
           .nz-list-item.item.action(
-            bind-style.gridRow="offset(index) + source.storage.total"
+            bind-style.gridRow="offset(index) + source.storage.lastIndex"
             bind-selectableAction="action.model"
-            bind-selectionIndex="offset(index) + source.storage.total")
+            bind-selectionIndex="offset(index) + source.storage.lastIndex",
+            color="light-accent")
             ng-template(bind-ngTemplateOutlet="action.tpl")
 

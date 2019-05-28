@@ -1,4 +1,5 @@
-import { Component, Inject, ElementRef, Host, ViewChild, Input, ContentChild, TemplateRef, ChangeDetectorRef } from "@angular/core"
+import { Component, Inject, ElementRef, Host, ViewChild, Input, ContentChild, ContentChildren, QueryList, TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit } from "@angular/core"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 
 import { Destruct } from "../../util"
@@ -19,12 +20,12 @@ import { SelectTemplateRef } from "../../form.module/input/select/select.compone
         "[attr.flat]": "vps.navbarCenterOverlap ? '' : null"
     }
 })
-export class NavbarSearchComponent {
+export class NavbarSearchComponent implements AfterViewInit {
     public readonly destruct = new Destruct()
 
     @ContentChild("selected", { read: TemplateRef }) public readonly selectedTpl: SelectTemplateRef<any>
     @ContentChild("item", { read: TemplateRef }) public readonly itemTpl: SelectTemplateRef<any>
-    // @ContentChildren(ListActionComponent) public readonly actions: QueryList<ListActionComponent>
+    @ContentChildren(ListActionComponent) public readonly actions: QueryList<ListActionComponent>
 
     @ViewChild("select", { read: SelectComponent }) public readonly select: SelectComponent<any>
 
@@ -65,6 +66,17 @@ export class NavbarSearchComponent {
     public get icon(): string { return this._icon }
     private _icon: string
 
+    @Input()
+    public set autoReset(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._autoReset !== val) {
+            this._autoReset = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get autoReset(): boolean { return this._autoReset }
+    private _autoReset: boolean = false
+
     public readonly AutocompleteComponent = AutocompleteComponent
     private _backWatcher: KeyWatcher
 
@@ -75,7 +87,10 @@ export class NavbarSearchComponent {
         @Inject(PointerEventService) pointerEvents: PointerEventService,
         @Inject(KeyEventService) keyEvents: KeyEventService,
         @Inject(MediaQueryService) protected readonly mq: MediaQueryService,
-        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
+        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
+        @Attribute("displayField") protected readonly displayField: string,
+        @Attribute("valueField") protected readonly valueField: string,
+        @Attribute("queryField") protected readonly queryField: string) {
 
         this._backWatcher = this.destruct.disposable(keyEvents.newWatcher(SpecialKey.BackButton, (event: KeyboardEvent) => {
             this.hideSearch()
@@ -97,6 +112,30 @@ export class NavbarSearchComponent {
             if (event.matches && this.select && this.select.opened) {
                 this.vps.navbarCenterOverlap = true
             }
+        })
+
+
+    }
+
+    public ngAfterViewInit() {
+        if (this.displayField) {
+            this.select.displayField = this.displayField
+        }
+
+        if (this.queryField) {
+            this.select.queryField = this.queryField
+        }
+
+        if (this.valueField) {
+            this.select.valueField = this.valueField
+        }
+
+        this.destruct.subscription(this.select.selection.changes).subscribe(sel => {
+            let selected = sel[0]
+            console.log({ selected })
+            // if (this.autoReset) {
+            //     this.hideSearch()
+            // }
         })
     }
 
