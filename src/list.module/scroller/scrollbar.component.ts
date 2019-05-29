@@ -1,6 +1,6 @@
 import {
     Component, Inject, Input, HostBinding, Attribute, ViewChild,
-    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ElementRef
+    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ElementRef, NgZone
 } from "@angular/core"
 
 import { Destruct } from "../../util"
@@ -80,8 +80,10 @@ export class ScrollbarComponent implements OnDestroy {
         @Inject(ScrollerService) public readonly scroller: ScrollerService,
         @Inject(DragEventService) public readonly dragEvent: DragEventService,
         @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef,
+        @Inject(NgZone) zone: NgZone,
         @Attribute("orient") public readonly orient: ScrollOrient) {
 
+        // zone.runOutsideAngular(() => {
         this.destruct.subscription(scroller.vpImmediate.change).subscribe(viewport => {
             let canScroll = true
             if (this.orient === "horizontal") {
@@ -138,6 +140,7 @@ export class ScrollbarComponent implements OnDestroy {
                     break
             }
         })
+        // })
     }
 
     // TODO: remove detect changes...
@@ -163,7 +166,7 @@ export class ScrollbarComponent implements OnDestroy {
             }
         }
 
-        this.cdr.detectChanges()
+        this.cdr.markForCheck()
     }
 
     public ngOnDestroy() {
