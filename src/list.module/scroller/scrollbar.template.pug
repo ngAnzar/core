@@ -1,18 +1,3 @@
-.nz-scrollbar-dec(
-  #btnUp,
-  *ngIf="btnVisible",
-  [style.width.px]="btnWidth",
-  [style.height.px]="btnHeight")
-
-.nz-scrollbar-bar(
-  #bar,
-  [style.width.px]="barWidth",
-  [style.height.px]="barHeight",
-  [style.left.px]="barLeft",
-  [style.top.px]="barTop")
-
-.nz-scrollbar-inc(
-  #btnDown,
-  *ngIf="btnVisible",
-  [style.width.px]="btnWidth",
-  [style.height.px]="btnHeight")
+.nz-scrollbar-dec(#btnUp, *ngIf="btnVisible")
+.nz-scrollbar-bar(#bar)
+.nz-scrollbar-inc(#btnDown, *ngIf="btnVisible")

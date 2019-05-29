@@ -26,6 +26,7 @@ export class ScrollbarComponent implements OnDestroy {
         if (this._position !== val) {
             this._position = val
             this._layout()
+            this.cdr.detectChanges()
         }
     }
     public get position(): number { return this._position }
@@ -37,6 +38,7 @@ export class ScrollbarComponent implements OnDestroy {
         if (this._width !== val) {
             this._width = val
             this._layout()
+            this.cdr.detectChanges()
         }
     }
     public get width(): number { return this._width }
@@ -48,6 +50,7 @@ export class ScrollbarComponent implements OnDestroy {
         if (this._height !== val) {
             this._height = val
             this._layout()
+            this.cdr.detectChanges()
         }
     }
     public get height(): number { return this._height }
@@ -161,8 +164,23 @@ export class ScrollbarComponent implements OnDestroy {
                 self.btnHeight = this.size
                 self.scrollRatio = self.scroller.vpImmediate.scrollHeight / (trackHeight - self.barHeight)
             }
+
+            if (self.btnVisible) {
+                self.btnDown.nativeElement.style.width = `${self.btnWidth}px`
+                self.btnDown.nativeElement.style.height = `${self.btnHeight}px`
+
+                self.btnUp.nativeElement.style.width = `${self.btnWidth}px`
+                self.btnUp.nativeElement.style.height = `${self.btnHeight}px`
+            }
+
+            self.bar.nativeElement.style.width = `${self.barWidth}px`
+            self.bar.nativeElement.style.height = `${self.barHeight}px`
+            self.bar.nativeElement.style.top = `${self.barTop}px`
+            self.bar.nativeElement.style.left = `${self.barLeft}px`
         }
-        this.cdr.detectChanges()
+
+
+        // this.cdr.detectChanges()
     }
 
     public ngOnDestroy() {

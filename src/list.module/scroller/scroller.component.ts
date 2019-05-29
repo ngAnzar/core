@@ -65,44 +65,45 @@ export class ScrollerComponent {
         this.service.releaseMethod("wheel")
     }
 
-    private _panStartPos: ScrollPosition
+    // XXX: add event listener based on device
+    // private _panStartPos: ScrollPosition
 
-    @HostListener("panstart", ["$event"])
-    public onPanStart(event: any) {
-        if (this.service.lockMethod("pan")) {
-            this._panStartPos = this.service.scrollPosition
-        }
-    }
+    // @HostListener("panstart", ["$event"])
+    // public onPanStart(event: any) {
+    //     if (this.service.lockMethod("pan")) {
+    //         this._panStartPos = this.service.scrollPosition
+    //     }
+    // }
 
-    @HostListener("pan", ["$event"])
-    public onPan(event: any) {
-        if (!this.service.lockMethod("pan")) {
-            return
-        }
+    // @HostListener("pan", ["$event"])
+    // public onPan(event: any) {
+    //     if (!this.service.lockMethod("pan")) {
+    //         return
+    //     }
 
-        let velocity = 5
-        let modifierX = 1
-        let modifierY = 1
+    //     let velocity = 5
+    //     let modifierX = 1
+    //     let modifierY = 1
 
-        if (event.isFinal) {
-            // velocity = Math.abs(event.velocity)
-            // if (event.additionalEvent === "panup" || event.additionalEvent === "pandown") {
-            //     modifierY = Math.max(1, velocity * 2)
-            // } else {
-            //     modifierX = Math.max(1, velocity * 2)
-            // }
-            velocity = 1
-        }
+    //     if (event.isFinal) {
+    //         // velocity = Math.abs(event.velocity)
+    //         // if (event.additionalEvent === "panup" || event.additionalEvent === "pandown") {
+    //         //     modifierY = Math.max(1, velocity * 2)
+    //         // } else {
+    //         //     modifierX = Math.max(1, velocity * 2)
+    //         // }
+    //         velocity = 1
+    //     }
 
-        this.service.velocityX = this.service.velocityY = velocity
+    //     this.service.velocityX = this.service.velocityY = velocity
 
-        let top = this._panStartPos.top - (event.deltaY * modifierY)
-        let left = this._panStartPos.left - (event.deltaX * modifierX)
+    //     let top = this._panStartPos.top - (event.deltaY * modifierY)
+    //     let left = this._panStartPos.left - (event.deltaX * modifierX)
 
-        this.service.scrollPosition = { top, left }
+    //     this.service.scrollPosition = { top, left }
 
-        if (event.isFinal) {
-            this.service.releaseMethod("pan")
-        }
-    }
+    //     if (event.isFinal) {
+    //         this.service.releaseMethod("pan")
+    //     }
+    // }
 }
