@@ -4,7 +4,7 @@ import { RichtextStream } from "./richtext-stream"
 
 
 @Component({
-    selector: "richtext-menu",
+    selector: "nz-richtext-menu",
     host: {
         "(mouseenter)": "mouseIsOver=true",
         "(mouseleave)": "mouseIsOver=false",

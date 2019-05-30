@@ -31,10 +31,18 @@ import { RadioGroupDirective } from "./input/radio/radio-group.directive"
 export { RadioComponent, RadioGroupDirective }
 
 import { RichtextInputComponent } from "./input/richtext/richtext-input.component"
-import { RichtextService, RICHTEXT_COMPONENT, RichtextStaticFactory } from "./input/richtext/richtext.service"
+import {
+    RichtextService,
+    RICHTEXT_COMPONENT, RichtextStaticFactory,
+    RICHTEXT_AUTO_COMPLETE, RichtextAcProvider, RichtextAcItem
+} from "./input/richtext/richtext.service"
 import { RichtextDirective } from "./input/richtext/richtext.directive"
 import { RichtextMenu } from "./input/richtext/richtext-menu.component"
-export { RichtextInputComponent, RichtextService, RICHTEXT_COMPONENT, RichtextStaticFactory, RichtextDirective }
+export {
+    RichtextInputComponent, RichtextService, RichtextDirective,
+    RICHTEXT_COMPONENT, RichtextStaticFactory,
+    RICHTEXT_AUTO_COMPLETE, RichtextAcProvider, RichtextAcItem
+}
 
 import { SelectComponent } from "./input/select/select.component"
 export { SelectComponent }
@@ -108,7 +116,6 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         RichtextMenu
     ],
     providers: [
-        RichtextService,
         { provide: RICHTEXT_COMPONENT, multi: true, useValue: { id: "hashtag", component: "TagComponent" } },
         { provide: RICHTEXT_COMPONENT, multi: true, useValue: { id: "client-link", component: "ClientLinkComponent" } },
         { provide: RICHTEXT_COMPONENT, multi: true, useValue: { id: "user-link", component: "UserLinkComponent" } },

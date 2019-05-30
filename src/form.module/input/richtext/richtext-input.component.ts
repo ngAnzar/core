@@ -1,5 +1,8 @@
-import { Component, Inject, ViewChild, Optional, ElementRef } from "@angular/core"
+import { Component, Inject, ViewChild, Optional, ElementRef, Output, EventEmitter, AfterContentInit, OnDestroy } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
+import { Observable } from "rxjs"
+
+// import { Destruct } from "@anzar/core/util"
 
 import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
 import { LayerService, LayerRef, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
@@ -16,7 +19,7 @@ import { RichtextStream } from "./richtext-stream"
         INPUT_VALUE_ACCESSOR
     ]
 })
-export class RichtextInputComponent extends InputComponent<string> {
+export class RichtextInputComponent extends InputComponent<string> implements OnDestroy {
     public get type(): string { return "text" }
 
     @ViewChild("input") public readonly input: RichtextDirective
@@ -32,6 +35,14 @@ export class RichtextInputComponent extends InputComponent<string> {
 
     private _menuRef: ComponentLayerRef<RichtextMenu>
 
+    public constructor(
+        @Inject(NgControl) @Optional() ngControl: NgControl,
+        @Inject(NgModel) @Optional() ngModel: NgModel,
+        @Inject(ElementRef) el: ElementRef,
+        @Inject(LayerService) protected readonly layerSvc: LayerService) {
+        super(ngControl, ngModel, el)
+    }
+
     writeValue(value: any): void {
         const normalizedValue = value == null ? "" : value
         this.input.value = normalizedValue
@@ -45,19 +56,19 @@ export class RichtextInputComponent extends InputComponent<string> {
             this.input.value = ""
         }
 
+        if (this.input.inAutoComplete) {
+            this.menuVisible = false
+        }
+
         return super._handleInput(value)
     }
 
-    public constructor(
-        @Inject(NgControl) @Optional() ngControl: NgControl,
-        @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(ElementRef) el: ElementRef,
-        @Inject(LayerService) protected readonly layerSvc: LayerService) {
-        super(ngControl, ngModel, el)
-    }
-
     protected _handleFocus(focused: boolean) {
-        this.menuVisible = focused || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
+        this.menuVisible = !this.input.inAutoComplete
+            && (
+                focused
+                || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
+            )
         return super._handleFocus(focused)
     }
 
@@ -91,8 +102,12 @@ export class RichtextInputComponent extends InputComponent<string> {
     }
 
     protected _updateMenu() {
+        console.log("_updateMenu")
         if (this._menuRef && this._menuRef.component) {
             this._menuRef.component.instance.cdr.detectChanges()
         }
+    }
+
+    public ngOnDestroy() {
     }
 }

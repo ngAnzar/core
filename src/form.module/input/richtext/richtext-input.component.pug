@@ -15,6 +15,5 @@
     .editor(#input="nzRichtext", [nzRichtext]="", contenteditable="true",
       on-focus="_handleFocus(true)",
       on-blur="_handleFocus(false)",
-      on-mouseup="_updateMenu()",
-      on-keyup="_updateMenu()",
+      on-cursorMove="_updateMenu()",
       on-change="_handleInput($event)")

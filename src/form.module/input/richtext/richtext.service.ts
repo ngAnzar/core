@@ -1,4 +1,7 @@
 import { Injectable, InjectionToken, Inject, Optional } from "@angular/core"
+import { Observable } from "rxjs"
+
+import { Model, Field } from "../../../data.module"
 
 
 export interface RichtextStaticFactory {
@@ -7,13 +10,36 @@ export interface RichtextStaticFactory {
 }
 
 
+export class RichtextAcItem extends Model {
+
+}
+
+
+export abstract class RichtextAcProvider {
+    public abstract readonly trigger: RegExp
+    public abstract readonly prevent: RegExp | null
+    public abstract readonly mustSelect: boolean
+
+    public abstract query(value: string): Observable<RichtextAcItem[]>
+}
+
+
 export const RICHTEXT_COMPONENT = new InjectionToken<RichtextStaticFactory>("nzRichtextComponent")
+export const RICHTEXT_AUTO_COMPLETE = new InjectionToken<RichtextStaticFactory>("nzRichtextAutoComplete")
 
 
 @Injectable({ providedIn: "root" })
 export class RichtextService {
     public constructor(
-        @Inject(RICHTEXT_COMPONENT) @Optional() protected readonly components: RichtextStaticFactory[]) {
+        @Inject(RICHTEXT_COMPONENT) @Optional() protected readonly components: RichtextStaticFactory[],
+        @Inject(RICHTEXT_AUTO_COMPLETE) @Optional() protected readonly acProviders: RichtextAcProvider[]) {
         console.log({ components })
+        console.log({ acProviders })
+    }
+
+    public getAcProviders(text: string): RichtextAcProvider[] {
+        return this.acProviders.filter(ac => {
+            return ac.trigger.test(text)
+        })
     }
 }
