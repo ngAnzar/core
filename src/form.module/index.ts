@@ -7,6 +7,7 @@ import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
 import { NzListModule } from "../list.module"
 import { NzLayoutModule } from "../layout.module"
+import { NzLayerModule } from "../layer.module"
 
 
 import { FormFieldComponent } from "./field/form-field.component"
@@ -32,6 +33,7 @@ export { RadioComponent, RadioGroupDirective }
 import { RichtextInputComponent } from "./input/richtext/richtext-input.component"
 import { RichtextService, RICHTEXT_COMPONENT, RichtextStaticFactory } from "./input/richtext/richtext.service"
 import { RichtextDirective } from "./input/richtext/richtext.directive"
+import { RichtextMenu } from "./input/richtext/richtext-menu.component"
 export { RichtextInputComponent, RichtextService, RICHTEXT_COMPONENT, RichtextStaticFactory, RichtextDirective }
 
 import { SelectComponent } from "./input/select/select.component"
@@ -51,7 +53,8 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         NzCommonModule,
         NzDataModule,
         NzListModule,
-        NzLayoutModule
+        NzLayoutModule,
+        NzLayerModule
     ],
     declarations: [
         FormFieldComponent,
@@ -69,6 +72,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         RichtextInputComponent,
         RichtextDirective,
+        RichtextMenu,
 
         SelectComponent,
 
@@ -93,11 +97,15 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         RichtextInputComponent,
         RichtextDirective,
+        RichtextMenu,
 
         SelectComponent,
 
         TextFieldComponent,
         TextareaComponent
+    ],
+    entryComponents: [
+        RichtextMenu
     ],
     providers: [
         RichtextService,
