@@ -11,8 +11,10 @@ export { StaticSource } from "./static-source"
 
 import { SingleSelection, MultiSelection, PropagateSelection } from "./selection/selection.directive"
 import { SelectableDirective } from "./selection/selectable.directive"
+import { SelectionKeyboardHandler } from "./selection/keyboard-handler"
 export { SelectionModel, ISelectionModel, SelectionEvent, ISelectable, SelectOrigin, SelectionItems } from "./selection/abstract"
 export { SingleSelection, MultiSelection, PropagateSelection, SelectableDirective }
+export { SelectionKeyboardHandler }
 
 
 // export {

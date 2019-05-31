@@ -52,7 +52,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
         }
     }
 
-    protected _handleKeyDown = (event: KeyboardEvent) => {
+    protected _handleKeyDown = (event: KeyboardEvent): boolean => {
         switch (event.keyCode) {
             case UP_ARROW:
                 this.moveSelection(-1, event.shiftKey, event.ctrlKey)
@@ -64,7 +64,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
 
             case SPACE:
                 if (!event.ctrlKey || !event.shiftKey) {
-                    return
+                    return false
                 }
             case ENTER:
                 if (this._keyboardFocused !== -1) {
@@ -73,14 +73,23 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 break
 
             default:
-                return
+                return false
         }
         event.preventDefault()
         event.stopPropagation()
+        return true
     }
 
-    protected _handleKeyUp = (event: KeyboardEvent) => {
+    protected _handleKeyUp = (event: KeyboardEvent): boolean => {
+        return false
+    }
 
+    public handleKeyEvent = (event: KeyboardEvent): boolean => {
+        if (event.type === "keydown") {
+            return this._handleKeyDown(event)
+        } else {
+            return this._handleKeyUp(event)
+        }
     }
 
     public handleMouse = (event: PointerEvent, selectable: ISelectable) => {

@@ -34,9 +34,10 @@ import { RichtextInputComponent } from "./input/richtext/richtext-input.componen
 import {
     RichtextService,
     RICHTEXT_COMPONENT, RichtextStaticFactory,
-    RICHTEXT_AUTO_COMPLETE, RichtextAcProvider, RichtextAcItem
+    RICHTEXT_AUTO_COMPLETE
 } from "./input/richtext/richtext.service"
-import { RichtextDirective } from "./input/richtext/richtext.directive"
+import { RichtextAcProvider, RichtextAcItem, RichtextAcComponent } from "./input/richtext/richtext-ac.component"
+import { RichtextDirective, RichtextEditableDirective } from "./input/richtext/richtext.directive"
 import { RichtextMenu } from "./input/richtext/richtext-menu.component"
 export {
     RichtextInputComponent, RichtextService, RichtextDirective,
@@ -80,7 +81,9 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         RichtextInputComponent,
         RichtextDirective,
+        RichtextEditableDirective,
         RichtextMenu,
+        RichtextAcComponent,
 
         SelectComponent,
 
@@ -105,7 +108,9 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         RichtextInputComponent,
         RichtextDirective,
+        RichtextEditableDirective,
         RichtextMenu,
+        RichtextAcComponent,
 
         SelectComponent,
 
@@ -113,7 +118,8 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         TextareaComponent
     ],
     entryComponents: [
-        RichtextMenu
+        RichtextMenu,
+        RichtextAcComponent
     ],
     providers: [
         { provide: RICHTEXT_COMPONENT, multi: true, useValue: { id: "hashtag", component: "TagComponent" } },

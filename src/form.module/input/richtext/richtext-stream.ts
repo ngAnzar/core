@@ -2,22 +2,53 @@ import { Inject, ElementRef, OnDestroy, Attribute } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
 import { Observable, Subject } from "rxjs"
 
-import { Destruct, IDisposable } from "@anzar/core/util"
+import { Destruct, IDisposable } from "../../../util"
+
+
+export const RT_AC_TAG_NAME = "nz-richtext-acanchor"
+export const RT_PORTAL_TAG_NAME = "nz-richtext-portal"
 
 
 export class RichtextStream implements IDisposable, OnDestroy {
     public readonly destruct = new Destruct()
 
     public readonly el: HTMLElement
-    public readonly editable: boolean
     public readonly state: RTState = new Proxy({}, {
-        get(target, name, receiver) {
+        get: (target, name, receiver) => {
+            let sel
+
+            switch (name) {
+                case "autocomplete":
+                    if (sel = this.selection) {
+                        let node = sel.findElement(RT_AC_TAG_NAME)
+                        return {
+                            enabled: !!node,
+                            value: node
+                        }
+                    }
+
+                case "component":
+                    if (sel = this.selection) {
+                        let node = sel.findElement(RT_PORTAL_TAG_NAME)
+                        return {
+                            enabled: !!node,
+                            value: node
+                        }
+                    }
+
+                default:
+                    return {
+                        enabled: document.queryCommandState(name as string),
+                        value: document.queryCommandValue(name as string)
+                    }
+            }
+
             return {
-                enabled: document.queryCommandState(name as string),
-                params: document.queryCommandValue(name as string)
+                enabled: false,
+                value: null
             }
         },
-        set(target, name, value, receiver) {
+        set: (target, name, value, receiver) => {
             throw new Error("State values readonly")
         }
     }) as RTState
@@ -26,10 +57,8 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
     public constructor(
         @Inject(ElementRef) el: ElementRef<HTMLElement>,
-        @Inject(EventManager) protected readonly evtManager: EventManager,
-        @Attribute("contenteditable") contenteditable: any) {
+        @Inject(EventManager) protected readonly evtManager: EventManager) {
         this.el = el.nativeElement
-        this.editable = contenteditable === "true"
 
         this.destruct.any(evtManager.addEventListener(this.el, "keyup", this.onCursorMove) as any)
         this.destruct.any(evtManager.addEventListener(this.el, "pointerup", this.onCursorMove) as any)
@@ -103,22 +132,35 @@ export class RTSelection {
         }
     }
 
+    public findElement(name: string): HTMLElement | null {
+        let resultNode: Node
+        for (const node of this.nodes) {
+            resultNode = node
+            do {
+                if (resultNode.nodeType == 1 && (resultNode as HTMLElement).tagName.toLowerCase() === name) {
+                    return resultNode as HTMLElement
+                } else {
+                    resultNode = resultNode.parentNode
+                }
+            } while (resultNode)
+        }
+        return null
+    }
+
     private getSelectedNodes(): Node[] {
         let range = this.native.getRangeAt(0)
-        let all: Node[]
+        let all: Node[] = []
         let startc = range.startContainer
         let endc = range.startContainer
 
         if (startc.nodeType === 1) {
-            all = (startc as HTMLElement).querySelectorAll("*") as any
+            all = all.concat(Array.prototype.slice.call((startc as HTMLElement).querySelectorAll("*")))
         } else if (startc.nodeType == 3) {
             return [startc]
         }
 
         if (endc.nodeType === 1) {
-            for (const el of (endc as HTMLElement).querySelectorAll("*") as any) {
-                all.push(el)
-            }
+            all = all.concat(Array.prototype.slice.call((endc as HTMLElement).querySelectorAll("*")))
         } else if (endc.nodeType == 3) {
             throw new Error("Runtime error")
         }
@@ -215,6 +257,11 @@ export class RTCommand {
 
     public insertHTML(html: string) { return new RTCommand(this.stream, this, "insertHTML", html) }
 
+    public insertComponent(name: string, params: { [key: string]: any }) {
+        let p = JSON.stringify(params).replace(/"/, "&x22;")
+        return this.insertHTML(`<${RT_PORTAL_TAG_NAME} name="${name}" params="${p}"></${RT_PORTAL_TAG_NAME}>`)
+    }
+
     public exec() {
         let cmds = []
         let obj: RTCommand = this
@@ -235,15 +282,16 @@ export class RTCommand {
 }
 
 
-export interface RTStateEntry {
+export interface RTStateEntry<T> {
     enabled: boolean
-    params?: any
+    value?: T
 }
 
 
 export interface RTState {
-    bold: RTStateEntry
-    italic: RTStateEntry
-    underline: RTStateEntry
-    strikeThrough: RTStateEntry
+    bold: RTStateEntry<string>
+    italic: RTStateEntry<string>
+    underline: RTStateEntry<string>
+    strikeThrough: RTStateEntry<string>
+    autocomplete: RTStateEntry<HTMLElement>
 }

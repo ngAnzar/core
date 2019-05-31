@@ -1,24 +1,26 @@
 import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy } from "@angular/core"
-import { Observable } from "rxjs"
+import { UP_ARROW, DOWN_ARROW, ESCAPE } from "@angular/cdk/keycodes"
+import { Observable, Subject } from "rxjs"
 
-import { Destruct } from "@anzar/core/util"
+import { Destruct } from "../../../util"
+import { LayerService } from "../../../layer.module"
 
-import { RichtextService, RichtextAcProvider } from "./richtext.service"
-import { RichtextStream, Word } from "./richtext-stream"
+import { RichtextService } from "./richtext.service"
+import { RichtextStream, Word, RT_AC_TAG_NAME, RT_PORTAL_TAG_NAME } from "./richtext-stream"
+import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
+
+import { matchTagName } from "./util"
 
 
-
-export const RT_AUTOCOMPLET_TAG_NAME = "nz-rt-autocomplete"
+let RT_UNIQUE_IDX = 0
 
 
 @Directive({
     selector: "[nzRichtext]",
     exportAs: "nzRichtext",
-    providers: [RichtextService, RichtextStream]
+    providers: [RichtextStream]
 })
-export class RichtextDirective implements OnDestroy {
-    public readonly destruct = new Destruct()
-
+export class RichtextDirective {
     @Input("nzRichtext")
     public set value(val: string) {
         if (this._value !== val) {
@@ -33,90 +35,181 @@ export class RichtextDirective implements OnDestroy {
     @Output("change")
     public readonly changes: Observable<string> = new EventEmitter<string>()
 
+    public constructor(@Inject(RichtextStream) public readonly stream: RichtextStream) {
+    }
+}
+
+
+@Directive({
+    selector: "[nzRichtext][contenteditable='true']",
+    providers: [RichtextService]
+})
+export class RichtextEditableDirective implements OnDestroy {
+    public readonly destruct = new Destruct()
+
     @Output("cursorMove")
     public readonly cursorMove: Observable<any> = new EventEmitter()
 
-    public readonly inAutoComplete: boolean
+    // public readonly inAutoComplete: boolean
 
-    private _acProviders: { [key: string]: RichtextAcProvider[] } = {}
+    private _acManagers: { [key: string]: RichtextAcManager } = {}
 
     public constructor(
-        @Inject(RichtextService) protected readonly svc: RichtextService,
-        @Inject(RichtextStream) public readonly stream: RichtextStream) {
-    }
+        @Inject(RichtextService) public readonly svc: RichtextService,
+        @Inject(LayerService) public readonly layerSvc: LayerService,
+        @Inject(RichtextDirective) public readonly rt: RichtextDirective) {
 
-    @HostListener("input")
-    public onInput() {
-        if (this.stream.editable) {
-            this.triggerAutoComplete();
-            (this.changes as EventEmitter<string>).emit(this.stream.value)
-        }
-    }
-
-    @HostListener("keyup")
-    public onKeyup() {
-        if (this.stream.editable) {
-            (this.cursorMove as EventEmitter<any>).emit()
-        }
-    }
-
-    @HostListener("pointerup")
-    public onPointerup() {
-        if (this.stream.editable) {
-            (this.cursorMove as EventEmitter<any>).emit()
-        }
+        let mutation = new MutationObserver(this.onMuation)
+        this.destruct.any(mutation.disconnect.bind(mutation))
+        mutation.observe(rt.stream.el, {
+            childList: true,
+            subtree: true
+        })
     }
 
     public ngOnDestroy() {
         this.destruct.run()
+        for (const k in this._acManagers) {
+            this._acManagers[k].dispose()
+        }
+        delete this._acManagers
+    }
+
+    @HostListener("input", ["$event"])
+    public onInput(event: Event) {
+        this.triggerAutoComplete();
+        (this.rt.changes as EventEmitter<string>).emit(this.rt.stream.value)
+    }
+
+    @HostListener("keydown", ["$event"])
+    public onKeydown(event: KeyboardEvent) {
+        if (this._handleKeyEvent(event) || event.defaultPrevented) {
+            return
+        }
+    }
+
+    @HostListener("keyup", ["$event"])
+    public onKeyup(event: KeyboardEvent) {
+        if (this._handleKeyEvent(event) || event.defaultPrevented) {
+            return
+        }
+
+        (this.cursorMove as Subject<any>).next()
+    }
+
+    protected _handleKeyEvent(event: KeyboardEvent): boolean {
+        let handled = false
+        for (const k in this._acManagers) {
+            let manager = this._acManagers[k]
+            if (manager.selection.keyboard.handleKeyEvent(event)) {
+                handled = true
+            }
+        }
+
+        if (event.type === "keyup" && event.keyCode === ESCAPE) {
+            let ac = this.rt.stream.state.autocomplete
+            if (ac.enabled) {
+                ac.value.parentNode.removeChild(ac.value)
+                handled = true
+                event.stopImmediatePropagation()
+                event.preventDefault()
+            }
+        }
+
+        return handled
+    }
+
+    @HostListener("pointerup")
+    public onPointerup() {
+        (this.cursorMove as Subject<any>).next()
+    }
+
+    protected onMuation = (mutations: MutationRecord[]) => {
+        for (const record of mutations) {
+            let removedNodes = record.removedNodes
+            for (let i = 0, l = removedNodes.length, removed: Node; i < l; i++) {
+                removed = removedNodes[i]
+
+                // dispose autocomplete manager
+                if (matchTagName(removed, RT_AC_TAG_NAME)) {
+                    let id = (removed as HTMLElement).getAttribute("rtid")
+                    if (id in this._acManagers) {
+                        this._acManagers[id].dispose()
+                        delete this._acManagers[id]
+                    }
+                }
+            }
+
+            let addedNodes = record.addedNodes
+            for (let i = 0, l = addedNodes.length, added: Node; i < l; i++) {
+                added = addedNodes[i]
+
+                if (matchTagName(added, RT_PORTAL_TAG_NAME)) {
+                    let id: any = (added as HTMLElement).getAttribute("rtid")
+                    if (!id) {
+                        id = ++RT_UNIQUE_IDX;
+                        (added as HTMLElement).setAttribute("rtid", id)
+                    }
+
+                    if (!(added as HTMLElement).innerText) {
+                        this.createComponent(added as HTMLElement)
+                    }
+                }
+            }
+
+            // remove empty ac anchor element
+            if (matchTagName(record.target, RT_AC_TAG_NAME)) {
+                let content = (record.target as HTMLElement).innerText
+                if (content) {
+                    content = content.replace(/^\s+|\s+$/, "")
+                }
+
+                if (!content) {
+                    record.target.parentNode.removeChild(record.target)
+                }
+            }
+        }
     }
 
     protected triggerAutoComplete() {
-        (this as any).inAutoComplete = false
-
-        let selection = this.stream.selection
+        let selection = this.rt.stream.selection
         if (selection) {
-            let acNode = this.inAcNode(selection.nodes)
+            let acNode = selection.findElement(RT_AC_TAG_NAME)
             if (acNode) {
-                (this as any).inAutoComplete = true
-                console.log("inAc", acNode, acNode.innerText)
+                let rtid = acNode.getAttribute("rtid")
+                let manager = this._acManagers[rtid]
+                if (manager) {
+                    manager.update(acNode.innerText)
+                }
             } else {
                 let word = selection.word
                 if (word) {
                     let ac = this.svc.getAcProviders(word.value)
                     if (ac.length) {
-                        (this as any).inAutoComplete = true
-                        this.beginAc(word)
+                        this.beginAc(ac, word)
                     }
                 }
             }
         }
-
-        // let word = this.stream.wordUnderCaret
-        // if (word) {
-        //     let ac = this.svc.getAcProviders(word)
-        //     console.log("autocomplete", ac)
-        // }
     }
 
-    protected inAcNode(nodes: Node[]): HTMLElement | null {
-        for (const node of nodes) {
-            let acNode = node
-            do {
-                if (acNode.nodeType == 1 && (acNode as HTMLElement).tagName.toLowerCase() === RT_AUTOCOMPLET_TAG_NAME) {
-                    return acNode as HTMLElement
-                } else {
-                    acNode = acNode.parentNode
-                }
-            } while (acNode)
-        }
-        return null
-    }
-
-    protected beginAc(word: Word) {
-        console.log("beginAc", word)
-        let html = `<${RT_AUTOCOMPLET_TAG_NAME}>${word.value}</${RT_AUTOCOMPLET_TAG_NAME}>`
+    protected beginAc(providers: RichtextAcProvider[], word: Word) {
+        let id = ++RT_UNIQUE_IDX
+        let html = `<${RT_AC_TAG_NAME} rtid="${id}">${word.value}</${RT_AC_TAG_NAME}>`
         word.select()
-        this.stream.command().insertHTML(html).exec()
+        this.rt.stream.command().insertHTML(html).exec()
+
+        let acNode = this.rt.stream.state.autocomplete.value
+        if (acNode) {
+            this._acManagers[id] = new RichtextAcManager(acNode, providers, this.layerSvc)
+            this._acManagers[id].update(word.value)
+            // this._acManagers[id].selection.keyboard.connect(this.rt.stream.el)
+        } else {
+            throw new Error("Runtime error")
+        }
+    }
+
+    protected createComponent(anchor: HTMLElement) {
+
     }
 }

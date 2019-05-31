@@ -1,26 +1,11 @@
 import { Injectable, InjectionToken, Inject, Optional } from "@angular/core"
-import { Observable } from "rxjs"
 
-import { Model, Field } from "../../../data.module"
+import { RichtextAcProvider } from "./richtext-ac.component"
 
 
 export interface RichtextStaticFactory {
     readonly id: string
     readonly component: any
-}
-
-
-export class RichtextAcItem extends Model {
-
-}
-
-
-export abstract class RichtextAcProvider {
-    public abstract readonly trigger: RegExp
-    public abstract readonly prevent: RegExp | null
-    public abstract readonly mustSelect: boolean
-
-    public abstract query(value: string): Observable<RichtextAcItem[]>
 }
 
 

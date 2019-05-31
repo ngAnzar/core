@@ -56,19 +56,16 @@ export class RichtextInputComponent extends InputComponent<string> implements On
             this.input.value = ""
         }
 
-        if (this.input.inAutoComplete) {
-            this.menuVisible = false
-        }
+        // this.menuVisible = !this.input.stream.state.autocomplete.enabled
 
         return super._handleInput(value)
     }
 
     protected _handleFocus(focused: boolean) {
-        this.menuVisible = !this.input.inAutoComplete
-            && (
-                focused
-                || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
-            )
+        this.menuVisible = !this.input.stream.state.autocomplete.enabled && (
+            focused
+            || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
+        )
         return super._handleFocus(focused)
     }
 
@@ -102,7 +99,9 @@ export class RichtextInputComponent extends InputComponent<string> implements On
     }
 
     protected _updateMenu() {
-        console.log("_updateMenu")
+        let ac = this.input.stream.state.autocomplete
+        console.log(ac)
+        this.menuVisible = !ac.enabled
         if (this._menuRef && this._menuRef.component) {
             this._menuRef.component.instance.cdr.detectChanges()
         }
