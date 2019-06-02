@@ -1,15 +1,16 @@
-import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy } from "@angular/core"
+import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef } from "@angular/core"
 import { UP_ARROW, DOWN_ARROW, ESCAPE } from "@angular/cdk/keycodes"
+import { DomPortalOutlet, ComponentType, ComponentPortal } from "@angular/cdk/portal"
 import { Observable, Subject } from "rxjs"
 
-import { Destruct } from "../../../util"
+import { Destruct, IDisposable } from "../../../util"
 import { LayerService } from "../../../layer.module"
 
-import { RichtextService } from "./richtext.service"
+import { RichtextService, RICHTEXT_COMPONENT_PARAMS } from "./richtext.service"
 import { RichtextStream, Word, RT_AC_TAG_NAME, RT_PORTAL_TAG_NAME } from "./richtext-stream"
 import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
 
-import { matchTagName } from "./util"
+import { matchTagName, removeNode } from "./util"
 
 
 let RT_UNIQUE_IDX = 0
@@ -20,7 +21,7 @@ let RT_UNIQUE_IDX = 0
     exportAs: "nzRichtext",
     providers: [RichtextStream]
 })
-export class RichtextDirective {
+export class RichtextDirective implements OnDestroy {
     @Input("nzRichtext")
     public set value(val: string) {
         if (this._value !== val) {
@@ -35,7 +36,92 @@ export class RichtextDirective {
     @Output("change")
     public readonly changes: Observable<string> = new EventEmitter<string>()
 
-    public constructor(@Inject(RichtextStream) public readonly stream: RichtextStream) {
+    private _components: { [key: string]: RichtextComponentManager<any> } = {}
+    private _mutationObserver: MutationObserver
+
+    public constructor(
+        @Inject(ViewContainerRef) protected readonly vcr: ViewContainerRef,
+        @Inject(Injector) protected readonly injector: Injector,
+        @Inject(ComponentFactoryResolver) protected readonly cfr: ComponentFactoryResolver,
+        @Inject(ApplicationRef) protected readonly appRef: ApplicationRef,
+        @Inject(RichtextService) public readonly svc: RichtextService,
+        @Inject(RichtextStream) public readonly stream: RichtextStream) {
+
+        let mutation = new MutationObserver(this.onMuation)
+        mutation.observe(stream.el, {
+            childList: true,
+            subtree: true
+        })
+    }
+
+    public getCmp(el: HTMLElement): RichtextComponentManager<any> | null {
+        let id = el.getAttribute("rtid")
+        return this._components[id]
+    }
+
+    public initCmp(el: HTMLElement): RichtextComponentManager<any> {
+        let id = el.getAttribute("rtid")
+        if (!id) {
+            id = ++RT_UNIQUE_IDX as any
+            el.setAttribute("rtid", id)
+        }
+
+        let cmpType = this.svc.getComponentType(el.getAttribute("name"))
+        if (!cmpType) {
+            throw new Error("Runtime error: missing richtext component: " + el.getAttribute("name"))
+        }
+
+        let params = el.getAttribute("params")
+        if (params) {
+            params = JSON.parse(decodeURI(params))
+        } else {
+            params = null
+        }
+
+        let injector = Injector.create([
+            { provide: RICHTEXT_COMPONENT_PARAMS, useValue: params }
+        ], this.injector)
+
+        let outlet = new DomPortalOutlet(el, this.cfr, this.appRef, injector)
+        let portal = new ComponentPortal(cmpType, this.vcr, injector, this.cfr)
+        let mgr = new RichtextComponentManager(el, outlet, portal)
+        return this._components[id] = mgr
+    }
+
+    public ngOnDestroy() {
+        this.stream.value = ""
+        this._mutationObserver.disconnect()
+    }
+
+    protected onMuation = (mutations: MutationRecord[]) => {
+        let nodes: NodeList
+        let node: Node
+
+        for (const record of mutations) {
+            nodes = record.removedNodes
+            for (let i = 0, l = nodes.length; i < l; i++) {
+                node = nodes[i]
+
+                if (matchTagName(node, RT_PORTAL_TAG_NAME)) {
+                    let cmp = this.getCmp(node as HTMLElement)
+                    if (cmp) {
+                        cmp.dispose()
+                    }
+                }
+            }
+
+            nodes = record.addedNodes
+            for (let i = 0, l = nodes.length; i < l; i++) {
+                node = nodes[i]
+
+                if (matchTagName(node, RT_PORTAL_TAG_NAME)) {
+                    let cmp = this.getCmp(node as HTMLElement)
+                    if (!cmp) {
+                        this.initCmp(node as HTMLElement)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -86,6 +172,8 @@ export class RichtextEditableDirective implements OnDestroy {
         if (this._handleKeyEvent(event) || event.defaultPrevented) {
             return
         }
+
+        // console.log("keydown", this.rt.stream.selection.prevNode)
     }
 
     @HostListener("keyup", ["$event"])
@@ -95,6 +183,7 @@ export class RichtextEditableDirective implements OnDestroy {
         }
 
         (this.cursorMove as Subject<any>).next()
+        // console.log("keyup", this.rt.stream.selection.native)
     }
 
     protected _handleKeyEvent(event: KeyboardEvent): boolean {
@@ -109,7 +198,7 @@ export class RichtextEditableDirective implements OnDestroy {
         if (event.type === "keyup" && event.keyCode === ESCAPE) {
             let ac = this.rt.stream.state.autocomplete
             if (ac.enabled) {
-                ac.value.parentNode.removeChild(ac.value)
+                removeNode(ac.value)
                 handled = true
                 event.stopImmediatePropagation()
                 event.preventDefault()
@@ -125,34 +214,20 @@ export class RichtextEditableDirective implements OnDestroy {
     }
 
     protected onMuation = (mutations: MutationRecord[]) => {
+        let nodes: NodeList
+        let node: Node
+
         for (const record of mutations) {
-            let removedNodes = record.removedNodes
-            for (let i = 0, l = removedNodes.length, removed: Node; i < l; i++) {
-                removed = removedNodes[i]
+            nodes = record.removedNodes
+            for (let i = 0, l = nodes.length; i < l; i++) {
+                node = nodes[i]
 
                 // dispose autocomplete manager
-                if (matchTagName(removed, RT_AC_TAG_NAME)) {
-                    let id = (removed as HTMLElement).getAttribute("rtid")
+                if (matchTagName(node, RT_AC_TAG_NAME)) {
+                    let id = (node as HTMLElement).getAttribute("rtid")
                     if (id in this._acManagers) {
                         this._acManagers[id].dispose()
                         delete this._acManagers[id]
-                    }
-                }
-            }
-
-            let addedNodes = record.addedNodes
-            for (let i = 0, l = addedNodes.length, added: Node; i < l; i++) {
-                added = addedNodes[i]
-
-                if (matchTagName(added, RT_PORTAL_TAG_NAME)) {
-                    let id: any = (added as HTMLElement).getAttribute("rtid")
-                    if (!id) {
-                        id = ++RT_UNIQUE_IDX;
-                        (added as HTMLElement).setAttribute("rtid", id)
-                    }
-
-                    if (!(added as HTMLElement).innerText) {
-                        this.createComponent(added as HTMLElement)
                     }
                 }
             }
@@ -165,7 +240,7 @@ export class RichtextEditableDirective implements OnDestroy {
                 }
 
                 if (!content) {
-                    record.target.parentNode.removeChild(record.target)
+                    removeNode(record.target)
                 }
             }
         }
@@ -201,15 +276,37 @@ export class RichtextEditableDirective implements OnDestroy {
 
         let acNode = this.rt.stream.state.autocomplete.value
         if (acNode) {
-            this._acManagers[id] = new RichtextAcManager(acNode, providers, this.layerSvc)
+            this._acManagers[id] = new RichtextAcManager(this.rt.stream, acNode, providers, this.layerSvc)
             this._acManagers[id].update(word.value)
             // this._acManagers[id].selection.keyboard.connect(this.rt.stream.el)
         } else {
             throw new Error("Runtime error")
         }
     }
+}
 
-    protected createComponent(anchor: HTMLElement) {
 
+
+export class RichtextComponentManager<T> implements IDisposable {
+    public readonly component: ComponentRef<T>
+
+    public constructor(
+        public readonly el: HTMLElement,
+        public readonly outlet: DomPortalOutlet,
+        public readonly portal: ComponentPortal<T>) {
+        this.component = outlet.attachComponentPortal(portal)
+    }
+
+    public dispose() {
+        if (this.component) {
+            this.component.destroy()
+        }
+        if (this.portal) {
+            this.portal.detach()
+        }
+        if (this.outlet) {
+            this.outlet.dispose()
+        }
+        removeNode(this.el)
     }
 }

@@ -211,19 +211,22 @@ nz-theme-component-state-colors($color, $variant, $transparent)
         "default": "transparent",
         "hover": alpha($color[$variant], 0.2),
         "ripple": alpha($color[$variant], 0.3),
-        "selected": alpha($color[$variant], 0.9)
+        "selected": alpha($color[$variant], 0.9),
+        "focused": alpha($color[$variant], 0.2),
       },
       "fg": {
         "default": $color[$variant],
         "hover": $color[$variant],
         "ripple": $color[$variant],
         "selected": $color.on[$variant],
+        "focused": $color[$variant],
       },
       "line": {
         "default": $color[$variant],
         "hover": $color[$variant],
         "ripple": $color[$variant],
-        "selected": $color[$variant]
+        "selected": $color[$variant],
+        "focused": $color[$variant],
       }
     }
   else
@@ -240,18 +243,21 @@ nz-theme-component-state-colors($color, $variant, $transparent)
         "hover": alpha($color.on[$variant], 0.1),
         "ripple": alpha($color.on[$variant], 0.2),
         "selected": alpha($color.on[$variant], 0.9),
+        "focused": alpha($color.on[$variant], 0.1),
       },
       "fg": {
         "default": $color.on[$variant],
         "hover": $color.on[$variant],
         "ripple": $color.on[$variant],
         "selected": $color[$variant],
+        "focused": $color.on[$variant],
       },
       "line": {
         "default": $line-color,
         "hover": $line-color,
         "ripple": $line-color,
-        "selected": $line-color
+        "selected": $line-color,
+        "focused": $line-color,
       }
     }
 
@@ -276,6 +282,12 @@ _nz-theme-component-states-selected($color)
   // &[selected="keyboard"]
   //   z-index: 3
   //   nz-elevation: 10
+
+
+_nz-theme-component-states-focused($color)
+  &[focused="keyboard"]
+    background-color: $color.bg.focused
+    color: $color.fg.focused
 
 
 _nz-theme-component-states-disabled()
@@ -306,6 +318,11 @@ _nz-theme-component-states($color, $variant, $include)
       &[variant~="filled"]
         _nz-theme-component-states-selected($filled)
 
+    else if $inc == "focused"
+      _nz-theme-component-states-focused($normal)
+      &[variant~="filled"]
+        _nz-theme-component-states-focused($filled)
+
 
 _nz-theme-cs-color-name($color, $variant)
   if $variant == "normal"
@@ -327,7 +344,7 @@ nz-theme-component-colors(fn)
           $filled = nz-theme-component-state-colors($theme[$color], $variant, false)
           fn($filled)
 
-nz-theme-component-states($default-color="base", $default-variant="normal", $include = "base" "disabled" "hover" "active" "focus" "selected")
+nz-theme-component-states($default-color="base", $default-variant="normal", $include = "base" "disabled" "hover" "active" "focused" "selected")
   // DISABLED STATE
   if index($include, "disabled") isnt null
     _nz-theme-component-states-disabled()

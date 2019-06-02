@@ -76,7 +76,7 @@ export class RichtextStream implements IDisposable, OnDestroy {
     public get selection(): RTSelection | null {
         let sel = window.getSelection()
         if (this.el.contains(sel.anchorNode)) {
-            return new RTSelection(sel)
+            return new RTSelection(this.el, sel)
         } else {
             return null
         }
@@ -110,7 +110,9 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
 
 export class RTSelection {
-    public constructor(public readonly native: Selection) {
+    public constructor(
+        public readonly root: HTMLElement,
+        public readonly native: Selection) {
 
     }
 
@@ -132,6 +134,10 @@ export class RTSelection {
         }
     }
 
+    public get prevNode(): Node {
+        return this.getSibling("prev")
+    }
+
     public findElement(name: string): HTMLElement | null {
         let resultNode: Node
         for (const node of this.nodes) {
@@ -151,21 +157,42 @@ export class RTSelection {
         let range = this.native.getRangeAt(0)
         let all: Node[] = []
         let startc = range.startContainer
-        let endc = range.startContainer
+        let endc = range.endContainer
 
         if (startc.nodeType === 1) {
-            all = all.concat(Array.prototype.slice.call((startc as HTMLElement).querySelectorAll("*")))
+            all = all.concat(Array.prototype.slice.call((startc as HTMLElement).childNodes))
         } else if (startc.nodeType == 3) {
             return [startc]
         }
 
-        if (endc.nodeType === 1) {
-            all = all.concat(Array.prototype.slice.call((endc as HTMLElement).querySelectorAll("*")))
-        } else if (endc.nodeType == 3) {
-            throw new Error("Runtime error")
+        if (endc !== startc) {
+            if (endc.nodeType === 1) {
+                all = all.concat(Array.prototype.slice.call((endc as HTMLElement).childNodes))
+            } else if (endc.nodeType == 3) {
+                throw new Error("Runtime error")
+            }
         }
 
-        throw new Error("TODO")
+        console.log({ startc, endc }, all)
+        return all
+    }
+
+    private getSibling(direction: string): Node {
+        let sel = this.native
+        var range = document.createRange()
+
+        if (sel.anchorNode !== this.root) {
+            range.selectNodeContents(this.root)
+            range.setEndBefore(sel.anchorNode)
+        } else if (sel.anchorOffset > 0) {
+            range.setEnd(this.root, sel.anchorOffset)
+        } else {
+            // reached the beginning of editable field
+            return;
+        }
+        range.setStart(this.root, range.endOffset - 1)
+        // console.log(this.getSelectedNodes(), range, range.cloneContents())
+        return range.cloneContents().lastChild
     }
 }
 
@@ -257,8 +284,10 @@ export class RTCommand {
 
     public insertHTML(html: string) { return new RTCommand(this.stream, this, "insertHTML", html) }
 
+    public insertText(text: string) { return new RTCommand(this.stream, this, "insertText", text) }
+
     public insertComponent(name: string, params: { [key: string]: any }) {
-        let p = JSON.stringify(params).replace(/"/, "&x22;")
+        let p = encodeURI(JSON.stringify(params))
         return this.insertHTML(`<${RT_PORTAL_TAG_NAME} name="${name}" params="${p}"></${RT_PORTAL_TAG_NAME}>`)
     }
 

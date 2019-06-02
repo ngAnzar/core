@@ -100,7 +100,6 @@ export class RichtextInputComponent extends InputComponent<string> implements On
 
     protected _updateMenu() {
         let ac = this.input.stream.state.autocomplete
-        console.log(ac)
         this.menuVisible = !ac.enabled
         if (this._menuRef && this._menuRef.component) {
             this._menuRef.component.instance.cdr.detectChanges()

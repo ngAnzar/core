@@ -130,7 +130,15 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
         if (nextIdx !== -1) {
             let selectable = this.selection.getSelectables(new NzRange(nextIdx, nextIdx))[0]
             if (selectable) {
-                this.addToSelection(selectable, this.determineMode(shift, ctrl, false), false)
+                let mode = this.determineMode(shift, ctrl, false)
+                if (direction === 0 && mode === SelectMode.FOCUS) {
+                    if (this.alwaysAppend) {
+                        mode = SelectMode.SINGLE_APPEND
+                    } else {
+                        mode = SelectMode.SINGLE
+                    }
+                }
+                this.addToSelection(selectable, mode, false)
             }
         }
     }
@@ -171,7 +179,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 break
 
             case SelectMode.FOCUS:
-                // TODO: ???
+                this.selection.setFocused(selectable.model.id, isMouse ? "mouse" : "keyboard")
                 break
         }
     }

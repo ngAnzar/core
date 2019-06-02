@@ -1,6 +1,6 @@
 import { OnDestroy, EventEmitter, Input, Output, ContentChildren, QueryList, AfterContentInit, InjectionToken, ElementRef } from "@angular/core"
-import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { Observable } from "rxjs"
+import { FocusOrigin } from "@angular/cdk/a11y"
+import { Observable, Subject } from "rxjs"
 
 import { IDisposable, NzRange } from "../../util"
 import { Model, ID } from "../model"
@@ -37,6 +37,7 @@ export interface ISelectionModel<T extends Model = Model> {
     getSelectOrigin(what: ID): SelectOrigin
     setSelected(what: ID, selected: SelectOrigin): void
     getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[]
+    setFocused(what: ID, origin: FocusOrigin): void
 
     _handleOnDestroy(cmp: ISelectable<T>): void
     _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void
@@ -45,6 +46,7 @@ export interface ISelectionModel<T extends Model = Model> {
 
 export interface ISelectable<T extends Model = Model> {
     selected: SelectOrigin
+    focused: FocusOrigin
     readonly selectedChange: Observable<SelectOrigin>
     readonly el: ElementRef<HTMLElement>
 
@@ -197,6 +199,12 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
 }
 
 
+export interface FocusingEvent<T> {
+    item: T
+    origin: FocusOrigin
+}
+
+
 export abstract class SelectionModel<T extends Model = Model> implements OnDestroy, ISelectionModel {
     public abstract readonly type: string
 
@@ -210,6 +218,10 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
 
     @Output("selection")
     public get changes() { return this.selected.changes }
+
+    @Output("focusing")
+    public readonly focusing: Observable<FocusingEvent<T>> = new Subject()
+    private _focusedItem: T
 
     @Input()
     public maintainSelection: boolean = true
@@ -243,6 +255,29 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
             })
         } else {
             return Object_values(this._selectables).filter(s => s.isAccessible)
+        }
+    }
+
+    public setFocused(what: ID, origin: FocusOrigin): void {
+        if (this._focusedItem) {
+            if (this._focusedItem.id !== what) {
+                let focused = this._selectables[this._focusedItem.id]
+                if (focused) {
+                    focused.focused = null;
+                    (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, origin: null })
+                }
+            } else {
+                return
+            }
+        }
+
+        let focused = this._selectables[what]
+        if (focused) {
+            this._focusedItem = focused.model
+            focused.focused = origin;
+            (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, origin })
+        } else {
+            this._focusedItem = null
         }
     }
 

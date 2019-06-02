@@ -1,5 +1,5 @@
-import { Directive, OnDestroy, EventEmitter, Input, Output, Attribute, SkipSelf, Self } from "@angular/core"
-import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Directive, Input } from "@angular/core"
+import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable } from "rxjs"
 
 import { NzRange } from "../../util"
@@ -81,6 +81,7 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
     public getSelectOrigin(what: ID): SelectOrigin { return this[SELECTION].getSelectOrigin(what) }
     public setSelected(what: ID, selected: SelectOrigin): void { this[SELECTION].setSelected(what, selected) }
     public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] { return this[SELECTION].getSelectables(range, onlySelected) }
+    public setFocused(what: ID, origin: FocusOrigin): void { this[SELECTION].setFocused(what, origin) }
     public _handleOnDestroy(cmp: ISelectable<T>): void { this[SELECTION]._handleOnDestroy(cmp) }
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void { this[SELECTION]._handleModelChange(cmp, oldModel, newModel) }
 }

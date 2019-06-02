@@ -1,13 +1,16 @@
-import { Component, Inject, HostListener, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, EventEmitter, OnDestroy, NgZone, ViewChild, AfterViewChecked } from "@angular/core"
+import {
+    Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef,
+    EventEmitter, OnDestroy, NgZone, ViewChild, AfterViewChecked, HostBinding
+} from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
+import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { ISelectable, Model, SelectOrigin } from "../../data.module"
 import { ScrollerService } from "../scroller/scroller.service"
 import { ExlistComponent, RowTplContext } from "./exlist.component"
-import { Destruct } from "@anzar/core/util"
-// import { ExlistItemAnimation } from "./exlist.animation"
+
 
 
 @Component({
@@ -79,6 +82,16 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public get selected(): SelectOrigin { return this._selected }
     private _selected: SelectOrigin = null
     public readonly selectedChange: Observable<SelectOrigin> = new EventEmitter<SelectOrigin>();
+
+    @HostBinding("attr.focused")
+    public set focused(val: FocusOrigin) {
+        if (this._focused !== val) {
+            this._focused = val
+            this.cdr && this.cdr.markForCheck()
+        }
+    }
+    public get focused(): FocusOrigin { return this._focused }
+    private _focused: FocusOrigin
 
     public get isAccessible(): boolean { return true }
 
