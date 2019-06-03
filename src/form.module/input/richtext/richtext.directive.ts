@@ -23,8 +23,11 @@ export class RichtextDirective implements OnDestroy {
     public set value(val: string) {
         if (this._value !== val) {
             this.stream.value = val
-            this._value = this.stream.value;
-            (this.changes as EventEmitter<string>).emit(this.stream.value)
+
+            let newValue = this.stream.value;
+            if (this._value !== newValue) {
+                (this.changes as EventEmitter<string>).emit(this._value = newValue)
+            }
         }
     }
     public get value(): string { return this._value }
@@ -160,7 +163,10 @@ export class RichtextEditableDirective implements OnDestroy {
     @HostListener("input", ["$event"])
     public onInput(event: Event) {
         this.triggerAutoComplete();
-        (this.rt.changes as EventEmitter<string>).emit(this.rt.stream.value)
+        let newValue = this.rt.stream.value
+        if ((this.rt as any)._value !== newValue) {
+            (this.rt.changes as EventEmitter<string>).emit((this.rt as any)._value = newValue)
+        }
     }
 
     @HostListener("keydown", ["$event"])

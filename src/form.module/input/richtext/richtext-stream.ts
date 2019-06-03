@@ -3,6 +3,7 @@ import { EventManager } from "@angular/platform-browser"
 import { Observable, Subject } from "rxjs"
 
 import { Destruct, IDisposable } from "../../../util"
+import { removeNode } from "./util"
 
 
 export const RT_AC_TAG_NAME = "nz-richtext-acanchor"
@@ -70,7 +71,6 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
     public set value(val: string) {
         this.el.innerHTML = val
-        this.process()
     }
 
     public get selection(): RTSelection | null {
@@ -82,16 +82,20 @@ export class RichtextStream implements IDisposable, OnDestroy {
         }
     }
 
-    public process() {
-
-    }
-
     public command(): RTCommand {
         return new RTCommand(this)
     }
 
     protected _reconstructible(): string {
-        return this.el.innerHTML
+        let clone = this.el.cloneNode(true) as HTMLElement
+        clone.querySelectorAll("nz-richtext-portal").forEach(el => el.innerHTML = "")
+        clone.querySelectorAll("nz-richtext-acanchor").forEach(removeNode)
+        let result = clone.innerHTML
+        if (result) {
+            return clone.innerHTML.replace(/^\s+|\s+$/, result)
+        } else {
+            return ""
+        }
     }
 
     public dispose() {
@@ -173,7 +177,6 @@ export class RTSelection {
             }
         }
 
-        console.log({ startc, endc }, all)
         return all
     }
 

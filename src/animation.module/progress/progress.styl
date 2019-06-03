@@ -2,7 +2,7 @@
 nz-progress
   display: block
 
-  &[type='circle']
+  &[type="circle"]
     svg
       transform-origin: center
 
@@ -12,6 +12,6 @@ nz-progress
 
     for color, value in nz-theme-colors($theme)
       &{'[color="' + color + '"]'} circle
-        stroke: value.default
+        stroke: value.normal
 
 
