@@ -286,10 +286,10 @@ export class RTCommand {
 
     public insertText(text: string) { return new RTCommand(this.stream, this, "insertText", text) }
 
-    public insertComponent(name: string, params: { [key: string]: any }) {
-        let p = encodeURI(JSON.stringify(params))
-        return this.insertHTML(`<${RT_PORTAL_TAG_NAME} name="${name}" params="${p}"></${RT_PORTAL_TAG_NAME}>`)
-    }
+    // public insertComponent(type: string, params: { [key: string]: any }) {
+    //     let p = encodeURI(JSON.stringify(params))
+    //     return this.insertHTML(`<${RT_PORTAL_TAG_NAME} type="${name}" params="${p}"></${RT_PORTAL_TAG_NAME}>`)
+    // }
 
     public exec() {
         let cmds = []

@@ -16,22 +16,21 @@ const PROVIDER = Symbol("@AcProvider")
 export class RichtextAcItem extends Model {
     public [PROVIDER]: RichtextAcProvider
     @Field() public label: string
-    @Field() public preview: string
 }
 
 
 export abstract class RichtextAcProvider {
     public abstract readonly trigger: RegExp
-    public abstract readonly prevent: RegExp | null
+    public abstract readonly terminate: RegExp | null
     public abstract readonly mustSelect: boolean
     public abstract readonly minChars: number
 
     public abstract query(value: string): Observable<RichtextAcItem[]>
     public abstract onSelect(item: RichtextAcItem, rt: RichtextStream, anchor: HTMLElement): void
-    public abstract onExit(rt: RichtextStream, anchor: HTMLElement): void
+    public abstract onTerminate(text: string, rt: RichtextStream, anchor: HTMLElement): boolean
 
-    protected replaceWithComponent(rt: RichtextStream, anchor: HTMLElement, name: string, params: { [key: string]: any }) {
-        let cmp = this.createComponentNode(name, params)
+    protected replaceWithComponent(rt: RichtextStream, anchor: HTMLElement, type: string, params: { [key: string]: any }) {
+        let cmp = this.createComponentNode(anchor.id, type, params)
         anchor.parentNode.insertBefore(cmp, anchor)
 
         let range = new RangeFactory(anchor, 0, anchor, 0)
@@ -40,12 +39,17 @@ export abstract class RichtextAcProvider {
         rt.command().insertText(" ").exec()
     }
 
-    protected createComponentNode(name: string, params: any): HTMLElement {
+    protected createComponentNode(id: string, type: string, params: any): HTMLElement {
         let node = document.createElement(RT_PORTAL_TAG_NAME)
         node.setAttribute("contenteditable", "false")
-        node.setAttribute("name", name)
+        node.setAttribute("id", id)
+        node.setAttribute("type", type)
         node.setAttribute("params", encodeURI(JSON.stringify(params)))
         return node
+    }
+
+    protected removeAnchor(rt: RichtextStream, anchor: HTMLElement) {
+        removeNode(anchor)
     }
 }
 
@@ -96,7 +100,6 @@ export class RichtextAcManager implements IDisposable {
         // this.selection.keyboard.connect(anchorEl)
         this.destruct.subscription(this.selection.changes).subscribe(selection => {
             let selected = selection[0]
-            console.log({ selected })
             if (selected) {
                 selected[PROVIDER].onSelect(selected, rt, anchorEl)
             }
@@ -116,13 +119,30 @@ export class RichtextAcManager implements IDisposable {
 
     // TODO: debounce...
     public update(query: string) {
-        let queryFrom = this.providers.filter(p => p.minChars <= query.length)
+        const terminated = this.providers.filter(p => p.terminate && p.terminate.test(query))
+
+        if (terminated.length) {
+            let isTerminated = false
+
+            for (const p of terminated) {
+                isTerminated = isTerminated || (p.terminate && p.onTerminate(query, this.rt, this.anchorEl))
+                let idx = this.providers.indexOf(p)
+                if (idx !== -1) {
+                    this.providers.splice(idx, 1)
+                }
+            }
+
+            if (isTerminated) {
+                return
+            }
+        }
+
+        const queryFrom = this.providers.filter(p => p.minChars <= query.length)
 
         if (queryFrom.length) {
             this.destruct.subscription(forkJoin(queryFrom.map(p => p.query(query))))
                 .pipe(take(1))
                 .pipe(map(value => {
-                    console.log(value, queryFrom)
                     let result: RichtextAcItem[] = []
                     for (let i = 0, l = value.length; i < l; i++) {
                         for (let v of value[i]) {

@@ -1,5 +1,5 @@
 import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef } from "@angular/core"
-import { UP_ARROW, DOWN_ARROW, ESCAPE } from "@angular/cdk/keycodes"
+import { UP_ARROW, DOWN_ARROW, ESCAPE, BACKSPACE } from "@angular/cdk/keycodes"
 import { DomPortalOutlet, ComponentType, ComponentPortal } from "@angular/cdk/portal"
 import { Observable, Subject } from "rxjs"
 
@@ -10,10 +10,7 @@ import { RichtextService, RICHTEXT_COMPONENT_PARAMS } from "./richtext.service"
 import { RichtextStream, Word, RT_AC_TAG_NAME, RT_PORTAL_TAG_NAME } from "./richtext-stream"
 import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
 
-import { matchTagName, removeNode } from "./util"
-
-
-let RT_UNIQUE_IDX = 0
+import { matchTagName, removeNode, uuidv4 } from "./util"
 
 
 @Directive({
@@ -55,20 +52,19 @@ export class RichtextDirective implements OnDestroy {
     }
 
     public getCmp(el: HTMLElement): RichtextComponentManager<any> | null {
-        let id = el.getAttribute("rtid")
-        return this._components[id]
+        return this._components[el.id]
     }
 
     public initCmp(el: HTMLElement): RichtextComponentManager<any> {
-        let id = el.getAttribute("rtid")
+        let id = el.getAttribute("id")
         if (!id) {
-            id = ++RT_UNIQUE_IDX as any
-            el.setAttribute("rtid", id)
+            id = uuidv4()
+            el.setAttribute("id", id)
         }
 
-        let cmpType = this.svc.getComponentType(el.getAttribute("name"))
+        let cmpType = this.svc.getComponentType(el.getAttribute("type"))
         if (!cmpType) {
-            throw new Error("Runtime error: missing richtext component: " + el.getAttribute("name"))
+            throw new Error("Runtime error: missing richtext component: " + el.getAttribute("type"))
         }
 
         let params = el.getAttribute("params")
@@ -173,7 +169,40 @@ export class RichtextEditableDirective implements OnDestroy {
             return
         }
 
-        // console.log("keydown", this.rt.stream.selection.prevNode)
+        // http://jsfiddle.net/Sviatoslav/4d23y74j/
+        if (event.keyCode === BACKSPACE) {
+            let selection = window.getSelection()
+            if (!selection.isCollapsed || !selection.rangeCount) {
+                return
+            }
+
+            let curRange = selection.getRangeAt(selection.rangeCount - 1)
+            if (curRange.commonAncestorContainer.nodeType == 3 && curRange.startOffset > 0) {
+                // we are in child selection. The characters of the text node is being deleted
+                return
+            }
+
+            let range = document.createRange()
+            if (selection.anchorNode !== this.rt.stream.el) {
+                // selection is in character mode. expand it to the whole editable field
+                range.selectNodeContents(this.rt.stream.el)
+                range.setEndBefore(selection.anchorNode)
+            } else if (selection.anchorOffset > 0) {
+                range.setEnd(this.rt.stream.el, selection.anchorOffset)
+            } else {
+                // reached the beginning of editable field
+                return
+            }
+            range.setStart(this.rt.stream.el, range.endOffset - 1)
+
+
+            let previousNode = range.cloneContents().lastChild as HTMLElement
+            if (previousNode && previousNode.contentEditable == "false") {
+                // this is some rich content, e.g. smile. We should help the user to delete it
+                range.deleteContents()
+                event.preventDefault()
+            }
+        }
     }
 
     @HostListener("keyup", ["$event"])
@@ -224,7 +253,7 @@ export class RichtextEditableDirective implements OnDestroy {
 
                 // dispose autocomplete manager
                 if (matchTagName(node, RT_AC_TAG_NAME)) {
-                    let id = (node as HTMLElement).getAttribute("rtid")
+                    let id = (node as HTMLElement).id
                     if (id in this._acManagers) {
                         this._acManagers[id].dispose()
                         delete this._acManagers[id]
@@ -251,7 +280,7 @@ export class RichtextEditableDirective implements OnDestroy {
         if (selection) {
             let acNode = selection.findElement(RT_AC_TAG_NAME)
             if (acNode) {
-                let rtid = acNode.getAttribute("rtid")
+                let rtid = acNode.id
                 let manager = this._acManagers[rtid]
                 if (manager) {
                     manager.update(acNode.innerText)
@@ -269,8 +298,8 @@ export class RichtextEditableDirective implements OnDestroy {
     }
 
     protected beginAc(providers: RichtextAcProvider[], word: Word) {
-        let id = ++RT_UNIQUE_IDX
-        let html = `<${RT_AC_TAG_NAME} rtid="${id}">${word.value}</${RT_AC_TAG_NAME}>`
+        let id = uuidv4()
+        let html = `<${RT_AC_TAG_NAME} id="${id}">${word.value}</${RT_AC_TAG_NAME}>`
         word.select()
         this.rt.stream.command().insertHTML(html).exec()
 
@@ -278,7 +307,6 @@ export class RichtextEditableDirective implements OnDestroy {
         if (acNode) {
             this._acManagers[id] = new RichtextAcManager(this.rt.stream, acNode, providers, this.layerSvc)
             this._acManagers[id].update(word.value)
-            // this._acManagers[id].selection.keyboard.connect(this.rt.stream.el)
         } else {
             throw new Error("Runtime error")
         }
@@ -298,15 +326,18 @@ export class RichtextComponentManager<T> implements IDisposable {
     }
 
     public dispose() {
+        if (this.outlet) {
+            this.outlet.detach()
+            delete (this as any).outlet
+        }
         if (this.component) {
             this.component.destroy()
+            delete (this as any).component
         }
-        if (this.portal) {
-            this.portal.detach()
+        if (document.contains(this.el)) {
+            removeNode(this.el)
         }
-        if (this.outlet) {
-            this.outlet.dispose()
-        }
-        removeNode(this.el)
+        delete (this as any).el
+        delete (this as any).portal
     }
 }
