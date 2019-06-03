@@ -15,20 +15,11 @@ import { ToastProgressOptions, TOAST_AUTO_HIDE_MIN } from "./toast-options"
 import { LAYER_OPTIONS } from "../_shared"
 
 
-export type TPState = "progress" | "success" | "failure"
+export type TPState = "progress" | "success" | "failure";
 
 
 @Component({
-    selector: ".-nz-toast",
-    styles: [`
-        .-nz-toast {
-            background-color: #212121;
-            color: #FFF;
-            display: inline-flex;
-            flex-direction: row;
-            align-items: center;
-        }
-    `],
+    selector: "nz-toast",
     templateUrl: "./toast-progress.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })

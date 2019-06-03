@@ -58,7 +58,7 @@ export class QtipDirective implements OnDestroy {
 
             let behavior = new QtipBehavior({
                 elevation: 7,
-                rounded: 5,
+                rounded: 4,
                 position: {
                     align: lAlign,
                     anchor: {

@@ -88,11 +88,10 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
     protected _reconstructible(): string {
         let clone = this.el.cloneNode(true) as HTMLElement
-        clone.querySelectorAll("nz-richtext-portal").forEach(el => el.innerHTML = "")
-        clone.querySelectorAll("nz-richtext-acanchor").forEach(removeNode)
+        clone.querySelectorAll(RT_PORTAL_TAG_NAME).forEach(el => el.innerHTML = "")
         let result = clone.innerHTML
         if (result) {
-            return clone.innerHTML.replace(/^\s+|\s+$/, result)
+            return result.replace(/<br\s*\/?>\s*$/, "").replace(/^\s+|\s+$/, "")
         } else {
             return ""
         }

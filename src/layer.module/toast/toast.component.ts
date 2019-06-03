@@ -8,16 +8,7 @@ import { ToastOptions } from "./toast-options"
 
 
 @Component({
-    selector: ".-nz-toast",
-    styles: [`
-        .-nz-toast {
-            background-color: #212121;
-            color: #FFF;
-            display: inline-flex;
-            flex-direction: row;
-            align-items: center;
-        }
-    `],
+    selector: "nz-toast",
     templateUrl: "./toast.template.pug"
 })
 export class ToastComponent extends ToastBase {

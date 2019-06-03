@@ -21,17 +21,17 @@
     top: 50%
     left: 50%
 
-.nz-hbox(align="center")
-  div.spinner
+div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+  div.spinner(fxFlex="noshrink")
     nz-progress(type="circle", radius="20", [source]="progress", [color]="spinnerColor")
     i.nz-icon.status-icon(*ngIf="state==='success'" bind-color="spinnerColor" class=icon("mdi/check-outline", 20) style="margin: -10px 0 0 -10px")
     i.nz-icon.status-icon(*ngIf="state==='failure'" bind-color="spinnerColor" class=icon("mdi/close-outline", 20) style="margin: -11px 0 0 -10px")
 
   //- bind-style.marginRight.px="infoText ? 16 : 0"
-  div.text-container(#info)
+  div.text-container(#info, fxFlex="grow")
     span.text {{ infoText || "" }}
 
-  button.nz-button.hidebutton(*ngIf="state === 'failure'" on-tap="layerRef.hide()" color="light-common", variant="icon")
+  button.nz-button.hidebutton(*ngIf="state === 'failure'", on-tap="layerRef.hide()", color="light-common", variant="icon", fxFlex="noshrink")
     i.nz-icon(class=icon("mdi/close"))
 
   //- div.text(#success bind-innerHTML="options.success")

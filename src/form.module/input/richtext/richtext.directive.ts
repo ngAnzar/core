@@ -221,6 +221,11 @@ export class RichtextEditableDirective implements OnDestroy {
         // console.log("keyup", this.rt.stream.selection.native)
     }
 
+    @HostListener("blur")
+    public onBlur() {
+        this.rt.stream.el.querySelectorAll(RT_AC_TAG_NAME).forEach(removeNode)
+    }
+
     protected _handleKeyEvent(event: KeyboardEvent): boolean {
         let handled = false
         for (const k in this._acManagers) {
