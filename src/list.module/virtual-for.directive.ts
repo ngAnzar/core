@@ -30,7 +30,8 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 
 
 @Directive({
-    selector: "[nzVirtualFor][nzVirtualForOf]"
+    selector: "[nzVirtualFor][nzVirtualForOf]",
+    exportAs: "nzVirtualFor"
 })
 export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, DoCheck {
     @Input()
@@ -73,14 +74,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         return new Items(contexts.sort((a, b) => a.index - b.index).map(item => item.$implicit), new NzRange(begin, end))
     }
 
-    // @Input()
-    // set nzVirtualForTemplate(value: TemplateRef<VirtualForContext<T>>) {
-    //     if (value) {
-    //         this._tpl = value
-    //     }
-    // }
-
-    // protected s: Subscriptions = new Subscriptions()
     protected destruct = new Destruct(() => {
         function d(view: ViewRef) {
             !view.destroyed && view.destroy()

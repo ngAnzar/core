@@ -16,7 +16,7 @@ import { matchTagName, removeNode, uuidv4 } from "./util"
 @Directive({
     selector: "[nzRichtext]",
     exportAs: "nzRichtext",
-    providers: [RichtextStream]
+    providers: [RichtextService, RichtextStream]
 })
 export class RichtextDirective implements OnDestroy {
     @Input("nzRichtext")
@@ -72,7 +72,7 @@ export class RichtextDirective implements OnDestroy {
 
         let params = el.getAttribute("params")
         if (params) {
-            params = JSON.parse(decodeURI(params))
+            params = JSON.parse(decodeURIComponent(params))
         } else {
             params = null
         }
@@ -126,8 +126,7 @@ export class RichtextDirective implements OnDestroy {
 
 
 @Directive({
-    selector: "[nzRichtext][contenteditable='true']",
-    providers: [RichtextService]
+    selector: "[nzRichtext][contenteditable='true']"
 })
 export class RichtextEditableDirective implements OnDestroy {
     public readonly destruct = new Destruct()
@@ -140,7 +139,6 @@ export class RichtextEditableDirective implements OnDestroy {
     private _acManagers: { [key: string]: RichtextAcManager } = {}
 
     public constructor(
-        @Inject(RichtextService) public readonly svc: RichtextService,
         @Inject(LayerService) public readonly layerSvc: LayerService,
         @Inject(RichtextDirective) public readonly rt: RichtextDirective) {
 
@@ -299,7 +297,7 @@ export class RichtextEditableDirective implements OnDestroy {
             } else {
                 let word = selection.word
                 if (word) {
-                    let ac = this.svc.getAcProviders(word.value)
+                    let ac = this.rt.svc.getAcProviders(word.value)
                     if (ac.length) {
                         this.beginAc(ac, word)
                     }
@@ -334,6 +332,7 @@ export class RichtextComponentManager<T> implements IDisposable {
         public readonly outlet: DomPortalOutlet,
         public readonly portal: ComponentPortal<T>) {
         this.component = outlet.attachComponentPortal(portal)
+        this.component.changeDetectorRef.markForCheck()
     }
 
     public dispose() {

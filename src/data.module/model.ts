@@ -1,9 +1,9 @@
 import "reflect-metadata"
 import { InjectionToken } from "@angular/core"
 
-export type Converter<V=any, M=any> = (value: V, model: M) => V
+export type Converter<V = any, M = any> = (value: V, model: M) => V
 export type ModelClass<M extends Model = Model> = { new(...args: any[]): M }
-export type ModelFactory<M=any> = { new(value: any): M } | ((value: any) => M)
+export type ModelFactory<M = any> = { new(value: any): M } | ((value: any) => M)
 export type RawData<T> = Partial<T>
 
 export const MODEL_ID = new InjectionToken<ID>("MODEL_ID")
@@ -44,7 +44,7 @@ builtinTypes.set(Number, Number)
 builtinTypes.set(Boolean, Boolean)
 builtinTypes.set(Date, (value: any): any => { return value instanceof Date ? value : (value != null ? new Date(value) : value) })
 builtinTypes.set(Function, (value: any): any => { throw new Error("Function type is not supported") })
-builtinTypes.set(Object, (value: any): any => { throw new Error("Please provide better type information") })
+builtinTypes.set(Object, (value: any): any => { return value })
 
 
 function isPrimitiveType(t: any): boolean {
@@ -246,7 +246,7 @@ export class Model {
         return modelClass.prototype[FIELDS]
     }
 
-    public static create<T=any>(factory: ModelFactory<T>, data: T): T {
+    public static create<T = any>(factory: ModelFactory<T>, data: T): T {
         return Model.isModel(data)
             ? data
             : isClass(factory)

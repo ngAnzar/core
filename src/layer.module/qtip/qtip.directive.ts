@@ -82,6 +82,7 @@ export class QtipDirective implements OnDestroy {
     }
 
     public ngOnDestroy() {
+        this.hide()
         this.destruct.run()
     }
 }

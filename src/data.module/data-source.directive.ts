@@ -10,7 +10,8 @@ import { Items } from "./collection"
 
 
 @Directive({
-    selector: "[dataSource]"
+    selector: "[dataSource]",
+    exportAs: "dataSource"
 })
 export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     @Input()

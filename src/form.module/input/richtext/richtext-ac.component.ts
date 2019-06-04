@@ -44,7 +44,7 @@ export abstract class RichtextAcProvider {
         node.setAttribute("contenteditable", "false")
         node.setAttribute("id", id)
         node.setAttribute("type", type)
-        node.setAttribute("params", encodeURI(JSON.stringify(params)))
+        node.setAttribute("params", encodeURIComponent(JSON.stringify(params)))
         return node
     }
 
