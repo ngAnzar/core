@@ -49,6 +49,7 @@ export class PopupMenuDirective extends LayerFactoryDirective {
         this.nzLayerFactory = this._menu.layer
 
         if (this.isVisible) {
+            delete this._menu._layerRef
             this.hide()
         } else {
             let behavior = new MenuLayer({
@@ -60,7 +61,7 @@ export class PopupMenuDirective extends LayerFactoryDirective {
                 elevation: 10,
                 minWidth: this.targetEl.nativeElement.offsetWidth
             })
-            this.show(behavior, { $implicit: this })
+            this._menu._layerRef = this.show(behavior, { $implicit: this })
         }
     }
 }
