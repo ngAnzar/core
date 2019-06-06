@@ -129,22 +129,16 @@ export class ImmediateViewport extends Viewport {
 
         let changed = false
         for (const k in dim) {
-            if ((this as any)[k] !== (dim as any)[k]) {
-                changed = true
-                break
+            if (dim.hasOwnProperty(k) && (this as any)[k] !== (dim as any)[k]) {
+                changed = true;
+                (this as any)[k] = (dim as any)[k]
             }
         }
 
         if (changed) {
-            Object.assign(this, dim);
-            (this as any).scrollWidth = Math.max(this.scrollWidth || 0, this.width);
-            (this as any).scrollHeight = Math.max(this.scrollHeight || 0, this.height);
-
             this.visible.width = this.width
             this.visible.height = this.height;
-
             // this._recalcPosition();
-
             (this.change as Subject<Viewport>).next(this)
         }
 

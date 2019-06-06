@@ -21,7 +21,6 @@ export class ScrollbarComponent implements OnDestroy {
     @ViewChild("btnDown") public readonly btnDown: ElementRef<HTMLElement>
     @ViewChild("bar") public readonly bar: ElementRef<HTMLElement>
 
-    @Input()
     public set position(val: number) {
         if (this._position !== val) {
             this._position = val
@@ -31,8 +30,6 @@ export class ScrollbarComponent implements OnDestroy {
     public get position(): number { return this._position }
     private _position: number = 0
 
-    @Input()
-    @HostBinding("style.width.px")
     public set width(val: number) {
         if (this._width !== val) {
             this._width = val
@@ -42,11 +39,10 @@ export class ScrollbarComponent implements OnDestroy {
     public get width(): number { return this._width }
     private _width: number
 
-    @Input()
-    @HostBinding("style.height.px")
     public set height(val: number) {
         if (this._height !== val) {
             this._height = val
+            this.el.style.height = `${val}px`
             this._layout()
         }
     }
@@ -57,116 +53,124 @@ export class ScrollbarComponent implements OnDestroy {
         return this._height != null && this._width != null && this._canScroll
     }
 
-    @HostBinding("style.display")
-    public get cssDisplay(): string { return this.isVisible ? "block" : "none" }
-
     public readonly size: number = 15
-
-    public readonly barWidth: number
-    public readonly barHeight: number
-    public readonly barLeft: number
-    public readonly barTop: number
-
     public readonly btnVisible: boolean = false
-    public readonly btnWidth: number
-    public readonly btnHeight: number
 
     public readonly destruct = new Destruct()
     protected _canScroll: boolean = false
     public scrollRatio: number = 0
+    public readonly el: HTMLElement
 
     public constructor(
-        @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
+        @Inject(ElementRef) el: ElementRef<HTMLElement>,
         @Inject(ScrollerService) public readonly scroller: ScrollerService,
         @Inject(DragEventService) public readonly dragEvent: DragEventService,
-        @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef,
         @Inject(NgZone) zone: NgZone,
         @Attribute("orient") public readonly orient: ScrollOrient) {
 
-        // zone.runOutsideAngular(() => {
-        this.destruct.subscription(scroller.vpImmediate.change).subscribe(viewport => {
-            let canScroll = true
-            if (this.orient === "horizontal") {
-                this.width = viewport.width - 10
-                this.height = this.size
-                canScroll = viewport.width < viewport.scrollWidth
-            } else {
-                this.width = this.size
-                this.height = viewport.height - 10
-                canScroll = viewport.height < viewport.scrollHeight
-            }
+        this.el = el.nativeElement
 
-            if (this._canScroll !== canScroll) {
-                this._canScroll = canScroll
+        zone.runOutsideAngular(() => {
+
+            this.destruct.subscription(scroller.vpImmediate.change).subscribe(viewport => {
+                let canScroll = true
+                if (this.orient === "horizontal") {
+                    this.width = viewport.width
+                    this.height = this.size
+                    canScroll = viewport.width < viewport.scrollWidth
+                } else {
+                    this.width = this.size
+                    this.height = viewport.height
+                    canScroll = viewport.height < viewport.scrollHeight
+                }
+
+                if (this._canScroll !== canScroll) {
+                    this._canScroll = canScroll
+                }
+
                 this._layout()
-            }
-        })
+            })
 
-        this.destruct.subscription(scroller.vpRender.scroll).subscribe(scroll => {
-            if (this.orient === "horizontal") {
-                this.position = scroll.percent.left
-            } else {
-                this.position = scroll.percent.top
-            }
-        })
+            this.destruct.subscription(scroller.vpRender.scroll).subscribe(scroll => {
+                if (this.orient === "horizontal") {
+                    this.position = scroll.percent.left
+                } else {
+                    this.position = scroll.percent.top
+                }
+            })
 
-        let scrollerBeginPosition = scroller.scrollPosition
-        this.destruct.subscription(dragEvent.watch(el.nativeElement)).subscribe(event => {
-            switch (event.type) {
-                case "begin":
-                    scrollerBeginPosition = scroller.scrollPosition
-                    break
+            let scrollerBeginPosition = scroller.scrollPosition
+            this.destruct.subscription(dragEvent.watch(el.nativeElement)).subscribe(event => {
+                switch (event.type) {
+                    case "begin":
+                        scrollerBeginPosition = scroller.scrollPosition
+                        break
 
-                case "drag":
-                    if (!this.scroller.lockMethod("drag")) {
-                        return
-                    }
-                    this.scroller.velocityX = this.scroller.velocityY = 1
-                    if (this.orient === "horizontal") {
-                        scroller.scrollPosition = {
-                            top: scrollerBeginPosition.top,
-                            left: scrollerBeginPosition.left + (event.current.x - event.begin.x) * this.scrollRatio
+                    case "drag":
+                        if (!this.scroller.lockMethod("drag")) {
+                            return
                         }
-                    } else {
-                        scroller.scrollPosition = {
-                            top: scrollerBeginPosition.top + (event.current.y - event.begin.y) * this.scrollRatio,
-                            left: scrollerBeginPosition.left
+                        this.scroller.velocityX = this.scroller.velocityY = 1
+                        if (this.orient === "horizontal") {
+                            scroller.scrollPosition = {
+                                top: scrollerBeginPosition.top,
+                                left: scrollerBeginPosition.left + (event.current.x - event.begin.x) * this.scrollRatio
+                            }
+                        } else {
+                            scroller.scrollPosition = {
+                                top: scrollerBeginPosition.top + (event.current.y - event.begin.y) * this.scrollRatio,
+                                left: scrollerBeginPosition.left
+                            }
                         }
-                    }
-                    break
+                        break
 
-                case "end":
-                    this.scroller.releaseMethod("drag")
-                    break
-            }
+                    case "end":
+                        this.scroller.releaseMethod("drag")
+                        break
+                }
+            })
+
         })
-        // })
+
     }
 
     // TODO: remove detect changes...
     protected _layout() {
         if (this.isVisible) {
-            const self = this as Writeable<ScrollbarComponent>
+            this.el.style.width = `${this.width}px`
+            this.el.style.height = `${this.height}px`
+            this.el.style.display = `block`
+
+            let barWidth, barHeight, barTop, barLeft, btnWidth, btnHeight
+
+
             if (this.orient === "horizontal") {
-                const trackWidth = self.btnVisible ? Math.max(0, this.width - self.size * 2) : this.width
-                self.barWidth = Math.min(trackWidth, this.width * 0.5)
+                const trackWidth = this.btnVisible ? Math.max(0, this.width - this.size * 2) : this.width
+                barWidth = Math.min(trackWidth, this.width * 0.5)
 
-                self.barLeft = 5 + (self.btnVisible ? this.size : 0) + (trackWidth - self.barWidth) * this.position
+                barLeft = (this.btnVisible ? this.size : 0) + (trackWidth - barWidth) * this.position
 
-                self.btnWidth = this.size
-                self.scrollRatio = self.scroller.vpImmediate.scrollWidth / (trackWidth - self.barWidth)
+                btnWidth = this.size
+                this.scrollRatio = this.scroller.vpImmediate.scrollWidth / (trackWidth - barWidth)
             } else {
-                const trackHeight = self.btnVisible ? Math.max(0, this.height - self.size * 2) : this.height
-                self.barHeight = Math.min(trackHeight, this.height * 0.5)
+                const trackHeight = this.btnVisible ? Math.max(0, this.height - this.size * 2) : this.height
+                barHeight = Math.min(trackHeight, this.height * 0.5)
 
-                self.barTop = 5 + (self.btnVisible ? this.size : 0) + (trackHeight - self.barHeight) * this.position
+                barTop = (this.btnVisible ? this.size : 0) + (trackHeight - barHeight) * this.position
 
-                self.btnHeight = this.size
-                self.scrollRatio = self.scroller.vpImmediate.scrollHeight / (trackHeight - self.barHeight)
+                btnHeight = this.size
+                this.scrollRatio = this.scroller.vpImmediate.scrollHeight / (trackHeight - barHeight)
             }
-        }
 
-        this.cdr.markForCheck()
+            let bs = this.bar.nativeElement.style
+            bs.width = `${barWidth}px`
+            bs.height = `${barHeight}px`
+            bs.top = `${barTop}px`
+            bs.left = `${barLeft}px`
+
+        } else {
+            this.el.style.display = `none`
+        }
     }
 
     public ngOnDestroy() {
@@ -175,4 +179,4 @@ export class ScrollbarComponent implements OnDestroy {
 }
 
 
-type Writeable<T> = { -readonly [P in keyof T]-?: T[P] }
+// type Writeable<T> = { -readonly [P in keyof T]-?: T[P] }
