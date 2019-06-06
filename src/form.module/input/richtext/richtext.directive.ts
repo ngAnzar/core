@@ -1,10 +1,11 @@
-import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef } from "@angular/core"
+import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef, Optional } from "@angular/core"
 import { UP_ARROW, DOWN_ARROW, ESCAPE, BACKSPACE } from "@angular/cdk/keycodes"
 import { DomPortalOutlet, ComponentType, ComponentPortal } from "@angular/cdk/portal"
 import { Observable, Subject } from "rxjs"
 
 import { Destruct, IDisposable } from "../../../util"
 import { LayerService } from "../../../layer.module"
+import { ScrollerService } from "../../../list.module"
 
 import { RichtextService, RICHTEXT_COMPONENT_PARAMS } from "./richtext.service"
 import { RichtextStream, Word, RT_AC_TAG_NAME, RT_PORTAL_TAG_NAME } from "./richtext-stream"
@@ -143,7 +144,8 @@ export class RichtextEditableDirective implements OnDestroy {
 
     public constructor(
         @Inject(LayerService) public readonly layerSvc: LayerService,
-        @Inject(RichtextDirective) public readonly rt: RichtextDirective) {
+        @Inject(RichtextDirective) public readonly rt: RichtextDirective,
+        @Inject(ScrollerService) @Optional() public readonly scroller: ScrollerService) {
 
         let mutation = new MutationObserver(this.onMuation)
         this.destruct.any(mutation.disconnect.bind(mutation))
@@ -172,6 +174,8 @@ export class RichtextEditableDirective implements OnDestroy {
 
     @HostListener("keydown", ["$event"])
     public onKeydown(event: KeyboardEvent) {
+        this.scrollToCursor()
+
         if (this._handleKeyEvent(event) || event.defaultPrevented) {
             return
         }
@@ -214,6 +218,7 @@ export class RichtextEditableDirective implements OnDestroy {
 
     @HostListener("keyup", ["$event"])
     public onKeyup(event: KeyboardEvent) {
+        this.scrollToCursor()
         if (this._handleKeyEvent(event) || event.defaultPrevented) {
             return
         }
@@ -321,6 +326,16 @@ export class RichtextEditableDirective implements OnDestroy {
             this._acManagers[id].update(word.value)
         } else {
             throw new Error("Runtime error")
+        }
+    }
+
+    protected scrollToCursor() {
+        if (this.scroller) {
+            let nodes = this.rt.stream.selection.nodes
+            if (nodes && nodes.length) {
+                this.scroller.velocityX = this.scroller.velocityY = 5
+                this.scroller.scrollIntoViewport(nodes[nodes.length - 1])
+            }
         }
     }
 }

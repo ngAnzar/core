@@ -4,21 +4,29 @@ import { Align, AlignInput, HAlign, VAlign, parseAlign, Margin, MarginParsed, pa
 const DEFAULT_ALIGN: Align = { horizontal: "left", vertical: "top" }
 
 
+export function getBoundingClientRect(node: Node) {
+    switch (node.nodeType) {
+        case 1: // element
+            return (node as HTMLElement).getBoundingClientRect()
+
+        case 3:  // textnode
+            let range = document.createRange()
+            range.selectNode(node)
+            let res = range.getBoundingClientRect()
+            range.detach()
+            return res
+
+        default:
+            throw new Error("Unsupported node")
+    }
+}
+
+
 export class Rect {
     [key: string]: number | any
 
     public static fromElement(el: HTMLElement) {
-        let r
-        if (el.nodeType === 1) { // Element
-            r = el.getBoundingClientRect()
-        } else if (el.nodeType === 3) { // textnode
-            let range = document.createRange()
-            range.selectNode(el)
-            r = range.getBoundingClientRect()
-            range.detach()
-        } else {
-            throw new Error("Unsupported element")
-        }
+        let r = getBoundingClientRect(el)
         return new Rect(r.left, r.top, r.width, r.height)
     }
 
@@ -50,6 +58,9 @@ export class Rect {
 
     public readonly origin: Align
     public readonly margin: MarginParsed
+
+    private _x: number
+    private _y: number
 
     public constructor(x: number, y: number, public width: number, public height: number,
         origin: Align | AlignInput = DEFAULT_ALIGN) {

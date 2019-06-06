@@ -1,6 +1,6 @@
 import { Directive, Inject, ElementRef, NgZone } from "@angular/core"
 
-import { RectMutationService, Rect } from "../../layout.module"
+import { RectMutationService, Rect, getBoundingClientRect } from "../../layout.module"
 import { ScrollerService } from "./scroller.service"
 
 
@@ -35,18 +35,25 @@ export class ScrollableDirective {
         })
     }
 
-    public getElementRect(el: HTMLElement) {
-        let top = 0
-        let left = 0
-        let end = this.el.nativeElement
-        let current = el
+    public getElementRect(el: Node) {
+        let selfRect = getBoundingClientRect(this.el.nativeElement)
+        let elRect = getBoundingClientRect(el)
 
-        while (current && current !== end) {
-            top += el.offsetTop
-            left = el.offsetLeft
-            current = current.offsetParent as HTMLElement
-        }
+        return new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
 
-        return new Rect(left, top, el.offsetWidth, el.offsetHeight)
+        // console.log("scrollable", getBoundingClientRect(this.el.nativeElement), getBoundingClientRect(el))
+
+        // let top = 0
+        // let left = 0
+        // let end = this.el.nativeElement
+        // let current = el
+
+        // while (current && current !== end) {
+        //     top += el.offsetTop
+        //     left = el.offsetLeft
+        //     current = current.offsetParent as HTMLElement
+        // }
+
+        // return new Rect(left, top, el.offsetWidth, el.offsetHeight)
     }
 }

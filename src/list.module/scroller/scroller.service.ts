@@ -311,12 +311,12 @@ export class ScrollerService implements OnDestroy {
         }
     }
 
-    public scrollIntoViewport(el: HTMLElement): void {
+    public scrollIntoViewport(el: Node): void {
         const visibleRect = this.vpImmediate.visible
         const elRect = this.getElementImmediateRect(el)
         let pos = { ...this.scrollPosition }
 
-        console.log(visibleRect, elRect)
+        // console.log(visibleRect, elRect)
 
         let topSpace = elRect.top - visibleRect.top
         if (topSpace < 0) {
@@ -350,7 +350,7 @@ export class ScrollerService implements OnDestroy {
         return this.scrollable!.getElementRect(el)
     }
 
-    public getElementImmediateRect(el: HTMLElement) {
+    public getElementImmediateRect(el: Node) {
         const renderedRect = this.scrollable!.getElementRect(el)
         const immediatePos = this.vpImmediate.scrollPosition
         const renderedPos = this.vpRender.scrollPosition

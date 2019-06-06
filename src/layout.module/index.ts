@@ -3,10 +3,7 @@ import { CommonModule } from "@angular/common"
 import { FlexLayoutModule, LAYOUT_CONFIG } from "@angular/flex-layout"
 
 
-import { FlexibleDirective, VboxDirective, HboxDirective } from "./flex/flex.directive"
-
-
-export { Rect } from "./geometry/rect"
+export { Rect, getBoundingClientRect } from "./geometry/rect"
 export { Point } from "./geometry/point"
 export { Align, AlignInput, VAlign, HAlign, parseAlign, Margin, MarginParsed, parseMargin, OPPOSITE_ALIGN } from "./geometry/align"
 
@@ -25,15 +22,9 @@ import { StackComponent } from "./stack/stack.component"
         FlexLayoutModule
     ],
     declarations: [
-        // VboxDirective,
-        // HboxDirective,
-        // FlexibleDirective,
         StackComponent
     ],
     exports: [
-        // VboxDirective,
-        // HboxDirective,
-        // FlexibleDirective,
         StackComponent,
         FlexLayoutModule
     ],
