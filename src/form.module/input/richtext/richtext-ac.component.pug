@@ -6,6 +6,5 @@
 
 
 .nz-scroller.scroller(fxFlex="grow")
-  div(scrollable)
-    .nz-list(fxLayout="column", fxLayoutAlign="start stretch")
-      .nz-list-item.item(*ngFor="let item of items | async; let i=index", [selectable]="item", [selectionIndex]="i") {{ item.label }}
+  .nz-list(fxLayout="column", fxLayoutAlign="start stretch", scrollable)
+    .nz-list-item.item(*ngFor="let item of items | async; let i=index", [selectable]="item", [selectionIndex]="i") {{ i }} - {{ item.label }}

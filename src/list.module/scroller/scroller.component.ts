@@ -1,4 +1,4 @@
-import { Component, Inject, ElementRef, HostListener, Input, ContentChild } from "@angular/core"
+import { Component, Inject, ElementRef, HostListener, Input, ContentChild, NgZone } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { ScrollerService } from "./scroller.service"

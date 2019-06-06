@@ -1,15 +1,14 @@
-import { Component, Inject, InjectionToken } from "@angular/core"
+import { Component, Inject, InjectionToken, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
 import { Observable, Subject, forkJoin } from "rxjs"
-import { take, map } from "rxjs/operators"
+import { take, map, debounceTime } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../../util"
 import { Model, Field, SingleSelection, ISelectionModel, SelectionModel } from "../../../data.module"
-import { LayerService, LayerRef, DropdownLayer } from "../../../layer.module"
+import { LayerService, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
 import { RichtextStream, RangeFactory, RT_PORTAL_TAG_NAME } from "./richtext-stream"
 import { removeNode } from "./util"
 
 
-const AC_ITEMS = new InjectionToken<Observable<RichtextAcItem[]>>("AC_ITEMS")
 const PROVIDER = Symbol("@AcProvider")
 
 
@@ -60,7 +59,8 @@ export class RichtextAcManager implements IDisposable {
     public readonly items: Observable<RichtextAcItem[]> = this.destruct.subject(new Subject())
     public readonly selection = new SingleSelection<RichtextAcItem>()
 
-    protected _layerRef: LayerRef
+    protected _layerRef: ComponentLayerRef<RichtextAcComponent>
+    private _debounce: Subject<string> = this.destruct.subject(new Subject())
 
     public constructor(
         public readonly rt: RichtextStream,
@@ -68,9 +68,12 @@ export class RichtextAcManager implements IDisposable {
         public readonly providers: RichtextAcProvider[],
         public readonly layerSvc: LayerService) {
 
+        this.destruct.subscription(this._debounce).pipe(debounceTime(250)).subscribe(this._update)
+
         this.selection.keyboard.instantSelection = false
 
         this.destruct.subscription(this.items).subscribe(items => {
+            console.log({ items })
             if (items.length) {
                 if (!this._layerRef || !this._layerRef.isVisible) {
                     let behavior = new DropdownLayer({
@@ -86,11 +89,12 @@ export class RichtextAcManager implements IDisposable {
                         }
                     })
                     this._layerRef = this.layerSvc.createFromComponent(RichtextAcComponent, behavior, null, [
-                        { provide: AC_ITEMS, useValue: this.items },
                         { provide: SelectionModel, useValue: this.selection }
                     ])
                     this._layerRef.show()
                 }
+                this._layerRef.component.instance.items.next(items)
+                this._layerRef.component.instance.cdr.markForCheck()
             } else if (this._layerRef) {
                 this._layerRef.hide()
                 delete this._layerRef
@@ -116,9 +120,14 @@ export class RichtextAcManager implements IDisposable {
         // })
     }
 
-
-    // TODO: debounce...
     public update(query: string) {
+        this._debounce.next(query)
+    }
+
+    private _update = (query: string) => {
+        if (this.destruct.done) {
+            return
+        }
         const terminated = this.providers.filter(p => p.terminate && p.terminate.test(query))
 
         if (terminated.length) {
@@ -174,11 +183,14 @@ export class RichtextAcManager implements IDisposable {
 
 @Component({
     selector: "nz-richtext-acpopup",
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: "./richtext-ac.component.pug"
 })
 export class RichtextAcComponent {
+    public readonly items: Subject<RichtextAcItem[]> = new Subject()
+
     public constructor(
-        @Inject(AC_ITEMS) protected readonly items: Observable<RichtextAcItem[]>,
-        @Inject(SelectionModel) protected readonly selection: ISelectionModel<RichtextAcItem>) {
+        @Inject(SelectionModel) protected readonly selection: ISelectionModel<RichtextAcItem>,
+        @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef) {
     }
 }

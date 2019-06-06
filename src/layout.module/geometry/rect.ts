@@ -8,7 +8,17 @@ export class Rect {
     [key: string]: number | any
 
     public static fromElement(el: HTMLElement) {
-        let r = el.getBoundingClientRect()
+        let r
+        if (el.nodeType === 1) { // Element
+            r = el.getBoundingClientRect()
+        } else if (el.nodeType === 3) { // textnode
+            let range = document.createRange()
+            range.selectNode(el)
+            r = range.getBoundingClientRect()
+            range.detach()
+        } else {
+            throw new Error("Unsupported element")
+        }
         return new Rect(r.left, r.top, r.width, r.height)
     }
 

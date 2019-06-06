@@ -2,15 +2,15 @@
   .scroller
     width: 100%
     height: 100%
-    max-height: inherit
-    max-width: inherit
+    max-height: inherit !important
+    max-width: inherit !important
     display: block !important
 
   .editor
     min-height: nz-local-grid-size(5)
 
 
-.nz-scroller.scroller
+.nz-scroller.scroller(#scroller)
   div(scrollable)
     .editor(#input="nzRichtext", [nzRichtext]="", contenteditable="true",
       on-focus="_handleFocus(true)",

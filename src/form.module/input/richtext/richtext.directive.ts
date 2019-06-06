@@ -89,7 +89,9 @@ export class RichtextDirective implements OnDestroy {
 
     public ngOnDestroy() {
         this.stream.value = ""
-        this._mutationObserver.disconnect()
+        if (this._mutationObserver) {
+            this._mutationObserver.disconnect()
+        }
     }
 
     protected onMuation = (mutations: MutationRecord[]) => {
@@ -105,6 +107,7 @@ export class RichtextDirective implements OnDestroy {
                     let cmp = this.getCmp(node as HTMLElement)
                     if (cmp) {
                         cmp.dispose()
+                        delete this._components[(node as HTMLElement).id]
                     }
                 }
             }
@@ -221,7 +224,7 @@ export class RichtextEditableDirective implements OnDestroy {
 
     @HostListener("blur")
     public onBlur() {
-        this.rt.stream.el.querySelectorAll(RT_AC_TAG_NAME).forEach(removeNode)
+        // this.rt.stream.el.querySelectorAll(RT_AC_TAG_NAME).forEach(removeNode)
     }
 
     protected _handleKeyEvent(event: KeyboardEvent): boolean {

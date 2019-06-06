@@ -13,11 +13,11 @@ import { DragHandleDirective } from "./drag/drag-handle.directive"
 export { DragEventService, DragEvent, DragService, DragHandleDirective }
 
 
-import { LocaleService, DateFormat } from "./locale/locale.service"
+import { LocaleService, DateFormat, LOCALE_DATE } from "./locale/locale.service"
 import { DateDirective } from "./locale/date.directive"
 import { DatePipe } from "./locale/date.pipe"
 import { TimePipe } from "./locale/time.pipe"
-export { LocaleService, DateFormat, DateDirective, DatePipe, TimePipe }
+export { LocaleService, DateFormat, DateDirective, DatePipe, TimePipe, LOCALE_DATE }
 
 
 import { PanelComponent, PanelStateEvent, PanelOpeningEvent } from "./panel/panel.component"

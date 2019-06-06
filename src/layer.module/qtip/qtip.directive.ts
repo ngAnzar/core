@@ -45,6 +45,10 @@ export class QtipDirective implements OnDestroy {
     }
 
     public show() {
+        if (this.destruct.done) {
+            return
+        }
+
         if (!this._layerRef || !this._layerRef.isVisible) {
             let tAlign: Align
             let lAlign: Align
@@ -82,7 +86,6 @@ export class QtipDirective implements OnDestroy {
     }
 
     public ngOnDestroy() {
-        this.hide()
         this.destruct.run()
     }
 }

@@ -70,7 +70,9 @@ export class RichtextStream implements IDisposable, OnDestroy {
     }
 
     public set value(val: string) {
-        this.el.innerHTML = val
+        if (this.el) {
+            this.el.innerHTML = val
+        }
     }
 
     public get selection(): RTSelection | null {

@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core"
+import { Injectable, InjectionToken, Inject } from "@angular/core"
 import { isEqual, distanceInWords, format } from "date-fns"
 
 
@@ -24,14 +24,12 @@ const FORMATS: { [K in DateFormat]?: string } = {
 }
 
 
-@Injectable()
-export class LocaleService {
+export const LOCALE_DATE = new InjectionToken("Locale.date")
 
-    /**
-     * import * as hu from "date-fns/locale/hu"
-     * localeService.dateLocale = hu
-     */
-    public dateLocale: any
+
+@Injectable({ providedIn: "root" })
+export class LocaleService {
+    public constructor(@Inject(LOCALE_DATE) public readonly dateLocale: any) { }
 
     public formatDate(date: string | Date, dateFormat: DateFormat): string {
         switch (dateFormat) {

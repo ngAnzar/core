@@ -150,9 +150,11 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
                 if (elIdx >= 0) {
                     let view = this._vcr.get(elIdx) as EmbeddedView<T>
                     this._updateContext(view.context, -1, null, range)
-                    this._vcr.detach(elIdx)
+                    this._vcr.remove(elIdx)
+
+                    // this._vcr.detach(elIdx)
                     // view.detectChanges()
-                    this.reusable.push(view)
+                    // this.reusable.push(view)
                 }
             }
         }
