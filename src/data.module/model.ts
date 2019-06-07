@@ -228,6 +228,7 @@ function parseId(value: any): any {
     return value
 }
 
+export type ModelFields<T extends Model> = Pick<T, Exclude<keyof T, "update">>
 
 export class Model {
     public static isEq(modelA: Model, modelB: Model): boolean {
@@ -320,7 +321,7 @@ export class Model {
         return this
     }
 
-    public [MODEL_EQ](other: Model) {
+    private [MODEL_EQ](other: Model) {
         return this === other || (Model.isModel(other) && other.id === this.id)
     }
 

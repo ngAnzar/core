@@ -5,7 +5,7 @@ const DeepDiff = require("deep-diff")
 
 
 import { Destruct, IDisposable, NzRange, NzRangeList } from "../util"
-import { DataSource, Filter, Sorter } from "./data-source"
+import { DataSource, Filter, Sorter, Meta, LoadFields } from "./data-source"
 import { Model, ID } from "./model"
 import { Collection, Items } from "./collection"
 
@@ -58,6 +58,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected readonly _itemsStream: Observable<Items<T>> = new EventEmitter()
     protected total: number
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
+    protected meta: Meta<T>
 
     public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
@@ -89,7 +90,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
             return this._setPending(
                 rrange,
-                this.destruct.subscription(this.source.search(this.filter.get(), this.sorter.get(), rrange))
+                this.destruct.subscription(this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta))
                     // .pipe(take(1))
                     .pipe(map(items => {
                         (this as any).range = items.range || r
@@ -117,6 +118,14 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
     public reload() {
         this.reset(false)
+    }
+
+    public loadFields(f: LoadFields<T>) {
+        if (!this.meta) {
+            this.meta = { loadFields: f }
+        } else {
+            this.meta.loadFields = f
+        }
     }
 
     protected reset(skipEvent?: boolean) {

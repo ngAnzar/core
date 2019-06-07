@@ -33,17 +33,10 @@ export type Filter<T> = {
 }
 export type Sorter<T> = { [K in keyof T]?: "asc" | "desc" }
 
-// export interface GeneralError<T = any> {
-//     success: false
-//     msg?: string,
-//     reason?: string,
-//     data?: T
-// }
-// export type ModelError = any
-// export type ModelErrors<T> = { [K in keyof T]?: ModelError }
-// export type SaveResponse<T> = T | ModelErrors<T> | GeneralError
-export type LoadFields = Array<string | { [key: string]: LoadFields }>
-export type LoadFieldsArg = ModelClass | LoadFields
+
+export type _LoadRelated<T> = { [K in keyof T]?: LoadFields<T[K]> } | { "*": LoadFields<any> }
+export type LoadFields<T> = Array<Exclude<keyof T, "update"> | _LoadRelated<T> | "*">
+export type Meta<T = any> = { loadFields?: LoadFields<T> } & { [key: string]: any }
 
 
 export abstract class DataSource<T extends Model> {
@@ -52,38 +45,38 @@ export abstract class DataSource<T extends Model> {
     public abstract readonly async: boolean
     // public abstract readonly model: ModelClass<T>
 
-    public search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<Items<T>> {
+    public search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<Items<T>> {
         if (r && r.end - r.begin <= 0) {
             return of(new Items([], r))
         }
-        return this._search(f, s, r).pipe(map(items => {
+        return this._search(f, s, r, m).pipe(map(items => {
             let total = items ? (items as any).total : null
             let range = r ? new NzRange(r.begin, r.begin + items.length) : new NzRange(0, items.length)
             return new Items(items, range, total)
         })) as any
     }
 
-    public get(id: ID): Observable<T> {
-        return this._get(id) as any
+    public get(id: ID, m?: Meta<T>): Observable<T> {
+        return this._get(id, m) as any
     }
 
-    public save(model: T): Observable<T> {
-        return this._save(model)
+    public save(model: T, m?: Meta<T>): Observable<T> {
+        return this._save(model, m)
     }
 
-    public remove(model: T | ID): Observable<boolean> {
-        return this._remove(model instanceof Model ? model.id : model)
+    public remove(model: T | ID, m?: Meta<T>): Observable<boolean> {
+        return this._remove(model instanceof Model ? model.id : model, m)
     }
 
     public abstract getPosition(id: ID): Observable<number>
 
-    protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange): Observable<any[]>
+    protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<any[]>
 
-    protected abstract _get(id: ID): Observable<T>
+    protected abstract _get(id: ID, m?: Meta<T>): Observable<T>
 
-    protected abstract _save(model: T): Observable<T>
+    protected abstract _save(model: T, m?: Meta<T>): Observable<T>
 
-    protected abstract _remove(id: ID): Observable<boolean>
+    protected abstract _remove(id: ID, m?: Meta<T>): Observable<boolean>
 
     protected setBusy(busy: boolean) {
         if (this.busy !== busy) {

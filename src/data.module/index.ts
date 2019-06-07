@@ -3,9 +3,9 @@ import { HttpClientModule } from "@angular/common/http"
 
 
 export { Collection, Items } from "./collection"
-export { DataSource, Filter, Sorter, LoadFields, LoadFieldsArg } from "./data-source"
+export { DataSource, Filter, Sorter, Meta } from "./data-source"
 export { DataStorage, Diff, DiffKind } from "./data-storage"
-export { Model, ModelProxy, ModelClass, ModelFactory, Field, IDField, MODEL_ID, ID, MODEL_EQ } from "./model"
+export { Model, ModelFields, ModelProxy, ModelClass, ModelFactory, Field, IDField, MODEL_ID, ID, MODEL_EQ } from "./model"
 export { StaticSource } from "./static-source"
 
 

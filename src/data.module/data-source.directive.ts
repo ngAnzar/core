@@ -4,7 +4,7 @@ import { Observable, Subscription } from "rxjs"
 
 import { NzRange } from "../util"
 import { Model, ID } from "./model"
-import { DataSource, Filter, Sorter } from "./data-source"
+import { DataSource, Filter, Sorter, LoadFields } from "./data-source"
 import { DataStorage, MappingChangedEvent } from "./data-storage"
 import { Items } from "./collection"
 
@@ -49,6 +49,11 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         } else {
             throw new Error(`Unexpected value: ${val}`)
         }
+
+        if (this._pendingFields) {
+            this.storage.loadFields(this._pendingFields)
+            delete this._pendingFields
+        }
     }
 
     public get storage(): DataStorage<T> {
@@ -71,6 +76,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     private _filterChanges: Observable<MappingChangedEvent<Filter<T>>> = new EventEmitter()
     private _sorterSubscription: Subscription
     private _sorterChanges: Observable<MappingChangedEvent<Sorter<T>>> = new EventEmitter()
+    private _pendingFields: any
 
     // public baseFilter: Filter<T>
     public set baseFilter(val: Filter<T>) {
@@ -122,6 +128,15 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
 
     public reload() {
         this.storage.reload()
+    }
+
+    public loadFields(f: LoadFields<T>) {
+        let s = this.storage
+        if (s) {
+            s.loadFields(f)
+        } else {
+            this._pendingFields = f
+        }
     }
 
     protected _updateFilter(silent?: boolean) {
