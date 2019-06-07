@@ -73,7 +73,6 @@ export class RichtextAcManager implements IDisposable {
         this.selection.keyboard.instantSelection = false
 
         this.destruct.subscription(this.items).subscribe(items => {
-            console.log({ items })
             if (items.length) {
                 if (!this._layerRef || !this._layerRef.isVisible) {
                     let behavior = new DropdownLayer({
@@ -125,7 +124,7 @@ export class RichtextAcManager implements IDisposable {
     }
 
     private _update = (query: string) => {
-        if (this.destruct.done) {
+        if (this.destruct.done || !this.providers) {
             return
         }
         const terminated = this.providers.filter(p => p.terminate && p.terminate.test(query))
@@ -168,13 +167,13 @@ export class RichtextAcManager implements IDisposable {
     }
 
     public dispose() {
+        this.destruct.run()
         delete (this as any).anchorEl
         delete (this as any).providers
         if (this._layerRef) {
             this._layerRef.hide()
             delete this._layerRef
         }
-        this.destruct.run()
         this.selection.ngOnDestroy()
         delete (this as any).selection
     }

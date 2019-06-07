@@ -1,5 +1,6 @@
 import { Component, Inject, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, HostBinding, Input } from "@angular/core"
 import { merge } from "rxjs"
+import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { InputComponent } from "../input/abstract"
@@ -31,9 +32,11 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
 
     public ngAfterContentInit() {
         if (this._input) {
-            this.destruct.subscription(merge(this._input.statusChanges, this._input.valueChanges)).subscribe(event => {
-                this.hideLabel = !this._input.isEmpty
-            })
+            this.destruct.subscription(merge(this._input.statusChanges, this._input.valueChanges))
+                .pipe(startWith(null))
+                .subscribe(event => {
+                    this.hideLabel = !this._input.isEmpty || this._input.focused
+                })
         }
     }
 

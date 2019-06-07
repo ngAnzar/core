@@ -62,20 +62,19 @@ export class CheckboxGroupDirective<T = any> extends InputComponent<T> {
             }
         }
         this._selectedValues = v
-        console.log(v)
     }
 
     public writeValue(value: any) {
-        for (const radio of this.checkboxes) {
-            if (radio.trueValue === value) {
-                radio.checked = true
+        for (const chkbox of this.checkboxes) {
+            if (chkbox.trueValue === value) {
+                chkbox.checked = true
             }
         }
     }
 
     protected _applyProperty(name: string, value: any) {
-        for (const radio of this.checkboxes) {
-            (radio as any)[name] = value
+        for (const chkbox of this.checkboxes) {
+            (chkbox as any)[name] = value
         }
     }
 }
