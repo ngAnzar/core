@@ -102,7 +102,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         @Inject(ElementRef) el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Attribute('tabindex') tabIndex: string,
-        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective) {
+        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective<any>) {
         super(ngControl, ngModel, el)
         this.tabIndex = parseInt(tabIndex, 10)
 

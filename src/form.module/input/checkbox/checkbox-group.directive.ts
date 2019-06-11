@@ -13,7 +13,7 @@ import { CheckboxComponent } from "./checkbox.component"
         INPUT_VALUE_ACCESSOR
     ]
 })
-export class CheckboxGroupDirective<T = any> extends InputComponent<T> {
+export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     public get type(): string { return "checkbox-group" }
 
     @Input()
@@ -38,7 +38,7 @@ export class CheckboxGroupDirective<T = any> extends InputComponent<T> {
     protected _disabled: boolean
 
     protected checkboxes: CheckboxComponent<T>[] = []
-    protected _selectedValues: T[]
+    protected _selectedValues: T[] = []
 
     public addCheckbox(checkbox: CheckboxComponent<T>) {
         if (this.checkboxes.indexOf(checkbox) === -1) {
@@ -60,8 +60,11 @@ export class CheckboxGroupDirective<T = any> extends InputComponent<T> {
             if (chk.checked) {
                 v.push(chk.trueValue)
             }
+
         }
-        this._selectedValues = v
+
+        this._handleInput(v)
+        console.log("changed", v)
     }
 
     public writeValue(value: any) {

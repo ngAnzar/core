@@ -342,8 +342,8 @@ export class ScrollerService implements OnDestroy {
     }
 
     public elementIsVisible(el: HTMLElement): boolean {
-        const elRect = this.getElementRenderedRect(el)
-        return this.vpRender.visible.contains(elRect)
+        const elRect = this.getElementImmediateRect(el)
+        return this.vpImmediate.visible.isIntersect(elRect)
     }
 
     public getElementRenderedRect(el: HTMLElement): Rect {
@@ -352,13 +352,15 @@ export class ScrollerService implements OnDestroy {
 
     public getElementImmediateRect(el: Node) {
         const renderedRect = this.scrollable!.getElementRect(el)
-        const immediatePos = this.vpImmediate.scrollPosition
-        const renderedPos = this.vpRender.scrollPosition
-        const topDiff = immediatePos.top - renderedPos.top
-        const leftDiff = immediatePos.left - renderedPos.left
+        // const immediatePos = this.vpImmediate.scrollPosition
+        // const renderedPos = this.vpRender.scrollPosition
+        // const topDiff = immediatePos.top - renderedPos.top
+        // const leftDiff = immediatePos.left - renderedPos.left
 
-        renderedRect.top -= topDiff
-        renderedRect.left -= leftDiff
+        // console.log(renderedRect, immediatePos, renderedPos, topDiff, leftDiff)
+
+        // renderedRect.top -= topDiff
+        // renderedRect.left -= leftDiff
         return renderedRect
     }
 

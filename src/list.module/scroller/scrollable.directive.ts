@@ -13,7 +13,7 @@ import { ScrollerService } from "./scroller.service"
 export class ScrollableDirective {
     public constructor(
         @Inject(NgZone) zone: NgZone,
-        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
+        @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ScrollerService) service: ScrollerService,
         @Inject(RectMutationService) rectMutation: RectMutationService) {
         service.scrollable = this

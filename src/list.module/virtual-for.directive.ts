@@ -8,6 +8,8 @@ import { DataSourceDirective, Model, Items } from "../data.module"
 import { Destruct, NzRange, ListDiffKind } from "../util"
 // import { ScrollableDirective } from "./scrollable.directive"
 import { ScrollerService } from "./scroller/scroller.service"
+import { ScrollableDirective } from "./scroller/scrollable.directive"
+import { Rect } from '../layout.module';
 
 
 export const enum ScrollingDirection {
@@ -53,26 +55,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public get fixedItemHeight(): number { return this._fixedItemHeight }
     protected _fixedItemHeight: number = 0
 
-    public get rendered(): Items<T> {
-        let contexts: Array<VirtualForContext<T>> = []
-        let begin: number = -1
-        let end: number = -1
+    private _elCachedRect: Rect[] = []
 
-        for (let i = 0, l = this._vcr.length; i < l; i++) {
-            let v: EmbeddedView<T> = this._vcr.get(i) as any
-            if (v && v.context && v.context.index !== -1) {
-                contexts.push(v.context)
-                if (begin === -1) {
-                    begin = v.context.index
-                    end = v.context.index
-                } else {
-                    begin = Math.min(begin, v.context.index)
-                    end = Math.max(end, v.context.index)
-                }
-            }
-        }
-        return new Items(contexts.sort((a, b) => a.index - b.index).map(item => item.$implicit), new NzRange(begin, end))
-    }
+    public readonly rendered: Items<T> = new Items([], new NzRange(-1, -1), 0)
 
     protected destruct = new Destruct(() => {
         function d(view: ViewRef) {
@@ -100,7 +85,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public constructor(@Inject(ViewContainerRef) protected _vcr: ViewContainerRef,
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
         @Inject(ChangeDetectorRef) protected _cdr: ChangeDetectorRef,
-        @Inject(ScrollerService) protected _scroller: ScrollerService) {
+        @Inject(ScrollerService) protected _scroller: ScrollerService,
+        @Inject(ScrollableDirective) protected _scrollable: ScrollableDirective) {
 
     }
 
@@ -109,6 +95,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         this.destruct.subscription(this._scroller.vpImmediate.scroll).pipe(startWith(0)).subscribe(event => {
             let vr = this._getVisibleNzRange()
+            console.log(vr)
             this._setVisibleNzRange(vr)
         })
     }
@@ -135,16 +122,21 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
         for (let change of changes) {
             if (change.kind === ListDiffKind.CREATE) {
-                this._getViewForItem(change.index, change.item, range).detectChanges()
+                let v = this._getViewForItem(change.index, change.item, range)
+                v.detectChanges()
+                this._elCachedRect[change.index] = this._getRectByView(v)
             } else if (change.kind === ListDiffKind.UPDATE) {
+                delete this._elCachedRect[change.index]
                 let elIdx = this.itemIndexToElIndex(change.index)
+                let view: EmbeddedView<T>
                 if (elIdx >= 0) {
-                    let view: EmbeddedView<T> = this._vcr.get(elIdx) as EmbeddedView<T>
+                    view = this._vcr.get(elIdx) as EmbeddedView<T>
                     this._updateContext(view.context, change.index, change.item, range)
-                    view.detectChanges()
                 } else {
-                    this._getViewForItem(change.index, change.item, range).detectChanges()
+                    view = this._getViewForItem(change.index, change.item, range)
                 }
+                view.detectChanges()
+                this._elCachedRect[change.index] = this._getRectByView(view)
             } else if (change.kind === ListDiffKind.DELETE) {
                 let elIdx = this.itemIndexToElIndex(change.index)
                 if (elIdx >= 0) {
@@ -159,12 +151,64 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             }
         }
 
-        // for (let i = 0, l = this._vcr.length; i < l; i++) {
-        //     let view = this._vcr.get(i) as EmbeddedView<T>
-        //     if (view && !view.destroyed && view.context && view.context.index !== -1) {
-        //         view.detectChanges()
-        //     }
-        // }
+        if (changes.length) {
+            (this as any).rendered = this._collectRendered()
+            if (this.fixedItemHeight <= 0) {
+                // let ss = this._spacerSize()
+                // console.log({ ss })
+                // this._scrollable.el.nativeElement.style.paddingTop = `${this._spacerSize()}px`
+                this._updateElsPositions()
+                this._scrollable.el.nativeElement.style.height = `${this._maxHeight}px`
+            }
+        }
+    }
+
+    protected _collectRendered(): Items<T> {
+        let contexts: Array<VirtualForContext<T>> = []
+        let begin: number = -1
+        let end: number = -1
+
+        for (let i = 0, l = this._vcr.length; i < l; i++) {
+            let v: EmbeddedView<T> = this._vcr.get(i) as any
+            if (v && v.context && v.context.index !== -1) {
+                contexts.push(v.context)
+                if (begin === -1) {
+                    begin = v.context.index
+                    end = v.context.index
+                } else {
+                    begin = Math.min(begin, v.context.index)
+                    end = Math.max(end, v.context.index)
+                }
+            }
+        }
+        return new Items(contexts.sort((a, b) => a.index - b.index).map(item => item.$implicit), new NzRange(begin, end))
+    }
+
+    protected _spacerSize() {
+        let size = 0
+        for (let i = 0, l = this.rendered.range.begin; i < l; i++) {
+            let rect = this._elCachedRect[i]
+            if (rect) {
+                size += rect.height
+            }
+        }
+        return size
+    }
+
+    private _maxHeight: number = 0
+    protected _updateElsPositions() {
+        let ss = this._spacerSize()
+        let begin = this.rendered.range.begin
+        let end = this.rendered.range.end
+        for (let i = begin, l = end; i < l; i++) {
+            let elIdx = this.itemIndexToElIndex(i)
+            let view = this._vcr.get(elIdx) as EmbeddedView<T>
+            let el = this._getHtmlEl(view)
+            el.style.transform = `translateY(${ss}px)`
+            ss += this._getRectByView(view).height
+        }
+
+        this._maxHeight = Math.max(this._maxHeight, ss)
     }
 
     protected _update = () => {
@@ -211,35 +255,33 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             end = begin + Math.ceil(viewport.visible.height / this._fixedItemHeight)
             return new NzRange(begin, end)
         } else {
-
-            // TODO: ...
-            return new NzRange(0, 1000)
-
-            /*
-
-            let checked: any[] = []
-
+            let items: Array<EmbeddedViewRef<VirtualForContext<T>>> = []
             for (let i = 0, l = this._vcr.length; i < l; i++) {
-                let vr = this._vcr.get(i) as EmbeddedViewRef<VirtualForContext<T>>
-                let el = this._getHtmlEl(vr)
-
-                if (checked.indexOf(el) !== -1) {
-                    continue
+                let v = this._vcr.get(i) as EmbeddedViewRef<VirtualForContext<T>>
+                if (v && v.context && v.context.index !== -1) {
+                    items.push(v)
                 }
-                checked.push(el)
+            }
+            items.sort((a, b) => a.context.index - b.context.index)
 
-                if (el && this._scroller.elementIsVisible(el)) {
+            let visible = false
+            let visibleRect = this._scroller.vpImmediate.visible
+            for (let item of items) {
+                let rect = this._getRectByView(item)
+
+                if (visibleRect.isIntersect(rect)) {
+                    visible = true
                     if (begin === -1) {
-                        begin = vr.context.index
+                        begin = item.context.index
                     }
-                    end = vr.context.index
+                    end = item.context.index
+                } else if (visible) {
+                    // reach end of visible range
+                    break
                 }
             }
 
-            return new NzRange(
-                this.elIndexToItemIndex(begin) || 0,
-                this.elIndexToItemIndex(end) || 0)
-            */
+            return new NzRange(begin, end)
         }
     }
 
@@ -274,6 +316,21 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             }
         }
         return null
+    }
+
+    protected _getRectByView(vr: EmbeddedViewRef<VirtualForContext<T>>): Rect {
+        let idx = vr.context.index
+        if (this._elCachedRect[idx]) {
+            return this._elCachedRect[idx]
+        } else {
+            let el = this._getHtmlEl(vr)
+            if (el) {
+                let rect = this._scroller.getElementImmediateRect(el)
+                return this._elCachedRect[idx] = rect
+            } else {
+                return null
+            }
+        }
     }
 
     protected elIndexToItemIndex(elIndex: number): number {
