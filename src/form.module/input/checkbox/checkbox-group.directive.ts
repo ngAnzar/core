@@ -64,7 +64,6 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
         }
 
         this._handleInput(v)
-        console.log("changed", v)
     }
 
     public writeValue(value: any) {

@@ -99,10 +99,10 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
                             (this as any).endReached = items.total <= this.range.end
                             this.total = items.total
                         } else {
-                            (this as any).endReached = r.length !== items.length
+                            (this as any).endReached = rrange.length !== items.length
                         }
                         this._cacheItems(items, this.range)
-                        return this._collectRange(this.range)
+                        return this._collectRange(r)
                     }))
             )
         } else {
@@ -146,6 +146,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         for (let k = 0, l = items.length; k < l; k++) {
             this.cache[r.begin + k] = items[k]
         }
+
         this.cachedRanges = this.cachedRanges.merge(r);
         (this as any).range = this.cachedRanges.span();
         (this as any).isEmpty = this.range.length === 0;

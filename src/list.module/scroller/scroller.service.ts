@@ -80,8 +80,8 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
 
 
     public set scrollPosition(val: ScrollPosition) {
-        const left = val ? val.left || 0 : 0
-        const top = val ? val.top || 0 : 0
+        const top = Math.min(val ? val.top || 0 : 0, this.scrollHeight - this.height)
+        const left = Math.min(val ? val.left || 0 : 0, this.scrollWidth - this.width)
 
         this.scrollPercent = {
             top: top / (this.scrollHeight - this.height),
@@ -137,7 +137,12 @@ export class ImmediateViewport extends Viewport {
 
         if (changed) {
             this.visible.width = this.width
-            this.visible.height = this.height;
+            this.visible.height = this.height
+            const sp = this.scrollPosition
+            this.scrollPosition = {
+                top: Math.min(this.scrollHeight, sp.top),
+                left: Math.min(this.scrollWidth, sp.left),
+            };
             // this._recalcPosition();
             (this.change as Subject<Viewport>).next(this)
         }
@@ -170,9 +175,6 @@ export class RenderedViewport extends Viewport {
         this.vpChange = main.change.pipe(startWith()).subscribe(() => {
             this.visible.width = main.width
             this.visible.height = main.height
-            if (this._lastEvent) {
-                (this.scroll as Subject<ScrollEvent>).next(this._lastEvent)
-            }
         })
     }
 
