@@ -30,6 +30,7 @@
     "tslib": "^1.9.3",
     "tslint": "^5.11.0",
     "typescript": "^3.2.2",
+    "zingtouch": "^1.0.6",
     "zone.js": "^0.8.26"
   },
   "peerDependencies": {

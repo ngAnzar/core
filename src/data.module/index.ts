@@ -3,7 +3,7 @@ import { HttpClientModule } from "@angular/common/http"
 
 
 export { Collection, Items } from "./collection"
-export { DataSource, Filter, Sorter, Meta } from "./data-source"
+export { DataSource, Filter, Sorter, LoadFields, Meta } from "./data-source"
 export { DataStorage, Diff, DiffKind } from "./data-storage"
 export { Model, ModelFields, ModelProxy, ModelClass, ModelFactory, Field, IDField, MODEL_ID, ID, MODEL_EQ } from "./model"
 export { StaticSource } from "./static-source"
@@ -24,8 +24,8 @@ export { SelectionKeyboardHandler }
 // export { RpcGroup, RpcMethod, RpcDataSource, IRpcDataSource } from "./rpc/rpc-source"
 // export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extjs"
 
-import { DataSourceDirective, FilterDirective, SorterDirective } from "./data-source.directive"
-export { DataSourceDirective, FilterDirective, SorterDirective }
+import { DataSourceDirective, FilterDirective, SorterDirective, FieldsDirective } from "./data-source.directive"
+export { DataSourceDirective, FilterDirective, SorterDirective, FieldsDirective }
 
 
 @NgModule({
@@ -40,7 +40,8 @@ export { DataSourceDirective, FilterDirective, SorterDirective }
 
         DataSourceDirective,
         FilterDirective,
-        SorterDirective
+        SorterDirective,
+        FieldsDirective
     ],
     exports: [
         SingleSelection,
@@ -50,7 +51,8 @@ export { DataSourceDirective, FilterDirective, SorterDirective }
 
         DataSourceDirective,
         FilterDirective,
-        SorterDirective
+        SorterDirective,
+        FieldsDirective
     ]
 })
 export class NzDataModule { }

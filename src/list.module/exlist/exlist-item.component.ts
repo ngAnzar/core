@@ -1,6 +1,6 @@
 import {
     Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef,
-    EventEmitter, OnDestroy, NgZone, ViewChild, AfterViewChecked, HostBinding
+    EventEmitter, OnDestroy, NgZone, ViewChild, AfterViewChecked, HostBinding, HostListener
 } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
 import { FocusOrigin } from "@angular/cdk/a11y"
@@ -96,7 +96,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public get isAccessible(): boolean { return true }
 
     private _scroll: Subscription
-    private _rebindAfterCheck: boolean = false
+    // private _rebindAfterCheck: boolean = false
 
     public constructor(
         @Inject(NgZone) protected readonly zone: NgZone,
@@ -108,32 +108,54 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     }
 
     public ngAfterViewInit() {
-        this._rebindTap()
+        // this._rebindTap()
     }
 
     public ngAfterViewChecked() {
-        if (this._rebindAfterCheck) {
-            this._rebindAfterCheck = false
-            this._rebindTap()
+        // if (this._rebindAfterCheck) {
+        //     this._rebindAfterCheck = false
+        //     this._rebindTap()
+        // }
+    }
+
+    // public onTap = (event: any) => {
+    //     if (!this.list.tplExContent) {
+    //         return
+    //     }
+
+    //     console.log("EXLIST TAP, prevented:", event)
+
+    //     // if (event.srcEvent && (event.srcEvent as Event).defaultPrevented) {
+    //     //     return
+    //     // }
+
+    //     if (this.selected) {
+    //         if (!event.target || event.target === this._elHeader || this._elHeader.contains(event.target)) {
+    //             this.selected = null
+    //         }
+    //     } else {
+    //         this.selected = "mouse"
+    //     }
+    // }
+
+    @HostListener("tap", ["$event"])
+    public onTap(event: Event) {
+        if (!this.list.tplExContent || event.defaultPrevented) {
+            return
+        }
+
+        if (!this.selected) {
+            this.selected = "mouse"
+            event.preventDefault()
         }
     }
 
-    public onTap = (event: any) => {
-        if (!this.list.tplExContent) {
+    public onHeaderTap(event: Event) {
+        if (event.defaultPrevented) {
             return
         }
-
-        if (event.srcEvent && (event.srcEvent as Event).defaultPrevented) {
-            return
-        }
-
-        if (this.selected) {
-            if (!event.target || event.target === this._elHeader || this._elHeader.contains(event.target)) {
-                this.selected = null
-            }
-        } else {
-            this.selected = "mouse"
-        }
+        event.preventDefault()
+        this.selected = null
     }
 
     public _changeSelected(newValue: SelectOrigin): void {
@@ -142,21 +164,17 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
             this._scroll.unsubscribe()
             delete this._scroll
         }
+
         if (newValue) {
             this._scroll = this.zone.runOutsideAngular(() => this.scroller.vpRender.scroll
                 .pipe(startWith(null))
                 .subscribe(this._updateByScroll))
             setTimeout(this._updateByScroll, 210)
-        } else {
-            // let spos = this.scroller.scrollPosition
-            // this.scroller.scrollPosition = {
-            //     left: spos.left,
-            //     top: spos.top - this.el.nativeElement.offsetHeight - 48
-            // }
         }
+
         (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue);
         this.cdr.markForCheck()
-        this._rebindAfterCheck = true
+        // this._rebindAfterCheck = true
     }
 
     public _canChangeSelected(newValue: SelectOrigin): boolean {

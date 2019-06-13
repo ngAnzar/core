@@ -43,6 +43,7 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
             .pipe(startWith(null))
             .subscribe(() => {
                 (this as any).tabContents = this.tabs.toArray().map(item => item.contentTpl)
+                console.log("tabs changed", this.tabs)
                 this.cdr.markForCheck()
             })
     }

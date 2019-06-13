@@ -1,5 +1,6 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
+import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser"
 
 import { NzAnimationModule } from "../animation.module"
 
@@ -44,10 +45,11 @@ import { PointerEventService } from "./services/pointer-event.service"
 import { ScriptService } from "./services/script.service"
 import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
 import { MediaQueryService } from "./services/media-query.service"
+import { ZingTouchPlugin } from "./services/zingtouch.service"
 export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService }
 
 
-import { HAMMER_CONFIG } from "./hammer"
+// import { HAMMER_CONFIG } from "./hammer"
 
 
 const content = [
@@ -85,14 +87,20 @@ const content = [
     declarations: content,
     exports: content,
     providers: [
-        HAMMER_CONFIG,
+        // HAMMER_CONFIG,
         LocaleService,
         FileDownloadService,
         ScriptService,
         DragEventService,
         PointerEventService,
         KeyEventService,
-        MediaQueryService
+        MediaQueryService,
+
+        {
+            provide: EVENT_MANAGER_PLUGINS,
+            useClass: ZingTouchPlugin,
+            multi: true
+        }
     ]
 })
 export class NzCommonModule { }

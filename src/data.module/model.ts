@@ -182,7 +182,7 @@ export function Field(name: string | FieldOptions = {}) {
             throw new Error("Missing type annotation")
         }
 
-        converter = converter || options.map || customOrBuiltinFactory(type)
+        converter = options.map || converter || customOrBuiltinFactory(type)
         meta.save = options.save == null
             ? typeList.length === typeList.filter(isPrimitiveType).length
             : options.save !== false

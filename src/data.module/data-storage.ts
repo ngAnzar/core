@@ -1,5 +1,5 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, of, Subject } from "rxjs"
+import { Observable, of, Subject, race } from "rxjs"
 import { map, startWith, debounceTime, tap, shareReplay, finalize } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
@@ -13,6 +13,7 @@ import { Collection, Items } from "./collection"
 export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> implements IDisposable {
     public readonly filter = new DictField<F>()
     public readonly sorter = new DictField<Sorter<T>>()
+    public readonly meta = new DictField<Meta<T>>()
     public readonly range: NzRange = new NzRange(0, 0)
     public readonly lastIndex: number = 0
     public readonly endReached: boolean = false
@@ -40,16 +41,23 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public readonly busy: Observable<boolean> = new EventEmitter()
 
     public get invalidated(): Observable<void> {
-        return Observable.create((observer: any) => {
-            let s1 = this.filter.changed.subscribe(observer)
-            let s2 = this.sorter.changed.subscribe(observer)
-            let s3 = this.reseted.subscribe(observer)
-            return () => {
-                s1.unsubscribe()
-                s2.unsubscribe()
-                s3.unsubscribe()
-            }
-        }).pipe(debounceTime(5))
+        return race(
+            this.filter.changed as any,
+            this.sorter.changed as any,
+            this.meta.changed as any,
+            this.reseted as any)
+            .pipe(debounceTime(5)) as any
+
+        // return Observable.create((observer: any) => {
+        //     let s1 = this.filter.changed.subscribe(observer)
+        //     let s2 = this.sorter.changed.subscribe(observer)
+        //     let s3 = this.reseted.subscribe(observer)
+        //     return () => {
+        //         s1.unsubscribe()
+        //         s2.unsubscribe()
+        //         s3.unsubscribe()
+        //     }
+        // }).pipe(debounceTime(5))
     }
 
     protected cache: { [key: number]: T } = {}
@@ -58,7 +66,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected readonly _itemsStream: Observable<Items<T>> = new EventEmitter()
     protected total: number
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
-    protected meta: Meta<T>
+
 
     public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
@@ -90,7 +98,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
             return this._setPending(
                 rrange,
-                this.destruct.subscription(this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta))
+                this.destruct.subscription(this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta.get()))
                     // .pipe(take(1))
                     .pipe(map(items => {
                         (this as any).range = items.range || r
@@ -120,11 +128,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.reset(false)
     }
 
-    public loadFields(f: LoadFields<T>) {
+    public loadFields(loadFields: LoadFields<T>) {
         if (!this.meta) {
-            this.meta = { loadFields: f }
+            this.meta.set({ loadFields })
         } else {
-            this.meta.loadFields = f
+            this.meta.update({ loadFields })
         }
     }
 

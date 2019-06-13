@@ -10,7 +10,7 @@
 
 
 div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
-  .nz-scroller.label-scroller(fxFlex="none", hideScrollbar)
+  .nz-scroller.label-scroller(fxFlex="none", hideScrollbar, *ngIf="tabs && tabs.length > 1")
     .nz-tab-labels(scrollable)
       div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start stretch")
         .nz-tab-label(
@@ -19,7 +19,7 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
           fxLayoutAlign="center center",
           [attr.selected]="selectedIndex==i ? '' : null",
           *ngFor="let tab of tabs; let i=index",
-          on-tap="selectedIndex=i",
+          on-tap="!$event.defaultPrevented && (selectedIndex=i)",
           [attr.disabled]="tab.disabled ? '' : null")
           div.nz-tab-label-content
             ng-template([ngTemplateOutlet]="tab.labelTpl")

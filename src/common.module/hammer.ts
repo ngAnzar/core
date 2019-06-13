@@ -17,10 +17,12 @@ export class HammerConfig extends HammerGestureConfig {
             enable: false
         }
     }
-    // options = {
-    //     domEvents: true
-    // }
+    options = {
+        domEvents: true
+    }
 }
+
+Hammer.defaults.domEvents = true
 
 
 export const HAMMER_CONFIG: Provider = {

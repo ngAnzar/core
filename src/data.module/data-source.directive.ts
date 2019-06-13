@@ -177,11 +177,11 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
 
 
 @Directive({
-    selector: "[filter]"
+    selector: "[dsFilter]"
 })
 export class FilterDirective {
     @Input()
-    public set filter(val: Filter<any>) {
+    public set dsFilter(val: Filter<any>) {
         this.src.baseFilter = val
     }
 
@@ -190,12 +190,26 @@ export class FilterDirective {
 
 
 @Directive({
-    selector: "[sorter]"
+    selector: "[dsSorter]"
 })
 export class SorterDirective {
     @Input()
-    public set sorter(val: Sorter<any>) {
+    public set dsSorter(val: Sorter<any>) {
         this.src.sort = val
+    }
+
+    public constructor(@Inject(DataSourceDirective) protected readonly src: DataSourceDirective) { }
+}
+
+
+@Directive({
+    selector: "[dsFields]"
+})
+export class FieldsDirective {
+    @Input()
+    public set dsFields(val: LoadFields<Model>) {
+        console.log("dsFields", val)
+        this.src.loadFields(val)
     }
 
     public constructor(@Inject(DataSourceDirective) protected readonly src: DataSourceDirective) { }

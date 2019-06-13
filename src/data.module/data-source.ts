@@ -34,8 +34,15 @@ export type Filter<T> = {
 export type Sorter<T> = { [K in keyof T]?: "asc" | "desc" }
 
 
-export type _LoadRelated<T> = { [K in keyof T]?: LoadFields<T[K]> } | { "*": LoadFields<any> }
-export type LoadFields<T> = Array<Exclude<keyof T, "update"> | _LoadRelated<T> | "*">
+function x<T>(p: T[] | T): T {
+    return null as T
+}
+
+export type _UnwrapArray<T> = T extends (infer U)[] ? U : T
+export type LoadFields<
+    T,
+    TM = _UnwrapArray<T>,
+    TK extends keyof TM = Exclude<keyof TM, "update">> = Array<TK | { [K in TK]?: LoadFields<TM[K]> }>
 export type Meta<T = any> = { loadFields?: LoadFields<T> } & { [key: string]: any }
 
 

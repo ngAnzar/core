@@ -11,12 +11,7 @@ export interface ButtonEvent {
 
 @Component({
     selector: ".nz-button",
-    templateUrl: "./button.pug",
-    host: {
-        "(click)": "_preventEvent($event)",
-        "(mousedown)": "_preventEvent($event)",
-        "(mouseup)": "_preventEvent($event)"
-    }
+    templateUrl: "./button.pug"
 })
 export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit {
     @Output() public action: EventEmitter<ButtonEvent> = new EventEmitter<ButtonEvent>()
@@ -43,19 +38,13 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
     }
 
     @HostListener("tap", ["$event"])
-    protected _handleTap(event: any) {
-        if (event.srcEvent) {
-            event.srcEvent.preventDefault()
-            if (this.disabled) {
-                event.srcEvent.stopImmediatePropagation()
-            }
+    protected _handleTap(event: Event) {
+        if (event.defaultPrevented) {
+            return
         }
-    }
-
-    protected _preventEvent(event: Event) {
+        event.preventDefault()
         if (this.disabled) {
             event.stopImmediatePropagation()
-            event.preventDefault()
         }
     }
 }

@@ -123,16 +123,13 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         // console.log(this.input)
     }
 
-    // protected _changeHandler(event: Event) {
-    //     event.stopPropagation()
-    // }
-
-    protected _handleTap(event: HammerInput) {
-        if (event.srcEvent && (event.srcEvent as Event).defaultPrevented) {
+    protected _handleTap(event: Event) {
+        if (event.defaultPrevented) {
             return
         }
-        event.srcEvent.preventDefault()
-        // event.srcEvent.stopImmediatePropagation()
+
+        event.preventDefault()
+
         if (!this.noninteractive) {
             this.checked = !this.checked
         }
