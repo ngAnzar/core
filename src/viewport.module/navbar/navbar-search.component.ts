@@ -1,5 +1,9 @@
-import { Component, Inject, ElementRef, Host, ViewChild, Input, ContentChild, ContentChildren, QueryList, TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit } from "@angular/core"
+import {
+    Component, Inject, ElementRef, Host, ViewChild, Input, Output, ContentChild, ContentChildren, QueryList,
+    TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit, EventEmitter
+} from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Observable } from "rxjs"
 
 
 import { Destruct } from "../../util"
@@ -80,6 +84,8 @@ export class NavbarSearchComponent implements AfterViewInit {
     public readonly AutocompleteComponent = AutocompleteComponent
     private _backWatcher: KeyWatcher
 
+    @Output("select") public readonly onSelect: Observable<any> = new EventEmitter()
+
     public constructor(
         @Inject(ViewportService) protected readonly vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
@@ -132,10 +138,12 @@ export class NavbarSearchComponent implements AfterViewInit {
 
         this.destruct.subscription(this.select.selection.changes).subscribe(sel => {
             let selected = sel[0]
-            console.log({ selected })
-            // if (this.autoReset) {
-            //     this.hideSearch()
-            // }
+            if (selected) {
+                (this.onSelect as EventEmitter<any>).emit(selected)
+            }
+            if (this.autoReset) {
+                this.hideSearch()
+            }
         })
     }
 

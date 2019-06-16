@@ -2,6 +2,8 @@ import { Inject, SkipSelf, Optional, Injector, StaticProvider, TemplateRef, View
 import { AnimationBuilder } from "@angular/animations"
 import { ComponentType } from "@angular/cdk/portal"
 
+import { ZING_TOUCH_PLUGIN } from "../../common.module"
+
 import { LevitateRef } from "../levitate/levitate-ref"
 import { Levitating } from "../levitate/levitate-options"
 import { LevitateService } from "../levitate/levitate.service"

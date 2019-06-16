@@ -35,11 +35,9 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     private _focused: FocusOrigin
 
     @Input()
-    // public selectionIndex: number
     public set selectionIndex(val: number) {
         if (this._selectionIndex !== val) {
             this._selectionIndex = val
-            // console.log("selectionIndex", val)
         }
     }
     public get selectionIndex(): number { return this._selectionIndex }

@@ -43,12 +43,18 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
             .pipe(startWith(null))
             .subscribe(() => {
                 (this as any).tabContents = this.tabs.toArray().map(item => item.contentTpl)
-                console.log("tabs changed", this.tabs)
                 this.cdr.markForCheck()
             })
     }
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+
+    public onLabelTap(event: Event, index: number) {
+        if (event.defaultPrevented) {
+            return
+        }
+        this.selectedIndex = index
     }
 }

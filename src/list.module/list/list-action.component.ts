@@ -58,14 +58,12 @@ export class SelectableActionDirective extends SelectableDirective<ListActionMod
     public _canChangeSelected(newValue: SelectOrigin): boolean {
         let action = this.model.action
 
-        if (action) {
-            if (newValue && this.selected !== newValue) {
-                (action.onAction as EventEmitter<ListActionComponent>).emit(action)
-            }
-
-            // this._selected = !newValue
+        if (action && newValue) {
+            (action.onAction as EventEmitter<ListActionComponent>).emit(action)
             return action.behavior === "selectable"
         }
-        return false
+
+        return (action && action.behavior === "selectable")
+            || (this.selection.keyboard.instantSelection === false && newValue === "keyboard")
     }
 }

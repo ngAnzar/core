@@ -16,7 +16,7 @@ const enum SelectMode {
 
 
 export class SelectionKeyboardHandler<T extends Model = Model> implements IDisposable {
-    public instantSelection: boolean = true
+    public instantSelection: boolean = false
     public alwaysAppend: boolean = true
 
     private els: HTMLElement[] = []

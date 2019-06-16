@@ -614,7 +614,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
             case ENTER:
                 this.opened = false
-                return true
+                return false
 
             case BACKSPACE:
                 if (this.lastKeyup === code
