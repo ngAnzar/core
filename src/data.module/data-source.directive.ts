@@ -208,7 +208,6 @@ export class SorterDirective {
 export class FieldsDirective {
     @Input()
     public set dsFields(val: LoadFields<Model>) {
-        console.log("dsFields", val)
         this.src.loadFields(val)
     }
 

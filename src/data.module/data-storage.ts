@@ -8,6 +8,7 @@ import { Destruct, IDisposable, NzRange, NzRangeList } from "../util"
 import { DataSource, Filter, Sorter, Meta, LoadFields } from "./data-source"
 import { Model, ID } from "./model"
 import { Collection, Items } from "./collection"
+import { StaticSource } from '..';
 
 
 export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> implements IDisposable {
@@ -41,23 +42,18 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public readonly busy: Observable<boolean> = new EventEmitter()
 
     public get invalidated(): Observable<void> {
-        return race(
+        let items = [
             this.filter.changed as any,
             this.sorter.changed as any,
             this.meta.changed as any,
-            this.reseted as any)
-            .pipe(debounceTime(5)) as any
+            this.reseted as any
+        ]
 
-        // return Observable.create((observer: any) => {
-        //     let s1 = this.filter.changed.subscribe(observer)
-        //     let s2 = this.sorter.changed.subscribe(observer)
-        //     let s3 = this.reseted.subscribe(observer)
-        //     return () => {
-        //         s1.unsubscribe()
-        //         s2.unsubscribe()
-        //         s3.unsubscribe()
-        //     }
-        // }).pipe(debounceTime(5))
+        if (!this.source.async) {
+            items.push((this.source as StaticSource<any>).changed)
+        }
+
+        return race(items).pipe(debounceTime(5)) as any
     }
 
     protected cache: { [key: number]: T } = {}

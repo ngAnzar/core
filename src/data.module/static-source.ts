@@ -1,4 +1,4 @@
-import { Observable, of } from "rxjs"
+import { Observable, of, Subject } from "rxjs"
 
 import { NzRange } from "../util"
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
@@ -8,7 +8,8 @@ import { Items } from "./collection"
 
 export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly async = false
-    public readonly data: Array<Readonly<T>>
+    public readonly data: Readonly<Array<Readonly<T>>>
+    public readonly changed: Observable<Readonly<Array<Readonly<T>>>> = new Subject()
 
     public get total(): number {
         return this.data.length
@@ -146,14 +147,21 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         return null
     }
 
+    public replace(data: T[]) {
+        (this as any).data = data;
+        (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
+    }
+
     public add(model: T) {
-        this.data.push(model)
+        (this.data as any).push(model);
+        (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
     }
 
     public del(model: T) {
         let idx = this.data.indexOf(model)
         if (idx !== -1) {
-            this.data.splice(idx, 1)
+            (this.data as any).splice(idx, 1);
+            (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
         }
     }
 }
