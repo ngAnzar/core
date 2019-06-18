@@ -44,7 +44,7 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
     selector: "[nzVirtualFor][nzVirtualForOf]",
     exportAs: "nzVirtualFor"
 })
-export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
+export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, DoCheck {
     @Input()
     public set nzVirtualForOf(value: DataSourceDirective<T>) {
         this._nzVirtualForOf = value
@@ -87,6 +87,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     private _maxHeight: number = 0
     private _pendingScroll: boolean
     private _scrollSuspended: boolean
+    private _check: boolean = false
 
     public constructor(@Inject(ViewContainerRef) protected _vcr: ViewContainerRef,
         @Inject(TemplateRef) protected _tpl: TemplateRef<VirtualForContext<T>>,
@@ -98,6 +99,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     public ngOnInit() {
         this.destruct.subscription(this.nzVirtualForOf.storage.invalidated).subscribe(() => {
             this._resetCache()
+            this._clear()
             let sp = this._scroller.scrollPercent
             if (sp.top == 0 && sp.left == 0) {
                 this.onScroll()
@@ -106,6 +108,15 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             }
         })
         this.destruct.subscription(this._scroller.vpImmediate.scroll).pipe(startWith(0)).subscribe(this.onScroll)
+    }
+
+    public ngDoCheck() {
+        for (let i = 0, l = this._vcr.length; i < l; i++) {
+            let v: EmbeddedView<T> = this._vcr.get(i) as any
+            if (v && v.context && v.context.index !== -1) {
+                v.detectChanges()
+            }
+        }
     }
 
     private onScroll = () => {
@@ -124,7 +135,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
         let r = this.renderingRange
         let request = this._getRequestRange(r)
-        // console.log("SCROLL", this.visibleNzRange, r, request)
         this.nzVirtualForOf.getRange(request).subscribe(items => {
             let render = items.getRange(r)
             this._updateContent(render.range, render)
@@ -159,7 +169,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             vcrIdx = change.index - vcrOffset
 
             if (change.kind === ListDiffKind.CREATE) {
-                // console.log("CREATE", change.index, vcrIdx)
+                // console.log("CREATE", change.index, vcrIdx, change.item)
                 view = this._getViewForItem(change.index, change.item, range, vcrIdx)
                 view.detectChanges()
             } else if (change.kind === ListDiffKind.UPDATE) {
@@ -206,6 +216,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             // console.log("*************** PENDING SCROLL")
             this.onScroll()
         }
+
+        this._check = true
+        this._cdr.markForCheck()
     }
 
     protected _collectRendered(): Items<T> {
@@ -231,16 +244,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             return new Items([], new NzRange(0, 0))
         }
 
-        // return new Items(contexts.map(item => item.$implicit), new NzRange(begin, end))
         return new Items(contexts.sort((a, b) => a.index - b.index).map(item => item.$implicit), new NzRange(begin, end))
     }
 
     protected _spacerSize() {
-        // console.log("_spacerSize", this.rendered.range.begin)
         let size = 0
         for (let i = 0, l = this.rendered.range.begin; i < l; i++) {
             let rect = this._cache[i].rect
-            // console.log(rect.height)
             if (rect) {
                 size += rect.height
             }
@@ -271,10 +281,22 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         this._pendingScroll = false
     }
 
+    protected _clear() {
+        this.reusable.length = 0
+        for (let i = this._vcr.length - 1; i >= 0; i--) {
+            let v: EmbeddedView<T> = this._vcr.get(i) as any
+            v.context.index = -1
+            this._vcr.detach(i)
+            this.reusable.push(v)
+        }
+        (this as any).rendered = new Items([], new NzRange(0, 0))
+    }
+
     protected _getViewForItem(index: number, item: T, range: NzRange, pos: number): EmbeddedView<T> {
-        let v = this.reusable.pop()
+        let v = this.reusable.shift()
         if (v) {
             this._updateContext(v.context, index, item, range)
+            v.reattach()
             this._vcr.insert(v)
             return this._vcr.move(v, pos) as EmbeddedView<T>
         } else {

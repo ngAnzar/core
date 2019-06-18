@@ -37,7 +37,7 @@ div(fxFlex="grow", fxLayout="column inline")
           .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model" bind-selectionIndex="index + 1")
             ng-template(bind-ngTemplateOutlet="action.tpl")
 
-      ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-index="index" let-first="first" let-last="last" [fixedItemHeight]="48")
+      ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", let-first="first", let-last="last", [fixedItemHeight]="48")
         .nz-list-item.item([style.gridRow]="offset(index)", [selectable]="virtual", [selectionIndex]="offset(index)")
           ng-template(
             bind-ngTemplateOutlet="itemTpl"

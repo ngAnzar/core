@@ -1,5 +1,5 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, of, Subject, race } from "rxjs"
+import { Observable, of, Subject, Observer } from "rxjs"
 import { map, startWith, debounceTime, tap, shareReplay, finalize } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
@@ -42,18 +42,24 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public readonly busy: Observable<boolean> = new EventEmitter()
 
     public get invalidated(): Observable<void> {
-        let items = [
-            this.filter.changed as any,
-            this.sorter.changed as any,
-            this.meta.changed as any,
-            this.reseted as any
-        ]
+        return Observable.create((observer: Observer<any>) => {
+            const items = [
+                this.filter.changed.subscribe(observer),
+                this.sorter.changed.subscribe(observer),
+                this.meta.changed.subscribe(observer),
+                this.reseted.subscribe(observer)
+            ]
 
-        if (!this.source.async) {
-            items.push((this.source as StaticSource<any>).changed)
-        }
+            if (!this.source.async) {
+                items.push((this.source as StaticSource<any>).changed.subscribe(observer))
+            }
 
-        return race(items).pipe(debounceTime(5)) as any
+            return () => {
+                for (const item of items) {
+                    item.unsubscribe()
+                }
+            }
+        }).pipe(debounceTime(10))
     }
 
     protected cache: { [key: number]: T } = {}

@@ -1,6 +1,6 @@
 import {
     Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef,
-    EventEmitter, OnDestroy, NgZone, ViewChild, AfterViewChecked, HostBinding, HostListener
+    EventEmitter, OnDestroy, NgZone, ViewChild, HostBinding, HostListener
 } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
 import { FocusOrigin } from "@angular/cdk/a11y"
@@ -25,7 +25,7 @@ import { ExlistComponent, RowTplContext } from "./exlist.component"
         "[style.height.px]": "_selected ? null : 48",
     }
 })
-export class ExlistItemComponent<T extends Model = Model> implements RowTplContext<T>, ISelectable<T>, OnDestroy, AfterViewChecked {
+export class ExlistItemComponent<T extends Model = Model> implements RowTplContext<T>, ISelectable<T>, OnDestroy {
     @ViewChild("header", { read: ElementRef })
     public set elHeader(val: HTMLElement) {
         if (!this._elHeader || !val || this._elHeader !== (val as any).nativeElement) {
@@ -58,7 +58,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
 
     @Input("data")
     public set model(val: T) {
-        if (!Model.isEq(this.$implicit, val)) {
+        if (this.$implicit !== val) {
             let old = this.$implicit;
             (this as any).$implicit = val
             this._selected = val ? this.list.opened.origin[val.id] : null
@@ -106,37 +106,6 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         @Inject(ScrollerService) protected readonly scroller: ScrollerService,
         @Inject(EventManager) protected readonly eventManager: EventManager) {
     }
-
-    public ngAfterViewInit() {
-        // this._rebindTap()
-    }
-
-    public ngAfterViewChecked() {
-        // if (this._rebindAfterCheck) {
-        //     this._rebindAfterCheck = false
-        //     this._rebindTap()
-        // }
-    }
-
-    // public onTap = (event: any) => {
-    //     if (!this.list.tplExContent) {
-    //         return
-    //     }
-
-    //     console.log("EXLIST TAP, prevented:", event)
-
-    //     // if (event.srcEvent && (event.srcEvent as Event).defaultPrevented) {
-    //     //     return
-    //     // }
-
-    //     if (this.selected) {
-    //         if (!event.target || event.target === this._elHeader || this._elHeader.contains(event.target)) {
-    //             this.selected = null
-    //         }
-    //     } else {
-    //         this.selected = "mouse"
-    //     }
-    // }
 
     @HostListener("tap", ["$event"])
     public onTap(event: Event) {
@@ -214,19 +183,5 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
             this._scroll.unsubscribe()
             delete this._scroll
         }
-        if (this._offTap) {
-            this._offTap()
-            delete this._offTap
-        }
-    }
-
-    private _offTap: any
-    private _rebindTap() {
-        if (this._offTap) {
-            this._offTap()
-            delete this._offTap
-        }
-
-        this._offTap = this.eventManager.addEventListener(this.el.nativeElement, "tap", this.onTap)
     }
 }
