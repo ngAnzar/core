@@ -1,0 +1,38 @@
+:stylus
+  nz-date-picker
+    background: $theme.base.normal
+    padding: 16px
+
+  .dayname
+    nz-typo: $typo.caption
+    color: $theme.common.light
+    border-bottom: 1px solid $theme.common.light
+
+  .days
+    display: inline-grid
+    justify-items: center
+    align-items: center
+    justify-content: space-around
+
+
+div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px")
+  div.month(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+    div(fxFlex="grow")
+      .nz-button(color="dark-common") {{ locale.formatDate(this.displayed, "yyyy MMMM") }}
+
+    .nz-button(fxFlex="noshrink", variant="tiny icon", color="dark-common")
+      .nz-icon(class=icon("mdi/chevron-up"), on-tap="decMonth()")
+
+    .nz-button(fxFlex="noshrink", variant="tiny icon", color="dark-common")
+      .nz-icon(class=icon("mdi/chevron-down"), on-tap="incMonth()")
+
+  div.days(fxFlex="grow", [style.gridTemplate]="this.gridTemplate")
+    div.dayname(*ngFor="let name of dayNames") {{ name }}
+    div.day(*ngFor="let day of days")
+      .nz-button(
+        [color]="isSelected(day) ? 'accent' : isToday(day) ? 'dark-base' : isSameMonth(day) ? 'base' : 'dark-base'",
+        [attr.variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
+        on-tap="selected=day") {{ day.getDate() }}
+
+
+

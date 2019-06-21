@@ -14,6 +14,7 @@ export { Dimension, Position } from "./rect-mutation.service"
 
 
 import { StackComponent } from "./stack/stack.component"
+import { StackItemDirective } from "./stack/stack-item.directive"
 
 
 @NgModule({
@@ -22,10 +23,12 @@ import { StackComponent } from "./stack/stack.component"
         FlexLayoutModule
     ],
     declarations: [
-        StackComponent
+        StackComponent,
+        StackItemDirective
     ],
     exports: [
         StackComponent,
+        StackItemDirective,
         FlexLayoutModule
     ],
     providers: [

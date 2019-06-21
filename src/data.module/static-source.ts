@@ -152,8 +152,12 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
     }
 
-    public add(model: T) {
-        (this.data as any).push(model);
+    public add(model: T, index?: number) {
+        if (index != null) {
+            (this.data as any).splice(index, 0, model)
+        } else {
+            (this.data as any).push(model)
+        }
         (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
     }
 

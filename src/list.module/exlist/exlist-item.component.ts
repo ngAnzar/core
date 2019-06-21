@@ -107,24 +107,26 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         @Inject(EventManager) protected readonly eventManager: EventManager) {
     }
 
-    @HostListener("tap", ["$event"])
-    public onTap(event: Event) {
-        if (!this.list.tplExContent || event.defaultPrevented) {
-            return
-        }
+    // @HostListener("tap", ["$event"])
+    // public onTap(event: Event) {
+    //     console.log("exlist onTap")
+    //     if (!this.list.tplExContent || event.defaultPrevented) {
+    //         return
+    //     }
 
-        if (!this.selected) {
-            this.selected = "mouse"
-            event.preventDefault()
-        }
-    }
+    //     if (!this.selected) {
+    //         this.selected = "mouse"
+    //         // event.preventDefault()
+    //     }
+    // }
 
     public onHeaderTap(event: Event) {
-        if (event.defaultPrevented) {
+        console.log("exlist onHeaderTap")
+        if (event.defaultPrevented || !this.list.tplExContent) {
             return
         }
         event.preventDefault()
-        this.selected = null
+        this.selected = this.selected ? null : "mouse"
     }
 
     public _changeSelected(newValue: SelectOrigin): void {

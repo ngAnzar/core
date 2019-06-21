@@ -21,7 +21,8 @@
 
 
 ng-template([ngIf]="!_selected", [ngIfElse]="selectedTpl")
-  ng-template([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
+  div(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", on-tap="onHeaderTap($event)")
+    ng-template([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
 
 ng-template(#selectedTpl)
   div.expanded(fxLayout="column", fxLayoutAlign="start stretch")

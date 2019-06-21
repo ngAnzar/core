@@ -1,7 +1,8 @@
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { ReactiveFormsModule } from "@angular/forms"
-// import { FlexLayoutModule } from "@angular/flex-layout"
+
+import { IMaskModule } from "angular-imask"
 
 import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
@@ -21,10 +22,14 @@ import { CheckboxGroupDirective } from "./input/checkbox/checkbox-group.directiv
 export { CheckboxComponent, CheckboxGroupDirective }
 
 import { DateInputComponent } from "./input/date/date-input.component"
-// import { DateInputComponent } from "./input/date/date-picker.component"
+import { DatePickerComponent } from "./input/date/date-picker.component"
+import { DatePickerService } from "./input/date/date-picker.service"
 import { DatetimeInputComponent } from "./input/date/datetime-input.component"
 import { TimeInputComponent } from "./input/date/time-input.component"
-export { DateInputComponent, DatetimeInputComponent, TimeInputComponent }
+export {
+    DateInputComponent, DatetimeInputComponent, TimeInputComponent,
+    DatePickerComponent, DatePickerService
+}
 
 import { RadioComponent } from "./input/radio/radio.component"
 import { RadioGroupDirective } from "./input/radio/radio-group.directive"
@@ -58,7 +63,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 @NgModule({
     imports: [
         CommonModule,
-        // FlexLayoutModule,
+        IMaskModule,
         ReactiveFormsModule,
         NzCommonModule,
         NzDataModule,
@@ -74,6 +79,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         CheckboxGroupDirective,
 
         DateInputComponent,
+        DatePickerComponent,
         DatetimeInputComponent,
         TimeInputComponent,
 
@@ -101,6 +107,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         CheckboxGroupDirective,
 
         DateInputComponent,
+        DatePickerComponent,
         DatetimeInputComponent,
         TimeInputComponent,
 
@@ -118,9 +125,13 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         TextFieldComponent,
         TextareaComponent
     ],
+    providers: [
+        DatePickerService
+    ],
     entryComponents: [
         RichtextMenu,
-        RichtextAcComponent
+        RichtextAcComponent,
+        DatePickerComponent
     ]
 })
 export class NzFormModule { }

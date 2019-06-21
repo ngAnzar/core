@@ -1,11 +1,14 @@
 import {
     Component, ContentChildren, TemplateRef, QueryList, Inject, Input,
-    AfterViewInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef
+    AfterViewInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, AfterContentInit,
+    EventEmitter, Output
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Observable } from "rxjs"
 
 import { Destruct } from "../../util"
 import { AnimateSwitch } from "./stack.animation"
+import { StackItemDirective } from "./stack-item.directive"
 
 
 @Component({
@@ -17,8 +20,8 @@ import { AnimateSwitch } from "./stack.animation"
     animations: [AnimateSwitch],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackComponent implements AfterViewInit, OnDestroy {
-    @ContentChildren(TemplateRef) protected readonly contentChildren: QueryList<TemplateRef<any>>
+export class StackComponent implements AfterViewInit, OnDestroy, AfterContentInit {
+    @ContentChildren(StackItemDirective, { read: TemplateRef }) protected readonly contentChildren: QueryList<TemplateRef<any>>
     @Input("children") protected readonly vChildren: Array<TemplateRef<any>>
 
     public get children() {
@@ -50,17 +53,18 @@ export class StackComponent implements AfterViewInit, OnDestroy {
             const dir = old > val ? "right" : "left"
             this.childSwitch[old] = `${dir}-out`
             this.childSwitch[val] = `${dir}-in`
-            this._selectedIndex = val
-            this._prevIndex = old
+            this._selectedIndex = val;
+            (this.changed as EventEmitter<number>).emit(val)
             this.cdr.detectChanges()
         }
     }
     public get selectedIndex(): number { return this._selectedIndex }
     private _selectedIndex: number
-    private _prevIndex: number = -1
 
     public readonly destruct = new Destruct()
     public readonly childSwitch: string[] = []
+
+    @Output() public readonly changed: Observable<number> = new EventEmitter()
 
     private _pendingIndex: number = 0
     private _viewReady: boolean = false
@@ -73,6 +77,16 @@ export class StackComponent implements AfterViewInit, OnDestroy {
     public ngAfterViewInit() {
         this._viewReady = true
         this.selectedIndex = this._pendingIndex
+    }
+
+    public ngAfterContentInit() {
+        this.destruct.subscription(this.contentChildren.changes).subscribe(content => {
+            console.log(content)
+            if (this.selectedIndex >= this.contentChildren.length) {
+                this.selectedIndex = this.contentChildren.length - 1
+            }
+        })
+        console.log(this.contentChildren)
     }
 
     public ngOnDestroy() {
