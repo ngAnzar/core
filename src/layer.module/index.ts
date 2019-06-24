@@ -55,6 +55,11 @@ export {
 } from "./_shared/buttons"
 
 
+import { DeleteConfirmDialogComponent } from "./delete-confirm/delete-confirm-dialog.component"
+import { DeleteConfirmDirective } from "./delete-confirm/delete-confirm.directive"
+export { DeleteConfirmDialogComponent, DeleteConfirmDirective }
+
+
 @NgModule({
     imports: [
         CommonModule,
@@ -73,14 +78,18 @@ export {
         QtipAlignDirective,
         ToastComponent,
         ToastProgressComponent,
-        LayerMessageComponent
+        LayerMessageComponent,
+        DeleteConfirmDialogComponent,
+        DeleteConfirmDirective
     ],
     exports: [
         LayerFactoryDirective,
         TargetAnchorDirective,
         LevitateAnchorDirective,
         QtipDirective,
-        QtipAlignDirective
+        QtipAlignDirective,
+        DeleteConfirmDialogComponent,
+        DeleteConfirmDirective
     ],
     providers: [
         LevitateService,
@@ -95,7 +104,8 @@ export {
         ToastComponent,
         ToastProgressComponent,
         LayerMessageComponent,
-        QtipComponent
+        QtipComponent,
+        DeleteConfirmDialogComponent
     ]
 })
 export class NzLayerModule { }

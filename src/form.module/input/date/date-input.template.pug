@@ -1,8 +1,9 @@
 input.nz-input(
   #input,
   type="text",
-  [imask]="focused ? imaskOptions : null",
+  [imask]="imaskOptions",
   [unmask]="false",
+  on-accept="_onAccept($event)",
   on-complete="_onComplete($event)",
   on-focus="_handleFocus(true)",
   on-blur="_handleFocus(false)")

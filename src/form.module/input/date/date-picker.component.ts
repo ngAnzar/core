@@ -3,6 +3,7 @@ import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 import { Observable, Subject } from "rxjs"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, addDays, isToday, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns"
 
+import { setTzToUTC } from "../../../util"
 import { LocaleService } from "../../../common.module"
 
 
@@ -19,6 +20,9 @@ export class DatePickerComponent implements OnInit {
 
     @Input()
     public set selected(val: Date) {
+        if (val) {
+            val = setTzToUTC(val)
+        }
         if (!this._selected || !val || !isSameDay(this._selected, val)) {
             this._selected = val
             this.displayed = val;
@@ -31,6 +35,9 @@ export class DatePickerComponent implements OnInit {
 
     @Input()
     public set displayed(val: Date) {
+        if (val) {
+            val = setTzToUTC(val)
+        }
         if (!this._displayed || !val || !isSameMonth(this._displayed, val)) {
             this._displayed = val
             this.days = this._createDays()

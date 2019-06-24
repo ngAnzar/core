@@ -1,10 +1,9 @@
-import { Component, Inject, ElementRef, OnInit, OnDestroy, NgZone } from "@angular/core"
+import { Component, Inject, ElementRef, OnInit, OnDestroy } from "@angular/core"
+import { EventManager } from "@angular/platform-browser"
 import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
-import "hammerjs"
 
 
 import { Destruct } from "../../util"
-import { PointerEventService } from "../../common.module/services/pointer-event.service"
 import { RippleService } from "./ripple.service"
 import { RippleRef } from "./ripple-ref"
 
@@ -30,8 +29,7 @@ export class RippleComponent implements OnInit, OnDestroy {
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
         @Inject(RippleService) protected readonly service: RippleService,
         @Inject(FocusMonitor) protected readonly focusMonitor: FocusMonitor,
-        @Inject(PointerEventService) protected readonly pointerEvents: PointerEventService,
-        @Inject(NgZone) protected readonly zone: NgZone) {
+        @Inject(EventManager) protected readonly eventMgr: EventManager) {
         this.destruct.any(this.hideFocus)
     }
 
@@ -46,36 +44,27 @@ export class RippleComponent implements OnInit, OnDestroy {
             }
         })
 
-        // this.zone.runOutsideAngular(() => {
-        //     this.hammer = new Hammer(trigger, {})
-        //     this.hammer.on("touch", (event) => {
-        //         console.log(event)
-        //     })
-        // })
-
-
-        this.destruct.subscription(this.pointerEvents.down(trigger)).subscribe(event => {
-            if (event.defaultPrevented) {
-                return;
-            }
+        this.destruct.any(this.eventMgr.addEventListener(trigger, "tap", (event: any) => {
+            let detail = event.detail.events[0]
 
             this.hideFocus();
             const bound = this.el.nativeElement.getBoundingClientRect()
-            if (event.type === "mousedown") {
-                this.service.launch(this.el, {
-                    x: event.clientX - bound.left,
-                    y: event.clientY - bound.top
-                })
-            } else if (event.type === "touchstart") {
-                const touches = event.changedTouches
-                for (let i = 0; i < touches.length; i++) {
-                    this.service.launch(this.el, {
-                        x: touches[i].clientX - bound.left,
-                        y: touches[i].clientY - bound.top
-                    })
-                }
-            }
-        })
+            this.service.launch(this.el, {
+                x: detail.clientX - bound.left,
+                y: detail.clientY - bound.top
+            })
+            // if (event.type === "mousedown") {
+
+            // } else if (event.type === "touchstart") {
+            //     const touches = event.changedTouches
+            //     for (let i = 0; i < touches.length; i++) {
+            //         this.service.launch(this.el, {
+            //             x: touches[i].clientX - bound.left,
+            //             y: touches[i].clientY - bound.top
+            //         })
+            //     }
+            // }
+        }) as any)
     }
 
     public ngOnDestroy() {

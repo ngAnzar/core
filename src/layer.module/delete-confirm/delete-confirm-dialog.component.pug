@@ -1,0 +1,13 @@
+:stylus
+  nz-delete-confirm-dialog
+    background: $theme.base.normal
+
+  .root
+    padding: 16px
+
+div.root(fxFlex="grow", fxLayout="column", fxLayoutGap="8px")
+  div(fxFlex="grow") {{ message }}
+  div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="16px")
+    button.nz-button(fxFlex="noshrink", color="base", variant="filled", on-tap="handleButtonClick('cancel')") MÉGSE
+    div.spacer(fxFlex="grow")
+    button.nz-button(fxFlex="noshrink", color="critical", variant="filled", on-tap="handleButtonClick('delete')") TÖRLÉS

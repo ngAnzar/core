@@ -1,5 +1,6 @@
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
+import { throwError, of } from "rxjs"
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
@@ -41,6 +42,14 @@ export class ToastService {
             options,
             ToastComponent
         )
+    }
+
+    public error(message: string) {
+        let options: ToastProgressOptions = {
+            align: "top right",
+            progress: throwError(new Error(message))
+        }
+        return this.progress(options)
     }
 
     public progress(options: ToastProgressOptions) {

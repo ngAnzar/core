@@ -1,6 +1,6 @@
 import {
     Component, Inject, OnDestroy, InjectionToken, ViewChild, AfterViewInit, ElementRef,
-    ChangeDetectionStrategy, ChangeDetectorRef
+    ChangeDetectionStrategy, ChangeDetectorRef, OnInit
 } from "@angular/core"
 import { Observable, of } from "rxjs"
 import { tap, catchError, share } from "rxjs/operators"
@@ -23,7 +23,7 @@ export type TPState = "progress" | "success" | "failure";
     templateUrl: "./toast-progress.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ToastProgressComponent extends ToastBase implements OnDestroy, AfterViewInit {
+export class ToastProgressComponent extends ToastBase implements OnDestroy, AfterViewInit, OnInit {
     @ViewChild("info") public readonly infoEl: ElementRef<HTMLElement>
 
     public readonly destruct = new Destruct()
@@ -63,14 +63,17 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(RectMutationService) protected readonly rectMutation: RectMutationService) {
         super()
+    }
 
-        if (options.progress) {
-            this.progress = options.progress.pipe(
+    public ngOnInit() {
+        if (this.options.progress) {
+            this.progress = this.options.progress.pipe(
                 tap(val => {
                     this.state = "success"
                 }),
                 catchError(err => {
                     this.state = "failure"
+                    console.log(this)
                     return of({ percent: 1, message: err.message })
                 }),
                 share()
