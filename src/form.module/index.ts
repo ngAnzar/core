@@ -17,9 +17,9 @@ export { FormFieldComponent }
 import { PlaceholderComponent } from "./placeholder/placeholder.component"
 export { PlaceholderComponent }
 
-import { CheckboxComponent } from "./input/checkbox/checkbox.component"
+import { CheckboxComponent, TristateCheckboxComponent, TristateCheckboxValue, CheckboxChangeEvent } from "./input/checkbox/checkbox.component"
 import { CheckboxGroupDirective } from "./input/checkbox/checkbox-group.directive"
-export { CheckboxComponent, CheckboxGroupDirective }
+export { CheckboxComponent, TristateCheckboxComponent, TristateCheckboxValue, CheckboxGroupDirective, CheckboxChangeEvent }
 
 import { DateInputComponent } from "./input/date/date-input.component"
 import { DatePickerComponent } from "./input/date/date-picker.component"
@@ -76,6 +76,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         PlaceholderComponent,
 
         CheckboxComponent,
+        TristateCheckboxComponent,
         CheckboxGroupDirective,
 
         DateInputComponent,
@@ -104,6 +105,7 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
         PlaceholderComponent,
 
         CheckboxComponent,
+        TristateCheckboxComponent,
         CheckboxGroupDirective,
 
         DateInputComponent,

@@ -64,14 +64,14 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     protected _falseValue: T = false as any
 
     @Output()
-    public readonly change: Observable<CheckboxChangeEvent<T>> = new EventEmitter()
+    public readonly changed: Observable<CheckboxChangeEvent<T>> = new EventEmitter()
 
     @Input()
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._checked !== val) {
             this._checked = val;
-            (this.change as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
+            (this.changed as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
             this.value = (val ? (this.trueValue == null ? true : this.trueValue) : this.falseValue) as any
 
             if (this.group) {
@@ -124,15 +124,13 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     protected _handleTap(event: Event) {
-        if (event.defaultPrevented) {
+        if (event.defaultPrevented || !this.noninteractive) {
             return
         }
 
         event.preventDefault()
 
-        if (!this.noninteractive) {
-            this.checked = !this.checked
-        }
+        this.checked = !this.checked
     }
 
     public ngOnDestroy() {
@@ -144,7 +142,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 }
 
 
-export type TristateCheckboxValue = { checked: boolean, indeterminate: boolean } | null
+export type TristateCheckboxValue = { checked: boolean, indeterminate: boolean } | null;
 
 @Component({
     selector: ".nz-tristate-checkbox",
@@ -152,9 +150,14 @@ export type TristateCheckboxValue = { checked: boolean, indeterminate: boolean }
         "class": "nz-checkbox",
         "[class.nz-checkbox-indeterminate]": "indeterminate",
         "[class.nz-checkbox-checked]": "checked",
-        "(click)": "_handleClick($event)"
+        "(tap)": "_handleTap($event)"
     },
-    templateUrl: "./checkbox.template.pug"
+    templateUrl: "./checkbox.template.pug",
+    providers: [
+        { provide: InputComponent, useExisting: TristateCheckboxComponent },
+        INPUT_VALUE_ACCESSOR
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TristateCheckboxComponent extends CheckboxComponent<TristateCheckboxValue> {
     @Input()
@@ -164,13 +167,19 @@ export class TristateCheckboxComponent extends CheckboxComponent<TristateCheckbo
             this._indeterminate = val
             this._value = { checked: this.checked, indeterminate: this.indeterminate };
             this.cdr.markForCheck();
-            (this.change as EventEmitter<CheckboxChangeEvent<TristateCheckboxValue>>).emit({ source: this, checked: this.checked, indeterminate: this.indeterminate })
+            (this.changed as EventEmitter<CheckboxChangeEvent<TristateCheckboxValue>>).emit({ source: this, checked: this.checked, indeterminate: this.indeterminate })
         }
     }
     public get indeterminate(): boolean { return this._indeterminate }
     protected _indeterminate: boolean
 
-    protected _handleClick(event: Event) {
+    protected _handleTap(event: Event) {
+        if (event.defaultPrevented || !this.noninteractive) {
+            return
+        }
+
+        event.preventDefault()
+
         if (this.checked) {
             if (this.indeterminate) {
                 this.indeterminate = false

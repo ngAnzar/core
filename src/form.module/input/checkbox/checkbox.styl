@@ -34,12 +34,15 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
 
     &.nz-checkbox-indeterminate
       .nz-checkbox-checkmark
-        border: 6px solid alpha($theme.accent.on.normal, 0.8)
-        nz-rounded-rect: 12px, 12px, small
+        border: 5px solid $theme.accent.normal
+        nz-rounded-rect: 10px, 10px, small
         opacity: 1
-        transform: none
-        top: 4px
-        left: 4px
+        transform: rotate(0deg)
+        top: 5px
+        left: 5px
+
+      .nz-checkbox-indicator
+        background-color: transparent
 
 .nz-checkbox-label
   display: inline-flex
@@ -59,9 +62,9 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
   nz-rounded-rect: $nz-checkbox-size, $nz-checkbox-size, small
   background-color: $theme.accent.normal
   opacity: 0
-  transition: 250ms opacity
+  transition: 250ms opacity, 250ms background-color
 
 .nz-checkbox-checkmark
   position: absolute
   opacity: 0
-  transition: 250ms opacity, 250ms transform, 250ms width, 250ms height
+  transition: 250ms opacity, 250ms transform, 250ms width, 250ms height, 250ms border
