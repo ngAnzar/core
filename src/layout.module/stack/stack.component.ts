@@ -81,12 +81,16 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
     public ngAfterContentInit() {
         this.destruct.subscription(this.contentChildren.changes).subscribe(content => {
-            console.log(content)
             if (this.selectedIndex >= this.contentChildren.length) {
                 this.selectedIndex = this.contentChildren.length - 1
             }
+
+            for (const k in this.childSwitch) {
+                if (parseInt(k, 10) >= this.contentChildren.length) {
+                    delete this.childSwitch[k]
+                }
+            }
         })
-        console.log(this.contentChildren)
     }
 
     public ngOnDestroy() {

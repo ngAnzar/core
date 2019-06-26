@@ -237,9 +237,15 @@ nz-theme-component-state-colors($color, $variant, $transparent)
         $line-color = $theme.primary[$variant]
     else
       $line-color = $color.on[$variant]
+
+    if $color[$variant] == $theme.base.normal
+      $default-bg = "transparent"
+    else
+      $default-bg = $color[$variant]
+
     return {
       "bg": {
-        "default": $color[$variant],
+        "default": $default-bg,
         "hover": alpha($color.on[$variant], 0.1),
         "ripple": alpha($color.on[$variant], 0.2),
         "selected": alpha($color.on[$variant], 0.9),
