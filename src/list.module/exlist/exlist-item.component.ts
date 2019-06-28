@@ -111,7 +111,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         if (event.defaultPrevented || !this.list.tplExContent) {
             return
         }
-        event.preventDefault()
+        // event.preventDefault()
         this.selected = this.selected ? null : "mouse"
     }
 

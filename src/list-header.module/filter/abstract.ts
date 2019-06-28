@@ -4,22 +4,20 @@ const DeepDiff = require("deep-diff")
 
 
 import { Destruct } from "../../util"
-import { LabelDirective } from "../../common.module"
 import { LayerFactoryDirective } from "../../layer.module"
 import { Diff } from "../../data.module"
 
-import { ColumnComponent } from "../column/column.component"
-import { GridFilterService, IGridFilterEditor } from "./grid-filter.service"
+import { ListFilterService, IListFilterEditor } from "./list-filter.service"
 
 
-export interface GridFilterLayerContext {
-    $implicit: GridFilter
+export interface ListFilterLayerContext {
+    $implicit: ListFilter
 }
 
 
-export abstract class GridFilter<T = any> implements IGridFilterEditor<T>, OnDestroy {
-    @ViewChild("layer", { read: TemplateRef }) public readonly layer: TemplateRef<GridFilterLayerContext>
-    @ViewChild("chip", { read: TemplateRef }) public readonly chip: TemplateRef<GridFilterLayerContext>
+export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDestroy {
+    @ViewChild("layer", { read: TemplateRef }) public readonly layer: TemplateRef<ListFilterLayerContext>
+    @ViewChild("chip", { read: TemplateRef }) public readonly chip: TemplateRef<ListFilterLayerContext>
     public layerFilter: LayerFactoryDirective
 
     public abstract readonly isEmpty: boolean
@@ -34,7 +32,7 @@ export abstract class GridFilter<T = any> implements IGridFilterEditor<T>, OnDes
 
     public readonly valueChanges: Observable<T> = this.destruct.subject(new EventEmitter())
 
-    public constructor(@Inject(GridFilterService) protected readonly service: GridFilterService) {
+    public constructor(@Inject(ListFilterService) protected readonly service: ListFilterService) {
         service.registerEditor(this)
     }
 
@@ -56,7 +54,7 @@ export abstract class GridFilter<T = any> implements IGridFilterEditor<T>, OnDes
 }
 
 
-export abstract class ColumnGridFilter extends GridFilter {
+export abstract class ColumnFilter extends ListFilter {
     @Input() public title: string
     @Input() public name: string
 

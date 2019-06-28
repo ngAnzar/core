@@ -54,8 +54,6 @@ export class ZingTouchPlugin extends ɵDomEventsPlugin {
                             break
                         }
                     }
-                } else {
-                    handler(event)
                 }
             }
 

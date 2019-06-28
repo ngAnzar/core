@@ -7,9 +7,8 @@ import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective, SelectionModel, Model, ID, SelectionEvent } from "../../data.module"
+import { ListFilterService, ColumnsComponent } from "../../list-header.module"
 
-import { ColumnsComponent } from "../column/columns.component"
-import { GridFilterService } from "../filter/grid-filter.service"
 import { GridRowDirective } from "./grid-row.directive"
 
 
@@ -17,9 +16,7 @@ import { GridRowDirective } from "./grid-row.directive"
     selector: ".nz-grid",
     templateUrl: "./grid.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        { provide: GridFilterService, useClass: GridFilterService }
-    ]
+    providers: [ListFilterService]
 })
 export class GridComponent<T extends Model = Model> implements AfterContentInit, OnDestroy, OnInit {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent<T>
@@ -47,7 +44,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective,
-        @Inject(GridFilterService) public readonly filterSvc: GridFilterService,
+        @Inject(ListFilterService) public readonly filterSvc: ListFilterService,
         @Attribute("emptyText") public readonly emptyText: string) {
         if (!emptyText) {
             this.emptyText = "A lista üres"
@@ -86,23 +83,16 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     // }
 
     protected updateGridTemplate() {
-        let col = []
-        for (const l of this.columns.layout) {
-            if (l.width.unit === "auto") {
-                col.push(`1fr`)
-            } else {
-                col.push(`${l.width.number}${l.width.unit}`)
-            }
+        if (!this.columns) {
+            return
         }
-        let colTemplate = col.join(" ")
 
         if (this.source.storage) {
             this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex || 1}, ${this._rowHeight}px) / 1fr`)
         }
 
-        this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${colTemplate}`)
-
-        this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`44px / ${colTemplate}`)
+        this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${this.columns.gridTemplate}`)
+        this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`44px / ${this.columns.gridTemplate}`)
     }
 
     protected _update = () => {

@@ -32,7 +32,8 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap
       .nz-button(
         [color]="isSelected(day) ? 'accent' : isToday(day) ? 'dark-base' : isSameMonth(day) ? 'base' : 'dark-base'",
         [attr.variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
-        on-tap="selected=day") {{ day.getDate() }}
+        [disabled]="!isAllowed(day)",
+        on-action="selected=day") {{ day.getDate() }}
 
 
 

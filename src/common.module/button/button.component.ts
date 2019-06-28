@@ -4,17 +4,12 @@ import { FocusMonitor } from "@angular/cdk/a11y"
 import { AnzarComponent } from "../abstract-component"
 
 
-export interface ButtonEvent {
-    source: ButtonComponent
-}
-
-
 @Component({
     selector: ".nz-button",
     templateUrl: "./button.pug"
 })
 export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit {
-    @Output() public action: EventEmitter<ButtonEvent> = new EventEmitter<ButtonEvent>()
+    @Output() public action: EventEmitter<any> = new EventEmitter<any>()
 
     @HostBinding("attr.type")
     @Input()
@@ -45,6 +40,8 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
         event.preventDefault()
         if (this.disabled) {
             event.stopImmediatePropagation()
+        } else {
+            this.action.next()
         }
     }
 }

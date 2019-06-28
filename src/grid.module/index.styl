@@ -1,7 +1,6 @@
 @require "../util"
 
 // $nz-data-grid-padding ?= nz-local-grid-size(6)
-$nz-data-grid-header-height ?= nz-local-grid-size(11)
 $nz-grid-padding ?= nz-local-grid-size(6)
 $nz-cell-padding ?= nz-local-grid-size(2)
 
@@ -13,33 +12,6 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 
   align-items: stretch
   align-content: stretch
-
-.nz-columns
-  display: grid
-  justify-content: stretch
-  flex: none
-  height: $nz-data-grid-header-height
-  padding: $nz-grid-padding
-
-.nz-column
-  position: relative
-  nz-typo: $typo.subtitle2
-
-  overflow: hidden
-  height: $nz-data-grid-header-height
-  display: flex
-  align-items: center
-  user-select: none
-
-  padding: 0 $nz-cell-padding
-  background-color: lighten($theme.base.on.normal, 95%)
-
-  &:first-child
-    padding-left: $nz-grid-padding
-
-  &:last-child
-    padding-right: $nz-grid-padding
-
 
 .nz-data-grid-row
   display: grid
@@ -97,21 +69,3 @@ $nz-cell-padding ?= nz-local-grid-size(2)
     padding-right: $nz-grid-padding
 
 
-.nz-grid-filter-layer
-  background-color: $theme.base.normal
-  padding: $nz-cell-padding
-  overflow: hidden
-
-
-.nz-grid-filter-chip
-  display: flex
-  overflow: hidden
-  align-items: center
-  justify-content: flex-start
-  background-color: $theme.base.normal
-  font-size: 14px
-
-  border-radius: 3px
-  nz-elevation: 3
-  height: nz-local-grid-size(8)
-  padding: 0 0 0 nz-local-grid-size(4)

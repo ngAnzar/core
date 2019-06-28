@@ -48,7 +48,7 @@ import { ZING_TOUCH_PLUGIN } from "./services/zingtouch.service"
 export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, ZING_TOUCH_PLUGIN }
 
 
-// import { HAMMER_CONFIG } from "./hammer"
+import { HAMMER_CONFIG } from "./hammer"
 
 
 const content = [

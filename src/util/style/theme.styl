@@ -240,13 +240,16 @@ nz-theme-component-state-colors($color, $variant, $transparent)
 
     if $color[$variant] == $theme.base.normal
       $default-bg = "transparent"
+      $hover-plain = alpha($color.on[$variant], 0.1)
     else
       $default-bg = $color[$variant]
+      $hover-plain = alpha($color[$variant], 0.8)
 
     return {
       "bg": {
         "default": $default-bg,
         "hover": alpha($color.on[$variant], 0.1),
+        "hover-plain": $hover-plain,
         "ripple": alpha($color.on[$variant], 0.2),
         "selected": alpha($color.on[$variant], 0.9),
         "focused": alpha($color.on[$variant], 0.1),
@@ -279,6 +282,10 @@ _nz-theme-component-states-hover($color)
 
   &:hover .nz-ripple
     background-color: $color.bg.hover
+
+_nz-theme-component-states-hover-plain($color)
+  &:hover
+    background-color: $color.bg.hover-plain
 
 _nz-theme-component-states-selected($color)
   &[selected]
@@ -318,6 +325,11 @@ _nz-theme-component-states($color, $variant, $include)
       _nz-theme-component-states-hover($normal)
       &[variant~="filled"]
         _nz-theme-component-states-hover($filled)
+
+    else if $inc == "hover-plain"
+      _nz-theme-component-states-hover-plain($normal)
+      &[variant~="filled"]
+        _nz-theme-component-states-hover-plain($filled)
 
     else if $inc == "selected"
       _nz-theme-component-states-selected($normal)

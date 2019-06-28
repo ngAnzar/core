@@ -1,0 +1,21 @@
+:stylus
+  .input-row
+    padding: 0 8px
+
+ng-template(#layer)
+  form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch" style="min-width:300px", on-submit="applyFilter();$event.preventDefault()", ngNoForm)
+    .input-row(fxFlex="grow")
+      .nz-form-field(fxFlex="grow")
+        label {{ title }} tartalmazza
+        input.nz-input([formControl]="value")
+
+    div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px")
+      button.nz-button(fxFlex="noshrink", on-action="clearValue()") Törlés
+      div(fxFlex="grow")
+      button.nz-button(fxFlex="noshrink", color="confirm" type="submit") Szűrés
+
+
+ng-template(#chip)
+  .nz-list-filter-chip([title]="title", on-remove="clearValue()")
+    | {{ valueText }}
+

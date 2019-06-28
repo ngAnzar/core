@@ -1,4 +1,4 @@
-import { Component, Inject, Optional, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef } from "@angular/core"
+import { Component, Inject, Optional, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, Input } from "@angular/core"
 import { NgControl, NgModel, FormControl } from "@angular/forms"
 import { take } from "rxjs/operators"
 import { parse, isDate, format, startOfDay } from "date-fns"
@@ -31,6 +31,9 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     @ViewChild("input", { read: ElementRef }) public readonly input: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: IMaskDirective }) public readonly inputMask: IMaskDirective<any>
 
+    @Input() public min: Date
+    @Input() public max: Date
+
     public readonly destruct = new Destruct()
     public imaskOptions: any
 
@@ -56,7 +59,9 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                         align: "top center"
                     },
                     type: "date",
-                    initial: date
+                    initial: date,
+                    min: this.min,
+                    max: this.max
                 })
 
                 let s = this.dpRef.component.instance.changed.pipe(take(1)).subscribe(date => {
@@ -151,11 +156,6 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         if (isNaN(inputVal.getTime())) {
             this._handleInput(null)
         }
-
-        // let value = this.inputMask.maskRef.unmaskedValue
-        // if (!value || !value.length) {
-        //     this._handleInput(null)
-        // }
     }
 
     public _onComplete(value: string) {

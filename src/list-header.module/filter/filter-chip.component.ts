@@ -3,10 +3,10 @@ import { Observable } from "rxjs"
 
 
 @Component({
-    selector: ".nz-grid-filter-chip",
-    templateUrl: "./grid-filter-chip.template.pug"
+    selector: ".nz-list-filter-chip",
+    templateUrl: "./filter-chip.template.pug"
 })
-export class GridFilterChipComponent {
+export class ListFilterChipComponent {
     @Input() public title: string
     @Input() public titleSeparator: string = ":"
     @Output() public readonly remove: Observable<void> = new EventEmitter()

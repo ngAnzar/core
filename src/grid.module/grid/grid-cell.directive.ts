@@ -1,6 +1,6 @@
 import { Component, Input, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
 
-import { ColumnComponent } from "../column/column.component"
+import { ColumnComponent } from "../../list-header.module"
 import { Model } from "../../data.module"
 
 

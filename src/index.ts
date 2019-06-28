@@ -8,6 +8,7 @@ import { NzFormModule } from "./form.module"
 import { NzGridModule } from "./grid.module"
 import { NzLayerModule } from "./layer.module"
 import { NzLayoutModule } from "./layout.module"
+import { NzListHeaderModule } from "./list-header.module"
 import { NzListModule } from "./list.module"
 import { NzViewportModule } from "./viewport.module"
 
@@ -16,7 +17,12 @@ export * from "./animation.module"
 export * from "./common.module"
 export * from "./data.module"
 export * from "./form.module"
+export * from "./grid.module"
 export * from "./layer.module"
+export * from "./layout.module"
+export * from "./list-header.module"
+export * from "./list.module"
+export * from "./viewport.module"
 
 
 const modules: any[] = [
@@ -27,6 +33,7 @@ const modules: any[] = [
     NzGridModule,
     NzLayerModule,
     NzLayoutModule,
+    NzListHeaderModule,
     NzListModule,
     NzViewportModule
 ]

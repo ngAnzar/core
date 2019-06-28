@@ -1,7 +1,7 @@
 import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, Input, Output } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 import { Observable, Subject } from "rxjs"
-import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, addDays, isToday, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns"
+import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, addDays, isToday, isSameDay, isSameMonth, addMonths, subMonths, startOfDay, compareAsc } from "date-fns"
 
 import { setTzToUTC } from "../../../util"
 import { LocaleService } from "../../../common.module"
@@ -20,11 +20,7 @@ export class DatePickerComponent implements OnInit {
 
     @Input()
     public set selected(val: Date) {
-        if (val) {
-            val = setTzToUTC(val)
-        }
-        if (!this._selected || !val || !isSameDay(this._selected, val)) {
-            this._selected = val
+        if (this._setDateField("_selected", val)) {
             this.displayed = val;
             (this.changed as Subject<Date>).next(val)
             this.cdr.detectChanges()
@@ -35,11 +31,7 @@ export class DatePickerComponent implements OnInit {
 
     @Input()
     public set displayed(val: Date) {
-        if (val) {
-            val = setTzToUTC(val)
-        }
-        if (!this._displayed || !val || !isSameMonth(this._displayed, val)) {
-            this._displayed = val
+        if (this._setDateField("_displayed", val)) {
             this.days = this._createDays()
 
             let rc = this.days.length / 7 + 1
@@ -49,6 +41,24 @@ export class DatePickerComponent implements OnInit {
     }
     public get displayed(): Date { return this._displayed }
     private _displayed: Date
+
+    @Input()
+    public set min(val: Date) {
+        if (this._setDateField("_min", val)) {
+            this.cdr.detectChanges()
+        }
+    }
+    public get min(): Date { return this._min }
+    private _min: Date
+
+    @Input()
+    public set max(val: Date) {
+        if (this._setDateField("_min", val)) {
+            this.cdr.detectChanges()
+        }
+    }
+    public get max(): Date { return this._max }
+    private _max: Date
 
     @Output() public changed: Observable<Date> = new Subject()
 
@@ -79,6 +89,11 @@ export class DatePickerComponent implements OnInit {
         return isSameMonth(this._displayed, d)
     }
 
+    public isAllowed(d: Date): boolean {
+        return (!this._min || compareAsc(d, this._min) >= 0)
+            && (!this._max || compareAsc(this._max, d) >= 0)
+    }
+
     public decMonth() {
         this.displayed = subMonths(this._displayed, 1)
     }
@@ -101,8 +116,8 @@ export class DatePickerComponent implements OnInit {
     }
 
     private _createDays(): Date[] {
-        let start = startOfWeek(startOfMonth(this.displayed), { weekStartsOn: this.weekStartsOn as any })
-        let end = endOfWeek(endOfMonth(this.displayed), { weekStartsOn: this.weekStartsOn as any })
+        let start = setTzToUTC(startOfWeek(startOfMonth(this.displayed), { weekStartsOn: this.weekStartsOn as any }))
+        let end = setTzToUTC(endOfWeek(endOfMonth(this.displayed), { weekStartsOn: this.weekStartsOn as any }))
         let current = start
         let result: Date[] = []
 
@@ -112,6 +127,18 @@ export class DatePickerComponent implements OnInit {
         }
 
         return result
+    }
+
+    private _setDateField(name: "_selected" | "_displayed" | "_min" | "_max", val: Date): boolean {
+        if (val) {
+            val = setTzToUTC(startOfDay(val))
+        }
+
+        if (!this[name] || !val || !isSameDay(this[name], val)) {
+            this[name] = val
+            return true
+        }
+        return false
     }
 }
 

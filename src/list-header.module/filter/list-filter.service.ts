@@ -3,19 +3,18 @@ import { Observable, Subscription } from "rxjs"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective, DiffKind } from "../../data.module"
-import { GridFilter } from "./abstract"
 
 
-export interface GridFilterEditorContext {
+export interface ListFilterEditorContext {
 
 }
 
 
-export interface IGridFilterEditor<T> {
+export interface IListFilterEditor<T> {
     // filter name
     readonly valueChanges: Observable<T>
-    readonly layer: TemplateRef<GridFilterEditorContext>
-    readonly chip: TemplateRef<GridFilterEditorContext>
+    readonly layer: TemplateRef<ListFilterEditorContext>
+    readonly chip: TemplateRef<ListFilterEditorContext>
     readonly isEmpty: boolean
 
     canHandleFilter(name: string): boolean
@@ -26,15 +25,15 @@ export interface IGridFilterEditor<T> {
 
 
 @Injectable()
-export class GridFilterService implements OnDestroy {
-    public readonly editors: ReadonlyArray<IGridFilterEditor<any>> = []
-    public readonly filters: ReadonlyArray<IGridFilterEditor<any>> = []
+export class ListFilterService implements OnDestroy {
+    public readonly editors: ReadonlyArray<IListFilterEditor<any>> = []
+    public readonly filters: ReadonlyArray<IListFilterEditor<any>> = []
     public readonly destruct = new Destruct(() => {
         this.subscriptions.forEach((v) => v.unsubscribe())
     })
     public readonly changes: Observable<void> = this.destruct.subject(new EventEmitter())
 
-    protected readonly subscriptions = new Map<IGridFilterEditor<any>, Subscription>()
+    protected readonly subscriptions = new Map<IListFilterEditor<any>, Subscription>()
 
     public constructor(@Inject(DataSourceDirective) public readonly source: DataSourceDirective) {
         this.destruct.subscription(source.filterChanges).subscribe(changes => {
@@ -57,8 +56,8 @@ export class GridFilterService implements OnDestroy {
         })
     }
 
-    public registerEditor(editor: IGridFilterEditor<any>) {
-        (this.editors as IGridFilterEditor<any>[]).push(editor)
+    public registerEditor(editor: IListFilterEditor<any>) {
+        (this.editors as IListFilterEditor<any>[]).push(editor)
 
         if (this.subscriptions.has(editor)) {
             this.subscriptions.get(editor).unsubscribe()
@@ -70,18 +69,18 @@ export class GridFilterService implements OnDestroy {
             console.log({ idx })
             if (editor.isEmpty) {
                 if (idx !== -1) {
-                    (this.filters as Array<IGridFilterEditor<any>>).splice(idx, 1)
+                    (this.filters as Array<IListFilterEditor<any>>).splice(idx, 1)
                 }
             } else if (idx === -1) {
-                (this.filters as Array<IGridFilterEditor<any>>).push(editor)
+                (this.filters as Array<IListFilterEditor<any>>).push(editor)
             }
             (this.changes as EventEmitter<void>).emit()
             console.log(this.filters)
         }))
     }
 
-    public removeEditor(editor: IGridFilterEditor<any>) {
-        const editors = this.editors as IGridFilterEditor<any>[]
+    public removeEditor(editor: IListFilterEditor<any>) {
+        const editors = this.editors as IListFilterEditor<any>[]
         const idx = editors.indexOf(editor)
         if (idx !== -1) {
             editors.splice(idx, 1)
@@ -91,7 +90,7 @@ export class GridFilterService implements OnDestroy {
         }
     }
 
-    protected _handleFilterChange(editor: IGridFilterEditor<any>, name: string, change: DiffKind) {
+    protected _handleFilterChange(editor: IListFilterEditor<any>, name: string, change: DiffKind) {
         switch (change.kind) {
             case "N":
             case "E":

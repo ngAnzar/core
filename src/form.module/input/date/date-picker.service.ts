@@ -9,7 +9,9 @@ export interface DatePickerOptions {
     type: "date" | "datetime"
     count?: number
     position: LevitateOptions
-    initial?: Date
+    initial?: Date,
+    min?: Date,
+    max?: Date
 }
 
 
@@ -38,6 +40,14 @@ export class DatePickerService {
 
         if (options.initial) {
             cmp.selected = options.initial
+        }
+
+        if (options.min) {
+            cmp.min = options.min
+        }
+
+        if (options.max) {
+            cmp.max = options.max
         }
 
         cmp.changed.pipe(take(1)).subscribe(() => {

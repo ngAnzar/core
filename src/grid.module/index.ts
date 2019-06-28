@@ -10,20 +10,14 @@ import { NzLayoutModule } from "../layout.module"
 import { NzLayerModule } from "../layer.module"
 import { NzFormModule } from "../form.module"
 import { NzListModule } from "../list.module"
+import { NzListHeaderModule } from "../list-header.module"
 
 
 import { GridComponent } from "./grid/grid.component"
 import { CheckboxColumnComponent } from "./checkbox-column/checkbox-column.component"
-import { ColumnComponent } from "./column/column.component"
-import { ColumnsComponent } from "./column/columns.component"
 import { GridCellDirective } from "./grid/grid-cell.directive"
 import { GridRowDirective } from "./grid/grid-row.directive"
-// import { GridFilterDirective } from "./grid/filter/grid-filter.directive"
-import { GridFilterText } from "./filter/text.component"
-import { GridFilterChipComponent } from "./filter/grid-filter-chip.component"
-export {
-    GridComponent, ColumnComponent, ColumnsComponent, GridFilterText, GridFilterChipComponent
-}
+export { GridComponent }
 
 
 @NgModule({
@@ -37,25 +31,18 @@ export {
         NzLayoutModule,
         NzLayerModule,
         NzFormModule,
-        NzListModule
+        NzListModule,
+        NzListHeaderModule
     ],
     declarations: [
         GridComponent,
-        ColumnComponent,
-        ColumnsComponent,
         GridCellDirective,
         GridRowDirective,
-        GridFilterText,
-        GridFilterChipComponent,
 
         CheckboxColumnComponent
     ],
     exports: [
         GridComponent,
-        ColumnComponent,
-        ColumnsComponent,
-        GridFilterText,
-
         CheckboxColumnComponent
     ]
 })

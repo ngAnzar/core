@@ -1,19 +1,19 @@
 import { Component, OnInit, EventEmitter } from "@angular/core"
 import { FormControl } from "@angular/forms"
 
-import { GridFilter, ColumnGridFilter } from "./abstract"
+import { ListFilter, ColumnFilter } from "./abstract"
 import { textOperators } from "./operators"
 
 
 @Component({
-    selector: "nz-grid-filter[type='text']",
+    selector: "nz-list-filter[type='text']",
     templateUrl: "./text.template.pug",
     providers: [
-        { provide: GridFilter, useExisting: GridFilterText },
-        { provide: ColumnGridFilter, useExisting: GridFilterText }
+        { provide: ListFilter, useExisting: ListFilterText },
+        { provide: ColumnFilter, useExisting: ListFilterText }
     ]
 })
-export class GridFilterText extends ColumnGridFilter {
+export class ListFilterText extends ColumnFilter {
     public readonly operator = new FormControl("contains")
     public readonly value = new FormControl()
     public readonly operators = textOperators

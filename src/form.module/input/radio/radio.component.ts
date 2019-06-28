@@ -24,7 +24,7 @@ export interface RadioChangeEvent {
     templateUrl: "./radio.template.pug",
     host: {
         "[class.nz-radio-checked]": "checked",
-        "(click)": "_handleClick($event)"
+        "(tap)": "_handleTap($event)"
     },
     providers: [
         { provide: InputComponent, useExisting: RadioComponent },
@@ -104,7 +104,7 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
         }
     }
 
-    protected _handleClick(event: Event) {
+    protected _handleTap(event: Event) {
         this.checked = !this.checked
     }
 

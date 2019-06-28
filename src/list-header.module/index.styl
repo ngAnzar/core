@@ -1,0 +1,29 @@
+@require "./filter/filter"
+
+$nz-columns-height ?= 44px
+
+.nz-columns
+  display: grid
+  justify-content: stretch
+  flex: none
+  height: $nz-columns-height
+  padding: 0 24px
+
+.nz-column
+  position: relative
+  nz-typo: $typo.subtitle2
+
+  overflow: hidden
+  height: $nz-columns-height
+  display: flex
+  align-items: center
+  user-select: none
+
+  padding: 0 8px
+  background-color: $theme.base.light
+
+  &:first-child
+    padding-left: 24px
+
+  &:last-child
+    padding-right: 24px

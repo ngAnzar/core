@@ -14,20 +14,10 @@
     justify-content: center
     align-items: center
 
-  .filter
-    padding: 8px $nz-grid-padding
-    border-top: 1px solid lighten($theme.base.on.normal, 85%)
-    background-color: lighten($theme.base.on.normal, 95%)
-    flex: none
-
   .body
     flex: 1
 
-ng-content(select=".nz-columns")
 
-div.filter(*ngIf="filterSvc.filters.length", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
-  ng-template(ngFor bind-ngForOf="filterSvc.filters" let-editor)
-    ng-template(bind-ngTemplateOutlet="editor.chip" bind-ngTemplateOutletContext="{$implicit:editor}")
 
 div.nz-scroller.body
   .nz-list.rows(bind-style.gridTemplate="gtRows", scrollable, style="padding:24px")

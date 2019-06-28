@@ -1,5 +1,5 @@
 import {
-    Component, ContentChild, Input, Inject, ElementRef, TemplateRef, forwardRef, OnDestroy,
+    Component, ContentChild, Input, Inject, ElementRef, TemplateRef, OnDestroy,
     HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding
 } from "@angular/core"
 import { Subscription } from "rxjs"
@@ -7,13 +7,9 @@ import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { LabelDirective } from "../../common.module"
-import { Model, ID, DataSourceDirective } from "../../data.module"
+import { Model, DataSourceDirective } from "../../data.module"
 import { LayerFactoryDirective, DropdownLayer, LayerService } from "../../layer.module"
-
-import { GridCellDirective } from "../grid/grid-cell.directive"
-import { GridComponent } from "../grid/grid.component"
-import { ColumnGridFilter } from "../filter/abstract"
-
+import { ColumnFilter } from "../filter/abstract"
 
 
 export interface NumberWithUnit {
@@ -43,7 +39,7 @@ function parseNumber(val: any): NumberWithUnit {
 })
 export class ColumnComponent<T extends Model = Model> implements AfterContentInit, OnDestroy {
     @ContentChild(LabelDirective, { read: ElementRef }) public readonly label: ElementRef<HTMLElement>
-    @ContentChild(ColumnGridFilter) public readonly filter: ColumnGridFilter
+    @ContentChild(ColumnFilter) public readonly filter: ColumnFilter
     @ContentChild("content") public readonly content: TemplateRef<any>
     @ContentChild("editor") public readonly editor: TemplateRef<any>
 
@@ -93,7 +89,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
                     this.dataSource.sort = sort
                 }
             }
-            this.cdr.markForCheck()
+            this.cdr.detectChanges()
         }
     }
     public get sortDirection(): "asc" | "desc" { return this._sortDirection }
@@ -114,7 +110,6 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     public readonly destruct = new Destruct()
 
     public constructor(
-        @Inject(forwardRef(() => GridComponent)) protected readonly grid: GridComponent<T>,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
         @Inject(LayerService) layerSvc: LayerService,
@@ -123,17 +118,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
         this.layerFilter = LayerFactoryDirective.create("top left", "bottom left", layerSvc, vcr, el)
     }
 
-    public getCell(id: ID): GridCellDirective<T> {
-        const row = this.grid.getRow(id)
-        if (row) {
-            return row.cells.toArray()[this.index]
-        }
-    }
-
-    public showFilter(event: Event) {
-        event.preventDefault()
-        event.stopImmediatePropagation()
-
+    public showFilter() {
         const layerFilter = this.layerFilter
         this.filter.layerFilter = layerFilter
 
@@ -181,11 +166,14 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
         this.mouseover = event.type === "mouseenter"
     }
 
-    @HostListener("mouseup", ["$event"])
-    public onMouseUp(event: Event) {
+    @HostListener("tap", ["$event"])
+    public onTap(event: Event) {
+        console.log("onTap1", this.sortDirection)
         if (this.sortable) {
             this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc"
         }
+        console.log("onTap2", this.sortDirection)
+        event.preventDefault()
     }
 
     public ngOnDestroy() {
