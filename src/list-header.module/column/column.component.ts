@@ -118,7 +118,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
         this.layerFilter = LayerFactoryDirective.create("top left", "bottom left", layerSvc, vcr, el)
     }
 
-    public showFilter() {
+    public showFilter(event: Event) {
         const layerFilter = this.layerFilter
         this.filter.layerFilter = layerFilter
 
@@ -132,7 +132,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
                 elevation: 10,
                 backdrop: {
                     type: "empty",
-                    crop: this.el.nativeElement,
+                    crop: event.currentTarget as HTMLElement,
                     hideOnClick: true
                 }
             })
@@ -168,12 +168,17 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
 
     @HostListener("tap", ["$event"])
     public onTap(event: Event) {
-        console.log("onTap1", this.sortDirection)
+        if (event.defaultPrevented) {
+            return
+        }
+        event.preventDefault()
+        this.toggleSorter()
+    }
+
+    public toggleSorter() {
         if (this.sortable) {
             this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc"
         }
-        console.log("onTap2", this.sortDirection)
-        event.preventDefault()
     }
 
     public ngOnDestroy() {

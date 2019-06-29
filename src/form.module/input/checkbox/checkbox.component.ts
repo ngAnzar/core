@@ -124,7 +124,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     protected _handleTap(event: Event) {
-        if (event.defaultPrevented || !this.noninteractive) {
+        if (event.defaultPrevented || this.noninteractive) {
             return
         }
 

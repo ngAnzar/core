@@ -2,7 +2,7 @@ import { Component, Inject, ElementRef, OnInit, OnDestroy } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
 import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
 
-
+import { TapEvent } from "../../common.module"
 import { Destruct } from "../../util"
 import { RippleService } from "./ripple.service"
 import { RippleRef } from "./ripple-ref"
@@ -44,26 +44,14 @@ export class RippleComponent implements OnInit, OnDestroy {
             }
         })
 
-        this.destruct.any(this.eventMgr.addEventListener(trigger, "tap", (event: any) => {
-            let detail = event.detail.events[0]
-
-            this.hideFocus();
+        // TODO: hide only on tapend
+        this.destruct.any(this.eventMgr.addEventListener(trigger, "tapbegin", (event: TapEvent) => {
+            this.hideFocus()
             const bound = this.el.nativeElement.getBoundingClientRect()
             this.service.launch(this.el, {
-                x: detail.clientX - bound.left,
-                y: detail.clientY - bound.top
+                x: event.detail.clientX - bound.left,
+                y: event.detail.clientY - bound.top
             })
-            // if (event.type === "mousedown") {
-
-            // } else if (event.type === "touchstart") {
-            //     const touches = event.changedTouches
-            //     for (let i = 0; i < touches.length; i++) {
-            //         this.service.launch(this.el, {
-            //             x: touches[i].clientX - bound.left,
-            //             y: touches[i].clientY - bound.top
-            //         })
-            //     }
-            // }
         }) as any)
     }
 

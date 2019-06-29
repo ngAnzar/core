@@ -40,12 +40,12 @@ export { ChipComponent }
 
 
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
-import { PointerEventService } from "./services/pointer-event.service"
+import { TouchEventService, TOUCH_EVENT_PLUGIN, TapEvent } from "./services/touch-event.service"
 import { ScriptService } from "./services/script.service"
 import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
 import { MediaQueryService } from "./services/media-query.service"
 import { ZING_TOUCH_PLUGIN } from "./services/zingtouch.service"
-export { FileDownloadService, FileDownloadEvent, PointerEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, ZING_TOUCH_PLUGIN }
+export { FileDownloadService, FileDownloadEvent, TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, ZING_TOUCH_PLUGIN, TOUCH_EVENT_PLUGIN, TapEvent }
 
 
 import { HAMMER_CONFIG } from "./hammer"
@@ -91,10 +91,10 @@ const content = [
         FileDownloadService,
         ScriptService,
         DragEventService,
-        PointerEventService,
         KeyEventService,
         MediaQueryService,
-        ZING_TOUCH_PLUGIN
+        // ZING_TOUCH_PLUGIN,
+        TOUCH_EVENT_PLUGIN,
     ]
 })
 export class NzCommonModule { }

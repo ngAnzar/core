@@ -15,7 +15,6 @@ export { RippleService, RippleComponent }
 
 
 import { Renderer } from "./renderer.service"
-import { PointerEventService } from "../common.module/services/pointer-event.service"
 
 
 @NgModule({
@@ -34,8 +33,7 @@ import { PointerEventService } from "../common.module/services/pointer-event.ser
     ],
     providers: [
         Renderer,
-        RippleService,
-        PointerEventService
+        RippleService
     ]
 })
 export class NzAnimationModule { }

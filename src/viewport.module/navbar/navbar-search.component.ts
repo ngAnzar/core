@@ -1,6 +1,6 @@
 import {
     Component, Inject, ElementRef, Host, ViewChild, Input, Output, ContentChild, ContentChildren, QueryList,
-    TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit, EventEmitter
+    TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit, EventEmitter, HostListener
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
@@ -8,7 +8,7 @@ import { Observable } from "rxjs"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective } from "../../data.module"
-import { PointerEventService, KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../../common.module"
+import { KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../../common.module"
 import { AutocompleteComponent, ListActionComponent } from "../../list.module"
 import { ViewportService } from "../viewport.service"
 import { SelectComponent } from "../../form.module"
@@ -90,7 +90,7 @@ export class NavbarSearchComponent implements AfterViewInit {
         @Inject(ViewportService) protected readonly vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<any>,
-        @Inject(PointerEventService) pointerEvents: PointerEventService,
+        // @Inject(PointerEventService) pointerEvents: PointerEventService,
         @Inject(KeyEventService) keyEvents: KeyEventService,
         @Inject(MediaQueryService) protected readonly mq: MediaQueryService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
@@ -103,17 +103,6 @@ export class NavbarSearchComponent implements AfterViewInit {
             return true
         }))
 
-        this.destruct.subscription(pointerEvents.up(el.nativeElement)).subscribe(event => {
-            if (this.select
-                && this.select.el.nativeElement !== event.target
-                && !this.select.el.nativeElement.contains(event.target as any)) {
-                const input = this.select.el.nativeElement.querySelector("input[type='text']") as HTMLElement
-                if (input) {
-                    input.focus()
-                }
-            }
-        })
-
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
             if (event.matches && this.select && this.select.opened) {
                 this.vps.navbarCenterOverlap = true
@@ -121,6 +110,18 @@ export class NavbarSearchComponent implements AfterViewInit {
         })
 
 
+    }
+
+    @HostListener("tap", ["$event"])
+    public onTap() {
+        if (this.select
+            && this.select.el.nativeElement !== event.target
+            && !this.select.el.nativeElement.contains(event.target as any)) {
+            const input = this.select.el.nativeElement.querySelector("input[type='text']") as HTMLElement
+            if (input) {
+                input.focus()
+            }
+        }
     }
 
     public ngAfterViewInit() {

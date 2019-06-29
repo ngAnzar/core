@@ -24,10 +24,10 @@
 .label
   ng-content(select="label")
 
-.nz-button.sorting(*ngIf="sortable && sortDirection", variant="filled tiny icon", on-tap="onTap($event)" color="base")
+.nz-button.sorting(*ngIf="sortable && sortDirection", variant="filled tiny icon", on-tap="toggleSorter()" color="base")
   nz-icon(*ngIf="sortDirection==='asc'" class=icon("mdi/sort-ascending", 20))
   nz-icon(*ngIf="sortDirection==='desc'" class=icon("mdi/sort-descending", 20))
 
-.nz-button.filter(*ngIf="filter", on-action="showFilter()", variant="filled tiny icon", color="base")
+.nz-button.filter(*ngIf="filter", on-tap="showFilter($event)", variant="filled tiny icon", color="base")
   nz-icon(*ngIf="filter.isEmpty" class=icon("mdi/filter-outline", 20))
   nz-icon(*ngIf="!filter.isEmpty" class=icon("mdi/filter", 20))

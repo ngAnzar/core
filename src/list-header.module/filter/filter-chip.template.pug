@@ -1,10 +1,10 @@
 :stylus
   .close-button
     margin-left: 8px
-    margin-right: -2px
+    margin-right: 2px
 
   .field-title
-    color: #888
+    opacity: 0.7
 
   .filter-value
     margin-left: 4px
@@ -14,5 +14,5 @@ span.field-title {{ title }}{{ titleSeparator }}
 div.filter-value
   ng-content
 
-.nz-button.close-button(on-tap="onRemoveClick($event)", variant="icon")
+.nz-button.close-button(on-tap="onRemoveClick($event)", variant="filled icon", color="base")
   nz-icon(class=icon("mdi/close", 20))
