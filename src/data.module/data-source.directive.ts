@@ -16,7 +16,6 @@ import { Items } from "./collection"
 export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     @Input()
     public set dataSource(val: DataSource<T> | DataStorage<T> | DataSourceDirective<T>) {
-        console.log("dataSource", val)
         if (val instanceof DataSource) {
             if (this._source !== val) {
                 this._source = val
