@@ -64,7 +64,6 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         this.destruct.subscription(this.source.storage.invalidated).subscribe(this._update)
         this.destruct.subscription(this.source.storage.items).subscribe(this._update)
         this.destruct.subscription(this.filterSvc.changes).subscribe(() => {
-            console.log("filters changed...")
             this._update()
         })
         this.destruct.subscription(this.source.storage.busy).subscribe((val) => {
@@ -91,8 +90,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
             this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex || 1}, ${this._rowHeight}px) / 1fr`)
         }
 
-        this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${this.columns.gridTemplate}`)
-        this.columns.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`44px / ${this.columns.gridTemplate}`)
+        this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${this.columns.gridColTemplate}`)
     }
 
     protected _update = () => {

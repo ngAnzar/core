@@ -13,6 +13,10 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   align-items: stretch
   align-content: stretch
 
+  max-height: 100%
+  max-width: 100%
+  overflow: hidden
+
 .nz-data-grid-row
   display: grid
   justify-content: stretch
@@ -20,6 +24,7 @@ $nz-cell-padding ?= nz-local-grid-size(2)
   position: relative
   padding: 0
 
+  background-color: $theme.base.normal
   // background-color: $theme.base.normal
   // color: $theme.base.on.normal
 
@@ -31,6 +36,8 @@ $nz-cell-padding ?= nz-local-grid-size(2)
 
   nz-theme-component-states("base", "normal", $include:"base" "hover" "disabled")
   nz-theme-component-states("accent", "light", $include:"selected")
+
+
 
   &:before
     display: block

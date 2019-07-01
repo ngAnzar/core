@@ -5,6 +5,7 @@
     flex-grow: 1
     display: grid
     justify-content: stretch
+    padding-top: 0 !important
 
   .empty
     text-align: center
@@ -18,6 +19,8 @@
     flex: 1
 
 
+.nz-list-header
+  ng-content(select=".nz-columns", ngProjectAs=".nz-columns")
 
 div.nz-scroller.body
   .nz-list.rows(bind-style.gridTemplate="gtRows", scrollable, style="padding:24px")

@@ -6,10 +6,15 @@ import { Model, ID, ModelClass, RawData } from "./model"
 import { Items } from "./collection"
 
 
+export type CustomFilter<T extends Model = Model> = (record: T, filterValue: any) => boolean
+
+
 export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly async = false
     public readonly data: Readonly<Array<Readonly<T>>>
     public readonly changed: Observable<Readonly<Array<Readonly<T>>>> = new Subject()
+
+    protected readonly _customFilter: { [key: string]: CustomFilter<T> } = {}
 
     public get total(): number {
         return this.data.length
@@ -24,6 +29,10 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         data: Array<Readonly<RawData<T>>>) {
         super()
         this.data = data.map(item => new model(item))
+    }
+
+    public addCustomFilter(name: string, filter: CustomFilter<T>): void {
+        this._customFilter[name] = filter
     }
 
     public getPosition(id: ID): Observable<number> {
@@ -87,7 +96,11 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
     protected _testFilters(filter: Filter<T>, value: { [key: string]: any }) {
         for (const k in filter) {
-            if (!this._testFilter(filter[k], value[k])) {
+            if (this._customFilter.hasOwnProperty(k)) {
+                if (!this._customFilter[k](value as T, filter[k])) {
+                    return false
+                }
+            } else if (!this._testFilter(filter[k], value[k])) {
                 return false
             }
         }
