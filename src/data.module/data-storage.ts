@@ -81,11 +81,13 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }
 
         this.destruct.subscription(this.invalidated).subscribe(x => {
+            console.log("invalidated", x)
             this.reset(true)
         })
     }
 
     public getRange(r: NzRange): Observable<Items<T>> {
+        console.log("getRange", r, { total: this.total, endReached: this.endReached })
         if (this.total) {
             r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
@@ -253,16 +255,16 @@ export class DictField<E> {
             let changing = this._tryChanging(pending, event.pending, recursion + 1)
             if (changing !== true) {
                 let d: Diff = recursion === 0 ? diff : DeepDiff.diff(this._value, pendingRequest) as any
-                this._value = pendingRequest;
-                (this.changed as EventEmitter<MappingChangedEvent<E>>).emit({
-                    diff: d,
-                    value: this.get()
-                })
+                this._value = pendingRequest
+                if (d && d.length) {
+                    (this.changed as EventEmitter<MappingChangedEvent<E>>).emit({
+                        diff: d,
+                        value: this.get()
+                    })
+                }
             }
-
             return true
         }
-
         return false
     }
 }

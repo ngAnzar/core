@@ -44,9 +44,9 @@ export interface IAutocompleteModel {
 }
 
 
-export type InputState = "typing" | "querying"
-export type SelectValue<T> = T | ID | T[] | ID[]
-export type AutoTrigger = "all" | "query" | null
+export type InputState = "typing" | "querying";
+export type SelectValue<T> = T | ID | T[] | ID[];
+export type AutoTrigger = "all" | "query" | null;
 
 @Component({
     selector: ".nz-select",
@@ -444,7 +444,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     { provide: DataSourceDirective, useValue: this.source },
                     { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
                     { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
-                ]
+                ],
+                {
+                    ref: "viewport",
+                    inset: 16
+                }
             )
 
             let s = layerRef.subscribe((event) => {
@@ -583,7 +587,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 if (selected[0] instanceof ListActionModel) {
                     value = (selected[0] as any as ListActionModel).action.text || "Missing text options"
                 } else {
-                    value = (selected[0] as any)[this.displayField] || ""
+                    let parts = (this.displayField || "").split(".")
+                    let obj = (selected[0] as any)
+
+                    for (const p of parts) {
+                        obj = obj ? obj[p] : ""
+                    }
+
+                    value = obj || ""
                 }
             } else if (this.canCreate) {
                 throw new Error("TODO: implement canCreate")

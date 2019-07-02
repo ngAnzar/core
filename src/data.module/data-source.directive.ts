@@ -51,8 +51,9 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         }
 
         if (this._pendingFields) {
-            this.storage.loadFields(this._pendingFields)
+            let pf = this._pendingFields
             delete this._pendingFields
+            this.storage.loadFields(pf)
         }
     }
 

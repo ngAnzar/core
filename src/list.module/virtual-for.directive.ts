@@ -127,10 +127,16 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         this._scrollSuspended = true
 
         let vr = this._getVisibleRange()
+
+        if (vr.begin === -1) {
+            vr = new NzRange(0, this.itemsPerRequest)
+        }
+
         if (this._visibleRange && this._visibleRange.isEq(vr)) {
             this._scrollSuspended = false
             return
         }
+
         this._visibleRange = vr
 
         let r = this.renderingRange
