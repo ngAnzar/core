@@ -74,7 +74,7 @@ export class DatePickerComponent implements OnInit {
     }
 
     public ngOnInit() {
-        this.selected = new Date()
+        this.displayed = new Date()
     }
 
     public isToday(d: Date) {

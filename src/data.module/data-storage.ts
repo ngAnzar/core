@@ -81,13 +81,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }
 
         this.destruct.subscription(this.invalidated).subscribe(x => {
-            console.log("invalidated", x)
             this.reset(true)
         })
     }
 
     public getRange(r: NzRange): Observable<Items<T>> {
-        console.log("getRange", r, { total: this.total, endReached: this.endReached })
         if (this.total) {
             r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }

@@ -10,6 +10,7 @@ export interface DatePickerOptions {
     count?: number
     position: LevitateOptions
     initial?: Date,
+    value?: Date,
     min?: Date,
     max?: Date
 }
@@ -39,7 +40,13 @@ export class DatePickerService {
         let cmp = layer.component.instance
 
         if (options.initial) {
-            cmp.selected = options.initial
+            cmp.displayed = options.initial
+        } else {
+            cmp.displayed = new Date()
+        }
+
+        if (options.value) {
+            cmp.selected = options.value
         }
 
         if (options.min) {

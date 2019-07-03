@@ -60,6 +60,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     },
                     type: "date",
                     initial: date,
+                    value: date,
                     min: this.min,
                     max: this.max
                 })
