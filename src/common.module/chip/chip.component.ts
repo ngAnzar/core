@@ -3,17 +3,14 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
 
 import { SelectableDirective, PropagateSelection } from "../../data.module"
+import { AnzarComponent } from "../abstract-component"
 
 
 @Component({
     selector: ".nz-chip",
-    host: {
-        "[attr.color]": "'dark-base'",
-        "[attr.variant]": "'filled'"
-    },
     templateUrl: "./chip.component.pug"
 })
-export class ChipComponent {
+export class ChipComponent extends AnzarComponent {
     @Input()
     public set removable(val: boolean) {
         val = coerceBooleanProperty(val)
@@ -29,6 +26,9 @@ export class ChipComponent {
     public constructor(
         @Inject(SelectableDirective) @Optional() public readonly selectable: SelectableDirective,
         @Inject(PropagateSelection) @Optional() public readonly selection: PropagateSelection) {
+        super()
+        this._color = "dark-base"
+        this._variant = "filled"
     }
 
     public remove(event: any) {

@@ -20,7 +20,16 @@ export abstract class AnzarComponent implements OnDestroy {
         }
     }
     public get color(): ColorOptions { return this._color }
-    private _color: ColorOptions
+    protected _color: ColorOptions
+
+    @Input()
+    public set variant(val: string) {
+        if (this._variant !== val) {
+            (this.variantChange as EventEmitter<string>).emit(this._variant = val)
+        }
+    }
+    public get variant(): string { return this._variant }
+    protected _variant: string
 
 
     @Input()
@@ -31,7 +40,7 @@ export abstract class AnzarComponent implements OnDestroy {
         }
     }
     public get disabled() { return this._disabled }
-    private _disabled: boolean
+    protected _disabled: boolean
 
     @Input()
     public set focused(val: boolean) {
@@ -44,7 +53,7 @@ export abstract class AnzarComponent implements OnDestroy {
         }
     }
     public get focused() { return this._focused }
-    private _focused: boolean
+    protected _focused: boolean
 
     public set focusOrigin(val: FocusOrigin) {
         if (this._focusOrigin !== val) {
@@ -53,10 +62,13 @@ export abstract class AnzarComponent implements OnDestroy {
         }
     }
     public get focusOrigin(): FocusOrigin { return this._focusOrigin }
-    private _focusOrigin: FocusOrigin
+    protected _focusOrigin: FocusOrigin
 
     @Output("color")
     public readonly colorChange: Observable<ColorOptions> = this.destruct.subject(new EventEmitter())
+
+    @Output("variant")
+    public readonly variantChange: Observable<string> = this.destruct.subject(new EventEmitter())
 
     @Output("disabled")
     public readonly disabledChange: Observable<boolean> = this.destruct.subject(new EventEmitter())
@@ -69,6 +81,9 @@ export abstract class AnzarComponent implements OnDestroy {
 
     @HostBinding("attr.color")
     private get _colorAttr(): string { return this._color ? this._color : null }
+
+    @HostBinding("attr.variant")
+    private get _variantAttr(): string { return this._variant ? this._variant : null }
 
     @HostBinding("attr.focused")
     private get _focusedAttr(): string { return this._focused ? this._focusOrigin : null }

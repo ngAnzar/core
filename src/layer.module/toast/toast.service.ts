@@ -1,6 +1,7 @@
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
-import { throwError, of } from "rxjs"
+import { throwError, of, NEVER } from "rxjs"
+import { catchError } from "rxjs/operators"
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
@@ -60,6 +61,16 @@ export class ToastService {
         )
     }
 
+    public catchError() {
+        return catchError((err: Error) => {
+            if (err.message) {
+                this.error(err.message)
+            } else {
+                this.error(String(err))
+            }
+            return NEVER
+        })
+    }
 
     protected _show(provides: StaticProvider[], options: ToastOptions = {} as any, cmp?: ComponentType<any>): LayerRef {
         let ref = this.layerService.createFromComponent(cmp, this._behavior(options), null, provides)

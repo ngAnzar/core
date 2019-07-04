@@ -31,7 +31,7 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap
     div.day(*ngFor="let day of days")
       .nz-button(
         [color]="isSelected(day) ? 'accent' : isToday(day) ? 'dark-base' : isSameMonth(day) ? 'base' : 'dark-base'",
-        [attr.variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
+        [variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
         [disabled]="!isAllowed(day)",
         on-action="selected=day") {{ day.getDate() }}
 

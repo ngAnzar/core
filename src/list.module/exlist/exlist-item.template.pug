@@ -21,7 +21,7 @@
 
 
 ng-template([ngIf]="!_selected", [ngIfElse]="selectedTpl")
-  div(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", on-tap="onHeaderTap($event)")
+  div.nz-exlist-item-collapsed(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", on-tap="onHeaderTap($event)")
     ng-template([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
 
 ng-template(#selectedTpl)
