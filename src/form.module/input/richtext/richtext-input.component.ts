@@ -4,7 +4,7 @@ import { Observable } from "rxjs"
 
 
 import { Destruct } from "../../../util"
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
 import { LayerService, LayerRef, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
 import { RichtextDirective } from "./richtext.directive"
 import { RichtextMenu } from "./richtext-menu.component"
@@ -15,16 +15,9 @@ import { ScrollerComponent } from "../../../list.module"
 @Component({
     selector: ".nz-richtext-input",
     templateUrl: "./richtext-input.component.pug",
-    providers: [
-        { provide: InputComponent, useExisting: RichtextInputComponent },
-        INPUT_VALUE_ACCESSOR
-    ]
+    providers: INPUT_MODEL
 })
 export class RichtextInputComponent extends InputComponent<string> implements OnDestroy {
-    public destruct = new Destruct()
-
-    public get type(): string { return "text" }
-
     @ViewChild("input") public readonly input: RichtextDirective
     @ViewChild("scroller", { read: ElementRef }) public readonly scrollerEl: ElementRef
 
@@ -43,12 +36,14 @@ export class RichtextInputComponent extends InputComponent<string> implements On
     private _scrollHack: () => void
 
     public constructor(
-        @Inject(NgControl) @Optional() ngControl: NgControl,
-        @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(ElementRef) el: ElementRef,
+        @Inject(InputModel) model: InputModel<string>,
+        @Inject(ElementRef) protected readonly el: ElementRef,
         @Inject(LayerService) protected readonly layerSvc: LayerService,
         @Inject(NgZone) protected readonly zone: NgZone) {
-        super(ngControl, ngModel, el)
+        super(model)
+
+        this.monitorFocus(el.nativeElement, true)
+        this.destruct.subscription(model.focusChanges).subscribe(this._handleFocus.bind(this))
 
 
         // XXX: Atom heck, content editable, always try to scroll scroller element, when overflow...
@@ -68,7 +63,7 @@ export class RichtextInputComponent extends InputComponent<string> implements On
         })
     }
 
-    writeValue(value: any): void {
+    protected _renderValue(value: any): void {
         const normalizedValue = value == null ? "" : value
         this.input.value = normalizedValue
     }
@@ -81,14 +76,13 @@ export class RichtextInputComponent extends InputComponent<string> implements On
             this.input.value = ""
         }
 
-        // this.menuVisible = !this.input.stream.state.autocomplete.enabled
-
-        return super._handleInput(value)
+        this.model.emitValue(value)
     }
 
-    protected _handleFocus(focused: boolean) {
+    protected _handleFocus(event: FocusChangeEvent) {
+        const focused = event.current
         this.menuVisible = !this.input.stream.state.autocomplete.enabled && (
-            focused
+            focused !== null
             || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
         )
         if (focused) {
@@ -96,7 +90,6 @@ export class RichtextInputComponent extends InputComponent<string> implements On
         } else {
             this._stopScrollHack()
         }
-        return super._handleFocus(focused)
     }
 
     protected _showMenu() {
@@ -152,7 +145,6 @@ export class RichtextInputComponent extends InputComponent<string> implements On
     public ngOnDestroy() {
         this._stopScrollHack()
         this._hideMenu()
-        this.destruct.run()
         return super.ngOnDestroy()
     }
 }

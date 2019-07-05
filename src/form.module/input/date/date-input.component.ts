@@ -1,5 +1,4 @@
-import { Component, Inject, Optional, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, Input } from "@angular/core"
-import { NgControl, NgModel, FormControl } from "@angular/forms"
+import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, Input } from "@angular/core"
 import { take } from "rxjs/operators"
 import { parse, isDate, format, startOfDay } from "date-fns"
 import { IMaskDirective } from "angular-imask"
@@ -7,7 +6,7 @@ import { IMaskDirective } from "angular-imask"
 import { Destruct, setTzToUTC } from "../../../util"
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "../abstract"
 import { DatePickerService } from "./date-picker.service"
 import { DatePickerComponent } from "./date-picker.component"
 import { MASK_BLOCKS } from "./mask-blocks"
@@ -16,14 +15,7 @@ import { MASK_BLOCKS } from "./mask-blocks"
 @Component({
     selector: ".nz-date-input",
     templateUrl: "./date-input.template.pug",
-    host: {
-        "[attr.id]": "id",
-        "[class.nz-has-value]": "!!value"
-    },
-    providers: [
-        { provide: InputComponent, useExisting: DateInputComponent },
-        INPUT_VALUE_ACCESSOR
-    ]
+    providers: INPUT_MODEL
 })
 export class DateInputComponent extends InputComponent<Date> implements AfterViewInit {
     public get type(): string { return "text" }
@@ -54,9 +46,9 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     position: {
                         anchor: {
                             ref: this.el.nativeElement,
-                            align: "bottom center"
+                            align: "bottom left"
                         },
-                        align: "top center"
+                        align: "top left"
                     },
                     type: "date",
                     initial: date,
@@ -67,8 +59,8 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
                 let s = this.dpRef.component.instance.changed.pipe(take(1)).subscribe(date => {
                     date = setTzToUTC(startOfDay(date))
-                    this.writeValue(date)
-                    this._handleInput(date)
+                    this._renderValue(date)
+                    this.model.emitValue(date)
                 })
 
                 this.dpRef.destruct.on.pipe(take(1)).subscribe(d => {
@@ -85,14 +77,16 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     protected pendingValue: any
 
     public constructor(
-        @Inject(NgControl) @Optional() ngControl: NgControl,
-        @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(ElementRef) el: ElementRef,
+        @Inject(InputModel) model: InputModel<Date>,
+        @Inject(ElementRef) protected readonly el: ElementRef,
         @Inject(LocaleService) protected readonly locale: LocaleService,
         @Inject(DatePickerService) protected readonly datePicker: DatePickerService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
-        super(ngControl, ngModel, el)
+        super(model)
 
+        this.monitorFocus(el.nativeElement, true)
+
+        this.destruct.subscription(model.focusChanges).subscribe(this._handleFocus.bind(this))
 
         this.imaskOptions = {
             mask: this.displayFormat,
@@ -101,25 +95,21 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         }
     }
 
-    public writeValue(obj: Date | string): void {
+    protected _renderValue(obj: Date | string): void {
         if (!this.input) {
             this.pendingValue = obj
             return
         }
 
-        const input = this.input.nativeElement
+        let value = ""
         if (obj instanceof Date) {
-            input.value = format(obj, this.displayFormat)
-        } else if (!obj || !obj.length) {
-            input.value = ""
-        } else {
-            this.writeValue(this.parseString(obj))
+            value = format(obj, this.displayFormat)
+        } else if (typeof obj === "string" && obj.length) {
+            this._renderValue(this.parseString(obj))
             return
         }
 
-        if (this.inputMask.maskRef) {
-            this.inputMask.maskRef.updateValue()
-        }
+        this.inputMask.writeValue(value)
     }
 
     protected parseString(str: string) {
@@ -135,19 +125,18 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         return null
     }
 
-    public _handleFocus(focused: boolean) {
+    public _handleFocus(event: FocusChangeEvent) {
+        const focused = event.current
         this.opened = !!focused
         this.imaskOptions.lazy = !focused
-
-        super._handleFocus(focused)
 
         this.inputMask.maskRef.updateOptions(this.imaskOptions)
 
         if (!focused) {
             let inputVal: Date = parse(this.inputMask.maskRef.value, this.displayFormat, new Date())
             if (isNaN(inputVal.getTime())) {
-                this.writeValue(null)
-                this._handleInput(null)
+                this._renderValue(null)
+                this.model.emitValue(null)
             }
         }
     }
@@ -155,18 +144,18 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     public _onAccept() {
         let inputVal: Date = parse(this.inputMask.maskRef.value, this.displayFormat, new Date())
         if (isNaN(inputVal.getTime())) {
-            this._handleInput(null)
+            this.model.emitValue(null)
         }
     }
 
     public _onComplete(value: string) {
         let inputVal: Date = parse(value, this.displayFormat, new Date())
-        this._handleInput(setTzToUTC(startOfDay(inputVal)))
+        this.model.emitValue(setTzToUTC(startOfDay(inputVal)))
     }
 
     public ngAfterViewInit() {
         if (this.pendingValue) {
-            this.writeValue(this.pendingValue)
+            this._renderValue(this.pendingValue)
             delete this.pendingValue
         }
     }

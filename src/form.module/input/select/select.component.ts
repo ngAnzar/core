@@ -3,16 +3,16 @@ import {
     ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
     ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter
 } from "@angular/core"
-import { NgControl, NgModel } from "@angular/forms"
+
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
+import { FocusMonitor } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
 import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, filter, take } from "rxjs/operators"
 
-import { NzRange, Destruct } from "../../../util"
+import { NzRange } from "../../../util"
 import { DataSourceDirective, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
 import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
@@ -52,22 +52,15 @@ export type AutoTrigger = "all" | "query" | null;
     selector: ".nz-select",
     templateUrl: "./select.template.pug",
     host: {
-        "[attr.id]": "id",
         "[attr.tabindex]": "editable ? -1 : tabIndex",
         "[attr.opened]": "opened ? '' : null",
         "[attr.disabled]": "disabled ? '' : null",
         "[attr.editable]": "editable ? '' : null"
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        // LayerService,
-        { provide: InputComponent, useExisting: SelectComponent },
-        INPUT_VALUE_ACCESSOR
-    ]
+    providers: INPUT_MODEL
 })
 export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy {
-    public get type(): string { return "select" }
-
     @ContentChild("selected", { read: TemplateRef }) @Input() public readonly selectedTpl: SelectTemplateRef<T>
     @ContentChild("item", { read: TemplateRef }) @Input() public readonly itemTpl: SelectTemplateRef<T>
     @ContentChildren(ListActionComponent) @Input() public readonly actions: QueryList<ListActionComponent>
@@ -102,7 +95,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this._opened !== val) {
             this._opened = val
             if (val && this.input && this.input.nativeElement) {
-                this._focusMonitor.focusVia(this.input.nativeElement, this.focusOrigin)
+                this._focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
             }
             this._updateDropDown()
             this._detectChanges();
@@ -175,18 +168,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public get autoTrigger(): AutoTrigger { return this._autoTrigger }
     private _autoTrigger: AutoTrigger = null
 
-    public set isEmpty(val: boolean) {
-        if (this._isEmpty !== val) {
-            this._isEmpty = val;
-            (this.emptyChanges as EventEmitter<boolean>).emit(val);
-            (this.statusChanges as EventEmitter<any>).emit();
-        }
-    }
-    public get isEmpty(): boolean { return this._isEmpty }
-    private _isEmpty: boolean = true
-
-    @Output("empty") public readonly emptyChanges: Observable<boolean> = new EventEmitter<boolean>()
-
     public set inputState(val: InputState) {
         if (this._inputState !== val) {
             this._inputState = val
@@ -202,26 +183,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         return this.selection.items
     }
 
-    // public get value(): any { return super.value as any }
-    // public set value(val: any) {
-    //     super.value = val
-    //     this.writeValue(val)
-    // }
-
-    public readonly destruct = new Destruct(() => {
-        this.cdr.detach()
-        delete (this as any).source
-        delete (this as any).selection
-        delete (this as any).layer
-        delete (this as any).ffc
-        delete (this as any).cdr
-        delete (this as any).vcr
-        delete (this as any)._focusMonitor
-        delete (this as any)._layerFactory
-    })
-
-    // protected acLayer: ComponentLayerRef<AutocompleteComponent<T>>
-    protected focusOrigin: FocusOrigin
     protected inputStream: Observable<string> = new Subject()
     protected lastKeyup: number
     protected pendingValue: any
@@ -229,9 +190,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected selectedBeforeOpen: T[]
 
     public constructor(
-        @Inject(NgControl) @Optional() ngControl: NgControl,
-        @Inject(NgModel) @Optional() ngModel: NgModel,
-        @Inject(ElementRef) el: ElementRef,
+        @Inject(InputModel) model: InputModel<SelectValue<T>>,
+        @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<T>,
         @Inject(SelectionModel) @Optional() public readonly selection: SelectionModel<T>,
         @Inject(LayerService) protected readonly layer: LayerService,
@@ -244,7 +204,20 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Attribute("valueField") public valueField: string,
         @Attribute("queryField") queryField: string,
         @Attribute("triggerIcon") public readonly triggerIcon: string) {
-        super(ngControl, ngModel, el)
+        super(model)
+
+        this.monitorFocus(el.nativeElement, true)
+        this.destruct.any(() => {
+            this.cdr.detach()
+            delete (this as any).source
+            delete (this as any).selection
+            delete (this as any).layer
+            delete (this as any).ffc
+            delete (this as any).cdr
+            delete (this as any).vcr
+            delete (this as any)._focusMonitor
+            delete (this as any)._layerFactory
+        })
 
         if (!selection) {
             this.selection = new SingleSelection()
@@ -257,22 +230,26 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.opened = false
             }
 
-            this.isEmpty = selected.length === 0
+            let vals = this.valueField
+                ? selected.map(s => (s as any)[this.valueField])
+                : selected
+
+            if (this.selection.type === "single") {
+                model.emitValue(vals[0])
+            } else {
+                model.emitValue(vals)
+            }
+
             this._resetTextInput()
             if (!this.input && this.cdr) {
                 this.cdr.detectChanges()
             }
         })
 
+        this.destruct.subscription(this.model.focusChanges).subscribe(this._handleFocus.bind(this))
+
         this.displayField = displayField || "label"
         this.queryField = queryField || this.displayField
-
-        this.destruct.subscription(this._focusMonitor.monitor(el.nativeElement, true)).subscribe(origin => {
-            if (this.focusOrigin !== origin) {
-                this.focusOrigin = origin
-                this._handleFocus(origin !== null)
-            }
-        })
 
         if (!layerFactory) {
             this.layerFactory = layerFactory
@@ -297,7 +274,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this._detectChanges()
     }
 
-    public writeValue(obj: SelectValue<T>): void {
+    protected _renderValue(obj: SelectValue<T>): void {
         if (!this.source || !this.source.storage) {
             this.pendingValue = obj
             return
@@ -306,7 +283,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         const { ids, request, models } = this.coerceValue(obj)
 
         if (request.length) {
-            this.getModels(request).subscribe(result => {
+            this.getModels(request).pipe(take(1)).subscribe(result => {
                 this.selection.items = models.concat(result)
             })
         } else {
@@ -321,7 +298,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected applyPendingValue() {
         if (this.source.storage && this.hidden) {
             if ("pendingValue" in this) {
-                this.writeValue(this.pendingValue)
+                this._renderValue(this.pendingValue)
                 delete this.pendingValue
             }
         }
@@ -377,7 +354,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public ngAfterContentInit() {
-        // (this as any).storage = new DataStorage(this.dataSource)
         this.applyPendingValue()
     }
 
@@ -464,20 +440,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    protected _handleFocus(f: boolean) {
-        const skip = this.focused === f
-        super._handleFocus(f)
+    protected _handleFocus(event: FocusChangeEvent) {
+        const focused = event.current
 
-        if (f) {
-            if (this.input && !skip) {
+        if (focused) {
+            if (this.input) {
                 this.input.nativeElement.focus()
             }
 
-            if (f && this.focusOrigin === "mouse" && (!this.source.async || !this.editable)) {
+            if (focused === "mouse" && (!this.source.async || !this.editable)) {
                 this.opened = true
             }
-        } else if (!skip) {
-            // this.opened = false
+        } else {
             this._resetTextInput()
         }
     }
@@ -485,14 +459,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _onInput(event: Event): void {
         const value = this.input.nativeElement.value;
         (this.inputStream as Subject<string>).next(value)
-        this.isEmpty = this.selection.items.length === 0 && (!value || value.length === 0)
-        // this.opened = true
         this.inputState = "typing"
     }
 
     protected _querySuggestions = (text: string): void => {
         const emptyQuery = !text || text.length === 0
-        this.isEmpty = this.selection.items.length === 0 && emptyQuery
         this.inputState = "querying"
         this.opened = true
         this._updateFilter(text)

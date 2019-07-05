@@ -3,7 +3,7 @@ import { merge } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
-import { InputComponent } from "../input/abstract"
+import { InputModel } from "../input/abstract"
 
 
 @Component({
@@ -14,7 +14,7 @@ import { InputComponent } from "../input/abstract"
 export class PlaceholderComponent implements AfterContentInit, OnDestroy {
     public readonly destruct = new Destruct();
 
-    @ContentChild(InputComponent) protected _input: InputComponent<any>
+    @ContentChild(InputModel) protected _inputModel: InputModel<any>
 
     @Input()
     @HostBinding("class.hide-label")
@@ -31,11 +31,11 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
     }
 
     public ngAfterContentInit() {
-        if (this._input) {
-            this.destruct.subscription(merge(this._input.statusChanges, this._input.valueChanges))
+        if (this._inputModel) {
+            this.destruct.subscription(merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.focusChanges))
                 .pipe(startWith(null))
                 .subscribe(event => {
-                    this.hideLabel = !this._input.isEmpty || this._input.focused
+                    this.hideLabel = !this._inputModel.isEmpty || this._inputModel.focused !== null
                 })
         }
     }

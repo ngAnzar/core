@@ -24,12 +24,15 @@
 
 label.nz-checkbox-label(for="{{id}}-chk")
   .nz-checkbox-input
-    input.cdk-visually-hidden("#input" id="{{id}}-chk" type="checkbox"
-      bind-attr.name="name"
-      bind-disabled="disabled"
-      bind-tabindex="tabIndex"
-      bind-checked="checked"
-      bind-indeterminate="indeterminate"
+    input.cdk-visually-hidden(
+      #input,
+      id="{{id}}-chk",
+      type="checkbox",
+      tabindex="-1",
+      [attr.name]="name"
+      [disabled]="disabled"
+      [checked]="checked"
+      [indeterminate]="indeterminate"
       on-focus="_handleFocus(true)"
       on-blur="_handleFocus(false)"
       on-change="_changeHandler($event)")

@@ -1,36 +1,32 @@
-import { Component, OnDestroy, OnInit } from "@angular/core"
+import { Component, OnDestroy, OnInit, ElementRef, Inject, HostListener } from "@angular/core"
+import { FocusMonitor } from "@angular/cdk/a11y"
 import * as autosize from "autosize"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, InputModel, INPUT_MODEL } from "../abstract"
 
 
 @Component({
     selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input",
     template: "",
-    host: {
-        "[attr.id]": "id",
-        "(focus)": "_handleFocus(true)",
-        "(blur)": "_handleFocus(false)",
-        "(input)": "_handleInput($event.target.value)"
-    },
-    providers: [
-        { provide: InputComponent, useExisting: TextFieldComponent },
-        INPUT_VALUE_ACCESSOR
-    ]
+    providers: INPUT_MODEL
 })
 export class TextFieldComponent extends InputComponent<string> {
-    public get type(): string { return "text" }
+    public constructor(
+        @Inject(InputModel) model: InputModel<string>,
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLInputElement>) {
+        super(model)
 
-    writeValue(value: any): void {
-        const normalizedValue = value == null ? "" : value
-        this.el.nativeElement.value = normalizedValue
+        this.monitorFocus(el.nativeElement)
     }
 
-    protected _handleInput(value: string | null) {
-        if (!value || value.length === 0) {
-            value = null
-        }
-        return super._handleInput(value)
+    protected _renderValue(value: string) {
+        this.el.nativeElement.value = value
+    }
+
+    @HostListener("input", ["$event"])
+    protected _onInput(event: Event) {
+        let value = this.el.nativeElement.value
+        this.model.emitValue(value ? value : null)
     }
 }
 
@@ -38,38 +34,29 @@ export class TextFieldComponent extends InputComponent<string> {
 @Component({
     selector: "textarea.nz-input",
     template: "",
-    host: {
-        "[attr.id]": "id",
-        "(focus)": "_handleFocus(true)",
-        "(blur)": "_handleFocus(false)",
-        "(input)": "_handleInput($event.target.value)"
-    },
-    providers: [
-        { provide: InputComponent, useExisting: TextareaComponent },
-        INPUT_VALUE_ACCESSOR
-    ]
+    providers: INPUT_MODEL
 })
-export class TextareaComponent extends InputComponent<string> implements OnDestroy, OnInit {
-    public get type(): string { return "text" }
+export class TextareaComponent extends InputComponent<string> implements OnInit {
+    public constructor(
+        @Inject(InputModel) model: InputModel<string>,
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLInputElement>) {
+        super(model)
 
-    writeValue(value: any): void {
-        const normalizedValue = value == null ? "" : value
-        this.el.nativeElement.value = normalizedValue
+        this.monitorFocus(el.nativeElement)
+    }
+
+    protected _renderValue(value: string) {
+        this.el.nativeElement.value = value
+    }
+
+    @HostListener("input", ["$event"])
+    protected _onInput(event: Event) {
+        let value = this.el.nativeElement.value
+        this.model.emitValue(value ? value : null)
     }
 
     public ngOnInit() {
         autosize(this.el.nativeElement)
-    }
-
-    public ngOnDestroy() {
-        autosize.destroy(this.el.nativeElement)
-        super.ngOnDestroy()
-    }
-
-    protected _handleInput(value: string | null) {
-        if (!value || value.length === 0) {
-            value = null
-        }
-        return super._handleInput(value)
+        this.destruct.any(() => autosize.destroy(this.el.nativeElement))
     }
 }

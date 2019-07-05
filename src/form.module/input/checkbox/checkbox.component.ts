@@ -7,7 +7,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
 import { Observable } from "rxjs"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"
 import { CheckboxGroupDirective } from "./checkbox-group.directive"
 // import { LabelDirective } from "../../directives/label.directive"
 
@@ -29,10 +29,7 @@ export interface CheckboxChangeEvent<T> {
         "[class.nz-checkbox-checked]": "checked",
         "(tap)": "_handleTap($event)"
     },
-    providers: [
-        { provide: InputComponent, useExisting: CheckboxComponent },
-        INPUT_VALUE_ACCESSOR
-    ],
+    providers: INPUT_MODEL,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckboxComponent<T = boolean> extends InputComponent<T> implements AfterViewInit, OnDestroy {
@@ -50,7 +47,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     @Input("true-value")
     public set trueValue(val: T) {
         this._trueValue = val
-        this.writeValue(this._rawValue)
+        this._renderValue(this._rawValue)
     }
     public get trueValue(): T { return this._trueValue }
     protected _trueValue: T
@@ -58,21 +55,18 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     @Input("false-value")
     public set falseValue(val: T) {
         this._falseValue = val
-        this.writeValue(this._rawValue)
+        this._renderValue(this._rawValue)
     }
     public get falseValue(): T { return this._falseValue }
     protected _falseValue: T = false as any
-
-    @Output()
-    public readonly changed: Observable<CheckboxChangeEvent<T>> = new EventEmitter()
 
     @Input()
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._checked !== val) {
-            this._checked = val;
-            (this.changed as EventEmitter<CheckboxChangeEvent<T>>).emit({ source: this, checked: this.checked });
-            this.value = (val ? (this.trueValue == null ? true : this.trueValue) : this.falseValue) as any
+            this._checked = val
+
+            this.model.emitValue((val ? (this.trueValue == null ? true : this.trueValue) : this.falseValue) as any)
 
             if (this.group) {
                 this.group.onCheckedChange()
@@ -84,27 +78,16 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public get checked(): boolean { return this._checked }
     protected _checked: boolean = false
 
-    public set tabIndex(val: number) {
-        if (this._tabIndex !== val) {
-            this._tabIndex = val
-            this.cdr.markForCheck()
-        }
-    }
-    public get tabIndex(): number { return this._tabIndex }
-    protected _tabIndex: number
-
     protected _rawValue: any
 
     public constructor(
-        @Inject(NgControl) @Optional() ngControl: NgControl,
-        @Inject(NgModel) @Optional() ngModel: NgModel,
-        // @Inject(Renderer2) _renderer: Renderer2,
-        @Inject(ElementRef) el: ElementRef,
+        @Inject(InputModel) model: InputModel<T>,
+        @Inject(ElementRef) protected readonly el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Attribute('tabindex') tabIndex: string,
         @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective<any>) {
-        super(ngControl, ngModel, el)
-        this.tabIndex = parseInt(tabIndex, 10)
+        super(model)
+
+        this.monitorFocus(el.nativeElement, true)
 
         if (group) {
             group.addCheckbox(this)
@@ -114,7 +97,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public get type(): string { return "checkbox" }
 
 
-    public writeValue(obj: any): void {
+    protected _renderValue(obj: any): void {
         this._rawValue = obj
         this.checked = (this.trueValue == null ? Boolean(obj) : this.trueValue === obj)
     }
@@ -153,10 +136,7 @@ export type TristateCheckboxValue = { checked: boolean, indeterminate: boolean }
         "(tap)": "_handleTap($event)"
     },
     templateUrl: "./checkbox.template.pug",
-    providers: [
-        { provide: InputComponent, useExisting: TristateCheckboxComponent },
-        INPUT_VALUE_ACCESSOR
-    ],
+    providers: INPUT_MODEL,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TristateCheckboxComponent extends CheckboxComponent<TristateCheckboxValue> {
@@ -165,9 +145,8 @@ export class TristateCheckboxComponent extends CheckboxComponent<TristateCheckbo
         val = coerceBooleanProperty(val)
         if (this._indeterminate !== val) {
             this._indeterminate = val
-            this._value = { checked: this.checked, indeterminate: this.indeterminate };
-            this.cdr.markForCheck();
-            (this.changed as EventEmitter<CheckboxChangeEvent<TristateCheckboxValue>>).emit({ source: this, checked: this.checked, indeterminate: this.indeterminate })
+            this.model.emitValue({ checked: this.checked, indeterminate: this.indeterminate })
+            this.cdr.markForCheck()
         }
     }
     public get indeterminate(): boolean { return this._indeterminate }

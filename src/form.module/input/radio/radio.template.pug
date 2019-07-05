@@ -4,12 +4,15 @@
   .label
     flex-grow: 1
 
-
 label.nz-radio-label(for="{{id}}-rad")
   .nz-radio-input
-    input.cdk-visually-hidden("#input" id="{{id}}-rad" type="radio"
-      bind-attr.name="name"
-      bind-checked="checked"
+    input.cdk-visually-hidden(
+      #input,
+      id="{{id}}-rad",
+      type="radio",
+      tabindex="-1",
+      [attr.name]="name"
+      [checked]="checked"
       on-input="_handleInputChange($event)")
     .nz-radio-indicator
   span.label

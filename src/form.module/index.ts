@@ -24,11 +24,10 @@ export { CheckboxComponent, TristateCheckboxComponent, TristateCheckboxValue, Ch
 import { DateInputComponent } from "./input/date/date-input.component"
 import { DatePickerComponent } from "./input/date/date-picker.component"
 import { DatePickerService } from "./input/date/date-picker.service"
-import { DatetimeInputComponent } from "./input/date/datetime-input.component"
-import { TimeInputComponent } from "./input/date/time-input.component"
+// import { DatetimeInputComponent } from "./input/date/datetime-input.component"
+// import { TimeInputComponent } from "./input/date/time-input.component"
 export {
-    DateInputComponent, DatetimeInputComponent, TimeInputComponent,
-    DatePickerComponent, DatePickerService
+    DateInputComponent, DatePickerComponent, DatePickerService
 }
 
 import { RadioComponent } from "./input/radio/radio.component"
@@ -57,7 +56,7 @@ export { IAutocompleteModel, Match } from "./input/select/select.component"
 
 import { TextFieldComponent, TextareaComponent } from "./input/text/input.component"
 
-export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
+export { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "./input/abstract"
 
 
 @NgModule({
@@ -81,8 +80,6 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         DateInputComponent,
         DatePickerComponent,
-        DatetimeInputComponent,
-        TimeInputComponent,
 
         RadioComponent,
         RadioGroupDirective,
@@ -110,8 +107,6 @@ export { InputComponent, INPUT_VALUE_ACCESSOR } from "./input/abstract"
 
         DateInputComponent,
         DatePickerComponent,
-        DatetimeInputComponent,
-        TimeInputComponent,
 
         RadioComponent,
         RadioGroupDirective,

@@ -5,22 +5,21 @@ import { merge } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
-import { LabelDirective } from "../../common.module"
-import { InputComponent } from "../input/abstract"
+import { InputModel } from "../input/abstract"
 
 
 @Component({
     selector: ".nz-form-field",
     templateUrl: "./form-field.template.pug",
     host: {
-        "[class.nz-focused]": "_input.focused",
-        "[class.ng-untouched]": "_input.untouched",
-        "[class.ng-touched]": "_input.touched",
-        "[class.ng-pristine]": "_input.pristine",
-        "[class.ng-dirty]": "_input.dirty",
-        "[class.ng-valid]": "_input.valid",
-        "[class.ng-invalid]": "_input.invalid",
-        "[class.ng-pending]": "_input.pending"
+        "[class.nz-focused]": "_inputModel.focused",
+        // "[class.ng-untouched]": "_input.untouched",
+        // "[class.ng-touched]": "_input.touched",
+        // "[class.ng-pristine]": "_input.pristine",
+        // "[class.ng-dirty]": "_input.dirty",
+        // "[class.ng-valid]": "_input.valid",
+        // "[class.ng-invalid]": "_input.invalid",
+        // "[class.ng-pending]": "_input.pending"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -28,8 +27,8 @@ export class FormFieldComponent implements AfterContentInit {
     public readonly destruct = new Destruct()
     public readonly showUnderline: boolean
 
-    @ContentChild(LabelDirective) protected _labelDirective: LabelDirective
-    @ContentChild(InputComponent) protected _input: InputComponent<any>
+    // @ContentChild(LabelDirective) protected _labelDirective: LabelDirective
+    @ContentChild(InputModel) protected _inputModel: InputModel<any>
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
@@ -37,16 +36,11 @@ export class FormFieldComponent implements AfterContentInit {
     }
 
     public ngAfterContentInit(): void {
-        if (!this._input) {
-            throw new Error("Missing input component")
-        }
-        (this as any).showUnderline = this._input.type === "text" || this._input.type === "select"
-
-        if (this._labelDirective) {
-            this._labelDirective.targetId = this._input.id
+        if (!this._inputModel) {
+            throw new Error("Missing input model")
         }
 
-        this.destruct.subscription(merge(this._input.statusChanges, this._input.valueChanges))
+        this.destruct.subscription(merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.focusChanges))
             .pipe(startWith())
             .subscribe(this.cdr.markForCheck.bind(this.cdr))
     }

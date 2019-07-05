@@ -7,7 +7,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
 import { Observable } from "rxjs"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"
 import { RadioGroupDirective } from "./radio-group.directive"
 
 
@@ -26,31 +26,26 @@ export interface RadioChangeEvent {
         "[class.nz-radio-checked]": "checked",
         "(tap)": "_handleTap($event)"
     },
-    providers: [
-        { provide: InputComponent, useExisting: RadioComponent },
-        INPUT_VALUE_ACCESSOR
-    ],
+    providers: INPUT_MODEL,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RadioComponent<T = any> extends InputComponent<T> implements OnDestroy {
     @ViewChild("input") public readonly input: ElementRef<HTMLInputElement>
-
-    @Output()
-    public readonly change: Observable<RadioChangeEvent> = new EventEmitter()
 
     @Input()
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._checked !== val) {
             this._checked = val
-            this._value = val ? this.trueValue : this.falseValue
-            this.cdr.markForCheck();
-            (this.change as EventEmitter<RadioChangeEvent>).emit({ source: this, checked: this.checked });
-            (this.valueChanges as EventEmitter<T>).emit(this._value);
+
+            const value = val ? this.trueValue : this.falseValue
+            this.model.emitValue(value)
 
             if (val && this.group) {
                 this.group.setChecked(this)
             }
+
+            this.cdr.markForCheck()
         }
     }
     public get checked(): boolean { return this._checked }
@@ -58,15 +53,6 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
 
     @Input("true-value") public trueValue: T
     @Input("false-value") public falseValue: T = null
-
-    public set tabIndex(val: number) {
-        if (this._tabIndex !== val) {
-            this._tabIndex = val
-            this.cdr.markForCheck()
-        }
-    }
-    public get tabIndex(): number { return this._tabIndex }
-    protected _tabIndex: number
 
     @Input()
     public set name(val: string) {
@@ -81,22 +67,20 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
     public get type(): string { return "radio" }
 
     public constructor(
-        @Inject(NgControl) @Optional() ngControl: NgControl,
-        @Inject(NgModel) @Optional() ngModel: NgModel,
-        // @Inject(Renderer2) _renderer: Renderer2,
+        @Inject(InputModel) model: InputModel<T>,
         @Inject(ElementRef) el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Attribute("tabindex") tabIndex: string,
         @Inject(RadioGroupDirective) @Optional() @SkipSelf() public readonly group: RadioGroupDirective) {
-        super(ngControl, ngModel, el)
-        this.tabIndex = parseInt(tabIndex, 10)
+        super(model)
+
+        this.monitorFocus(el.nativeElement)
 
         if (group) {
             group.addRadio(this)
         }
     }
 
-    public writeValue(value: any | null) {
+    protected _renderValue(value: any | null) {
         if (this.trueValue != null) {
             this.checked = this.trueValue === value
         } else {

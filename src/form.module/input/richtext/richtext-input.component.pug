@@ -12,8 +12,10 @@
 
 .nz-scroller.scroller(#scroller)
   div(scrollable)
-    .editor(#input="nzRichtext", [nzRichtext]="", contenteditable="true",
-      on-focus="_handleFocus(true)",
-      on-blur="_handleFocus(false)",
+    .editor(
+      #input="nzRichtext",
+      [nzRichtext]="",
+      contenteditable="true",
+      tabindex="-1",
       on-cursorMove="_updateMenu()",
       on-change="_handleInput($event)")

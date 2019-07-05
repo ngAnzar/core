@@ -1,17 +1,14 @@
 import { Directive, Input } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
-import { InputComponent, INPUT_VALUE_ACCESSOR } from "../abstract"
+import { InputComponent, INPUT_MODEL } from "../abstract"
 import { CheckboxComponent } from "./checkbox.component"
 
 
 @Directive({
     selector: ".nz-checkbox-group",
     exportAs: "checkboxGroup",
-    providers: [
-        { provide: InputComponent, useExisting: CheckboxGroupDirective },
-        INPUT_VALUE_ACCESSOR
-    ]
+    providers: INPUT_MODEL
 })
 export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     public get type(): string { return "checkbox-group" }
@@ -63,10 +60,10 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
 
         }
 
-        this._handleInput(v)
+        this.model.emitValue(v)
     }
 
-    public writeValue(value: any) {
+    protected _renderValue(value: any) {
         for (const chkbox of this.checkboxes) {
             if (chkbox.trueValue === value) {
                 chkbox.checked = true

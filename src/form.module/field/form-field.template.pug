@@ -18,13 +18,13 @@
   .before-input
     ng-content(select="[nzSlot='prefix']")
 
-  .nz-placeholder(fxFlex="grow", [hideLabel]="_input && !_input.isEmpty", variant="translate")
-    ng-content
+  .nz-placeholder(fxFlex="grow", [hideLabel]="_inputModel && (!_inputModel.isEmpty || _inputModel.focused)", variant="translate")
+    ng-content(ngProjectAs="*")
 
   .after-input
     ng-content(select="[nzSlot='postfix']")
 
-.underline(#underline, *ngIf="showUnderline")
+.underline(#underline)
   .nz-form-field-ripple
 
 .caption
