@@ -32,23 +32,22 @@ export class ChipComponent extends AnzarComponent {
     }
 
     public remove(event: any) {
-        console.log("remove")
         if (this.selectable) {
             this.selection.setSelected(this.selectable.model.id, null)
         } else {
             (this.onRemove as EventEmitter<any>).emit(event)
         }
-        event.srcEvent.preventDefault()
+        event.preventDefault()
     }
 
     @HostListener("tap", ["$event"])
     public onTap(event: any) {
         if (this.selectable) {
-            if (!event.srcEvent.defaultPrevented) {
+            if (!event.defaultPrevented) {
                 if (this.selectable) {
                     this.selection.setSelected(this.selectable.model.id, "mouse")
                 }
-                event.srcEvent.preventDefault()
+                event.preventDefault()
             }
         }
     }

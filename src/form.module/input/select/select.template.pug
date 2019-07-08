@@ -60,12 +60,12 @@
 input(#hidden type="hidden")
 
 div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
-  ng-template(bind-ngIf="!editable || selection.type !== 'single'")
-    ng-template(ngFor bind-ngForOf="selection.items" let-item let-first="first" let-last="last")
-      ng-template(bind-ngIf="item.isListAction" bind-ngIfElse="normalModel")
-        ng-template(bind-ngTemplateOutlet="item.action.tpl")
+  ng-template([ngIf]="!editable || selection.type !== 'single'")
+    ng-template(ngFor, [ngForOf]="selection.items" let-item let-first="first" let-last="last")
+      ng-template([ngIf]="item.isListAction", [ngIfElse]="normalModel")
+        ng-template([ngTemplateOutlet]="item.action.tpl")
       ng-template(#normalModel)
-        ng-template(bind-ngTemplateOutlet="selectedTpl" bind-ngTemplateOutletContext="{$implicit:item,first:first,last:last}")
+        ng-template([ngTemplateOutlet]="selectedTpl", [ngTemplateOutletContext]="{$implicit:item,first:first,last:last}")
   input.text-input(*ngIf="editable", type="text",
     #input
     bind-attr.tabindex="tabIndex"
@@ -79,7 +79,8 @@ ng-template(#default_selected_single let-item)
   span {{ item[displayField] }}
 
 ng-template(#default_selected_multi let-item)
-  span.nz-chip.chip-item([selectable]="item", [selection]="selection", removable) {{ item[displayField] }}
+  span.nz-chip.chip-item([selectable]="item", [selection]="selection", removable)
+    ng-template([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit: item, chip: true}")
 
 ng-template(#default_item let-item)
   span {{ item[displayField] }}

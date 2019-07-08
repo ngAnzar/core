@@ -56,7 +56,7 @@ export { IAutocompleteModel, Match } from "./input/select/select.component"
 
 import { TextFieldComponent, TextareaComponent } from "./input/text/input.component"
 
-export { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "./input/abstract"
+export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEvent } from "./input/abstract"
 
 
 @NgModule({

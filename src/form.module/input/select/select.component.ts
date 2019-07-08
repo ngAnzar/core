@@ -393,7 +393,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                         targetAnchor.nzTargetAnchor = "left bottom"
                     }
                     if (!targetAnchor.margin) {
-                        targetAnchor.margin = { left: 16, right: 16, bottom: this.ffc ? -19 : 0 }
+                        targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
                     }
                 }
             }
@@ -406,9 +406,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                         crop: targetEl,
                         hideOnClick: true
                     },
-                    minWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
+                    minWidth: targetEl.offsetWidth,
                     minHeight: this.editable ? 0 : targetEl.offsetHeight,
-                    initialWidth: targetEl.offsetWidth + (this.editable ? 0 : 32),
+                    initialWidth: targetEl.offsetWidth,
                     initialHeight: this.editable ? 0 : targetEl.offsetHeight,
                     elevation: 10
                 }),

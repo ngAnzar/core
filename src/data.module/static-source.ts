@@ -28,7 +28,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         model: ModelClass<T>,
         data: Array<Readonly<RawData<T>>>) {
         super()
-        this.data = data.map(item => new model(item))
+        this.data = data.map(item => item instanceof model ? item : new model(item))
     }
 
     public addCustomFilter(name: string, filter: CustomFilter<T>): void {

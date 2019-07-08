@@ -1,5 +1,5 @@
-import { Inject, Optional, Self, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy } from "@angular/core"
-import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR } from "@angular/forms"
+import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy } from "@angular/core"
+import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
 import { map, filter } from "rxjs/operators"
@@ -174,5 +174,19 @@ export abstract class InputComponent<T> implements OnDestroy {
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+}
+
+
+
+export class InputGroupModel<T> extends InputModel<T> {
+    public get control(): AbstractControl {
+        return this.cc.control
+    }
+
+    public constructor(
+        @Inject(ControlContainer) @Self() private cc: ControlContainer,
+        @Inject(FocusMonitor) focusMonitor: FocusMonitor) {
+        super(null, null, focusMonitor)
     }
 }
