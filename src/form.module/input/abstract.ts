@@ -73,8 +73,9 @@ export class InputModel<T> extends AbstractControlDirective {
     }
 
     public emitValue(value: T): void {
-        console.log("emitValue", value)
-        this.control.setValue(value, { emitModelToViewChange: false })
+        if (this.control) {
+            this.control.setValue(value, { emitModelToViewChange: false })
+        }
         this.inputChanges.next(value)
     }
 }
@@ -135,6 +136,8 @@ export abstract class InputComponent<T> implements OnDestroy {
     @Output("value")
     public get valueChanges(): Observable<T> { return this.model.valueChanges }
 
+    @HostBinding("class.nz-has-value")
+    public get hasValue(): boolean { return !this.model.isEmpty }
 
     @Input()
     @HostBinding("attr.tabindex")

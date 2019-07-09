@@ -37,6 +37,7 @@ export class FormFieldComponent implements AfterContentInit {
 
     public ngAfterContentInit(): void {
         if (!this._inputModel) {
+            console.log(this.el.nativeElement)
             throw new Error("Missing input model")
         }
 
