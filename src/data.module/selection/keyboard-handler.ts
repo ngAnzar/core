@@ -17,7 +17,7 @@ const enum SelectMode {
 
 export class SelectionKeyboardHandler<T extends Model = Model> implements IDisposable {
     public instantSelection: boolean = false
-    public alwaysAppend: boolean = true
+    public alwaysAppend: boolean = false
 
     private els: HTMLElement[] = []
     private _keyboardFocused: number = -1
@@ -94,6 +94,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
 
     public handleMouse = (event: PointerEvent, selectable: ISelectable) => {
         let mode = this.determineMode(event.ctrlKey, event.shiftKey, true)
+        console.log("handleMouse", mode)
         this.addToSelection(selectable, mode, true)
     }
 
@@ -179,7 +180,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 break
 
             case SelectMode.FOCUS:
-                this.selection.setFocused(selectable.model.id, isMouse ? "mouse" : "keyboard")
+                this.selection.setFocused(selectable.model.id, origin)
                 break
         }
     }

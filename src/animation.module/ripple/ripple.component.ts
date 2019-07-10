@@ -14,16 +14,9 @@ import { RippleRef } from "./ripple-ref"
     template: ""
 })
 export class RippleComponent implements OnInit, OnDestroy {
-    public readonly destruct = new Destruct(() => {
-        if (this.hammer) {
-            this.hammer.destroy()
-            delete this.hammer
-        }
-    })
+    public readonly destruct = new Destruct()
 
-    protected _focus: RippleRef;
-
-    protected hammer: HammerManager
+    protected _focus: RippleRef
 
     public constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,

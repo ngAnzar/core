@@ -11,6 +11,10 @@ import { NzLayoutModule } from "../layout.module"
 import { NzLayerModule } from "../layer.module"
 
 
+import { ErrorComponent, DEFAULT_ERROR_MESSAGES } from "./error/error.component"
+import { ErrorMessageDirective } from "./error/error-message.directive"
+export { ErrorComponent, ErrorMessageDirective, DEFAULT_ERROR_MESSAGES }
+
 import { FormFieldComponent } from "./field/form-field.component"
 export { FormFieldComponent }
 
@@ -71,6 +75,9 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         NzLayerModule
     ],
     declarations: [
+        ErrorComponent,
+        ErrorMessageDirective,
+
         FormFieldComponent,
         PlaceholderComponent,
 
@@ -97,6 +104,9 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         TextareaComponent
     ],
     exports: [
+        ErrorComponent,
+        ErrorMessageDirective,
+
         ReactiveFormsModule,
 
         FormFieldComponent,
@@ -125,7 +135,13 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         TextareaComponent
     ],
     providers: [
-        DatePickerService
+        DatePickerService,
+        {
+            provide: DEFAULT_ERROR_MESSAGES,
+            useValue: {
+                required: "A mező kitöltése kötelező"
+            }
+        }
     ],
     entryComponents: [
         RichtextMenu,

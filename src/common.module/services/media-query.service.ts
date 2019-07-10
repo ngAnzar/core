@@ -4,6 +4,10 @@ import { Observable, of } from "rxjs"
 import { filter, distinctUntilChanged, switchMap, startWith } from "rxjs/operators"
 
 
+export type MQWatch = "xs" | "sm" | "md" | "lg" | "xl"
+    | "lt-sm" | "lt-md" | "lt-lg" | "lt-xl"
+    | "gt-xs" | "gt-sm" | "gt-md" | "gt-lg" | string
+
 
 export class MediaQueryService {
     public constructor(
@@ -11,7 +15,7 @@ export class MediaQueryService {
         @Inject(BreakPointRegistry) protected readonly bpr: BreakPointRegistry) {
     }
 
-    public watch(name: string): Observable<MediaChange> {
+    public watch(name: MQWatch): Observable<MediaChange> {
         const bp = this.bpr.items.filter(q => q.alias === name)[0]
 
         if (!bp) {

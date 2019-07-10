@@ -18,7 +18,7 @@ import { InputModel } from "../input/abstract"
         // "[class.ng-pristine]": "_input.pristine",
         // "[class.ng-dirty]": "_input.dirty",
         // "[class.ng-valid]": "_input.valid",
-        // "[class.ng-invalid]": "_input.invalid",
+        "[class.ng-invalid]": "_inputModel.invalid",
         // "[class.ng-pending]": "_input.pending"
     },
     changeDetection: ChangeDetectionStrategy.OnPush

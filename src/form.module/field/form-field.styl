@@ -12,7 +12,7 @@
 
   .underline
     height: 1px
-    background-color: $theme.base.on.normal
+    background: $theme.base.on.normal
     position: relative
 
   .nz-form-field-ripple
@@ -20,7 +20,7 @@
     position: absolute
     top: 0px
     opacity: 0
-    background-color: $theme.primary.normal
+    background: $theme.accent.normal
     width: 100%
 
     transform-origin: 50%
@@ -33,6 +33,10 @@
       .nz-form-field-ripple
         opacity: 1
         transform: scaleX(1)
+
+  &.ng-invalid
+    .underline
+      background: $theme.critical.normal !important
 
   caption
     height: $nz-form-field-bottom-caption-height

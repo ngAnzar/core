@@ -11,7 +11,9 @@
 
   .caption
     height: $nz-form-field-bottom-caption-height
-
+    nz-typo: $typo.caption
+    display: flex
+    align-items: center
 
 
 .input-container(fxLayout="row")
@@ -28,4 +30,8 @@
   .nz-form-field-ripple
 
 .caption
-  ng-content(select="caption, .nz-caption")
+  .nz-error(#error="nzError", [inputModel]="_inputModel")
+    ng-content(select="[nzErrorMessage]", ngProjectAs="[nzErrorMessage]")
+
+  ng-template([ngIf]="error.isEmpty")
+    ng-content(select="caption, .nz-caption")
