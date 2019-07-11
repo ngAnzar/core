@@ -8,7 +8,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { FocusMonitor } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
 import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, take } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, filter, take, tap } from "rxjs/operators"
 
 import { NzRange } from "../../../util"
 import { DataSourceDirective, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
@@ -41,6 +41,11 @@ export class Match extends Model {
 export interface IAutocompleteModel {
     label: string
     matches: Match[]
+}
+
+
+export class ProvisionalModel extends Model {
+
 }
 
 
@@ -120,16 +125,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _editable: boolean = false
     protected _iss: Subscription
 
-    @Input("can-create")
-    public set canCreate(val: boolean) {
+    @Input("freeSelect")
+    public set freeSelect(val: boolean) {
         val = coerceBooleanProperty(val)
-        if (this._canCreate !== val) {
-            this._canCreate = val
+        if (this._freeSelect !== val) {
+            this._freeSelect = val
             this._detectChanges()
         }
     }
-    public get canCreate(): boolean { return !this.disabled && this._canCreate }
-    protected _canCreate: boolean = false
+    public get freeSelect(): boolean { return !this.disabled && this._freeSelect }
+    protected _freeSelect: boolean = false
 
     @Input()
     public set disabled(val: boolean) {
@@ -189,6 +194,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     // protected readonly chipSelection: SelectionModel = new SingleSelection()
     protected selectedBeforeOpen: T[]
 
+    private _provisionalModel: T
+
     public constructor(
         @Inject(InputModel) model: InputModel<SelectValue<T>>,
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
@@ -222,6 +229,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (!selection) {
             this.selection = new SingleSelection()
         }
+
+        this.selection.keyboard.alwaysAppend = true
 
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
             if (this.selection.type === "single" &&
@@ -420,11 +429,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     { provide: DataSourceDirective, useValue: this.source },
                     { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
                     { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
-                ],
-                {
-                    ref: "viewport",
-                    inset: 16
-                }
+                ]
             )
 
             let s = layerRef.subscribe((event) => {
@@ -453,6 +458,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         } else {
             this._resetTextInput()
+            this.opened = false
         }
     }
 
@@ -475,6 +481,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 let ml = this.source.async ? Number(this.minLength) : 0
                 this._iss = this.destruct.subscription(this.inputStream)
                     .pipe(
+                        tap(v => {
+                            if (!v || !v.length) {
+                                if (this.selection.type === "single") {
+                                    this.selection.clear()
+                                }
+                            }
+                        }),
                         debounceTime(this.source.async ? 400 : 50),
                         filter(v => ml === 0 || !v || v.length === 0 || (v && v.length >= ml))
                     )
@@ -546,6 +559,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _resetTextInput() {
+        console.log("_resetTextInput")
         if (!this.input) {
             return
         }
@@ -567,10 +581,26 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
                     value = obj || ""
                 }
-            } else if (this.canCreate) {
-                throw new Error("TODO: implement canCreate")
+            } else if (this.freeSelect) {
+                let inputValue = this.input.nativeElement.value
+                if (inputValue && inputValue.length) {
+                    if (!this._provisionalModel) {
+                        this._provisionalModel = new ProvisionalModel({ id: Math.random().toString(36) }) as T
+                    }
+                    (this._provisionalModel as any)[this.valueField] = { $new: inputValue };
+                    (this._provisionalModel as any)[this.displayField] = inputValue;
+                    this.selection.items = [this._provisionalModel]
+                    value = inputValue
+                } else {
+                    // if (this._provisionalModel) {
+                    //     delete this._provisionalModel
+                    // }
+
+                }
+
+                // throw new Error("TODO: implement canCreate")
             }
-        } else if (this.canCreate) {
+        } else if (this.freeSelect) {
             throw new Error("TODO: implement canCreate")
         }
 
@@ -629,7 +659,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (!qv || qv.length === 0) {
             delete filter[this.queryField]
         } else {
-            filter[this.queryField] = this.source.async ? qv : { contains: qv }
+            filter[this.queryField] = { contains: qv }
         }
         this.source.filter = filter
     }

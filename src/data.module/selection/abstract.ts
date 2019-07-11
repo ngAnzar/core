@@ -185,6 +185,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
         if (this._items.length > 0) {
             let event = [] as SelectionEvent<T>
             event.removed = this._items.slice(0) as SelectionEvent<T>;
+            this._items = [];
             (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
         }
     }
