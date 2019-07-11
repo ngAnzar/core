@@ -1,7 +1,5 @@
 import { Directive, Input, Inject, ChangeDetectorRef, ElementRef, OnDestroy, Optional } from "@angular/core"
 
-import { EventManager } from "@angular/platform-browser"
-
 import { LayerService } from "../layer/layer.service"
 import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
 import { Destruct } from "../../util"
@@ -10,6 +8,7 @@ import { Align } from "../../layout.module"
 import { QtipComponent } from "./qtip.component"
 import { QtipBehavior } from "./qtip.behavior"
 import { QtipAlignDirective } from "./qtip-align.directive"
+import { QtipManager } from "./qtip.manager"
 
 
 @Directive({
@@ -35,13 +34,20 @@ export class QtipDirective implements OnDestroy {
     public constructor(
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(EventManager) protected readonly eventMgr: EventManager,
+        @Inject(QtipManager) protected readonly qtipMgr: QtipManager,
         @Inject(LayerService) protected readonly layerSvc: LayerService,
         @Inject(QtipAlignDirective) @Optional() protected readonly align: QtipAlignDirective,
         @Inject(LayerRef) @Optional() protected readonly parentlayer: LayerRef) {
 
-        this.destruct.any(eventMgr.addEventListener(el.nativeElement, "mouseenter", this.show.bind(this)) as any)
-        this.destruct.any(eventMgr.addEventListener(el.nativeElement, "mouseleave", this.hide.bind(this)) as any)
+        this.destruct.subscription(qtipMgr.watch(el.nativeElement, 200))
+            .subscribe(visible => {
+                if (visible) {
+                    this.show()
+                } else {
+                    this.hide()
+                }
+            })
+
     }
 
     public show() {

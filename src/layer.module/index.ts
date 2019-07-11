@@ -36,6 +36,7 @@ import { QtipDirective } from "./qtip/qtip.directive"
 import { QtipComponent } from "./qtip/qtip.component"
 import { QtipBehavior } from "./qtip/qtip.behavior"
 import { QtipAlignDirective } from "./qtip/qtip-align.directive"
+import { QtipManager } from "./qtip/qtip.manager"
 export { QtipDirective, QtipComponent, QtipBehavior, QtipAlignDirective }
 
 
@@ -97,7 +98,8 @@ export { DeleteConfirmDialogComponent, DeleteConfirmDirective }
         LayerContainer,
         DialogService,
         MaskService,
-        ToastService
+        ToastService,
+        QtipManager
     ],
     entryComponents: [
         DialogComponent,

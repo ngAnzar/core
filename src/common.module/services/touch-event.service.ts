@@ -83,7 +83,7 @@ export class TapRecognizer extends Recognizer {
         if (event.defaultPrevented) {
             return
         }
-        event.preventDefault()
+        event.stopPropagation()
 
         this._fireEvent("tapbegin", event)
 

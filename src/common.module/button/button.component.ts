@@ -37,10 +37,10 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
         if (event.defaultPrevented) {
             return
         }
-        event.preventDefault()
         if (this.disabled) {
             event.stopImmediatePropagation()
         } else {
+            event.stopPropagation()
             this.action.next()
         }
     }

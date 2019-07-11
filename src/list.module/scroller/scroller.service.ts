@@ -80,12 +80,14 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
 
 
     public set scrollPosition(val: ScrollPosition) {
-        const top = Math.min(val ? val.top || 0 : 0, this.scrollHeight - this.height)
-        const left = Math.min(val ? val.left || 0 : 0, this.scrollWidth - this.width)
+        const maxTop = Math.max(0, this.scrollHeight - this.height)
+        const maxLeft = Math.max(0, this.scrollWidth - this.width)
+        const top = Math.min(val ? val.top || 0 : 0, maxTop)
+        const left = Math.min(val ? val.left || 0 : 0, maxLeft)
 
         this.scrollPercent = {
-            top: top / (this.scrollHeight - this.height),
-            left: left / (this.scrollWidth - this.width)
+            top: (top / (this.scrollHeight - this.height)) || 0,
+            left: (left / (this.scrollWidth - this.width)) || 0
         }
     }
     public get scrollPosition(): ScrollPosition { return this._scrollPosition }
@@ -108,7 +110,7 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
             left: pxLeft
         }
         this.visible.top = pxTop
-        this.visible.left = pxLeft;
+        this.visible.left = pxLeft
     }
 }
 
@@ -138,11 +140,8 @@ export class ImmediateViewport extends Viewport {
         if (changed) {
             this.visible.width = this.width
             this.visible.height = this.height
-            const sp = this.scrollPosition
-            this.scrollPosition = {
-                top: Math.min(this.scrollHeight, sp.top),
-                left: Math.min(this.scrollWidth, sp.left),
-            };
+            // recalc min scroll position
+            this.scrollPosition = this.scrollPosition;
             // this._recalcPosition();
             (this.change as Subject<Viewport>).next(this)
         }
@@ -284,15 +283,10 @@ export class ScrollerService implements OnDestroy {
         })
 
         this.destruct.subscription(merge(this.vpImmediate.change, this.vpImmediate.scroll)).subscribe(event => {
-            if (this.horizontalOverflow || this.verticalOverflow) {
-                if (!this.rafId) {
-                    this.zone.runOutsideAngular(() => {
-                        this.rafId = requestAnimationFrame(this._animationTick)
-                    })
-                }
-            } else if (this.rafId) {
-                cancelAnimationFrame(this.rafId)
-                delete this.rafId
+            if (!this.rafId) {
+                this.zone.runOutsideAngular(() => {
+                    this.rafId = requestAnimationFrame(this._animationTick)
+                })
             }
         })
     }

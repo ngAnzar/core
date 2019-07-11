@@ -110,9 +110,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         if (event.defaultPrevented || this.noninteractive) {
             return
         }
-
-        event.preventDefault()
-
         this.checked = !this.checked
     }
 
