@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
-    ViewChild, ViewChildren, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
+    ViewChild, HostBinding, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
     ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter
 } from "@angular/core"
 
@@ -57,7 +57,6 @@ export type AutoTrigger = "all" | "query" | null;
     selector: ".nz-select",
     templateUrl: "./select.template.pug",
     host: {
-        "[attr.tabindex]": "editable ? -1 : tabIndex",
         "[attr.opened]": "opened ? '' : null",
         "[attr.disabled]": "disabled ? '' : null",
         "[attr.editable]": "editable ? '' : null"
@@ -150,6 +149,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _disabled: boolean = false
 
     @Input()
+    @HostBinding("attr.tabindex")
+    public set tabIndex(val: number) {
+        if (this._tabIndex !== val) {
+            this._tabIndex = val
+        }
+    }
+    public get tabIndex(): number { return this.editable ? -1 : this._tabIndex }
+    protected _tabIndex: number
+
+    @Input()
     public set hideTrigger(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._hideTrigger !== val) {
@@ -230,7 +239,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.selection = new SingleSelection()
         }
 
-        this.selection.keyboard.alwaysAppend = true
+        this.selection.keyboard.alwaysAppend = this.selection.type === "multi"
 
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
             if (this.selection.type === "single" &&
@@ -453,7 +462,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.input.nativeElement.focus()
             }
 
-            if (focused === "mouse" && (!this.source.async || !this.editable)) {
+            if (focused !== "mouse" && (!this.source.async || !this.editable)) {
                 this.opened = true
             }
         } else {
@@ -526,7 +535,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
+    @HostListener("tap", ["$event"])
     protected _onTriggerClick(event: MouseEvent) {
+        if (event.defaultPrevented) {
+            return
+        }
+        event.preventDefault()
+
+        if (this.input) {
+            this.input.nativeElement.focus()
+        }
+
         if (this.opened) {
             this.opened = false
         } else {
@@ -559,7 +578,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _resetTextInput() {
-        console.log("_resetTextInput")
         if (!this.input) {
             return
         }

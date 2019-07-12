@@ -52,6 +52,10 @@
   .chip-item
     margin-right: 4px
     margin-bottom: 4px
+    user-select: none
+
+  .noselect
+    user-select: none
 
   .trigger
     margin: -4px 4px -10px 4px
@@ -66,21 +70,24 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
         ng-template([ngTemplateOutlet]="item.action.tpl")
       ng-template(#normalModel)
         ng-template([ngTemplateOutlet]="selectedTpl", [ngTemplateOutletContext]="{$implicit:item,first:first,last:last}")
-  input.text-input(*ngIf="editable", type="text",
-    #input
-    bind-attr.tabindex="tabIndex"
-    on-input="_onInput($event)"
+  input.text-input(
+    *ngIf="editable",
+    #input,
+    type="text",
+    [tabindex]="_tabIndex",
+    on-input="_onInput($event)",
+    on-tap="$event.preventDefault()",
     style="flex:1")
 
-button.nz-button.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
+.nz-button.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
   i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/chevron-down"))}'`)
 
 ng-template(#default_selected_single let-item)
-  span {{ item[displayField] }}
+  span.noselect {{ item[displayField] }}
 
 ng-template(#default_selected_multi let-item)
   span.nz-chip.chip-item([selectable]="item", [selection]="selection", removable)
     ng-template([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit: item, chip: true}")
 
 ng-template(#default_item let-item)
-  span {{ item[displayField] }}
+  span.noselect {{ item[displayField] }}
