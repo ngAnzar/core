@@ -49,16 +49,28 @@ export abstract class Recognizer implements IDisposable {
         return evtTarget === this.target || this.target.contains(evtTarget)
     }
 
-    protected createEvent(type: string, options: { [key: string]: any } = {}): CustomEvent {
+    protected createEvent(type: string, options: { [key: string]: any } = {}, originalEvent: Event): CustomEvent {
         if (!("bubbles" in options)) {
             options.bubbles = true
             options.cancelable = true
         }
-        return new CustomEvent(type, options)
+        options.originalEvent = originalEvent
+        const event = new CustomEvent(type, options)
+        const preventDefault = event.preventDefault
+
+        if (originalEvent.defaultPrevented) {
+            event.preventDefault()
+        }
+
+        event.preventDefault = () => {
+            preventDefault.call(event)
+            originalEvent.preventDefault()
+        }
+        return event
     }
 
-    protected fireEvent(type: string, options: { [key: string]: any } = {}) {
-        this.target.dispatchEvent(this.createEvent(type, options))
+    protected fireEvent(type: string, options: { [key: string]: any } = {}, originalEvent: Event) {
+        this.target.dispatchEvent(this.createEvent(type, options, originalEvent))
     }
 
     public dispose(): void {
@@ -91,7 +103,7 @@ export class TapRecognizer extends Recognizer {
         if (event.type === "mousedown") {
             let off = this._on(document, "mouseup", (mouseup: PointerEvent) => {
                 off()
-                if (!mouseup.defaultPrevented && this.isTargetEvent(mouseup.target)) {
+                if (this.isTargetEvent(mouseup.target)) {
                     this.end(event, beginTime)
                 }
                 this._fireEvent("tapend", mouseup)
@@ -100,7 +112,7 @@ export class TapRecognizer extends Recognizer {
             let off1 = this._on(document, "touchend", (touchend: PointerEvent) => {
                 off1()
                 off2()
-                if (!touchend.defaultPrevented && this.isTargetEvent(touchend.target)) {
+                if (this.isTargetEvent(touchend.target)) {
                     this.end(event, beginTime)
                 }
                 this._fireEvent("tapend", touchend)
@@ -139,7 +151,7 @@ export class TapRecognizer extends Recognizer {
                 break
         }
 
-        this.fireEvent(type, { detail: detail })
+        this.fireEvent(type, { detail: detail }, originalEvent)
     }
 }
 

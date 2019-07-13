@@ -1,6 +1,6 @@
 import { Component, Inject, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, HostBinding, Input } from "@angular/core"
 import { merge } from "rxjs"
-import { startWith } from "rxjs/operators"
+import { startWith, debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { InputModel } from "../input/abstract"
@@ -25,7 +25,7 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
         }
     }
     public get hideLabel(): boolean { return this._hideLabel }
-    private _hideLabel: boolean
+    private _hideLabel: boolean = false
 
     public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
     }
@@ -33,7 +33,7 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
     public ngAfterContentInit() {
         if (this._inputModel) {
             this.destruct.subscription(merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.focusChanges))
-                .pipe(startWith(null))
+                .pipe(startWith(null), debounceTime(10))
                 .subscribe(event => {
                     this.hideLabel = !this._inputModel.isEmpty || this._inputModel.focused !== null
                 })

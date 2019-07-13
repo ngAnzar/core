@@ -69,7 +69,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ContentChild("item", { read: TemplateRef }) @Input() public readonly itemTpl: SelectTemplateRef<T>
     @ContentChildren(ListActionComponent) @Input() public readonly actions: QueryList<ListActionComponent>
 
-    @ViewChild("hidden", { read: ElementRef }) protected readonly hidden: ElementRef<HTMLInputElement>
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: ElementRef })
     protected set input(val: ElementRef<HTMLInputElement>) {
@@ -292,6 +291,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this._detectChanges()
     }
 
+    public getDisplayValue(model: T): string {
+        let parts = (this.displayField || "").split(".")
+        let obj = (model as any)
+
+        for (const p of parts) {
+            obj = obj ? obj[p] : ""
+        }
+
+        return obj || ""
+    }
+
     protected _renderValue(obj: SelectValue<T>): void {
         if (!this.source || !this.source.storage) {
             this.pendingValue = obj
@@ -307,14 +317,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         } else {
             this.selection.items = models
         }
-
-        if (this.hidden) {
-            this.hidden.nativeElement.value = ids.join(",")
-        }
     }
 
     protected applyPendingValue() {
-        if (this.source.storage && this.hidden) {
+        if (this.source.storage) {
             if ("pendingValue" in this) {
                 this._renderValue(this.pendingValue)
                 delete this.pendingValue
@@ -590,14 +596,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 if (selected[0] instanceof ListActionModel) {
                     value = (selected[0] as any as ListActionModel).action.text || "Missing text options"
                 } else {
-                    let parts = (this.displayField || "").split(".")
-                    let obj = (selected[0] as any)
-
-                    for (const p of parts) {
-                        obj = obj ? obj[p] : ""
-                    }
-
-                    value = obj || ""
+                    value = this.getDisplayValue(selected[0])
                 }
             } else if (this.freeSelect) {
                 let inputValue = this.input.nativeElement.value

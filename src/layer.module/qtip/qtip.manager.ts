@@ -7,8 +7,6 @@ import { map, distinctUntilChanged, switchMap, mapTo } from "rxjs/operators"
 @Injectable({ providedIn: "root" })
 export class QtipManager {
     private installCount: number = 0
-    private _enterListenerOff: any
-    private _leaveListenerOff: any
     private _mousemoveOff: any
     private _trigger = new Subject<MouseEvent>()
 
@@ -57,8 +55,7 @@ export class QtipManager {
         this.installCount--
         if (this.installCount <= 0) {
             this.installCount = 0
-            this._enterListenerOff()
-            this._leaveListenerOff()
+            this._mousemoveOff()
         }
     }
 

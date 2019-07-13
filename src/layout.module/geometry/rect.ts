@@ -102,12 +102,12 @@ export class Rect {
 
     public applyMargin(margin: Margin): Rect {
         let m = parseMargin(margin)
-        if (this.margin) {
-            m.bottom += this.margin.bottom
-            m.top += this.margin.top
-            m.right += this.margin.right
-            m.left += this.margin.left
-        }
+        // if (this.margin) {
+        //     m.bottom += this.margin.bottom
+        //     m.top += this.margin.top
+        //     m.right += this.margin.right
+        //     m.left += this.margin.left
+        // }
 
         let res = this.copy()
         res.width += (m.left + m.right)

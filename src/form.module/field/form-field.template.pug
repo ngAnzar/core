@@ -20,7 +20,7 @@
   .before-input
     ng-content(select="[nzSlot='prefix']")
 
-  .nz-placeholder(fxFlex="grow", [hideLabel]="_inputModel && (!_inputModel.isEmpty || _inputModel.focused)", variant="translate")
+  .nz-placeholder(fxFlex="grow", [hideLabel]="_inputModel && (!_inputModel.isEmpty || _inputModel.focused !== null)", variant="translate")
     ng-content(ngProjectAs="*")
 
   .after-input

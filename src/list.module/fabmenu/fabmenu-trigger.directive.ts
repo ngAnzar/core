@@ -1,4 +1,4 @@
-import { Directive, Inject, TemplateRef } from "@angular/core"
+import { Directive, Inject, HostListener } from "@angular/core"
 
 import { FabmenuComponent } from "./fabmenu.component"
 
@@ -8,7 +8,12 @@ import { FabmenuComponent } from "./fabmenu.component"
 })
 export class FabmenuTriggerDirective {
     public constructor(
-        @Inject(TemplateRef) public readonly tpl: TemplateRef<any>) {
-        // console.log("trigger", menu)
+        @Inject(FabmenuComponent) public readonly menu: FabmenuComponent) {
+    }
+
+    @HostListener("tap", ["$event"])
+    public onTap(event: Event) {
+        event.preventDefault()
+        this.menu.toggle()
     }
 }

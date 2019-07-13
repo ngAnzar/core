@@ -18,13 +18,13 @@
 div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px")
   div.month(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
     div(fxFlex="grow")
-      .nz-button(color="dark-common") {{ locale.formatDate(this.displayed, "yyyy MMMM") }}
+      .nz-button(color="dark-common", tabindex="-1") {{ locale.formatDate(this.displayed, "yyyy MMMM") }}
 
-    .nz-button(fxFlex="noshrink", variant="tiny icon", color="dark-common")
-      .nz-icon(class=icon("mdi/chevron-up"), on-tap="decMonth()")
+    .nz-button(fxFlex="noshrink", tabindex="-1", variant="tiny icon", color="dark-common")
+      .nz-icon(class=icon("mdi/chevron-up"), on-tapbegin="$event.preventDefault()", on-tap="decMonth()")
 
-    .nz-button(fxFlex="noshrink", variant="tiny icon", color="dark-common")
-      .nz-icon(class=icon("mdi/chevron-down"), on-tap="incMonth()")
+    .nz-button(fxFlex="noshrink", tabindex="-1", variant="tiny icon", color="dark-common")
+      .nz-icon(class=icon("mdi/chevron-down"), on-tapbegin="$event.preventDefault()", on-tap="incMonth()")
 
   div.days(fxFlex="grow", [style.gridTemplate]="this.gridTemplate")
     div.dayname(*ngFor="let name of dayNames") {{ name }}

@@ -18,7 +18,7 @@ export interface FocusChangeEvent {
 export class InputModel<T> extends AbstractControlDirective {
     public inputChanges = new Subject<T>()
     public renderValueChanges = new Subject<T>()
-    public disabledChanges = new Subject<boolean>()
+    // public disabledChanges = new Subject<boolean>()
     public focusChanges = new Subject<FocusChangeEvent>()
     public touchChanges = this.focusChanges.pipe(map(v => v.prev && !v.current))
 
@@ -47,13 +47,15 @@ export class InputModel<T> extends AbstractControlDirective {
     }
 
     public set disabled(val: boolean) {
-        if (this._disabled !== val) {
-            this._disabled = val
-            this.disabledChanges.next(val)
+        if (this.control.disabled !== val) {
+            if (val) {
+                this.control.disable()
+            } else {
+                this.control.enable()
+            }
         }
     }
-    public get disabled(): boolean { return this._disabled }
-    private _disabled: boolean = false
+    public get disabled(): boolean { return this.control.disabled }
 
     public set focused(val: FocusOrigin | null) {
         if (this._focused !== val) {
@@ -104,6 +106,7 @@ export class InputModelVA<T> implements ControlValueAccessor {
     }
 
     public setDisabledState(isDisabled: boolean): void {
+        console.log("setDisabledState", isDisabled)
         this.model.disabled = isDisabled
     }
 }

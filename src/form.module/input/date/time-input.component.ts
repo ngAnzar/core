@@ -44,6 +44,7 @@ export class TimeInputComponent extends InputComponent<Time> {
     protected _handleInput(event: Event) {
         let value = (event.target as HTMLInputElement).value
         let time = new Time(value)
+        console.log(time, time.isValid)
         if (time.isValid) {
             this.model.emitValue(time)
         } else {

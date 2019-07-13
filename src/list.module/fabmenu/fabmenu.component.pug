@@ -1,5 +1,4 @@
-ng-template([ngIf]="trigger")
-  ng-template([ngTemplateOutlet]="trigger.tpl")
+ng-content(select="[nzFabmenuTrigger]")
 
 ng-template(#layer)
   div.nz-fab-popup(fxLayout="column inline", fxLayoutAlign="start center", fxLayoutGap="16px", on-tap="hide()")

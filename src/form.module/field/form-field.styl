@@ -38,6 +38,11 @@
     .underline
       background: $theme.critical.normal !important
 
+  &[disabled]
+    cursor: default !important
+    opacity: 0.3 !important
+    pointer-events: none
+
   caption
     height: $nz-form-field-bottom-caption-height
     line-height: $nz-form-field-bottom-caption-height

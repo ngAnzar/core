@@ -2,7 +2,7 @@ import {
     Component, ContentChild, AfterContentInit, NgZone, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject
 } from "@angular/core"
 import { merge } from "rxjs"
-import { startWith } from "rxjs/operators"
+import { startWith, debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { InputModel } from "../input/abstract"
@@ -20,6 +20,7 @@ import { InputModel } from "../input/abstract"
         // "[class.ng-valid]": "_input.valid",
         "[class.ng-invalid]": "_inputModel.invalid",
         // "[class.ng-pending]": "_input.pending"
+        "[attr.disabled]": "_inputModel.disabled ? '' : null"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -41,8 +42,11 @@ export class FormFieldComponent implements AfterContentInit {
             throw new Error("Missing input model")
         }
 
-        this.destruct.subscription(merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.focusChanges))
-            .pipe(startWith())
+        this.destruct.subscription(
+            merge(this._inputModel.statusChanges,
+                this._inputModel.valueChanges,
+                this._inputModel.focusChanges))
+            .pipe(startWith(), debounceTime(100))
             .subscribe(this.cdr.markForCheck.bind(this.cdr))
     }
 }
