@@ -47,11 +47,31 @@ export class MultiSelection<T extends Model = Model> extends SelectionModel<T> {
 }
 
 
+@Directive({
+    selector: "[selection=none]",
+    exportAs: "selection",
+    providers: [
+        { provide: SelectionModel, useExisting: NoneSelection },
+    ]
+})
+export class NoneSelection<T extends Model = Model> extends SelectionModel<T> {
+    public readonly type = "none"
+
+    public update(update: Update): void {
+        this.selected.update({})
+    }
+
+    public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] {
+        return []
+    }
+}
+
+
 const SELECTION = Symbol("selection")
 
 
 @Directive({
-    selector: "[selection]:not([selection=single]):not([selection=multi])",
+    selector: "[selection]:not([selection=single]):not([selection=multi]):not([selection=none])",
     exportAs: "selection",
     providers: [
         { provide: SelectionModel, useExisting: PropagateSelection }

@@ -94,7 +94,6 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
 
     public handleMouse = (event: PointerEvent, selectable: ISelectable) => {
         let mode = this.determineMode(event.ctrlKey, event.shiftKey, true)
-        console.log("handleMouse", mode)
         this.addToSelection(selectable, mode, true)
     }
 

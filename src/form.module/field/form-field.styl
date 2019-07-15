@@ -28,15 +28,18 @@
 
     transition: transform $nz-form-anim-duration, opacity $nz-form-anim-duration
 
+  &.ng-invalid
+    .underline
+      .nz-form-field-ripple
+        background: $theme.critical.normal !important
+        opacity: 1
+        transform: scaleX(1)
+
   &.nz-focused
     .underline
       .nz-form-field-ripple
         opacity: 1
         transform: scaleX(1)
-
-  &.ng-invalid
-    .underline
-      background: $theme.critical.normal !important
 
   &[disabled]
     cursor: default !important

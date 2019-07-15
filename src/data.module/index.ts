@@ -9,20 +9,13 @@ export { Model, ModelFields, ModelProxy, ModelClass, ModelFactory, Field, IDFiel
 export { StaticSource } from "./static-source"
 
 
-import { SingleSelection, MultiSelection, PropagateSelection } from "./selection/selection.directive"
+import { SingleSelection, MultiSelection, NoneSelection, PropagateSelection } from "./selection/selection.directive"
 import { SelectableDirective } from "./selection/selectable.directive"
 import { SelectionKeyboardHandler } from "./selection/keyboard-handler"
 export { SelectionModel, ISelectionModel, SelectionEvent, ISelectable, SelectOrigin, SelectionItems } from "./selection/abstract"
 export { SingleSelection, MultiSelection, PropagateSelection, SelectableDirective }
 export { SelectionKeyboardHandler }
 
-
-// export {
-//     RpcTransport, RpcError, RpcAction, RpcFailureCallback, RpcSuccessCallback,
-//     Transaction, TransactionsDict, TransactionFactory, RPC_ENDPOINT, RPC_BATCHING
-// } from "./rpc/rpc-transport"
-// export { RpcGroup, RpcMethod, RpcDataSource, IRpcDataSource } from "./rpc/rpc-source"
-// export { ExtjsTransport, ExtjsListItemsParam, ExtjsDataSource } from "./rpc/extjs"
 
 import { DataSourceDirective, FilterDirective, SorterDirective, FieldsDirective } from "./data-source.directive"
 export { DataSourceDirective, FilterDirective, SorterDirective, FieldsDirective }
@@ -38,6 +31,7 @@ export { Time } from "./time"
     declarations: [
         SingleSelection,
         MultiSelection,
+        NoneSelection,
         PropagateSelection,
         SelectableDirective,
 
@@ -49,6 +43,7 @@ export { Time } from "./time"
     exports: [
         SingleSelection,
         MultiSelection,
+        NoneSelection,
         PropagateSelection,
         SelectableDirective,
 
