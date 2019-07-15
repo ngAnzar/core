@@ -1,11 +1,12 @@
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
-import { throwError, of, NEVER } from "rxjs"
-import { catchError } from "rxjs/operators"
+import { throwError, of, NEVER, Observable, Subject } from "rxjs"
+import { catchError, tap } from "rxjs/operators"
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
 import { getProviders, LayerMessageComponent } from "../_shared"
+import { ProgressEvent } from "../../animation.module"
 
 import { ToastLayer } from "./toast-behavior"
 import { ToastComponent } from "./toast.component"
@@ -22,6 +23,12 @@ function defaultOptions(options: ToastOptions): ToastOptions {
         delete options.autohide
     }
     return options
+}
+
+
+export interface SaveHandlerOptions extends ToastOptions {
+    beginMsg?: string
+    successMsg?: string
 }
 
 
@@ -59,6 +66,38 @@ export class ToastService {
             options,
             ToastProgressComponent
         )
+    }
+
+    public handleSave<T>(options: SaveHandlerOptions): (src: T) => T {
+        const progress = new Subject<ProgressEvent>()
+
+        this.progress({
+            progress,
+            ...options
+        })
+
+        if (options.beginMsg) {
+            progress.next({ message: options.beginMsg })
+        }
+
+        return (src) => {
+            return (src as any).pipe(
+                catchError(err => {
+                    progress.error({ percent: 1, message: err.message })
+                    return NEVER
+                }),
+                tap(v => {
+                    if (options.successMsg) {
+                        progress.next({ percent: 1, message: options.successMsg })
+                    }
+                    progress.complete()
+                })
+            )
+        }
+        // return switchMap((value: T) => {
+        //     console.log("toast switch map", value)
+        //     return of(value)
+        // })
     }
 
     public catchError() {

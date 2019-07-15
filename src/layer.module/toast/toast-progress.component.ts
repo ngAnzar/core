@@ -73,7 +73,6 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
                 }),
                 catchError(err => {
                     this.state = "failure"
-                    console.log(this)
                     return of({ percent: 1, message: err.message })
                 }),
                 share()
