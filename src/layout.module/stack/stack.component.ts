@@ -44,7 +44,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
         val = isNaN(val) ? 0 : this.children ? Math.max(0, Math.min(val, this.children.length)) : 0
 
         if (this._selectedIndex !== val) {
-            if (this._viewReady === false) {
+            if (this._viewReady === false || !this.children || this.children.length === 0) {
                 this._pendingIndex = val
                 return
             }
@@ -76,19 +76,29 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
     public ngAfterViewInit() {
         this._viewReady = true
-        this.selectedIndex = this._pendingIndex
+        let pending = this._pendingIndex
+        if (pending != null) {
+            delete this._pendingIndex
+            this.selectedIndex = pending
+        }
     }
 
     public ngAfterContentInit() {
         this.destruct.subscription(this.contentChildren.changes).subscribe(content => {
+            const length = this.contentChildren.length
             if (this.selectedIndex >= this.contentChildren.length) {
                 this.selectedIndex = this.contentChildren.length - 1
             }
+
 
             for (const k in this.childSwitch) {
                 if (parseInt(k, 10) >= this.contentChildren.length) {
                     delete this.childSwitch[k]
                 }
+            }
+
+            if (length && this._viewReady) {
+                this.ngAfterViewInit()
             }
         })
     }

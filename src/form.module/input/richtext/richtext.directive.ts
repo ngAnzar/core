@@ -34,7 +34,7 @@ export class RichtextDirective implements OnDestroy {
     public get value(): string { return this._value }
     private _value: string
 
-    @Output("change")
+    @Output("changed")
     public readonly changes: Observable<string> = new EventEmitter<string>()
 
     private _components: { [key: string]: RichtextComponentManager<any> } = {}

@@ -61,7 +61,7 @@ export class ErrorComponent implements AfterContentInit, OnDestroy {
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
         @Inject(DEFAULT_ERROR_MESSAGES) private readonly defaultErrors: ErrorMessages) {
         if (ngControl) {
-            this.inputModel = new InputModel(ngControl, null, null)
+            this.inputModel = new InputModel(ngControl, null, null, (a: any, b: any) => false)
         }
     }
 
@@ -86,7 +86,7 @@ export class ErrorComponent implements AfterContentInit, OnDestroy {
             this.message = null
         }
 
-        console.log("_onStatusChanges", status, this.inputModel.errors)
+        // console.log("_onStatusChanges", status, this.inputModel.errors)
     }
 
     private _computeErrorMessage(): string {

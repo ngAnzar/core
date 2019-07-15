@@ -1,4 +1,4 @@
-import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy } from "@angular/core"
+import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy, InjectionToken, OnInit } from "@angular/core"
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
@@ -7,6 +7,27 @@ import { map, filter } from "rxjs/operators"
 import isPlainObject from "is-plain-object"
 
 import { Destruct } from "../../util"
+
+
+export type ValueComparator<T> = (a: T, b: T) => boolean
+export const INPUT_MODEL_VALUE_CMP = new InjectionToken<ValueComparator<any>>("INPUT_MODEL_VALUE_CMP")
+export function inputValueComparator<T>(a: T, b: T): boolean {
+    if (_suppertedComparable(a) && _suppertedComparable(b)) {
+        return a == b
+    } else {
+        return false
+    }
+}
+function _suppertedComparable(a: any): boolean {
+    switch (typeof a) {
+        case "string":
+        case "number":
+        case "boolean":
+            return true
+        default:
+            return a == null || a instanceof Date
+    }
+}
 
 
 export interface FocusChangeEvent {
@@ -70,15 +91,24 @@ export class InputModel<T> extends AbstractControlDirective {
     public constructor(
         @Inject(NgControl) @Optional() @Self() private readonly ngControl: NgControl,
         @Inject(NgModel) @Optional() @Self() private readonly ngModel: NgModel,
-        @Inject(FocusMonitor) public readonly focusMonitor: FocusMonitor) {
+        @Inject(FocusMonitor) public readonly focusMonitor: FocusMonitor,
+        @Inject(INPUT_MODEL_VALUE_CMP) public readonly cmp: ValueComparator<T>) {
         super()
     }
 
-    public emitValue(value: T): void {
-        if (this.control) {
+    public emitValue(value: T, pristine?: boolean): void {
+        if (this.control && !this.control.disabled) {
+            let oldValue = this.value
             this.control.setValue(value, { emitModelToViewChange: false })
+
+            if (!this.cmp(oldValue, value)) {
+                this.inputChanges.next(value)
+            }
+
+            if (pristine || (this.untouched && this.focused === null)) {
+                this.control.markAsPristine()
+            }
         }
-        this.inputChanges.next(value)
     }
 }
 
@@ -98,7 +128,7 @@ export class InputModelVA<T> implements ControlValueAccessor {
     }
 
     public registerOnChange(fn: (val: T) => void): void {
-        this.model.renderValueChanges.subscribe(fn)
+        this.model.inputChanges.subscribe(fn)
     }
 
     public registerOnTouched(fn: any): void {
@@ -106,7 +136,6 @@ export class InputModelVA<T> implements ControlValueAccessor {
     }
 
     public setDisabledState(isDisabled: boolean): void {
-        console.log("setDisabledState", isDisabled)
         this.model.disabled = isDisabled
     }
 }
@@ -121,13 +150,17 @@ export const INPUT_MODEL: Provider[] = [
     {
         provide: InputModel,
         useClass: InputModel
+    },
+    {
+        provide: INPUT_MODEL_VALUE_CMP,
+        useValue: inputValueComparator
     }
 ]
 
 
 let UID_COUNTER = 0
 
-export abstract class InputComponent<T> implements OnDestroy {
+export abstract class InputComponent<T> implements OnDestroy, OnInit {
     public readonly destruct = new Destruct()
 
     // public abstract readonly isTextlike: boolean
@@ -163,8 +196,19 @@ export abstract class InputComponent<T> implements OnDestroy {
     @Output() public readonly changes = this.model.valueChanges
     @Output() public readonly focused = this.model.focusChanges
 
+    private _inited = false
+
     public constructor(@Inject(InputModel) protected readonly model: InputModel<T>) {
-        this.destruct.subscription(model.renderValueChanges).subscribe(this._renderValue.bind(this))
+        this.destruct.subscription(model.renderValueChanges).subscribe((value: T) => {
+            if (this._inited) {
+                this._renderValue(value)
+            }
+        })
+    }
+
+    public ngOnInit() {
+        this._inited = true
+        this._renderValue(this.model.value)
     }
 
     protected abstract _renderValue(value: T): void
@@ -190,7 +234,8 @@ export class InputGroupModel<T> extends InputModel<T> {
 
     public constructor(
         @Inject(ControlContainer) @Self() private cc: ControlContainer,
-        @Inject(FocusMonitor) focusMonitor: FocusMonitor) {
-        super(null, null, focusMonitor)
+        @Inject(FocusMonitor) focusMonitor: FocusMonitor,
+        @Inject(INPUT_MODEL_VALUE_CMP) public readonly cmp: ValueComparator<T>) {
+        super(null, null, focusMonitor, cmp)
     }
 }

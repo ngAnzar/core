@@ -16,6 +16,6 @@
       #input="nzRichtext",
       [nzRichtext]="",
       contenteditable="true",
-      tabindex="-1",
+      [attr.tabindex]="tabIndex",
       on-cursorMove="_updateMenu()",
-      on-change="_handleInput($event)")
+      on-changed="_handleInput($event)")

@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, Optional, ElementRef, NgZone, OnDestroy, HostListener } from "@angular/core"
+import { Component, Inject, ViewChild, Optional, ElementRef, NgZone, OnDestroy, Input, HostBinding } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 import { Observable } from "rxjs"
 
@@ -30,6 +30,9 @@ export class RichtextInputComponent extends InputComponent<string> implements On
     }
     public get menuVisible(): boolean { return this._menuVisible }
     private _menuVisible: boolean
+
+    @HostBinding("attr.tabindex")
+    public readonly tabIndexAttr = -1
 
     private _menuRef: ComponentLayerRef<RichtextMenu>
     private _checkScrollRaf: any
@@ -75,7 +78,6 @@ export class RichtextInputComponent extends InputComponent<string> implements On
             value = null
             this.input.value = ""
         }
-
         this.model.emitValue(value)
     }
 

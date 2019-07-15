@@ -36,15 +36,31 @@ export class TimeInputComponent extends InputComponent<Time> {
         this.destruct.subscription(this.focused).subscribe(this._handleFocus.bind(this))
     }
 
-    protected _renderValue(obj: Time): void {
-        (this.el.nativeElement as HTMLInputElement).value = obj ? obj.format("HH:mm") : ""
+    protected _renderValue(obj: Time | Date | string): void {
+        let value = ""
+
+        if (obj) {
+            if (obj instanceof Date) {
+                value = format(obj, "HH:mm")
+                return this._renderValue(value)
+            } else if (obj instanceof Time) {
+                value = obj.format("HH:mm")
+            } else if (typeof obj === "string") {
+                let time = new Time(obj)
+                if (time.isValid) {
+                    this.model.emitValue(time, this.model.pristine)
+                    return this._renderValue(time)
+                }
+            }
+        }
+
+        (this.el.nativeElement as HTMLInputElement).value = value
     }
 
     @HostListener("input", ["$event"])
     protected _handleInput(event: Event) {
         let value = (event.target as HTMLInputElement).value
         let time = new Time(value)
-        console.log(time, time.isValid)
         if (time.isValid) {
             this.model.emitValue(time)
         } else {
