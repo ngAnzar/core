@@ -19,12 +19,6 @@ export class ViewportAreaDirective implements OnDestroy {
         @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef,
         @Inject(ViewContainerRef) vcr: ViewContainerRef) {
 
-        // this.outlet = new DomPortalOutlet(el.nativeElement, cmpResolver, appRef, injector)
-
-
-
-        // const [toRender, toDestroy] = vps.query(area).pipe(partition(tpl => this.rendered.indexOf(tpl) === -1))
-
         this.destruct.subscription(vps.query(area)).subscribe(items => {
             let pos = 0
             for (const item of items) {
@@ -38,23 +32,6 @@ export class ViewportAreaDirective implements OnDestroy {
             }
             cdr.markForCheck()
         })
-
-        // toRender.subscribe(tpl => {
-        //     console.log("toRender", tpl)
-        // })
-
-        // toRender.subscribe(tpl => {
-        //     console.log("toRender", tpl)
-        // })
-
-        /*
-        .pipe()
-        .subscribe(items => {
-
-
-            this.items = items
-            cdr.markForCheck()
-        })*/
     }
 
     public ngOnDestroy() {

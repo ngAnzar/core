@@ -6,7 +6,15 @@ export const enum VPAnimState {
     MENU_CLOSE_SLIDE = "mclose-slide",
     MENU_OPEN_OVERLAY = "mopen-overlay",
     MENU_CLOSE_OVERLAY = "mclose-overlay",
+
+    RIGHT_OPEN_SLIDE = "ropen-slide",
+    RIGHT_CLOSE_SLIDE = "rclose-slide",
+    RIGHT_OPEN_OVERLAY = "ropen-overlay",
+    RIGHT_CLOSE_OVERLAY = "rclose-overlay",
 }
+
+
+// mopen-slide--ropen-slide
 
 
 export const ANIM_DURATION = "400ms cubic-bezier(0.215, 0.61, 0.355, 1)"

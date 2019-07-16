@@ -12,14 +12,32 @@
 
   .sidenav
     z-index: 10
-    width: 300px
     position: absolute
     top: 0
     left: 0
     bottom: 0
 
+    transition-property: transform
+    transition-duration: 400ms
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
+
+  .rightpanel
+    z-index: 10
+    position: absolute
+    top: 0
+    right: 0
+    bottom: 0
+
+    transition-property: transform
+    transition-duration: 400ms
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
+
   .content
     z-index: 5
+
+    transition-property: transform
+    transition-duration: 400ms
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
 
   .overlay
     z-index: 9
@@ -30,14 +48,36 @@
     bottom: 0
     background: $theme.base.on.normal
 
+    transition-property: opacity
+    transition-duration: 400ms
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
+
 
 div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .nz-navbar.navbar(fxFlex="none")
 
   div.content-wrap(fxFlex="1 1 0", fxLayout="row", fxLayoutAlign="start stretch")
-    .nz-sidenav.sidenav(#sidenav, fxFlex="none", fxLayout="column", fxLayoutAlign="start stretch", [@animateSidenav]="animationState")
+    .nz-sidenav.sidenav(
+        fxFlex="none",
+        fxLayout="column",
+        fxLayoutAlign="start stretch",
+        [style.width.px]="vps.menu.width",
+        [style.transform]="menuTransform",
+        on-transitionend="recalcContentPadding($event)")
 
-    .nz-viewport-content.content(fxFlex="grow", [@animateContent]="animationState")
+    .nz-viewport-content.content(
+        fxFlex="grow",
+        [style.padding-right.px]="contentPadding",
+        [style.transform]="contentTransform")
       ng-content
 
-    .overlay([@animateOverlay]="animationState")
+    .overlay(
+        [style.display]="overlayDisplay",
+        [style.opacity]="overlayOpacity",
+        on-transitionend="updateOverlayVisibility($event)")
+
+    .nz-vp-rightpanel.rightpanel(
+        fxFlex="noshrink",
+        [style.width.px]="vps.right.width",
+        [style.transform]="rightTransform",
+        on-transitionend="recalcContentPadding($event)")

@@ -15,7 +15,7 @@ export class NavbarComponent implements OnDestroy {
     public constructor(
         @Inject(ViewportService) protected readonly vps: ViewportService,
         @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef) {
-        this.destruct.subscription(vps.menuChanges).subscribe(cdr.detectChanges.bind(cdr))
+        this.destruct.subscription(vps.menu.changes).subscribe(cdr.detectChanges.bind(cdr))
         this.destruct.subscription(vps.navbarChanges).subscribe(cdr.detectChanges.bind(cdr))
     }
 

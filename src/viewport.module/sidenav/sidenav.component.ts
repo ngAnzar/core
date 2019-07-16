@@ -1,13 +1,9 @@
-import { Component, HostBinding } from "@angular/core"
-
-import { VPSidenavAnimation } from "../viewport/viewport.animation"
+import { Component } from "@angular/core"
 
 
 @Component({
     selector: ".nz-sidenav",
-    template: `<ng-template nzViewportArea="sidenav"></ng-template>`,
-    // animations: [VPSidenavAnimation]
+    template: `<ng-template nzViewportArea="sidenav"></ng-template>`
 })
 export class SidenavComponent {
-    // @HostBinding("@animation") public animation: any
 }

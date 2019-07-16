@@ -14,6 +14,9 @@ import { NavbarComponent } from "./navbar/navbar.component"
 import { NavbarSearchComponent } from "./navbar/navbar-search.component"
 export { NavbarComponent, NavbarSearchComponent }
 
+import { RightpanelComponent } from "./rightpanel/rightpanel.component"
+export { RightpanelComponent }
+
 import { SidenavComponent } from "./sidenav/sidenav.component"
 export { SidenavComponent }
 
@@ -40,6 +43,7 @@ export { ViewportService }
     declarations: [
         NavbarComponent,
         NavbarSearchComponent,
+        RightpanelComponent,
         SidenavComponent,
         ViewportComponent,
         ViewportAreaDirective,
@@ -49,6 +53,7 @@ export { ViewportService }
     exports: [
         NavbarComponent,
         NavbarSearchComponent,
+        RightpanelComponent,
         SidenavComponent,
         ViewportComponent,
         ViewportAreaDirective,

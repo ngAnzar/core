@@ -16,9 +16,52 @@ export interface VPItem {
 }
 
 
-export const enum VPMenuStyle {
+export const enum VPPanelStyle {
     SLIDE = 1,
     OVERLAY = 2
+}
+
+
+export class VPPanel {
+    public set width(val: number) {
+        if (this._width !== val) {
+            this._width = val;
+            (this.changes as EventEmitter<any>).emit()
+        }
+    }
+    public get width(): number { return this._width }
+    private _width: number = 300
+
+    public set disabled(val: boolean) {
+        if (this._disabled !== val) {
+            this._disabled = val;
+            (this.changes as EventEmitter<any>).emit()
+        }
+    }
+    public get disabled(): boolean { return this._disabled }
+    private _disabled: boolean = false
+
+
+    public set style(val: VPPanelStyle) {
+        if (this._style !== val) {
+            this._style = val;
+            (this.changes as EventEmitter<any>).emit()
+        }
+    }
+    public get style(): VPPanelStyle { return this._style }
+    private _style: VPPanelStyle = VPPanelStyle.OVERLAY
+
+
+    public set opened(val: boolean) {
+        if (this._opened !== val) {
+            this._opened = val;
+            (this.changes as EventEmitter<any>).emit()
+        }
+    }
+    public get opened(): boolean { return this._opened }
+    private _opened: boolean = false
+
+    public readonly changes: Observable<void> = new EventEmitter<any>()
 }
 
 
@@ -26,58 +69,21 @@ export const enum VPMenuStyle {
 export class ViewportService implements OnDestroy {
     public readonly destruct = new Destruct()
 
-    public set menuDisabled(val: boolean) {
-        if (this._menuDisabled !== val) {
-            this._menuDisabled = val;
-            (this.menuChanges as EventEmitter<any>).emit()
-        }
-    }
-    public get menuDisabled(): boolean { return this._menuDisabled }
-    private _menuDisabled: boolean
+    public readonly menu = new VPPanel()
+    public readonly right = new VPPanel()
 
-    public set menuStyle(val: VPMenuStyle) {
-        if (this._menuStyle !== val) {
-            this._menuStyle = val
-
-            if (this.menuOpened) {
-                this.menuOpened = false
-                this.menuOpened = true
-            }
-
-            (this.menuChanges as EventEmitter<any>).emit()
-        }
-    }
-    public get menuStyle(): VPMenuStyle { return this._menuStyle }
-    private _menuStyle: VPMenuStyle = VPMenuStyle.OVERLAY // TODO: kis felbontáson overlay
-
-
-    public set menuOpened(val: boolean) {
-        if (this._menuOpened !== val) {
-            this._menuOpened = val
-
-            if (val) {
-                this._menuBackWatch.on()
-            } else {
-                this._menuBackWatch.off()
-            }
-
-            (this.menuChanges as EventEmitter<any>).emit()
-        }
-    }
-    public get menuOpened(): boolean { return this._menuOpened }
-    private _menuOpened: boolean = false
     private _menuBackWatch: KeyWatcher
 
 
-    public readonly menuChanges: Observable<any> = new EventEmitter()
+    // public readonly menuChanges: Observable<any> = new EventEmitter()
 
     public set navbarCenterOverlap(val: boolean) {
         if (this._navbarCenterOverlap !== val) {
             this._navbarCenterOverlap = val
 
             if (val) {
-                if (this.menuStyle === VPMenuStyle.OVERLAY) {
-                    this.menuOpened = false
+                if (this.menu.style === VPPanelStyle.OVERLAY) {
+                    this.menu.opened = false
                 }
             }
 
@@ -120,14 +126,22 @@ export class ViewportService implements OnDestroy {
         @Inject(MediaQueryService) protected readonly mq: MediaQueryService) {
 
         this._menuBackWatch = this.destruct.disposable(keyEvent.newWatcher(SpecialKey.BackButton, () => {
-            this.menuOpened = false
+            this.menu.opened = false
             return true
         }))
 
+        this.destruct.subscription(this.menu.changes).subscribe(_ => {
+            if (this.menu.opened) {
+                this._menuBackWatch.on()
+            } else {
+                this._menuBackWatch.off()
+            }
+        })
+
         this.destruct.subscription(router.events).subscribe(event => {
             if (event instanceof NavigationEnd) {
-                if (!this.menuDisabled && this.menuStyle != VPMenuStyle.SLIDE) {
-                    this.menuOpened = false
+                if (!this.menu.disabled && this.menu.style != VPPanelStyle.SLIDE) {
+                    this.menu.opened = false
                 }
             }
         })
@@ -136,12 +150,14 @@ export class ViewportService implements OnDestroy {
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
             if (!event.matches) {
                 this.navbarCenterOverlap = false
-                this.menuStyle = VPMenuStyle.SLIDE
+                this.menu.style = VPPanelStyle.SLIDE
+                this.right.style = VPPanelStyle.SLIDE
                 if (first) {
-                    this.menuOpened = true
+                    this.menu.opened = true
                 }
             } else {
-                this.menuStyle = VPMenuStyle.OVERLAY
+                this.menu.style = VPPanelStyle.OVERLAY
+                this.right.style = VPPanelStyle.OVERLAY
             }
             first = false
         })

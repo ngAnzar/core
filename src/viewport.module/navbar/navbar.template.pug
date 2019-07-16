@@ -21,6 +21,11 @@ div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="
     ng-template(nzViewportArea="topRight")
 
 ng-template(nzViewportItem="topLeft:10")
-  button.nz-button(fxFlex="none", variant="medium icon", [disabled]="vps.menuDisabled", on-tap="vps.menuOpened=!vps.menuOpened")
-    i.nz-icon(*ngIf="vps.menuOpened", class=icon("mdi/backburger"))
-    i.nz-icon(*ngIf="!vps.menuOpened", class=icon("mdi/menu"))
+  button.nz-button(fxFlex="none", variant="medium icon", [disabled]="vps.menu.disabled", on-tap="vps.menu.opened=!vps.menu.opened")
+    i.nz-icon(*ngIf="vps.menu.opened", class=icon("mdi/backburger"))
+    i.nz-icon(*ngIf="!vps.menu.opened", class=icon("mdi/menu"))
+
+ng-template(nzViewportItem="topRight:1000")
+  button.nz-button(fxFlex="none", variant="medium icon", [disabled]="vps.right.disabled", on-tap="vps.right.opened=!vps.right.opened")
+    i.nz-icon(*ngIf="vps.right.opened", class=icon("mdi/application-export"))
+    i.nz-icon(*ngIf="!vps.right.opened", class=icon("mdi/application"))
