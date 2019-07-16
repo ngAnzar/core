@@ -1,4 +1,5 @@
-import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, Input } from "@angular/core"
+import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, Input, HostBinding } from "@angular/core"
+import { FormControl } from "@angular/forms"
 import { take } from "rxjs/operators"
 import { parse, isDate, format, startOfDay } from "date-fns"
 import { IMaskDirective } from "angular-imask"
@@ -25,6 +26,9 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     @Input() public min: Date
     @Input() public max: Date
+
+    @HostBinding("attr.tabindex")
+    public readonly tabIndexAttr = -1
 
     public readonly destruct = new Destruct()
     public imaskOptions: any
@@ -74,7 +78,6 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     public displayFormat: string = this.locale.getDateFormat("short")
     public valueFormat: string = "yyyy-MM-dd"
-    protected pendingValue: any
 
     public constructor(
         @Inject(InputModel) model: InputModel<Date>,
@@ -97,7 +100,6 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     protected _renderValue(obj: Date | string): void {
         if (!this.input) {
-            this.pendingValue = obj
             return
         }
 
@@ -109,7 +111,8 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
             return
         }
 
-        this.inputMask.writeValue(value)
+        this.input.nativeElement.value = value
+        this.inputMask.maskRef && this.inputMask.maskRef.updateValue()
     }
 
     protected parseString(str: string) {
@@ -154,10 +157,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     }
 
     public ngAfterViewInit() {
-        if (this.pendingValue) {
-            this._renderValue(this.pendingValue)
-            delete this.pendingValue
-        }
+        this._renderValue(this.model.value)
     }
 
     public ngOnDestroy() {
