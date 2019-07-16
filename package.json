@@ -34,7 +34,8 @@
     "tslint": "^5.11.0",
     "typescript": "^3.2.2",
     "zingtouch": "^1.0.6",
-    "zone.js": "^0.8.26"
+    "zone.js": "^0.8.26",
+    "@mdi/svg": "3.8.95"
   },
   "peerDependencies": {
     "@angular/animations": "^7.1.3",

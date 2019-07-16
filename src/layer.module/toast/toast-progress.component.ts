@@ -24,7 +24,7 @@ export type TPState = "progress" | "success" | "failure";
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToastProgressComponent extends ToastBase implements OnDestroy, AfterViewInit, OnInit {
-    @ViewChild("info") public readonly infoEl: ElementRef<HTMLElement>
+    // @ViewChild("info") public readonly infoEl: ElementRef<HTMLElement>
 
     public readonly destruct = new Destruct()
 
@@ -49,7 +49,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
 
     public get spinnerColor(): string {
         return this.state === "progress"
-            ? "disabled"
+            ? "common"
             : this.state === "success"
                 ? "confirm"
                 : "critical"
@@ -85,11 +85,11 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     }
 
     public ngAfterViewInit() {
-        const infoContainer = this.infoEl.nativeElement
-        const infoTextMeasure = infoContainer.childNodes[0] as HTMLElement
-        this.destruct.subscription(this.rectMutation.watchDimension(infoTextMeasure)).subscribe(dim => {
-            infoContainer.style.width = dim.width ? `${dim.width + (this.state === "success" ? 16 : 8)}px` : "0px"
-        })
+        // const infoContainer = this.infoEl.nativeElement
+        // const infoTextMeasure = infoContainer.childNodes[0] as HTMLElement
+        // this.destruct.subscription(this.rectMutation.watchDimension(infoTextMeasure)).subscribe(dim => {
+        //     infoContainer.style.width = dim.width ? `${dim.width + (this.state === "success" ? 16 : 8)}px` : "0px"
+        // })
     }
 
     public ngOnDestroy() {

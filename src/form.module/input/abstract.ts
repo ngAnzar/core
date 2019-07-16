@@ -179,7 +179,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     @HostBinding("attr.tabindex")
     public tabIndex: number = 0
 
-    @Input()
+    @Input("disableInput")
     public set disabled(val: boolean) { this.model.disabled = val }
     public get disabled(): boolean { return this.model.disabled }
 
