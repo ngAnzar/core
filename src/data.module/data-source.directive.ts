@@ -3,7 +3,7 @@ import { Observable, Subscription } from "rxjs"
 
 
 import { NzRange } from "../util"
-import { Model, ID } from "./model"
+import { Model, PrimaryKey } from "./model"
 import { DataSource, Filter, Sorter, LoadFields } from "./data-source"
 import { DataStorage, MappingChangedEvent } from "./data-storage"
 import { Items } from "./collection"
@@ -47,6 +47,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
                 this._onStorageChange()
             }
         } else {
+            console.log(val)
             throw new Error(`Unexpected value: ${val}`)
         }
 
@@ -123,7 +124,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         }
     }
 
-    public get(id: ID): Observable<T> {
+    public get(id: PrimaryKey): Observable<T> {
         return this.storage.source.get(id)
     }
 

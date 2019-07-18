@@ -52,17 +52,17 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy {
     public _handleOnDestroy(cmp: ISelectable<T>): void {
         let model = cmp.model
         if (model) {
-            delete this._rows[cmp.model.id]
+            delete this._rows[cmp.model.pk]
         }
     }
 
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void {
-        if (oldModel && this._rows[oldModel.id] === cmp) {
-            delete this._rows[oldModel.id]
+        if (oldModel && this._rows[oldModel.pk] === cmp) {
+            delete this._rows[oldModel.pk]
         }
 
         if (newModel) {
-            this._rows[newModel.id] = cmp
+            this._rows[newModel.pk] = cmp
         }
     }
 

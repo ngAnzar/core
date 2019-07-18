@@ -3,7 +3,7 @@ import { Observable, of } from "rxjs"
 import { map } from "rxjs/operators"
 
 import { NzRange } from "../util"
-import { Model, ID, ModelClass, Fields } from "./model"
+import { Model, PrimaryKey, ModelClass, Fields } from "./model"
 import { Items } from "./collection"
 
 
@@ -63,7 +63,7 @@ export abstract class DataSource<T extends Model> {
         })) as any
     }
 
-    public get(id: ID, m?: Meta<T>): Observable<T> {
+    public get(id: PrimaryKey, m?: Meta<T>): Observable<T> {
         return this._get(id, m) as any
     }
 
@@ -71,19 +71,19 @@ export abstract class DataSource<T extends Model> {
         return this._save(model, m)
     }
 
-    public remove(model: T | ID, m?: Meta<T>): Observable<boolean> {
-        return this._remove(model instanceof Model ? model.id : model, m)
+    public remove(model: T | PrimaryKey, m?: Meta<T>): Observable<boolean> {
+        return this._remove(model instanceof Model ? model.pk : model, m)
     }
 
-    public abstract getPosition(id: ID): Observable<number>
+    public abstract getPosition(id: PrimaryKey): Observable<number>
 
     protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<any[]>
 
-    protected abstract _get(id: ID, m?: Meta<T>): Observable<T>
+    protected abstract _get(id: PrimaryKey, m?: Meta<T>): Observable<T>
 
     protected abstract _save(model: T, m?: Meta<T>): Observable<T>
 
-    protected abstract _remove(id: ID, m?: Meta<T>): Observable<boolean>
+    protected abstract _remove(id: PrimaryKey, m?: Meta<T>): Observable<boolean>
 
     protected setBusy(busy: boolean) {
         if (this.busy !== busy) {
@@ -91,65 +91,6 @@ export abstract class DataSource<T extends Model> {
             (this.busyChanged as EventEmitter<boolean>).emit(busy)
         }
     }
-
-    // public makeModel(item: any): T {
-    //     return this.model ? Model.create(this.model, item) : item
-    // }
-
-    // protected makeModels(items: any[], range?: NzRange): T[] {
-    //     let total = items ? (items as any).total : null
-    //     range = range ? new NzRange(range.begin, range.begin + items.length) : new NzRange(0, items.length)
-    //     return new Items(items.map(this.makeModel.bind(this)), range, total)
-    // }
-
-    // protected getLoadFields(l?: LoadFieldsArg) {
-    //     if (Array.isArray(l)) {
-    //         return l
-    //     } else {
-    //         let model = l || this.model
-    //         if (model) {
-    //             let fields = Model.getFields(model)
-    //             let r: any[] = []
-    //             let f = {}
-    //             this._makeLoadFields(fields, f, r)
-    //             return this._flattenLoadFields(f)
-    //         }
-    //     }
-    // }
-
-    // private _makeLoadFields(fields: Fields, target: { [key: string]: any }, recursive: any[]) {
-    //     if (recursive.indexOf(fields) !== -1) {
-    //         return
-    //     }
-    //     recursive.push(fields)
-
-    //     for (const field of fields) {
-    //         if (field.fields.length) {
-    //             target[field.sourceName] = {}
-    //             for (const subF of field.fields) {
-    //                 this._makeLoadFields(subF, target[field.sourceName], recursive)
-    //             }
-    //         } else {
-    //             target[field.sourceName] = true
-    //         }
-    //     }
-
-    //     recursive.pop()
-    // }
-
-    // private _flattenLoadFields(f: { [key: string]: any }): LoadFields {
-    //     let result: LoadFields = []
-
-    //     for (const k in f) {
-    //         if (f[k] === true) {
-    //             result.push(k)
-    //         } else {
-    //             result.push({ [k]: this._flattenLoadFields(f[k]) })
-    //         }
-    //     }
-
-    //     return result
-    // }
 }
 
 

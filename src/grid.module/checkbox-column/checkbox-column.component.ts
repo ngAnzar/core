@@ -1,7 +1,7 @@
 import { Component, ViewChild, TemplateRef, OnInit } from "@angular/core"
 
 import { ColumnComponent } from "../../list-header.module"
-import { ID } from "../../data.module"
+import { PrimaryKey } from "../../data.module"
 
 
 @Component({
@@ -31,7 +31,7 @@ export class CheckboxColumnComponent extends ColumnComponent implements OnInit {
         }
     }
 
-    public isChecked(id: ID) {
+    public isChecked(pk: PrimaryKey) {
         // return this.grid.selection.getSelectOrigin(id) !== null
     }
 }

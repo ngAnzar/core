@@ -2,7 +2,7 @@ import { Observable, of, Subject } from "rxjs"
 
 import { NzRange } from "../util"
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
-import { Model, ID, ModelClass, RawData } from "./model"
+import { Model, PrimaryKey, ModelClass, RawData } from "./model"
 import { Items } from "./collection"
 
 
@@ -35,10 +35,10 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         this._customFilter[name] = filter
     }
 
-    public getPosition(id: ID): Observable<number> {
+    public getPosition(pk: PrimaryKey): Observable<number> {
         let pos = -1
         for (let i = 0, l = this.data.length; i < l; i++) {
-            if (this.data[i].id === id) {
+            if (this.data[i].pk === pk) {
                 return of(i)
             }
         }
@@ -49,7 +49,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         throw new Error("StaticSource not supports save")
     }
 
-    protected _remove(id: ID): Observable<boolean> {
+    protected _remove(id: PrimaryKey): Observable<boolean> {
         throw new Error("StaticSource not supports delete")
     }
 
@@ -90,7 +90,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         return of(new Items(result, range, total))
     }
 
-    protected _get(id: ID): Observable<T> {
+    protected _get(id: PrimaryKey): Observable<T> {
         return of(this.getSync(id))
     }
 
@@ -151,9 +151,9 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         }
     }
 
-    public getSync(id: ID): T {
+    public getSync(pk: PrimaryKey): T {
         for (let item of this.data) {
-            if (item.id === id) {
+            if (item.pk === pk) {
                 return item
             }
         }

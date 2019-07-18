@@ -6,20 +6,21 @@ export type ModelClass<M extends Model = Model> = { new(...args: any[]): M }
 export type ModelFactory<M = any> = { new(value: any): M } | ((value: any) => M)
 export type RawData<T> = Partial<T>
 
-export const MODEL_ID = new InjectionToken<ID>("MODEL_ID")
+export const MODEL_ID = new InjectionToken<PrimaryKey>("MODEL_ID")
 export const MODEL_EQ = Symbol("@eq")
 const RAW = Symbol("@raw")
 const CACHE = Symbol("@cache")
 const CHANGES = Symbol("@changes")
 const FIELDS = Symbol("@fields")
+const PK = Symbol("@primaryKey")
 
 
 export type Type = { new(value: any): any }
-export type BasicOptions = { name?: string, save?: boolean, load?: boolean, map?: ModelFactory }
+export type BasicOptions = { name?: string, save?: boolean, load?: boolean, map?: ModelFactory, primary?: boolean }
 export type TypeOptions = { type: Type | Type[] } & BasicOptions
 export type ListOfOptions = { listOf: Type | Type[] } & BasicOptions
 export type MapOfOptions = { mapOf: Type | Type[] } & BasicOptions
-export type ID = string | number
+export type PrimaryKey = string | number
 
 
 export type FieldOptions = BasicOptions | ListOfOptions | MapOfOptions | TypeOptions
@@ -33,6 +34,7 @@ export interface FieldMeta {
     type: FieldType
     fields?: Fields[]
     initEarly: boolean
+    primary: boolean
 }
 
 
@@ -145,6 +147,7 @@ export function Field(name: string | FieldOptions = {}) {
         let typeList
         meta.targetName = propertyKey
         meta.sourceName = options.name || propertyKey
+        meta.primary = !!options.primary
 
         if ("listOf" in options) {
             typeList = Array.isArray(options.listOf) ? options.listOf : [options.listOf]
@@ -304,11 +307,25 @@ export class Model {
         return new ModelProxy(model) as any
     }
 
-    @IDField() public id: ID
+    public get pk(): PrimaryKey {
+        if (this[PK] != null) {
+            return this[PK]
+        } else {
+            let pk: string[] = []
+            for (const field of this[FIELDS]) {
+                if (field.primary) {
+                    pk.push(`${(this as any)[field.targetName]}`)
+                }
+            }
+            return this[PK] = pk.join("-")
+        }
+    }
+
 
     private [RAW]: { [key: string]: any }
     private [CACHE]: { [key: string]: any }
     private [FIELDS]: Fields
+    private [PK]: PrimaryKey
 
     public constructor(data?: { [key: string]: any }) {
         this[RAW] = data || {}
@@ -322,7 +339,7 @@ export class Model {
     }
 
     private [MODEL_EQ](other: Model) {
-        return this === other || (Model.isModel(other) && other.id === this.id)
+        return this === other || (Model.isModel(other) && other.pk === this.pk)
     }
 
     public update(data: { [key: string]: any }) {

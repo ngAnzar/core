@@ -61,7 +61,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         if (this.$implicit !== val) {
             let old = this.$implicit;
             (this as any).$implicit = val
-            this._selected = val ? this.list.opened.origin[val.id] : null
+            this._selected = val ? this.list.opened.origin[val.pk] : null
             this.list._handleModelChange(this, old, val)
             this.cdr && this.cdr.markForCheck()
         }

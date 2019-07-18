@@ -5,7 +5,7 @@ import { map } from "rxjs/operators"
 
 import { NzRange } from "../../util"
 import { DataSource, Filter, Sorter } from "../data-source"
-import { Model, ModelClass, ID } from "../model"
+import { Model, ModelClass, PrimaryKey } from "../model"
 
 import { RpcTransport, RpcAction } from "./rpc-transport"
 
@@ -84,7 +84,7 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
         super()
     }
 
-    public getPosition(id: ID): Observable<number> {
+    public getPosition(id: PrimaryKey): Observable<number> {
         throw new Error(`Not implemented ${this.constructor.name}::getPosition`)
     }
 
@@ -92,7 +92,7 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
         throw new Error(`Not implemented ${this.constructor.name}::_save`)
     }
 
-    protected _delete(model: ID): Observable<boolean> {
+    protected _delete(model: PrimaryKey): Observable<boolean> {
         throw new Error(`Not implemented ${this.constructor.name}::_delete`)
     }
 
@@ -100,7 +100,7 @@ export abstract class RpcDataSource<T extends Model = Model> extends DataSource<
         throw new Error(`Not implemented ${this.constructor.name}::_search`)
     }
 
-    protected _get(id: ID): Observable<T> {
+    protected _get(id: PrimaryKey): Observable<T> {
         throw new Error(`Not implemented ${this.constructor.name}::_get`)
     }
 }

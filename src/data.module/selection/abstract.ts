@@ -3,7 +3,7 @@ import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
 
 import { IDisposable, NzRange } from "../../util"
-import { Model, ID } from "../model"
+import { Model, PrimaryKey } from "../model"
 import { SelectionKeyboardHandler } from "./keyboard-handler"
 
 
@@ -34,10 +34,10 @@ export interface ISelectionModel<T extends Model = Model> {
     update(update: Update): void
     clear(): void
 
-    getSelectOrigin(what: ID): SelectOrigin
-    setSelected(what: ID, selected: SelectOrigin): void
+    getSelectOrigin(what: PrimaryKey): SelectOrigin
+    setSelected(what: PrimaryKey, selected: SelectOrigin): void
     getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[]
-    setFocused(what: ID, origin: FocusOrigin): void
+    setFocused(what: PrimaryKey, origin: FocusOrigin): void
 
     _handleOnDestroy(cmp: ISelectable<T>): void
     _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void
@@ -96,8 +96,8 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
 
         let models = {} as any
         for (const item of val) {
-            fullUpdate[item.id] = origin
-            models[item.id] = item
+            fullUpdate[item.pk] = origin
+            models[item.pk] = item
         }
 
         this._tmpModels = models
@@ -235,11 +235,11 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         this.selected.clear()
     }
 
-    public getSelectOrigin(what: ID): SelectOrigin {
+    public getSelectOrigin(what: PrimaryKey): SelectOrigin {
         return this.selected.origin[what] || null
     }
 
-    public setSelected(what: ID, origin: SelectOrigin) {
+    public setSelected(what: PrimaryKey, origin: SelectOrigin) {
         this.update({ [what]: origin })
     }
 
@@ -248,7 +248,7 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
             return Object_values(this._selectables).filter(s => {
                 return s.isAccessible
                     && (!range || range.contains(s.selectionIndex))
-                    && this.getSelectOrigin(s.model.id) !== null
+                    && this.getSelectOrigin(s.model.pk) !== null
             })
         } else if (range) {
             return Object_values(this._selectables).filter(s => {
@@ -259,10 +259,10 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         }
     }
 
-    public setFocused(what: ID, origin: FocusOrigin): void {
+    public setFocused(what: PrimaryKey, origin: FocusOrigin): void {
         if (this._focusedItem) {
-            if (this._focusedItem.id !== what) {
-                let focused = this._selectables[this._focusedItem.id]
+            if (this._focusedItem.pk !== what) {
+                let focused = this._selectables[this._focusedItem.pk]
                 if (focused) {
                     focused.focused = null;
                     (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, origin: null })
@@ -286,19 +286,19 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         let model = cmp.model
         if (model) {
             if (!this.maintainSelection) {
-                this.setSelected(cmp.model.id, null)
+                this.setSelected(cmp.model.pk, null)
             }
-            delete this._selectables[cmp.model.id]
+            delete this._selectables[cmp.model.pk]
         }
     }
 
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void {
-        if (oldModel && this._selectables[oldModel.id] === cmp) {
-            delete this._selectables[oldModel.id]
+        if (oldModel && this._selectables[oldModel.pk] === cmp) {
+            delete this._selectables[oldModel.pk]
         }
 
         if (newModel) {
-            this._selectables[newModel.id] = cmp
+            this._selectables[newModel.pk] = cmp
         }
     }
 

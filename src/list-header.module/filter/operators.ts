@@ -2,6 +2,7 @@ import { StaticSource, Model, Field } from "../../data.module"
 
 
 export class Operator extends Model {
+    @Field({ primary: true }) public id: string
     @Field() public label: string
 }
 

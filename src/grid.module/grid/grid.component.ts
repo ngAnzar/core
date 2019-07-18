@@ -6,7 +6,7 @@ import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 
 import { Destruct } from "../../util"
-import { DataSourceDirective, SelectionModel, Model, ID, SelectionEvent } from "../../data.module"
+import { DataSourceDirective, SelectionModel, Model, PrimaryKey, SelectionEvent } from "../../data.module"
 import { ListFilterService, ColumnsComponent } from "../../list-header.module"
 
 import { GridRowDirective } from "./grid-row.directive"
@@ -51,9 +51,9 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         }
     }
 
-    public getRow(id: ID): GridRowDirective<T> {
+    public getRow(pk: PrimaryKey): GridRowDirective<T> {
         for (let row of this.rows.toArray()) {
-            if (row.model.id === id) {
+            if (row.model.pk === pk) {
                 return row
             }
         }
@@ -107,14 +107,14 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         }
 
         for (const add of changes) {
-            const row = this.getRow(add.id)
+            const row = this.getRow(add.pk)
             if (row) {
                 row.detectChanges()
             }
         }
 
         for (const remove of changes.removed) {
-            const row = this.getRow(remove.id)
+            const row = this.getRow(remove.pk)
             if (row) {
                 row.detectChanges()
             }

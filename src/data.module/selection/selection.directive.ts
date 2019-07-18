@@ -3,7 +3,7 @@ import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable } from "rxjs"
 
 import { NzRange } from "../../util"
-import { Model, ID } from "../model"
+import { Model, PrimaryKey } from "../model"
 import { SelectionModel, ISelectionModel, ISelectable, Update, SelectionEvent, SelectOrigin, SelectionItems } from "./abstract"
 import { SelectionKeyboardHandler } from "./keyboard-handler"
 
@@ -18,7 +18,7 @@ import { SelectionKeyboardHandler } from "./keyboard-handler"
 export class SingleSelection<T extends Model = Model> extends SelectionModel<T> {
     public readonly type = "single"
 
-    protected selectedId: ID
+    protected selectedId: PrimaryKey
 
     public update(update: Update): void {
         let up: Update = {}
@@ -98,10 +98,10 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
 
     public update(update: Update): void { this[SELECTION].update(update) }
     public clear(): void { this[SELECTION].clear() }
-    public getSelectOrigin(what: ID): SelectOrigin { return this[SELECTION].getSelectOrigin(what) }
-    public setSelected(what: ID, selected: SelectOrigin): void { this[SELECTION].setSelected(what, selected) }
+    public getSelectOrigin(what: PrimaryKey): SelectOrigin { return this[SELECTION].getSelectOrigin(what) }
+    public setSelected(what: PrimaryKey, selected: SelectOrigin): void { this[SELECTION].setSelected(what, selected) }
     public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] { return this[SELECTION].getSelectables(range, onlySelected) }
-    public setFocused(what: ID, origin: FocusOrigin): void { this[SELECTION].setFocused(what, origin) }
+    public setFocused(what: PrimaryKey, origin: FocusOrigin): void { this[SELECTION].setFocused(what, origin) }
     public _handleOnDestroy(cmp: ISelectable<T>): void { this[SELECTION]._handleOnDestroy(cmp) }
     public _handleModelChange(cmp: ISelectable<T>, oldModel: T, newModel: T): void { this[SELECTION]._handleModelChange(cmp, oldModel, newModel) }
 }

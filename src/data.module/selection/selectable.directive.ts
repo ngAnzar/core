@@ -16,7 +16,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
         if (!Model.isEq(this._model, val)) {
             let old = this._model
             this._model = val
-            this._selected = val ? this.selection.getSelectOrigin(val.id) : null
+            this._selected = val ? this.selection.getSelectOrigin(val.pk) : null
             this.selection._handleModelChange(this, old, val)
             this.cdr && this.cdr.markForCheck()
         }
@@ -52,7 +52,7 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     public set selected(value: SelectOrigin) {
         // value = coerceBooleanProperty(value)
         if (this._selected !== value) {
-            this.selection.setSelected(this.model.id, value)
+            this.selection.setSelected(this.model.pk, value)
             this.cdr && this.cdr.markForCheck()
         }
     }

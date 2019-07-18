@@ -11,7 +11,7 @@ import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter, take, tap } from "rxjs/operators"
 
 import { NzRange } from "../../../util"
-import { DataSourceDirective, Model, ID, Field, SelectionModel, SingleSelection } from "../../../data.module"
+import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection } from "../../../data.module"
 import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
 import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
@@ -50,7 +50,7 @@ export class ProvisionalModel extends Model {
 
 
 export type InputState = "typing" | "querying";
-export type SelectValue<T> = T | ID | T[] | ID[];
+export type SelectValue<T> = T | PrimaryKey | T[] | PrimaryKey[];
 export type AutoTrigger = "all" | "query" | null;
 
 @Component({
@@ -243,7 +243,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
             if (this.selection.type === "single" &&
                 selected[0] &&
-                this.selection.getSelectOrigin(selected[0].id) === "mouse") {
+                this.selection.getSelectOrigin(selected[0].pk) === "mouse") {
                 this.opened = false
             }
 
@@ -328,7 +328,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    protected coerceValue(value: SelectValue<T>): { ids: ID[], request: ID[], models: T[] } {
+    protected coerceValue(value: SelectValue<T>): { ids: PrimaryKey[], request: PrimaryKey[], models: T[] } {
         if (typeof value === "string") {
             value = value.split(/\s*,\s*/)
         }
@@ -342,7 +342,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         let request = []
         let idField = this.valueField || "id"
 
-        for (let item of value as Array<T | ID>) {
+        for (let item of value as Array<T | PrimaryKey>) {
             if (typeof item === "string" || typeof item === "number") {
                 let existing = this.selection.items.find(selected => (selected as any)[idField] === item)
                 if (existing) {
@@ -353,14 +353,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 ids.push(item)
             } else if (Model.isModel(item)) {
                 models.push(item)
-                ids.push(item.id)
+                ids.push(item.pk)
             }
         }
 
         return { ids, request, models }
     }
 
-    protected getModels(ids: ID[]): Observable<T[]> {
+    protected getModels(ids: PrimaryKey[]): Observable<T[]> {
         return Observable.create((observer: Observer<T[]>) => {
             let s = []
 
@@ -652,7 +652,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                         || this.input.nativeElement.value.length === 0)) {
                     if (this.selection.items.length > 0) {
                         this.selection.update({
-                            [this.selection.items[this.selection.items.length - 1].id]: null
+                            [this.selection.items[this.selection.items.length - 1].pk]: null
                         })
                     }
                     return true

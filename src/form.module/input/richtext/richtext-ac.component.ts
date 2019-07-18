@@ -14,6 +14,7 @@ const PROVIDER = Symbol("@AcProvider")
 
 export class RichtextAcItem extends Model {
     public [PROVIDER]: RichtextAcProvider
+    @Field({ primary: true }) public id: string
     @Field() public label: string
 }
 

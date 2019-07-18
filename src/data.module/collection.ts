@@ -2,7 +2,7 @@ import { Observable } from "rxjs"
 import { switchMap } from "rxjs/operators"
 
 import { NzRange, listDiff, ListDiff } from "../util"
-import { Model, ID } from "./model"
+import { Model, PrimaryKey } from "./model"
 
 
 export class Items<T extends Model> extends Array<T> {
@@ -66,7 +66,7 @@ export abstract class Collection<T extends Model> {
     // public readonly items: T[]
     // public readonly itemsChanged: Observable<ItemsWithChanges<T>> = new EventEmitter()
 
-    public getRangeById(id: ID, before: number, after: number): Observable<Items<T>> {
+    public getRangeById(id: PrimaryKey, before: number, after: number): Observable<Items<T>> {
         return this.getPosition(id)
             .pipe(switchMap(pos => this.getRange(
                 new NzRange(Math.max(0, pos - before), pos + after)
@@ -75,7 +75,7 @@ export abstract class Collection<T extends Model> {
 
     public abstract getRange(r: NzRange): Observable<Items<T>>
 
-    public abstract getPosition(id: ID): Observable<number>
+    public abstract getPosition(id: PrimaryKey): Observable<number>
 
     // public abstract getIndex(id: ID): number
 

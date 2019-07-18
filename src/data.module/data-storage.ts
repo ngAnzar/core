@@ -6,7 +6,7 @@ const DeepDiff = require("deep-diff")
 
 import { Destruct, IDisposable, NzRange, NzRangeList } from "../util"
 import { DataSource, Filter, Sorter, Meta, LoadFields } from "./data-source"
-import { Model, ID } from "./model"
+import { Model, PrimaryKey } from "./model"
 import { Collection, Items } from "./collection"
 import { StaticSource } from '..';
 
@@ -122,7 +122,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }
     }
 
-    public getPosition(id: ID): Observable<number> {
+    public getPosition(id: PrimaryKey): Observable<number> {
         return this.source.getPosition(id)
     }
 

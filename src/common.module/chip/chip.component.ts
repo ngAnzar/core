@@ -33,7 +33,7 @@ export class ChipComponent extends AnzarComponent {
 
     public remove(event: any) {
         if (this.selectable) {
-            this.selection.setSelected(this.selectable.model.id, null)
+            this.selection.setSelected(this.selectable.model.pk, null)
         } else {
             (this.onRemove as EventEmitter<any>).emit(event)
         }
@@ -45,7 +45,7 @@ export class ChipComponent extends AnzarComponent {
         if (this.selectable) {
             if (!event.defaultPrevented) {
                 if (this.selectable) {
-                    this.selection.setSelected(this.selectable.model.id, "mouse")
+                    this.selection.setSelected(this.selectable.model.pk, "mouse")
                 }
                 event.preventDefault()
             }

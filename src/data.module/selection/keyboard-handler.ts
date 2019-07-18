@@ -148,20 +148,20 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
         switch (mode) {
             case SelectMode.SINGLE:
                 if (this.alwaysAppend) {
-                    this.selection.setSelected(selectable.model.id, origin)
+                    this.selection.setSelected(selectable.model.pk, origin)
                 } else {
                     this.selection.selected.set([selectable.model as T], origin)
                 }
                 break
 
             case SelectMode.SINGLE_APPEND:
-                this.selection.setSelected(selectable.model.id, origin)
+                this.selection.setSelected(selectable.model.pk, origin)
                 break
 
             case SelectMode.APPEND:
                 let update: Update = {}
                 for (const s of this.getNextRangeItems(selectable)) {
-                    update[s.model.id] = origin
+                    update[s.model.pk] = origin
                 }
                 this.selection.update(update)
                 break
@@ -170,7 +170,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 if (this.alwaysAppend) {
                     let update: Update = {}
                     for (const s of this.getNextRangeItems(selectable)) {
-                        update[s.model.id] = origin
+                        update[s.model.pk] = origin
                     }
                     this.selection.update(update)
                 } else {
@@ -179,7 +179,7 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 break
 
             case SelectMode.FOCUS:
-                this.selection.setFocused(selectable.model.id, origin)
+                this.selection.setFocused(selectable.model.pk, origin)
                 break
         }
     }

@@ -39,6 +39,7 @@ export class ListActionComponent implements OnDestroy {
 
 export class ListActionModel extends Model {
     public readonly isListAction = true
+    @Field({ primary: true }) public id: string
     @Field({ map: (v) => v }) public action: ListActionComponent
 }
 
