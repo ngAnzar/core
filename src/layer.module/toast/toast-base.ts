@@ -54,7 +54,7 @@ export abstract class ToastBase {
     protected onAutoHideProgress(progress: number) {
         if (progress === 1) {
             this.autohide = 0
-            this.layerRef.hide()
+            this.hide()
         }
     }
 
@@ -63,6 +63,12 @@ export abstract class ToastBase {
         this.layerRef.emit(e)
 
         if (!e.isDefaultPrevented()) {
+            this.hide()
+        }
+    }
+
+    public hide() {
+        if (this.layerRef && this.layerRef.isVisible) {
             this.layerRef.hide()
         }
     }

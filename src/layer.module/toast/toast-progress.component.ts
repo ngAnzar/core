@@ -3,7 +3,7 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, OnInit
 } from "@angular/core"
 import { Observable, of } from "rxjs"
-import { tap, catchError, share } from "rxjs/operators"
+import { tap, catchError, share, finalize } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"
@@ -74,6 +74,11 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
                 catchError(err => {
                     this.state = "failure"
                     return of({ percent: 1, message: err.message })
+                }),
+                finalize(() => {
+                    if (this.state === "progress" && this.layerRef.isVisible) {
+                        this.layerRef.hide()
+                    }
                 }),
                 share()
             )
