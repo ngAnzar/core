@@ -263,7 +263,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         })
 
-        this.destruct.subscription(this.model.focusChanges).subscribe(this._handleFocus.bind(this))
+        this.destruct.subscription(this.model.focusChanges)
+            .pipe(debounceTime(100))
+            .subscribe(this._handleFocus.bind(this))
 
         this.displayField = displayField || "label"
         this.queryField = queryField || this.displayField
@@ -468,9 +470,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.input.nativeElement.focus()
             }
 
-            if (focused !== "mouse" && (!this.source.async || !this.editable)) {
-                this.opened = true
-            }
+            this.opened = true
         } else {
             this._resetTextInput()
             this.opened = false
@@ -538,13 +538,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
         event.preventDefault()
 
-        if (this.input) {
-            this.input.nativeElement.focus()
-        }
-
         if (this.opened) {
             this.opened = false
         } else {
+            if (this.input) {
+                this.input.nativeElement.focus()
+            }
+
             this.inputState = "querying"
             this.opened = true
             this._updateFilter(null)
@@ -574,7 +574,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _resetTextInput() {
-        if (!this.input) {
+        if (!this.input || !this.selection) {
             return
         }
 
