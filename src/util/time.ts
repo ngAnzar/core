@@ -123,6 +123,16 @@ export class Time {
     public toJSON(): string {
         return this.toString()
     }
+
+    /**
+     * returns:
+     *     -1 when the give time is greater
+     *      0 when equal
+     *      1 when lower
+     */
+    public compare(other: Time): number {
+        return this.toString().localeCompare(other.toString())
+    }
 }
 
 function parse(value: string): Partial<Time> {

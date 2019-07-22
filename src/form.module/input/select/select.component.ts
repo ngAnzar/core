@@ -514,18 +514,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    // @HostListener("keypress", ["$event"])
-    // protected _onKeypress(event: KeyboardEvent) {
-    //     console.log({ type: event.type, keyCode: event.keyCode, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey })
-    //     if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
-    //         event.preventDefault()
-    //         event.stopImmediatePropagation()
-    //     }
-    // }
-
     @HostListener("keydown", ["$event"])
     protected _onKeydown(event: KeyboardEvent) {
-        // console.log({ type: event.type, keyCode: event.keyCode, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey })
         if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
             event.preventDefault()
             event.stopImmediatePropagation()

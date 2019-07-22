@@ -1,8 +1,83 @@
-import { Component, Input, Inject, ElementRef, HostListener } from "@angular/core"
-import { format, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
+import { Component, Input, Inject, ElementRef, HostListener, Directive } from "@angular/core"
+import { Validator, AbstractControl, ValidationErrors, NG_VALIDATORS } from "@angular/forms"
+import { format, setHours, setMinutes, setSeconds, setMilliseconds, addMinutes } from "date-fns"
 
 import { Time } from "../../../util"
 import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "../abstract"
+
+
+const MIDNIGHT = new Time("24:00:00")
+
+
+@Directive({
+    selector: "input[type=time][min].nz-input,input[type=time][max].nz-input",
+    providers: [
+        { provide: NG_VALIDATORS, useExisting: TimeValidator, multi: true }
+    ]
+})
+export class TimeValidator implements Validator {
+    @Input()
+    public set min(val: Time | string | Date) {
+        val = coerceTime(val)
+        if (!this._min || !val || this._min.compare(val) !== 0) {
+            this._min = val
+            if (this._onChange) {
+                this._onChange()
+            }
+        }
+    }
+    public get min(): Time | string | Date { return this._min }
+    private _min: Time
+
+    @Input()
+    public set max(val: Time | string | Date) {
+        val = coerceTime(val)
+        if (!this._max || !val || this._max.compare(val) !== 0) {
+            this._max = val
+            if (this._onChange) {
+                this._onChange()
+            }
+        }
+    }
+    public get max(): Time | string | Date { return this._max }
+    private _max: Time
+
+    private _onChange: () => void
+
+    public validate(ctrl: AbstractControl): ValidationErrors | null {
+        let value = ctrl.value as Time
+        if (!value || !value.isValid) {
+            return null
+        }
+
+        if (this._min && this._min.isValid) {
+            if (this._min.compare(value) === 1) {
+                return { timeMin: true }
+            }
+
+            if (this._max && this._max.isValid) {
+                if (this._min.compare(this._max) === 1) {
+                    if (MIDNIGHT.compare(value) >= 0) {
+                        return null
+                    }
+                }
+            }
+        }
+
+        if (this._max && this._max.isValid) {
+            if (this._max.compare(value) === -1) {
+                return { timeMax: true }
+            }
+        }
+
+        console.log("validate", this.min, this.max)
+        return null
+    }
+
+    public registerOnValidatorChange(fn: () => void) {
+        this._onChange = fn
+    }
+}
 
 
 @Component({
@@ -11,22 +86,6 @@ import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "../ab
     providers: INPUT_MODEL
 })
 export class TimeInputComponent extends InputComponent<Time> {
-    // @Input()
-    // public set date(value: Date) {
-    //     value = value || new Date()
-    //     if (this._rawValue) {
-    //         this._date = value
-    //         this.value = this._composeDate()
-    //     } else {
-    //         this.value = null
-    //     }
-    // }
-    // public get date(): Date {
-    //     return this._date || new Date()
-    // }
-    // protected _date: Date
-    // protected _rawValue: { hours: number, minutes: number, seconds: number }
-
     public constructor(
         @Inject(InputModel) model: InputModel<Time>,
         @Inject(ElementRef) private el: ElementRef<HTMLElement>) {
@@ -75,5 +134,19 @@ export class TimeInputComponent extends InputComponent<Time> {
                 (this.el.nativeElement as HTMLInputElement).value = ""
             }
         }
+    }
+}
+
+
+function coerceTime(val: Time | Date | string): Time | null {
+    if (val instanceof Time) {
+        return val
+    } else if (val instanceof Date) {
+
+        return new Time(format(val, "HH:mm:ss.SSS"))
+    } else if (typeof val === "string") {
+        return new Time(val)
+    } else {
+        return null
     }
 }

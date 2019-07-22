@@ -1,11 +1,13 @@
 import {
-    Component, ContentChild, AfterContentInit, NgZone, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject
+    Component, ContentChild, ContentChildren, QueryList, AfterContentInit, NgZone,
+    ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject, OnDestroy
 } from "@angular/core"
 import { merge } from "rxjs"
 import { startWith, debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { InputModel } from "../input/abstract"
+import { ErrorMessageDirective } from "../error/error-message.directive"
 
 
 @Component({
@@ -24,12 +26,13 @@ import { InputModel } from "../input/abstract"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormFieldComponent implements AfterContentInit {
+export class FormFieldComponent implements AfterContentInit, OnDestroy {
     public readonly destruct = new Destruct()
     public readonly showUnderline: boolean
 
     // @ContentChild(LabelDirective) protected _labelDirective: LabelDirective
     @ContentChild(InputModel) protected _inputModel: InputModel<any>
+    @ContentChildren(ErrorMessageDirective) public messages: QueryList<ErrorMessageDirective>
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
@@ -48,5 +51,9 @@ export class FormFieldComponent implements AfterContentInit {
                 this._inputModel.focusChanges))
             .pipe(startWith(), debounceTime(100))
             .subscribe(this.cdr.markForCheck.bind(this.cdr))
+    }
+
+    public ngOnDestroy() {
+        this.destruct.run()
     }
 }

@@ -29,9 +29,9 @@ import { DateInputComponent } from "./input/date/date-input.component"
 import { DatePickerComponent } from "./input/date/date-picker.component"
 import { DatePickerService } from "./input/date/date-picker.service"
 // import { DatetimeInputComponent } from "./input/date/datetime-input.component"
-import { TimeInputComponent } from "./input/date/time-input.component"
+import { TimeInputComponent, TimeValidator } from "./input/date/time-input.component"
 export {
-    DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent
+    DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent, TimeValidator
 }
 
 import { RadioComponent } from "./input/radio/radio.component"
@@ -87,6 +87,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         DateInputComponent,
         DatePickerComponent,
         TimeInputComponent,
+        TimeValidator,
 
         RadioComponent,
         RadioGroupDirective,
@@ -117,6 +118,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         DateInputComponent,
         DatePickerComponent,
         TimeInputComponent,
+        TimeValidator,
 
         RadioComponent,
         RadioGroupDirective,

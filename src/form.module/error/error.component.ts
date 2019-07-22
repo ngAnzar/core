@@ -1,6 +1,6 @@
 import {
     Component, ContentChildren, QueryList, AfterContentInit, OnDestroy, Inject, Optional, Self, Input,
-    ChangeDetectionStrategy, ChangeDetectorRef, InjectionToken
+    ChangeDetectionStrategy, ChangeDetectorRef, InjectionToken, TemplateRef
 } from "@angular/core"
 import { NgControl } from "@angular/forms"
 import { Subscription } from "rxjs"
@@ -20,13 +20,24 @@ export const DEFAULT_ERROR_MESSAGES = new InjectionToken<ErrorMessages>("DEFAULT
 @Component({
     selector: ".nz-error",
     exportAs: "nzError",
-    template: "<ng-content></ng-content>{{ message }}",
+    templateUrl: "./error.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ErrorComponent implements AfterContentInit, OnDestroy {
+export class ErrorComponent implements OnDestroy {
     public readonly destruct = new Destruct()
 
-    @ContentChildren("[nzErrorMessage]") public messages: QueryList<ErrorMessageDirective>
+    // @ContentChildren(ErrorMessageDirective) public messages: QueryList<ErrorMessageDirective>
+    // public messages: ErrorMessageDirective[]
+    @Input()
+    public set messages(val: ErrorMessageDirective[]) {
+        if (this._messages !== val) {
+            this._messages = val
+            this._computeErrorMessage()
+            this.cdr.detectChanges()
+        }
+    }
+    public get messages(): ErrorMessageDirective[] { return this._messages }
+    private _messages: ErrorMessageDirective[]
 
     @Input()
     public set inputModel(val: InputModel<any>) {
@@ -45,15 +56,8 @@ export class ErrorComponent implements AfterContentInit, OnDestroy {
     private _inputModel: InputModel<any>
     private _inputModelS: Subscription
 
-    public set message(val: string) {
-        if (this._message !== val) {
-            this._message = val
-            this.cdr.detectChanges()
-        }
-    }
-    public get message(): string { return this._message }
-    private _message: string
-
+    public errorMessage: string
+    public errorTpl: TemplateRef<any>
     public isEmpty: boolean = true
 
     public constructor(
@@ -65,12 +69,6 @@ export class ErrorComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    public ngAfterContentInit() {
-        this.destruct.subscription(this.messages.changes).subscribe(changes => {
-            this.message = this._computeErrorMessage()
-        })
-    }
-
     public ngOnDestroy() {
         if (this._inputModelS) {
             this._inputModelS.unsubscribe()
@@ -80,43 +78,43 @@ export class ErrorComponent implements AfterContentInit, OnDestroy {
     }
 
     private _onStatusChanges = (status: any) => {
-        if (status === "INVALID") {
-            this.message = this._computeErrorMessage()
-        } else {
-            this.message = null
-        }
-
-        // console.log("_onStatusChanges", status, this.inputModel.errors)
+        this._computeErrorMessage()
+        this.cdr.detectChanges()
     }
 
-    private _computeErrorMessage(): string {
+    private _computeErrorMessage() {
+        if (!this.inputModel) {
+            return
+        }
+
         const errors = this.inputModel.errors
         const messages = this.messages
 
+        this.errorMessage = this.errorTpl = null
         console.log({ messages, defaultErrors: this.defaultErrors })
 
         if (errors) {
             if (messages.length) {
-                for (const m of messages.toArray()) {
-                    console.log(m)
+                for (const m of messages) {
+                    if (errors[m.condition]) {
+                        return this.errorTpl = m.tpl
+                    }
                 }
             }
 
             if (this.defaultErrors) {
                 for (const k in this.defaultErrors) {
                     if (errors[k]) {
-                        return this.defaultErrors[k]
+                        return this.errorMessage = this.defaultErrors[k]
                     }
                 }
             }
 
             for (const k in errors) {
                 if (errors.hasOwnProperty(k) && typeof errors[k] === "string") {
-                    return errors[k]
+                    return this.errorMessage = errors[k]
                 }
             }
         }
-
-        return null
     }
 }

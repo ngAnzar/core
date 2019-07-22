@@ -77,11 +77,14 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
     public get selection(): RTSelection | null {
         let sel = window.getSelection()
-        if (sel.anchorNode && this.el.contains(sel.anchorNode)) {
-            return new RTSelection(this.el, sel)
-        } else {
-            return null
+        try {
+            if (sel.anchorNode && this.el.contains(sel.anchorNode)) {
+                return new RTSelection(this.el, sel)
+            }
+        } catch (e) {
+
         }
+        return null
     }
 
     public command(): RTCommand {

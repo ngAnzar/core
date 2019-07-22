@@ -30,8 +30,7 @@
   .nz-form-field-ripple
 
 .caption
-  .nz-error(#error="nzError", [inputModel]="_inputModel")
-    ng-content(select="[nzErrorMessage]", ngProjectAs="[nzErrorMessage]")
+  .nz-error(#error="nzError", [inputModel]="_inputModel", [messages]="messages.toArray()")
 
   ng-template([ngIf]="error.isEmpty")
     ng-content(select="caption, .nz-caption")
