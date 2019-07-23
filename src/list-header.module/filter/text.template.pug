@@ -10,7 +10,7 @@ ng-template(#layer)
         input.nz-input([formControl]="value")
 
     div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px")
-      button.nz-button(fxFlex="noshrink", on-action="clearValue()") Törlés
+      button.nz-button(*ngIf="value.value", fxFlex="noshrink", on-action="clearValue()", color="base", variant="filled") Törlés
       div(fxFlex="grow")
       button.nz-button(fxFlex="noshrink", color="confirm" type="submit") Szűrés
 

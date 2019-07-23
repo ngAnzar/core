@@ -106,10 +106,10 @@ export class DatePickerComponent implements OnInit {
         let result: string[] = []
         let start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn as any })
 
-        result.push(this.locale.formatDate(start, "dd"))
+        result.push(this.locale.formatDate(start, "EEEEEE"))
 
         for (let i = 1; i < 7; i++) {
-            result.push(this.locale.formatDate(addDays(start, i), "dd"))
+            result.push(this.locale.formatDate(addDays(start, i), "EEEEEE"))
         }
 
         return result

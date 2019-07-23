@@ -139,7 +139,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
             let ref = layerFilter.show(behavior, { $implicit: this.filter })
 
             let s = ref.output.subscribe(event => {
-                if (event.type === "") {
+                if (event.type === "destroy") {
                     s.unsubscribe()
                     this.cdr.markForCheck()
                     this.filter.resetValue()

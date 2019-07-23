@@ -88,7 +88,6 @@ export abstract class ColumnFilter extends ListFilter {
     protected abstract _writeValue(value: any): void
 
     protected _publishValue(value: any): void {
-        console.log("_publishValue", value)
         const changes = DeepDiff.diff(this.originalValue, value) as Diff
         this.originalValue = value;
         (this as any).isEmpty = value == null

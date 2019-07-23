@@ -23,27 +23,31 @@ export class ListFilterText extends ColumnFilter {
 
     protected get filter() {
         return this.value.value
-        // if (this.operator.value && this.value.value) {
-        //     return {
-        //         [this.operator.value]: this.value.value
-        //     }
-        // } else {
-        //     return null
-        // }
     }
 
     public applyFilter() {
-        // let op = textOperators.getSync(this.operator.value)
-        // this.operatorText = op ? ` ${op.label} ` : null
         this.valueText = this.value.value
 
-        this._publishValue(this.filter)
+        if (this.operator.value && this.value.value) {
+            this._publishValue({ [this.operator.value]: this.value.value })
+        } else {
+            this._publishValue(null)
+        }
+
         this.hideLayer()
     }
 
     public _writeValue(value: any) {
-        if (value) {
+        if (typeof value === "string") {
             this.value.setValue(value)
+        } else if (value) {
+            const keys = Object.keys(value)
+            if (keys.length === 1) {
+                this.operator.setValue(keys[0])
+                this.value.setValue(value[keys[0]])
+            } else {
+                throw new Error("Invalid filter: " + JSON.stringify(value))
+            }
         } else {
             this.operator.setValue("contains")
             this.value.setValue(null)

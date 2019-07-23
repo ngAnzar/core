@@ -91,7 +91,6 @@ export class ErrorComponent implements OnDestroy {
         const messages = this.messages
 
         this.errorMessage = this.errorTpl = null
-        console.log({ messages, defaultErrors: this.defaultErrors })
 
         if (errors) {
             if (messages.length) {
