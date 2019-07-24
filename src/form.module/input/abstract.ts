@@ -235,7 +235,7 @@ export class InputGroupModel<T> extends InputModel<T> {
     public constructor(
         @Inject(ControlContainer) @Self() private cc: ControlContainer,
         @Inject(FocusMonitor) focusMonitor: FocusMonitor,
-        @Inject(INPUT_MODEL_VALUE_CMP) @Optional() public readonly cmp: ValueComparator<T>) {
-        super(null, null, focusMonitor, cmp || function () { return false })
+        @Inject(INPUT_MODEL_VALUE_CMP) @Optional() cmp: ValueComparator<T>) {
+        super(null, null, focusMonitor, cmp || (function () { return false }))
     }
 }
