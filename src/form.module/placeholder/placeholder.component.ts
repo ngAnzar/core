@@ -1,5 +1,5 @@
 import { Component, Inject, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, HostBinding, Input, ElementRef } from "@angular/core"
-import { merge } from "rxjs"
+import { merge, Subject } from "rxjs"
 import { startWith, debounceTime, takeUntil } from "rxjs/operators"
 
 import { Destruct } from "../../util"
@@ -18,30 +18,28 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
 
     @Input()
     public set hideLabel(val: boolean) {
-        console.log("set hideLabel", this._hideLabel, "=>", val)
         if (this._hideLabel !== val) {
             this._hideLabel = val
-
-            if (val) {
-                this.el.nativeElement.classList.add("hide-label")
-            } else {
-                this.el.nativeElement.classList.remove("hide-label")
-            }
+            this._hideLabel$.next(val)
         }
     }
     public get hideLabel(): boolean { return this._hideLabel }
     private _hideLabel: boolean = false
+    private _hideLabel$ = this.destruct.subject(new Subject<boolean>())
 
     public constructor(
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>) {
+        @Inject(ElementRef) el: ElementRef<HTMLElement>) {
+
+        this._hideLabel$.pipe(debounceTime(50), takeUntil(this.destruct.on)).subscribe(val => {
+            el.nativeElement.classList[val ? "add" : "remove"]("hide-label")
+        })
     }
 
     public ngAfterContentInit() {
-        console.log(this._inputModel)
         if (this._inputModel) {
             merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.focusChanges, this._inputModel.inputChanges)
-                .pipe(startWith(null), debounceTime(10), takeUntil(this.destruct.on))
+                .pipe(startWith(null), takeUntil(this.destruct.on))
                 .subscribe(event => {
                     this.hideLabel = !this._inputModel.isEmpty || this._inputModel.focused !== null
                 })
