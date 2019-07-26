@@ -177,7 +177,13 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     public del(model: T) {
         let idx = this.data.indexOf(model)
         if (idx !== -1) {
-            (this.data as any).splice(idx, 1);
+            this.removeAt(idx)
+        }
+    }
+
+    public removeAt(idx: number) {
+        const removed = (this.data as any).splice(idx, 1)
+        if (removed && removed.length > 0) {
             (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
         }
     }
