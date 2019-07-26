@@ -31,6 +31,8 @@ export class RadioGroupDirective<T = any> extends InputComponent<T> {
         if (this.radios.indexOf(radio) === -1) {
             this.radios.push(radio)
         }
+
+        this._renderValue(this.model.value)
     }
 
     public delRadio(radio: RadioComponent<T>) {
@@ -38,6 +40,8 @@ export class RadioGroupDirective<T = any> extends InputComponent<T> {
         if (idx !== -1) {
             this.radios.splice(idx, 1)
         }
+
+        this._renderValue(this.model.value)
     }
 
     public setChecked(radio: RadioComponent<T>) {

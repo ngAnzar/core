@@ -1,6 +1,6 @@
 import {
     Component, ChangeDetectionStrategy, Output, Input, Inject, Optional, OnDestroy,
-    Renderer2, ChangeDetectorRef, ElementRef, EventEmitter, Attribute, SkipSelf, ViewChild
+    Renderer2, ChangeDetectorRef, ElementRef, EventEmitter, Attribute, SkipSelf, ViewChild, OnInit
 } from "@angular/core"
 import { NgControl, NgModel } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -29,7 +29,7 @@ export interface RadioChangeEvent {
     providers: INPUT_MODEL,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RadioComponent<T = any> extends InputComponent<T> implements OnDestroy {
+export class RadioComponent<T = any> extends InputComponent<T> implements OnDestroy, OnInit {
     @ViewChild("input") public readonly input: ElementRef<HTMLInputElement>
 
     @Input()
@@ -72,11 +72,14 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(RadioGroupDirective) @Optional() @SkipSelf() public readonly group: RadioGroupDirective) {
         super(model)
-
         this.monitorFocus(el.nativeElement)
+    }
 
-        if (group) {
-            group.addRadio(this)
+    public ngOnInit() {
+        super.ngOnInit()
+
+        if (this.group) {
+            this.group.addRadio(this)
         }
     }
 
