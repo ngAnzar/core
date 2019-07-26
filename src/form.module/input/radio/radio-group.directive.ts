@@ -23,17 +23,6 @@ export class RadioGroupDirective<T = any> extends InputComponent<T> {
     public get name(): string { return this._name }
     protected _name: string
 
-    @Input()
-    public set disabled(val: boolean) {
-        val = coerceBooleanProperty(val)
-        if (this._disabled !== val) {
-            this._disabled = val
-            this._applyProperty("disabled", val)
-        }
-    }
-    public get disabled(): boolean { return this._disabled }
-    protected _disabled: boolean
-
     protected radios: RadioComponent<T>[] = []
 
     public addRadio(radio: RadioComponent<T>) {

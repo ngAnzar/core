@@ -20,7 +20,7 @@ export class TextFieldComponent extends InputComponent<string> {
     }
 
     protected _renderValue(value: string) {
-        this.el.nativeElement.value = value
+        this.el.nativeElement.value = value != null ? value : ""
     }
 
     @HostListener("input", ["$event"])

@@ -126,6 +126,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
                 map(_ => {
                     const val = this._getValue()
                     this.model.emitValue(val)
+                    if (this.group) {
+                        this.group.onCheckedChange()
+                    }
                     return val
                 }),
                 debounceTime(30),
@@ -133,11 +136,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             )
             .subscribe(val => {
                 this._renderValue(val)
-
-                if (this.group) {
-                    this.group.onCheckedChange()
-                }
-
                 this.cdr.detectChanges()
             })
     }
