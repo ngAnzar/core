@@ -15,3 +15,7 @@ $nz-form-field-bottom-caption-height ?= 20px
 @require "./input/text/input"
 @require "./fieldset/fieldset"
 
+label[required]
+  &:after
+    content: " *"
+    color: $theme.critical.normal

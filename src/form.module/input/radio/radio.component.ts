@@ -24,6 +24,7 @@ export interface RadioChangeEvent {
     templateUrl: "./radio.template.pug",
     host: {
         "[class.nz-radio-checked]": "checked",
+        "[class.ng-invalid]": "(group && group.model && group.model.invalid) || (model && model.invalid)",
         "(tap)": "_handleTap($event)"
     },
     providers: INPUT_MODEL,
