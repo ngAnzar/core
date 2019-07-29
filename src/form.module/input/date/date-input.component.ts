@@ -153,7 +153,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     public _onComplete(value: string) {
         let inputVal: Date = parse(value, this.displayFormat, new Date())
-        this.opened = false
+        // this.opened = false
         this.model.emitValue(setTzToUTC(startOfDay(inputVal)))
     }
 
