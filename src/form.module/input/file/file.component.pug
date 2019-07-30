@@ -1,0 +1,12 @@
+:stylus
+  .fileinput
+    width: 0.1px
+    height: 0.1px
+    opacity: 0
+    overflow: hidden
+    position: absolute
+    z-index: -1
+
+label.nz-button([attr.tabindex]="tabIndex", variant="filled", color="accent")
+  input.fileinput(type="file", on-change="onFileChange($event)", tabindex="-1")
+  ng-content
