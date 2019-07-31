@@ -40,20 +40,5 @@ export class ScrollableDirective {
         let elRect = getBoundingClientRect(el)
 
         return new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
-
-        // console.log("scrollable", getBoundingClientRect(this.el.nativeElement), getBoundingClientRect(el))
-
-        // let top = 0
-        // let left = 0
-        // let end = this.el.nativeElement
-        // let current = el
-
-        // while (current && current !== end) {
-        //     top += el.offsetTop
-        //     left = el.offsetLeft
-        //     current = current.offsetParent as HTMLElement
-        // }
-
-        // return new Rect(left, top, el.offsetWidth, el.offsetHeight)
     }
 }

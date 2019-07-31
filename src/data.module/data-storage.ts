@@ -35,7 +35,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }
     }
     public get isBusy(): boolean { return this._isBusy }
-    private _isBusy: boolean
+    private _isBusy: boolean = true
 
     public readonly isEmpty: boolean = true
     public readonly reseted: Observable<void> = new EventEmitter()

@@ -92,7 +92,7 @@ export class ErrorComponent implements OnDestroy {
 
         this.errorMessage = this.errorTpl = null
 
-        if (errors) {
+        if (errors && this.inputModel.touched) {
             if (messages.length) {
                 for (const m of messages) {
                     if (errors[m.condition]) {
