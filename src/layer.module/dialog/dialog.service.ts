@@ -2,6 +2,8 @@ import "./dialog.styl"
 
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
+import { Observable } from "rxjs"
+import { filter, map, take } from "rxjs/operators"
 
 
 import { LayerService } from "../layer/layer.service"
@@ -66,17 +68,35 @@ export class DialogService {
         )
     }
 
-    public deleteLowRisk(what: string, options?: LayerOptions): DialogRef {
+    public confirm(title: string, message: string): Observable<boolean> {
         return this._show(
             getProviders({
-                title: `${what} törlés megerősítése`,
-                message: `Biztosan törölni szeretné?`,
+                title, message,
+                options: { isPlainText: true },
+                content: LayerMessageComponent,
+                buttons: [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_OK]
+            }),
+            {}
+        ).output.pipe(
+            filter(event => event.type === "button"),
+            map(event => event.button === "ok"),
+            take(1))
+    }
+
+    public deleteLowRisk(title: string, message: string, options?: LayerOptions): Observable<boolean> {
+        return this._show(
+            getProviders({
+                title: title,
+                message: message,
                 options: { isPlainText: true },
                 content: LayerMessageComponent,
                 buttons: [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_DELETE]
             }),
             options
-        )
+        ).output.pipe(
+            filter(event => event.type === "button"),
+            map(event => event.button === "delete"),
+            take(1))
     }
 
     public deleteHighRisk() {
