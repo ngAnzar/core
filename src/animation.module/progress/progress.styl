@@ -10,8 +10,17 @@ nz-progress
       transform-origin: center
       transition: stroke 250ms
 
-    for color, value in nz-theme-colors($theme)
-      &{'[color="' + color + '"]'} circle
+  &[type="bar"]
+    width: 100%
+    line-height: 0px
+
+    svg
+      width: 100%
+
+  for color, value in nz-theme-colors($theme)
+    &{'[color="' + color + '"]'}
+      circle, line
         stroke: value.normal
 
-
+      &[type="bar"]
+        background-color: alpha(value.normal, 0.3)
