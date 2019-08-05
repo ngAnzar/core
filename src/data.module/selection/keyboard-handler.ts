@@ -144,6 +144,10 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
     }
 
     protected addToSelection(selectable: ISelectable, mode: SelectMode, isMouse: boolean) {
+        if (this.selection.type === "none") {
+            return
+        }
+
         let origin: SelectOrigin = isMouse ? "mouse" : "keyboard"
         switch (mode) {
             case SelectMode.SINGLE:
