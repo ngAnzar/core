@@ -166,7 +166,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     // public abstract readonly isTextlike: boolean
 
     @Input("value")
-    public set value(val: T) { this.model.value = val }
+    public set value(val: T) { this.model.value = val; this.model.renderValueChanges.next(val) }
     public get value(): T { return this.model.value }
 
     @Output("value")

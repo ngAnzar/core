@@ -458,7 +458,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         } else {
             delete this.selectedBeforeOpen
             this.layerFactory.hide()
-            this._applySelected()
+            // this._applySelected()
         }
     }
 
@@ -558,20 +558,20 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     //     }
     // }
 
-    protected _applySelected() {
-        let value = this.valueField
-            ? this.selected.map(item => (item as any)[this.valueField])
-            : this.selected.slice(0)
+    // protected _applySelected() {
+    //     let value = this.valueField
+    //         ? this.selected.map(item => (item as any)[this.valueField])
+    //         : this.selected.slice(0)
 
-        if (this.selection.type === "single") {
-            this.value = value[0]
-        } else {
-            this.value = value
-        }
+    //     if (this.selection.type === "single") {
+    //         this.model.emitValue(value[0])
+    //     } else {
+    //         this.model.emitValue(value)
+    //     }
 
-        // this.writeValue(this.value)
-        this._resetTextInput()
-    }
+    //     // this.writeValue(this.value)
+    //     this._resetTextInput()
+    // }
 
     protected _resetTextInput() {
         if (!this.input || !this.selection) {
