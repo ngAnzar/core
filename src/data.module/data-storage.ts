@@ -62,6 +62,8 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }).pipe(debounceTime(10))
     }
 
+    public get data(): Readonly<{ [key: number]: T }> { return this.cache }
+
     protected cache: { [key: number]: T } = {}
     protected cachedRanges: NzRangeList = new NzRangeList()
     protected cancel = new Subject()
