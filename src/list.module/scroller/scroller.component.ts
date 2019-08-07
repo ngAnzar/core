@@ -39,8 +39,12 @@ export class ScrollerComponent {
 
     @HostListener("wheel", ["$event"])
     public onMouseScroll(event: WheelEvent) {
-        if (!this.service.lockMethod("wheel")) {
+        if (!this.service.lockMethod("wheel") || event.defaultPrevented) {
             return
+        }
+
+        if (this.service.verticalOverflow) {
+            event.preventDefault()
         }
 
         if (event.deltaY) {
