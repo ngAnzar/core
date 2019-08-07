@@ -94,7 +94,6 @@ export { DeleteConfirmDialogComponent, DeleteConfirmDirective }
     ],
     providers: [
         LevitateService,
-        LayerService,
         LayerContainer,
         DialogService,
         MaskService,
