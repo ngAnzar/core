@@ -50,6 +50,7 @@ import { TabComponent } from "./tabs/tab.component"
 export { TabsComponent, TabComponent }
 
 import { VirtualForDirective } from "./virtual-for.directive"
+import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-strategy.directive"
 
 
 @NgModule({
@@ -89,7 +90,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         TabsComponent,
         TabComponent,
 
-        VirtualForDirective
+        VirtualForDirective,
+        VirtualForFixedItems,
+        VirtualForVaryingItems
     ],
     exports: [
         ExlistComponent,
@@ -115,7 +118,9 @@ import { VirtualForDirective } from "./virtual-for.directive"
         TabsComponent,
         TabComponent,
 
-        VirtualForDirective
+        VirtualForDirective,
+        VirtualForFixedItems,
+        VirtualForVaryingItems
     ],
     entryComponents: [
         AutocompleteComponent
