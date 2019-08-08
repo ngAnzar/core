@@ -6,12 +6,35 @@ import { Destruct, IDisposable } from "../../../util"
 import { removeNode } from "./util"
 
 
-export const RT_AC_TAG_NAME = "nz-richtext-acanchor"
-export const RT_PORTAL_TAG_NAME = "nz-richtext-portal"
+// export const RT_AC_TAG_NAME = "nz-richtext-acanchor"
+// export const RT_PORTAL_TAG_NAME = "nz-richtext-portal"
+
+export class CustomElement {
+    public constructor(public readonly type: string) {
+
+    }
+
+    public create = (): HTMLElement => {
+        let el = document.createElement(this.type)
+        return el
+    }
+
+    public isMatch = (el: Node): boolean => {
+        return el.nodeType === 1 && ((el as HTMLElement).tagName.toLowerCase() === this.type)
+    }
+
+    public get selector(): string {
+        return this.type
+    }
+}
+
 
 
 export class RichtextStream implements IDisposable, OnDestroy {
     public readonly destruct = new Destruct()
+
+    public readonly autoCompleteEl = new CustomElement("nz-richtext-autocomplete")
+    public readonly portalEl = new CustomElement("nz-richtext-portal")
 
     public readonly el: HTMLElement
     public readonly state: RTState = new Proxy({}, {
@@ -21,7 +44,7 @@ export class RichtextStream implements IDisposable, OnDestroy {
             switch (name) {
                 case "autocomplete":
                     if (sel = this.selection) {
-                        let node = sel.findElement(RT_AC_TAG_NAME)
+                        let node = sel.findElement(this.autoCompleteEl.isMatch)
                         return {
                             enabled: !!node,
                             value: node
@@ -30,7 +53,7 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
                 case "component":
                     if (sel = this.selection) {
-                        let node = sel.findElement(RT_PORTAL_TAG_NAME)
+                        let node = sel.findElement(this.portalEl.isMatch)
                         return {
                             enabled: !!node,
                             value: node
@@ -93,7 +116,7 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
     protected _reconstructible(): string {
         let clone = this.el.cloneNode(true) as HTMLElement
-        clone.querySelectorAll(RT_PORTAL_TAG_NAME).forEach(el => el.innerHTML = "")
+        clone.querySelectorAll(this.portalEl.selector).forEach(el => el.innerHTML = "")
         let result = clone.innerHTML
         if (result) {
             return result.replace(/<br\s*\/?>\s*$/, "").replace(/^\s+|\s+$/, "")
@@ -146,12 +169,12 @@ export class RTSelection {
         return this.getSibling("prev")
     }
 
-    public findElement(name: string): HTMLElement | null {
+    public findElement(tester: (node: Node) => boolean): HTMLElement | null {
         let resultNode: Node
         for (const node of this.nodes) {
             resultNode = node
             do {
-                if (resultNode.nodeType == 1 && (resultNode as HTMLElement).tagName.toLowerCase() === name) {
+                if (tester(resultNode)) {
                     return resultNode as HTMLElement
                 } else {
                     resultNode = resultNode.parentNode

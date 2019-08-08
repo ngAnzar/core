@@ -5,7 +5,7 @@ import { take, map, debounceTime } from "rxjs/operators"
 import { Destruct, IDisposable } from "../../../util"
 import { Model, Field, SingleSelection, ISelectionModel, SelectionModel } from "../../../data.module"
 import { LayerService, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
-import { RichtextStream, RangeFactory, RT_PORTAL_TAG_NAME } from "./richtext-stream"
+import { RichtextStream, RangeFactory } from "./richtext-stream"
 import { removeNode } from "./util"
 
 
@@ -30,20 +30,22 @@ export abstract class RichtextAcProvider {
     public abstract onTerminate(text: string, rt: RichtextStream, anchor: HTMLElement): boolean
 
     protected replaceWithComponent(rt: RichtextStream, anchor: HTMLElement, type: string, params: { [key: string]: any }) {
-        let cmp = this.createComponentNode(anchor.id, type, params)
+        let cmp = this.createComponentNode(rt, anchor.id, type, params)
+
         anchor.parentNode.insertBefore(cmp, anchor)
 
         let range = new RangeFactory(anchor, 0, anchor, 0)
         range.select()
         removeNode(anchor)
+        // console.log("AAAA", cmp.outerHTML)
         rt.command().insertText(" ").exec()
     }
 
-    protected createComponentNode(id: string, type: string, params: any): HTMLElement {
-        let node = document.createElement(RT_PORTAL_TAG_NAME)
+    protected createComponentNode(rt: RichtextStream, id: string, type: string, params: any): HTMLElement {
+        let node = rt.portalEl.create()
         node.setAttribute("contenteditable", "false")
         node.setAttribute("id", id)
-        node.setAttribute("type", type)
+        node.setAttribute("component", type)
         node.setAttribute("params", encodeURIComponent(JSON.stringify(params)))
         return node
     }

@@ -15,7 +15,6 @@ export const RICHTEXT_COMPONENT_PARAMS = new InjectionToken<RichtextStaticFactor
 export const RICHTEXT_AUTO_COMPLETE = new InjectionToken<RichtextStaticFactory>("nzRichtextAutoComplete")
 
 
-@Injectable({ providedIn: "root" })
 export class RichtextService {
     public constructor(
         @Inject(RICHTEXT_COMPONENT) @Optional() protected readonly components: RichtextStaticFactory[],

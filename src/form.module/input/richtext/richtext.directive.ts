@@ -8,7 +8,7 @@ import { LayerService } from "../../../layer.module"
 import { ScrollerService } from "../../../list.module"
 
 import { RichtextService, RICHTEXT_COMPONENT_PARAMS } from "./richtext.service"
-import { RichtextStream, Word, RT_AC_TAG_NAME, RT_PORTAL_TAG_NAME } from "./richtext-stream"
+import { RichtextStream, Word } from "./richtext-stream"
 import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
 
 import { matchTagName, removeNode, uuidv4 } from "./util"
@@ -66,9 +66,9 @@ export class RichtextDirective implements OnDestroy {
             el.setAttribute("id", id)
         }
 
-        let cmpType = this.svc.getComponentType(el.getAttribute("type"))
+        let cmpType = this.svc.getComponentType(el.getAttribute("component"))
         if (!cmpType) {
-            throw new Error("Runtime error: missing richtext component: " + el.getAttribute("type"))
+            throw new Error("Runtime error: missing richtext component: " + el.getAttribute("component"))
         }
 
         let params = el.getAttribute("params")
@@ -89,38 +89,51 @@ export class RichtextDirective implements OnDestroy {
     }
 
     public ngOnDestroy() {
-        this.stream.value = ""
         if (this._mutationObserver) {
             this._mutationObserver.disconnect()
         }
+        for (const k in this._components) {
+            const cmp = this._components[k]
+            cmp.dispose()
+        }
+        delete this._components
     }
 
     protected onMuation = (mutations: MutationRecord[]) => {
+        const isPortalEl = this.stream.portalEl.isMatch
         let nodes: NodeList
         let node: Node
 
         for (const record of mutations) {
-            nodes = record.removedNodes
-            for (let i = 0, l = nodes.length; i < l; i++) {
-                node = nodes[i]
+            // nodes = record.removedNodes
+            // for (let i = 0, l = nodes.length; i < l; i++) {
+            //     node = nodes[i]
 
-                if (matchTagName(node, RT_PORTAL_TAG_NAME)) {
-                    let cmp = this.getCmp(node as HTMLElement)
-                    if (cmp) {
-                        cmp.dispose()
-                        delete this._components[(node as HTMLElement).id]
-                    }
-                }
-            }
+            //     if (isPortalEl(node)) {
+            //         let cmp = this.getCmp(node as HTMLElement)
+            //         if (cmp) {
+            //             cmp.dispose()
+            //             delete this._components[(node as HTMLElement).id]
+            //         }
+            //     }
+            // }
 
             nodes = record.addedNodes
             for (let i = 0, l = nodes.length; i < l; i++) {
                 node = nodes[i]
 
-                if (matchTagName(node, RT_PORTAL_TAG_NAME)) {
+                if (isPortalEl(node)) {
                     let cmp = this.getCmp(node as HTMLElement)
                     if (!cmp) {
                         this.initCmp(node as HTMLElement)
+                    }
+                } else if (node.nodeType === 1) {
+                    const portals = (node as HTMLElement).querySelectorAll(this.stream.portalEl.selector)
+                    for (let i = 0, l = portals.length; i < l; i++) {
+                        const cmp = this.getCmp(portals[i] as HTMLElement)
+                        if (!cmp) {
+                            this.initCmp(portals[i] as HTMLElement)
+                        }
                     }
                 }
             }
@@ -260,6 +273,7 @@ export class RichtextEditableDirective implements OnDestroy {
     }
 
     protected onMuation = (mutations: MutationRecord[]) => {
+        const isAutocompleteEl = this.rt.stream.autoCompleteEl.isMatch
         let nodes: NodeList
         let node: Node
 
@@ -269,7 +283,7 @@ export class RichtextEditableDirective implements OnDestroy {
                 node = nodes[i]
 
                 // dispose autocomplete manager
-                if (matchTagName(node, RT_AC_TAG_NAME)) {
+                if (isAutocompleteEl(node)) {
                     let id = (node as HTMLElement).id
                     if (id in this._acManagers) {
                         this._acManagers[id].dispose()
@@ -279,7 +293,7 @@ export class RichtextEditableDirective implements OnDestroy {
             }
 
             // remove empty ac anchor element
-            if (matchTagName(record.target, RT_AC_TAG_NAME)) {
+            if (isAutocompleteEl(record.target)) {
                 let content = (record.target as HTMLElement).innerText
                 if (content) {
                     content = content.replace(/^\s+|\s+$/, "")
@@ -293,9 +307,11 @@ export class RichtextEditableDirective implements OnDestroy {
     }
 
     protected triggerAutoComplete() {
+        const isAutocompleteEl = this.rt.stream.autoCompleteEl.isMatch
+
         let selection = this.rt.stream.selection
         if (selection) {
-            let acNode = selection.findElement(RT_AC_TAG_NAME)
+            let acNode = selection.findElement(isAutocompleteEl)
             if (acNode) {
                 let rtid = acNode.id
                 let manager = this._acManagers[rtid]
@@ -316,7 +332,10 @@ export class RichtextEditableDirective implements OnDestroy {
 
     protected beginAc(providers: RichtextAcProvider[], word: Word) {
         let id = uuidv4()
-        let html = `<${RT_AC_TAG_NAME} id="${id}">${word.value}</${RT_AC_TAG_NAME}>`
+        let el = this.rt.stream.autoCompleteEl.create()
+        el.setAttribute("id", id)
+        el.innerHTML = word.value
+        let html = el.outerHTML
         word.select()
         this.rt.stream.command().insertHTML(html).exec()
 
