@@ -46,7 +46,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             this._srcSub.unsubscribe()
         }
         if (value) {
-            this._srcSub = this.destruct.subscription(value.storage.invalidated).subscribe(this._reset)
+            this._srcSub = this.destruct.subscription(value.storage.invalidated).subscribe(this._reset as any)
         }
     }
     public get nzVirtualForOf(): DataSourceDirective<T> {
