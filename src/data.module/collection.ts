@@ -25,9 +25,9 @@ export class Items<T extends Model> extends Array<T> {
         this.total = total
     }
 
-    public compare(other: Items<T>): ListDiff<T> {
+    public compare(other: Items<T>, isEq = Model.isEq): ListDiff<T> {
         let oldIndexBegin = other instanceof Items ? other.range.begin : this.range.begin
-        return listDiff<T>(other, this, oldIndexBegin, this.range.begin, Model.isEq)
+        return listDiff<T>(other, this, oldIndexBegin, this.range.begin, isEq)
     }
 
     public getRange(range: NzRange): Items<T> {

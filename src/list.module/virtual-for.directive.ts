@@ -79,7 +79,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
 
     private _reset = new Subject()
     private reset$ = this.destruct.subscription(this._reset).pipe(
-        tap(this._clear.bind(this)),
+        // tap(this._clear.bind(this)),
         tap(this.visibleItems.clearCache.bind(this.visibleItems)),
         tap(() => {
             let sp = this._scroller.scrollPercent
@@ -140,11 +140,12 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     )
 
     private render$ = this.destruct.subscription(this.items$).pipe(
-        withPrevious(this.reset$),
+        withPrevious(),
+        // withPrevious(this.reset$),
         map(vals => {
             const [prev, current] = vals
             return {
-                changes: current.compare(prev || EMPTY_ITEMS),
+                changes: current.compare(prev || EMPTY_ITEMS, null),
                 renderedRange: prev ? prev.range : new NzRange(0, 0),
                 currentRange: current.range
             }
@@ -192,6 +193,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     }
 
     private _applyChanges(changes: Array<ListDiffItem<T>>, renderedRange: NzRange, currentRange: NzRange) {
+        // console.log("_applyChanges", changes)
         let vcrOffset = Math.max(currentRange.begin - this._vcr.length, currentRange.begin)
         let delOffset = Math.max(renderedRange.begin - this._vcr.length, renderedRange.begin)
         let vcrIdx: number
@@ -229,15 +231,15 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         }
     }
 
-    private _clear() {
-        this.reusable.length = 0
-        for (let i = this._vcr.length - 1; i >= 0; i--) {
-            let v: EmbeddedView<T> = this._vcr.get(i) as any
-            v.context.index = -1
-            this._vcr.detach(i)
-            this.reusable.push(v)
-        }
-    }
+    // private _clear() {
+    //     this.reusable.length = 0
+    //     for (let i = this._vcr.length - 1; i >= 0; i--) {
+    //         let v: EmbeddedView<T> = this._vcr.get(i) as any
+    //         v.context.index = -1
+    //         this._vcr.detach(i)
+    //         this.reusable.push(v)
+    //     }
+    // }
 
     private _getViewForItem(index: number, item: T, range: NzRange, pos: number): EmbeddedView<T> {
         let v = this.reusable.shift()
