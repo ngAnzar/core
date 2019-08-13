@@ -8,7 +8,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { FocusMonitor } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
 import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, take, tap } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, filter, take, tap, map } from "rxjs/operators"
 
 import { NzRange } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection } from "../../../data.module"
@@ -134,18 +134,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public get freeSelect(): boolean { return !this.disabled && this._freeSelect }
     protected _freeSelect: boolean = false
 
-    @Input()
+    @Input("disableInput")
     public set disabled(val: boolean) {
         val = coerceBooleanProperty(val)
-        if (this._disabled !== val) {
-            this._disabled = val
+        if (this.model.disabled !== val) {
+            this.model.disabled = val
             this._updateDropDown()
             this._watchInputStream(!val && this.editable)
             this._detectChanges()
         }
     }
-    public get disabled(): boolean { return !this.source.storage || this._disabled }
-    protected _disabled: boolean = false
+    public get disabled(): boolean { return !this.source.storage || this.model.disabled }
 
     @Input()
     @HostBinding("attr.tabindex")
@@ -363,20 +362,15 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected getModels(ids: PrimaryKey[]): Observable<T[]> {
-        return Observable.create((observer: Observer<T[]>) => {
-            let s = []
+        let s: Array<Observable<T>> = []
 
-            if (this.source.storage) {
-                for (let i = 0, l = ids.length; i < l; i++) {
-                    s.push(this.source.get(ids[i]))
-                }
+        if (this.source.storage) {
+            for (let i = 0, l = ids.length; i < l; i++) {
+                s.push(this.source.get(ids[i]))
             }
+        }
 
-            const merged = forkJoin(...s).subscribe(observer)
-            return () => {
-                merged.unsubscribe()
-            }
-        })
+        return forkJoin(...s).pipe(map(result => result.filter((v: T) => !!v)))
     }
 
     public ngAfterContentInit() {

@@ -6,7 +6,7 @@ import { InputComponent, InputModel, INPUT_MODEL } from "../abstract"
 
 
 @Component({
-    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input",
+    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input, input[type='number'].nz-input",
     template: "",
     providers: INPUT_MODEL
 })

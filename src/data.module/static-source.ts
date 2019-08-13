@@ -153,7 +153,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
     public getSync(pk: PrimaryKey): T {
         for (let item of this.data) {
-            if (item.pk === pk) {
+            if (item.pk === `${pk}`) {
                 return item
             }
         }

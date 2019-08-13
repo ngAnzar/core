@@ -44,11 +44,26 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
       .nz-checkbox-indicator
         background-color: transparent
 
+  &[disabled]
+    cursor: default
+    pointer-events: none
+
+    &.nz-checkbox-checked
+      &:not(.nz-checkbox-indeterminate)
+        .nz-checkbox-indicator
+          background-color: $theme.common.light
+
+      &.nz-checkbox-indeterminate
+        .nz-checkbox-checkmark
+          border-color: $theme.common.light
+
+
 .nz-checkbox-label
   display: inline-flex
   justify-content: flex-start
   align-items: flex-start
   pointer-events: none
+  max-width: 100%
 
 .nz-checkbox-input
   margin-right: nz-local-grid-size(2)

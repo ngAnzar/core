@@ -40,11 +40,6 @@ export class FormFieldComponent implements AfterContentInit, OnDestroy {
     }
 
     public ngAfterContentInit(): void {
-        if (!this._inputModel) {
-            console.log(this.el.nativeElement)
-            throw new Error("Missing input model")
-        }
-
         this.destruct.subscription(
             merge(this._inputModel.statusChanges,
                 this._inputModel.valueChanges,
