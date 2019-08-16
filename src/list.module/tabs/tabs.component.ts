@@ -1,7 +1,8 @@
 import {
     Component, Inject, ContentChildren, QueryList, AfterContentInit,
-    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef
+    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, Output
 } from "@angular/core"
+import { Subject } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
@@ -29,11 +30,14 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
         if (this._selectedIndex !== val) {
             this._selectedIndex = val
+            this.changes.next(val)
             this.cdr.markForCheck()
         }
     }
     public get selectedIndex(): number { return this._selectedIndex }
     private _selectedIndex: number = 0
+
+    @Output() public readonly changes = new Subject<number>()
 
     public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
     }
