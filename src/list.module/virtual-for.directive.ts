@@ -204,7 +204,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             vcrIdx = change.index - vcrOffset
 
             if (change.kind === ListDiffKind.CREATE) {
-                // console.log("CREATE", change.index, vcrIdx, change.item)
+                // console.log("CREATE", change.index, vcrIdx, change.item, this._vcr)
                 view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
                 view.detectChanges()
             } else if (change.kind === ListDiffKind.UPDATE) {
@@ -246,8 +246,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         if (v) {
             this._updateContext(v.context, index, item, range)
             v.reattach()
-            this._vcr.insert(v)
-            return this._vcr.move(v, pos) as EmbeddedView<T>
+            return this._vcr.insert(v, pos) as EmbeddedView<T>
         } else {
             return this._vcr.createEmbeddedView(this._tpl, this._updateContext({} as VirtualForContext<T>, index, item, range), pos)
         }
