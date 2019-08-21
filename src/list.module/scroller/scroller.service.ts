@@ -142,7 +142,7 @@ export class ImmediateViewport extends Viewport {
             this.visible.height = this.height
             // recalc min scroll position
             this.scrollPosition = this.scrollPosition;
-            // this._recalcPosition();
+            this._recalcPosition();
             (this.change as Subject<Viewport>).next(this)
         }
 
