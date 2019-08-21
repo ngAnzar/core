@@ -189,6 +189,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public get inputState() { return this._inputState }
     protected _inputState: InputState
 
+    @Input()
+    public set clearable(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._clearable !== val) {
+            this._clearable = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get clearable(): boolean { return this._clearable }
+    private _clearable: boolean = true
+
     @Input("min-length") public minLength: number = 2
 
     public get selected(): T[] {
@@ -461,10 +472,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         if (focused) {
             if (this.input) {
-                this.input.nativeElement.focus()
+                this._focusMonitor.focusVia(this.input.nativeElement, focused)
+            } else {
+                this._focusMonitor.focusVia(this.el.nativeElement, focused)
             }
-
-            this.opened = true
         } else {
             this._resetTextInput()
             this.opened = false
@@ -543,6 +554,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.opened = true
             this._updateFilter(null)
         }
+    }
+
+    protected _clearValue(event: Event) {
+        if (event.defaultPrevented) {
+            return
+        }
+        event.preventDefault()
+        this.value = null
     }
 
     // @HostListener("click")

@@ -78,6 +78,9 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
     on-tap="$event.preventDefault()",
     style="flex:1")
 
+.nz-button.trigger(*ngIf="clearable && selection.items.length > 0", on-tap="_clearValue($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
+  i.nz-icon(class=icon("mdi/close", 18))
+
 .nz-button.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
   i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/chevron-down"))}'`)
 
