@@ -64,10 +64,9 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     }
 
     protected _renderValue(value: any) {
+        value = Array.isArray(value) ? value : []
         for (const chkbox of this.checkboxes) {
-            if (chkbox.trueValue === value) {
-                chkbox.checked = true
-            }
+            chkbox.checked = value.indexOf(chkbox.trueValue) !== -1
         }
     }
 
