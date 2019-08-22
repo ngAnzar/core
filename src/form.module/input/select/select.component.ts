@@ -198,7 +198,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
     public get clearable(): boolean { return this._clearable }
-    private _clearable: boolean = true
+    private _clearable: boolean = false
 
     @Input("min-length") public minLength: number = 2
 
