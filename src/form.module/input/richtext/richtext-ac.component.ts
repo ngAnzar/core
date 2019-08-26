@@ -79,7 +79,7 @@ export class RichtextAcManager implements IDisposable {
             if (items.length) {
                 if (!this._layerRef || !this._layerRef.isVisible) {
                     let behavior = new DropdownLayer({
-                        backdrop: null,
+                        backdrop: { type: "empty", hideOnClick: true },
                         elevation: 5,
                         position: {
                             anchor: {
