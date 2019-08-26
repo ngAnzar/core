@@ -116,6 +116,7 @@ export class RichtextStream implements IDisposable, OnDestroy {
 
     protected _reconstructible(): string {
         let clone = this.el.cloneNode(true) as HTMLElement
+        clone.querySelectorAll(this.autoCompleteEl.selector).forEach(el => el.parentNode.removeChild(el))
         clone.querySelectorAll(this.portalEl.selector).forEach(el => el.innerHTML = "")
         let result = clone.innerHTML
         if (result) {

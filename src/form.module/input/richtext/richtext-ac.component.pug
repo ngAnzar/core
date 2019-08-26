@@ -4,7 +4,17 @@
     cursor: pointer
     user-select: none
 
+  .icon
+    display: inline-block
+    background-size: 100%
+    background-repeat: no-repeat
+    width: 20px
+    height: 20px
+    margin-right: 8px
+
 
 .nz-scroller.scroller(fxFlex="grow")
   .nz-list(fxLayout="column", fxLayoutAlign="start stretch", scrollable)
-    .nz-list-item.item(*ngFor="let item of items | async; let i=index", [selectable]="item", [selectionIndex]="i") {{ item.label }}
+    .nz-list-item.item(*ngFor="let item of items | async; let i=index", [selectable]="item", [selectionIndex]="i")
+      i.icon([style.background-image]="item.iconSafe")
+      span {{ item.label }}

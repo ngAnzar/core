@@ -1,4 +1,5 @@
 import { Component, Inject, InjectionToken, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { Observable, Subject, forkJoin } from "rxjs"
 import { take, map, debounceTime } from "rxjs/operators"
 
@@ -8,6 +9,8 @@ import { LayerService, ComponentLayerRef, DropdownLayer } from "../../../layer.m
 import { RichtextStream, RangeFactory } from "./richtext-stream"
 import { removeNode } from "./util"
 
+const circleSmallSvg = require("mdi/circle-small.svg")
+
 
 const PROVIDER = Symbol("@AcProvider")
 
@@ -16,6 +19,10 @@ export class RichtextAcItem extends Model {
     public [PROVIDER]: RichtextAcProvider
     @Field({ primary: true }) public id: string
     @Field() public label: string
+    @Field() public note: string
+    @Field() public icon: string
+    @Field() public data: any
+    public readonly iconSafe: SafeStyle
 }
 
 
@@ -69,7 +76,8 @@ export class RichtextAcManager implements IDisposable {
         public readonly rt: RichtextStream,
         public readonly anchorEl: HTMLElement,
         public readonly providers: RichtextAcProvider[],
-        public readonly layerSvc: LayerService) {
+        public readonly layerSvc: LayerService,
+        public readonly sanitizer: DomSanitizer) {
 
         this.destruct.subscription(this._debounce).pipe(debounceTime(250)).subscribe(this._update)
 
@@ -103,7 +111,6 @@ export class RichtextAcManager implements IDisposable {
             }
         })
 
-        // this.selection.keyboard.connect(anchorEl)
         this.destruct.subscription(this.selection.changes).subscribe(selection => {
             let selected = selection[0]
             if (selected) {
@@ -158,10 +165,14 @@ export class RichtextAcManager implements IDisposable {
                     for (let i = 0, l = value.length; i < l; i++) {
                         for (let v of value[i]) {
                             v[PROVIDER] = queryFrom[i]
+                            if (!v.icon) {
+                                v.icon = circleSmallSvg
+                            }
+                            (v as { iconSafe: SafeStyle }).iconSafe = this.sanitizer.bypassSecurityTrustStyle(`url(${v.icon})`)
                             result.push(v)
                         }
                     }
-                    return result
+                    return result.sort((a, b) => a.label.localeCompare(b.label))
                 }))
                 .subscribe(result => (this.items as Subject<RichtextAcItem[]>).next(result))
         } else {

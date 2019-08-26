@@ -1,4 +1,5 @@
 import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef, Optional } from "@angular/core"
+import { DomSanitizer } from "@angular/platform-browser"
 import { UP_ARROW, DOWN_ARROW, ESCAPE, BACKSPACE } from "@angular/cdk/keycodes"
 import { DomPortalOutlet, ComponentType, ComponentPortal } from "@angular/cdk/portal"
 import { Observable, Subject } from "rxjs"
@@ -158,7 +159,8 @@ export class RichtextEditableDirective implements OnDestroy {
     public constructor(
         @Inject(LayerService) public readonly layerSvc: LayerService,
         @Inject(RichtextDirective) public readonly rt: RichtextDirective,
-        @Inject(ScrollerService) @Optional() public readonly scroller: ScrollerService) {
+        @Inject(ScrollerService) @Optional() public readonly scroller: ScrollerService,
+        @Inject(DomSanitizer) private readonly sanitizer: DomSanitizer) {
 
         let mutation = new MutationObserver(this.onMuation)
         this.destruct.any(mutation.disconnect.bind(mutation))
@@ -341,7 +343,7 @@ export class RichtextEditableDirective implements OnDestroy {
 
         let acNode = this.rt.stream.state.autocomplete.value
         if (acNode) {
-            this._acManagers[id] = new RichtextAcManager(this.rt.stream, acNode, providers, this.layerSvc)
+            this._acManagers[id] = new RichtextAcManager(this.rt.stream, acNode, providers, this.layerSvc, this.sanitizer)
             this._acManagers[id].update(word.value)
         } else {
             throw new Error("Runtime error")
