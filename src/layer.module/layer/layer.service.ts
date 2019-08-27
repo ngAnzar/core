@@ -36,6 +36,7 @@ export class LayerService {
     }
 
     public createFromComponent<T>(cmp: ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[], vcr?: ViewContainerRef): ComponentLayerRef<T> {
+        console.log("createFromComponent", this.backdrops)
         let outlet = this.container.getNewOutlet()
         return this._finalizeRef(new ComponentLayerRef(behavior, outlet, opener || this.layer, vcr, cmp), behavior, provides)
     }
