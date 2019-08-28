@@ -37,9 +37,18 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public get isBusy(): boolean { return this._isBusy }
     private _isBusy: boolean = true
 
-    public readonly isEmpty: boolean = true
+    public set isEmpty(val: boolean) {
+        if (this._isEmpty !== val) {
+            this._isEmpty = val;
+            (this.empty as EventEmitter<boolean>).emit(val)
+        }
+    }
+    public get isEmpty(): boolean { return this._isEmpty }
+    private _isEmpty: boolean = true
+
     public readonly reseted: Observable<void> = new EventEmitter()
     public readonly busy: Observable<boolean> = new EventEmitter()
+    public readonly empty: Observable<boolean> = new EventEmitter()
 
     public get invalidated(): Observable<void> {
         return Observable.create((observer: Observer<any>) => {
@@ -102,7 +111,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
             return this._setPending(
                 rrange,
-                this.destruct.subscription(this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta.get()))
+                this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta.get())
                     // .pipe(take(1))
                     .pipe(map(items => {
                         (this as any).range = items.range || r
@@ -119,8 +128,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             )
         } else {
             (this as any).range = r
-            let items = this._collectRange(r)
-            return this.destruct.subscription(of(items))
+            return of(this._collectRange(r))
         }
     }
 
