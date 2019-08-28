@@ -39,7 +39,8 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
         if (this.checkboxes.indexOf(checkbox) === -1) {
             this.checkboxes.push(checkbox)
         }
-        checkbox.checked = this.model.value.indexOf(checkbox.trueValue) !== -1
+        const value = this.model.value || []
+        checkbox.checked = value.indexOf(checkbox.trueValue) !== -1
     }
 
     public delCheckbox(checkbox: CheckboxComponent<T>) {
@@ -50,8 +51,8 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     }
 
     public updateValue(checkbox: CheckboxComponent<T>) {
+        const value = this.model.value || []
         let changed = false
-        let value = this.model.value
         let idx = value.indexOf(checkbox.trueValue)
         if (checkbox.checked) {
             if (idx === -1) {
