@@ -196,7 +196,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     @Output() public readonly changes = this.model.valueChanges
     @Output() public readonly focused = this.model.focusChanges
 
-    private _inited = false
+    protected _inited = false
 
     public constructor(@Inject(InputModel) protected readonly model: InputModel<T>) {
         this.destruct.subscription(model.renderValueChanges).subscribe((value: T) => {

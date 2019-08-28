@@ -1,4 +1,4 @@
-import { Directive, Input } from "@angular/core"
+import { Directive, Input, AfterContentInit } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { InputComponent, INPUT_MODEL } from "../abstract"
@@ -11,8 +11,6 @@ import { CheckboxComponent } from "./checkbox.component"
     providers: INPUT_MODEL
 })
 export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
-    public get type(): string { return "checkbox-group" }
-
     @Input()
     public set name(val: string) {
         if (this._name !== val) {
@@ -41,6 +39,7 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
         if (this.checkboxes.indexOf(checkbox) === -1) {
             this.checkboxes.push(checkbox)
         }
+        checkbox.checked = this.model.value.indexOf(checkbox.trueValue) !== -1
     }
 
     public delCheckbox(checkbox: CheckboxComponent<T>) {
@@ -48,19 +47,24 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
         if (idx !== -1) {
             this.checkboxes.splice(idx, 1)
         }
-        this.onCheckedChange()
     }
 
-    public onCheckedChange() {
-        let v: T[] = []
-        for (const chk of this.checkboxes) {
-            if (chk.checked) {
-                v.push(chk.trueValue)
+    public updateValue(checkbox: CheckboxComponent<T>) {
+        let changed = false
+        let value = this.model.value
+        let idx = value.indexOf(checkbox.trueValue)
+        if (checkbox.checked) {
+            if (idx === -1) {
+                changed = true
+                value.push(checkbox.trueValue)
             }
-
+        } else if (idx !== -1) {
+            changed = true
+            value.splice(idx, 1)
         }
-
-        this.model.emitValue(v)
+        if (changed) {
+            this.model.emitValue(value)
+        }
     }
 
     protected _renderValue(value: any) {

@@ -46,7 +46,7 @@ export class RadioGroupDirective<T = any> extends InputComponent<T> {
 
     public setChecked(radio: RadioComponent<T>) {
         for (const r of this.radios) {
-            if (r.checked = r === radio) {
+            if (r.checked = (r === radio)) {
                 this.model.emitValue(radio.trueValue)
             }
         }

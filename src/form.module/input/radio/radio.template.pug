@@ -11,9 +11,8 @@ label.nz-radio-label(for="{{id}}-rad")
       id="{{id}}-rad",
       type="radio",
       tabindex="-1",
-      [attr.name]="name"
-      [checked]="checked"
-      on-input="_handleInputChange($event)")
+      [attr.name]="name",
+      on-change="_handleInputChange($event)")
     .nz-radio-indicator
   span.label
     ng-content

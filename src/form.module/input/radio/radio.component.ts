@@ -39,6 +39,10 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
         if (this._checked !== val) {
             this._checked = val
 
+            if (this.input) {
+                (this.input as any).checked = val
+            }
+
             const value = val ? this.trueValue : this.falseValue
             this.model.emitValue(value)
 
@@ -63,7 +67,7 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
         }
     }
     public get name(): string { return this._name }
-    protected _name: string
+    protected _name: string = null
 
     public get type(): string { return "radio" }
 

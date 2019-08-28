@@ -54,6 +54,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public set trueValue(val: T) {
         if (this._trueValue !== val) {
             this._trueValue = val
+            if (this.group) {
+                this.group.addCheckbox(this)
+            }
             this._values$.next()
         }
     }
@@ -117,17 +120,13 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 
         this.monitorFocus(el.nativeElement, true)
 
-        if (group) {
-            group.addCheckbox(this)
-        }
-
         merge(this._checked$, this._indeterminate$, this._values$)
             .pipe(
                 map(_ => {
                     const val = this._getValue()
                     this.model.emitValue(val)
                     if (this.group) {
-                        this.group.onCheckedChange()
+                        this.group.updateValue(this)
                     }
                     return val
                 }),
@@ -139,9 +138,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
                 this.cdr.detectChanges()
             })
     }
-
-    public get type(): string { return "checkbox" }
-
 
     protected _renderValue(obj: any): void {
         let state = this._determineStateFromValue(obj)
@@ -171,10 +167,12 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     public ngOnDestroy() {
-        super.ngOnDestroy()
+        this._checked = false
         if (this.group) {
+            this.group.updateValue(this)
             this.group.delCheckbox(this)
         }
+        super.ngOnDestroy()
     }
 
     private _determineStateFromValue(value: any): CheckboxState {

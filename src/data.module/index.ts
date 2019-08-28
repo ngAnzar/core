@@ -21,9 +21,6 @@ import { DataSourceDirective, FilterDirective, SorterDirective, FieldsDirective 
 export { DataSourceDirective, FilterDirective, SorterDirective, FieldsDirective }
 
 
-export { Time } from "./time"
-
-
 @NgModule({
     imports: [
         HttpClientModule

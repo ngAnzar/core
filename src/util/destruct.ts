@@ -1,3 +1,4 @@
+import { OnDestroy } from "@angular/core"
 import { Observable, Subject } from "rxjs"
 import { share, takeUntil, take } from "rxjs/operators"
 
@@ -49,5 +50,18 @@ export class Destruct {
             (this.on as Subject<void>).next();
             (this.on as Subject<void>).complete()
         }
+    }
+}
+
+
+export abstract class Destructible implements OnDestroy, IDisposable {
+    public readonly destruct = new Destruct()
+
+    public ngOnDestroy() {
+        this.destruct.run()
+    }
+
+    public dispose() {
+        this.ngOnDestroy()
     }
 }

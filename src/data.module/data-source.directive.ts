@@ -70,6 +70,10 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this._dsd ? this._dsd.sorterChanges : this._sorterChanges
     }
 
+    public get isEmpty() {
+        return this.storage.isEmpty
+    }
+
     private _storage: DataStorage<T>
     private _source: DataSource<T>
     private _disposeStroage: boolean
