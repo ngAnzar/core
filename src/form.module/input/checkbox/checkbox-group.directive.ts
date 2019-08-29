@@ -51,7 +51,7 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     }
 
     public updateValue(checkbox: CheckboxComponent<T>) {
-        const value = this.model.value || []
+        const value = this.model.value ? this.model.value.concat() : []
         let changed = false
         let idx = value.indexOf(checkbox.trueValue)
         if (checkbox.checked) {
