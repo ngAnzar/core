@@ -98,7 +98,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this._opened !== val) {
             this._opened = val
             if (val && this.input && this.input.nativeElement) {
-                this._focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
+                this.model.focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
             }
             this._updateDropDown()
             this._detectChanges();
@@ -223,7 +223,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(FormFieldComponent) @Optional() protected readonly ffc: FormFieldComponent,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
-        @Inject(FocusMonitor) protected _focusMonitor: FocusMonitor,
         @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
         @Attribute("displayField") displayField: string,
         @Attribute("valueField") public valueField: string,
@@ -240,7 +239,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             delete (this as any).ffc
             delete (this as any).cdr
             delete (this as any).vcr
-            delete (this as any)._focusMonitor
             delete (this as any)._layerFactory
         })
 
@@ -454,8 +452,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 ]
             )
 
+            const outletEl = layerRef.outlet.nativeElement
+            this.monitorFocus(outletEl, true)
+
             let s = layerRef.subscribe((event) => {
                 if (event.type === "hiding") {
+                    this.model.focusMonitor.stopMonitoring(outletEl)
                     this.opened = false
                     s.unsubscribe()
                 }
@@ -472,9 +474,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         if (focused) {
             if (this.input) {
-                this._focusMonitor.focusVia(this.input.nativeElement, focused)
+                this.model.focusMonitor.focusVia(this.input.nativeElement, focused)
             } else {
-                this._focusMonitor.focusVia(this.el.nativeElement, focused)
+                this.model.focusMonitor.focusVia(this.el.nativeElement, focused)
             }
         } else {
             this._resetTextInput()
@@ -645,7 +647,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 return false
 
             case ENTER:
-                this.opened = false
+                if (this.selection.type === "single") {
+                    this.opened = false
+                }
                 return false
 
             case BACKSPACE:
