@@ -90,6 +90,9 @@ export class ModalLayer extends LayerBehavior {
             this.options.backdrop.hideOnClick = false
         }
 
+        if (options.closeable == null) {
+            options.closeable = true
+        }
     }
 
     public animateShow(layer: LayerRef): Promise<void> {

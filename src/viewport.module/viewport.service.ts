@@ -1,8 +1,8 @@
 import { Injectable, Inject, EventEmitter, TemplateRef, Injector, EmbeddedViewRef, OnDestroy } from "@angular/core"
 import { Router, NavigationEnd } from "@angular/router"
 import { Portal, ComponentType, ComponentPortal, TemplatePortal } from "@angular/cdk/portal"
-import { Observable, NEVER, of, Subject, Subscription } from "rxjs"
-import { share, filter, map, startWith, switchMap } from "rxjs/operators"
+import { Observable, NEVER, of, Subject, Subscription, merge } from "rxjs"
+import { share, filter, map, startWith, switchMap, debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../util"
 import { KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../common.module"
@@ -73,6 +73,7 @@ export class ViewportService implements OnDestroy {
     public readonly right = new VPPanel()
 
     private _menuBackWatch: KeyWatcher
+    private _rightBackWatch: KeyWatcher
 
 
     // public readonly menuChanges: Observable<any> = new EventEmitter()
@@ -130,13 +131,31 @@ export class ViewportService implements OnDestroy {
             return true
         }))
 
-        this.destruct.subscription(this.menu.changes).subscribe(_ => {
-            if (this.menu.opened) {
-                this._menuBackWatch.on()
-            } else {
-                this._menuBackWatch.off()
-            }
-        })
+        this._rightBackWatch = this.destruct.disposable(keyEvent.newWatcher(SpecialKey.BackButton, () => {
+            this.right.opened = false
+            return true
+        }))
+
+        this.destruct.subscription(merge(this.menu.changes, this.right.changes))
+            .pipe(debounceTime(10))
+            .subscribe(_ => {
+                if (this.right.opened && this.right.style === VPPanelStyle.OVERLAY) {
+                    if (this.menu.style === VPPanelStyle.OVERLAY) {
+                        this.menu.opened = false
+                    }
+                    this._rightBackWatch.on()
+                } else {
+                    this._rightBackWatch.off()
+                    if (this.menu.opened && this.menu.style === VPPanelStyle.OVERLAY) {
+                        if (this.right.style === VPPanelStyle.OVERLAY) {
+                            this.right.opened = false
+                        }
+                        this._menuBackWatch.on()
+                    } else {
+                        this._menuBackWatch.off()
+                    }
+                }
+            })
 
         this.destruct.subscription(router.events).subscribe(event => {
             if (event instanceof NavigationEnd) {

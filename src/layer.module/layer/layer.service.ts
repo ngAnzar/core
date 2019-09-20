@@ -2,7 +2,7 @@ import { Inject, SkipSelf, Optional, Injector, StaticProvider, TemplateRef, View
 import { AnimationBuilder } from "@angular/animations"
 import { ComponentType } from "@angular/cdk/portal"
 
-import { ZING_TOUCH_PLUGIN } from "../../common.module"
+import { KeyEventService } from "../../common.module"
 
 import { LevitateRef } from "../levitate/levitate-ref"
 import { Levitating } from "../levitate/levitate-options"
@@ -27,18 +27,18 @@ export class LayerService {
         @Inject(LayerRef) @Optional() protected readonly layer: LayerRef,
         @Inject(AnimationBuilder) protected readonly animation: AnimationBuilder,
         @Inject(LevitateService) protected readonly levitateSvc: LevitateService,
-        @Inject(MaskService) protected readonly maskSvc: MaskService) {
+        @Inject(MaskService) protected readonly maskSvc: MaskService,
+        @Inject(KeyEventService) protected readonly keyEventSvc: KeyEventService) {
     }
 
     public createFromTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, behavior: LayerBehavior, opener?: LayerRef, context?: T): TemplateLayerRef<T> {
         let outlet = this.container.getNewOutlet()
-        return this._finalizeRef(new TemplateLayerRef(behavior, outlet, opener || this.layer, vcr, tpl, context), behavior, [])
+        return this._finalizeRef(new TemplateLayerRef(behavior, outlet, this.keyEventSvc, opener || this.layer, vcr, tpl, context), behavior, [])
     }
 
     public createFromComponent<T>(cmp: ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[], vcr?: ViewContainerRef): ComponentLayerRef<T> {
-        console.log("createFromComponent", this.backdrops)
         let outlet = this.container.getNewOutlet()
-        return this._finalizeRef(new ComponentLayerRef(behavior, outlet, opener || this.layer, vcr, cmp), behavior, provides)
+        return this._finalizeRef(new ComponentLayerRef(behavior, outlet, this.keyEventSvc, opener || this.layer, vcr, cmp), behavior, provides)
     }
 
     protected _finalizeRef<T extends LayerRef>(ref: T, behavior: LayerBehavior, provides: StaticProvider[]): T {
@@ -58,11 +58,9 @@ export class LayerService {
             { provide: LevitateRef, useValue: levitate },
             {
                 provide: LayerService,
-                deps: [
-                    LayerContainer
-                ],
-                useFactory: (container?: LayerContainer) => {
-                    return new LayerService(this, container || this.container, this.injector, ref as any, this.animation, this.levitateSvc, this.maskSvc)
+                deps: [],
+                useFactory: () => {
+                    return new LayerService(this, this.container, this.injector, ref as any, this.animation, this.levitateSvc, this.maskSvc, this.keyEventSvc)
                 }
             },
             ...backdrop,

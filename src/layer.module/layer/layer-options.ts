@@ -28,6 +28,8 @@ export interface LayerOptions {
     minHeight?: number
     elevation?: number
     rounded?: number
+    // Can close layer with backButton (esc, or back button on mobile device)
+    closeable?: boolean
 }
 
 

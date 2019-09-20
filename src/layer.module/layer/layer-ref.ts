@@ -5,6 +5,7 @@ import { filter, mapTo } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
 import { PreventableEvent } from "../../util"
+import { KeyEventService, KeyWatcher, SpecialKey } from "../../common.module"
 import { LayerOutletRef } from "./layer-container"
 import { LayerBehavior } from "./layer-behavior"
 
@@ -41,10 +42,12 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
 
     public abstract readonly opener: LayerRef
     protected abstract vcr: ViewContainerRef
+    protected backBtnWatcher: KeyWatcher
 
     public constructor(
         public readonly behavior: LayerBehavior,
-        public readonly outlet: LayerOutletRef) {
+        public readonly outlet: LayerOutletRef,
+        protected readonly keyEventSvc: KeyEventService) {
         this.destruct.disposable(behavior)
         this.destruct.disposable(outlet)
     }
@@ -100,6 +103,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
         } else {
             (this as any).isVisible = true
             this.attach()
+            this.updateBackButton()
             this.behavior.initShow(this)
             this.behavior.levitate.begin()
             this.emit(new LayerEvent("showing") as E)
@@ -130,6 +134,20 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
     public dispose() {
         this.destruct.run()
     }
+
+    protected updateBackButton() {
+        if (this.behavior.options.closeable) {
+            if (!this.backBtnWatcher) {
+                this.backBtnWatcher = this.destruct.disposable(this.keyEventSvc.newWatcher(SpecialKey.BackButton, () => {
+                    this.close()
+                    return false
+                }))
+            }
+            this.backBtnWatcher.on()
+        } else if (this.backBtnWatcher) {
+            this.backBtnWatcher.off()
+        }
+    }
 }
 
 
@@ -137,11 +155,11 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
     public readonly component: ComponentRef<C>
     protected portal: ComponentPortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, keyEventSvc: KeyEventService,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
-        super(behavior, outlet)
+        super(behavior, outlet, keyEventSvc)
         this.destruct.any(() => {
             if (this.portal && this.portal.isAttached) {
                 this.portal.detach()
@@ -169,12 +187,12 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
     public readonly view: EmbeddedViewRef<C>
     protected readonly portal: TemplatePortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, keyEventSvc: KeyEventService,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         tpl: TemplateRef<C>,
         ctx: C) {
-        super(behavior, outlet)
+        super(behavior, outlet, keyEventSvc)
         this.portal = new TemplatePortal(tpl, vcr, ctx)
 
         this.destruct.any(() => {

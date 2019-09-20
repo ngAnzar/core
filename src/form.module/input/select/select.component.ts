@@ -17,6 +17,7 @@ import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../lay
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
+import { KeyWatcher, KeyEventService, SpecialKey } from "../../../common.module"
 
 // import { ChipComponent } from "./chip.component"
 
@@ -213,6 +214,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected selectedBeforeOpen: T[]
 
     private _provisionalModel: T
+    private _backButton: KeyWatcher
 
     public constructor(
         @Inject(InputModel) model: InputModel<SelectValue<T>>,
@@ -224,6 +226,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
+        @Inject(KeyEventService) protected readonly keyEvent: KeyEventService,
         @Attribute("displayField") displayField: string,
         @Attribute("valueField") public valueField: string,
         @Attribute("queryField") queryField: string,
@@ -285,6 +288,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.selection.keyboard.connect(el.nativeElement)
+
+        this._backButton = this.destruct.disposable(this.keyEvent.newWatcher(SpecialKey.BackButton, () => {
+            if (this.selectedBeforeOpen) {
+                let bso = this.selectedBeforeOpen
+                delete this.selectedBeforeOpen
+                this.selection.items = bso
+            }
+            this.opened = false
+            return true
+        }))
     }
 
     public reset() {
@@ -405,6 +418,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _updateDropDown() {
         if (this.opened) {
+            this._backButton.on()
             this.selectedBeforeOpen = this.selected.slice(0)
             let targetAnchor = this.layerFactory.targetAnchor
 
@@ -465,7 +479,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         } else {
             delete this.selectedBeforeOpen
             this.layerFactory.hide()
-            // this._applySelected()
+            this._backButton.off()
         }
     }
 
@@ -532,10 +546,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @HostListener("keyup", ["$event"])
     protected _onKeyup(event: KeyboardEvent) {
         this.lastKeyup = event.keyCode
-        if (event.keyCode === ESCAPE) {
-            //event.preventDefault()
-            //event.stopImmediatePropagation()
-        }
     }
 
     @HostListener("tap", ["$event"])
@@ -632,14 +642,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {
         switch (code) {
-            case ESCAPE:
-                if (this.selectedBeforeOpen) {
-                    let bso = this.selectedBeforeOpen
-                    delete this.selectedBeforeOpen
-                    this.selection.items = bso
-                }
-                this.opened = false
-                return true
+            // case ESCAPE:
+            //     if (this.selectedBeforeOpen) {
+            //         let bso = this.selectedBeforeOpen
+            //         delete this.selectedBeforeOpen
+            //         this.selection.items = bso
+            //     }
+            //     this.opened = false
+            //     return true
 
             case UP_ARROW:
             case DOWN_ARROW:
