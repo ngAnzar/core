@@ -17,7 +17,7 @@ import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../lay
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
-import { KeyWatcher, KeyEventService, SpecialKey } from "../../../common.module"
+import { Shortcuts, ShortcutService } from "../../../common.module"
 
 // import { ChipComponent } from "./chip.component"
 
@@ -98,6 +98,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._opened !== val) {
             this._opened = val
+            this._closeShortcuts.enabled = val
             if (val && this.input && this.input.nativeElement) {
                 this.model.focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
             }
@@ -214,7 +215,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected selectedBeforeOpen: T[]
 
     private _provisionalModel: T
-    private _backButton: KeyWatcher
+    private _closeShortcuts: Shortcuts
 
     public constructor(
         @Inject(InputModel) model: InputModel<SelectValue<T>>,
@@ -226,7 +227,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
-        @Inject(KeyEventService) protected readonly keyEvent: KeyEventService,
+        @Inject(ShortcutService) protected readonly shortcutService: ShortcutService,
         @Attribute("displayField") displayField: string,
         @Attribute("valueField") public valueField: string,
         @Attribute("queryField") queryField: string,
@@ -289,15 +290,24 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         this.selection.keyboard.connect(el.nativeElement)
 
-        this._backButton = this.destruct.disposable(this.keyEvent.newWatcher(SpecialKey.BackButton, () => {
-            if (this.selectedBeforeOpen) {
-                let bso = this.selectedBeforeOpen
-                delete this.selectedBeforeOpen
-                this.selection.items = bso
+        this._closeShortcuts = this.destruct.disposable(this.shortcutService.create(this.el.nativeElement, {
+            "select.close": {
+                shortcut: "escape, back", handler: () => {
+                    this.opened = false
+                }
             }
-            this.opened = false
-            return true
         }))
+        this._closeShortcuts.enabled = false
+
+        // this._backButton = this.destruct.disposable(this.keyEvent.newWatcher(SpecialKey.BackButton, () => {
+        //     if (this.selectedBeforeOpen) {
+        //         let bso = this.selectedBeforeOpen
+        //         delete this.selectedBeforeOpen
+        //         this.selection.items = bso
+        //     }
+        //     this.opened = false
+        //     return true
+        // }))
     }
 
     public reset() {
@@ -418,7 +428,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _updateDropDown() {
         if (this.opened) {
-            this._backButton.on()
             this.selectedBeforeOpen = this.selected.slice(0)
             let targetAnchor = this.layerFactory.targetAnchor
 
@@ -468,10 +477,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
             const outletEl = layerRef.outlet.nativeElement
             this.monitorFocus(outletEl, true)
+            this._closeShortcuts.watch(outletEl)
 
             let s = layerRef.subscribe((event) => {
                 if (event.type === "hiding") {
                     this.model.focusMonitor.stopMonitoring(outletEl)
+                    this._closeShortcuts.unwatch(outletEl)
                     this.opened = false
                     s.unsubscribe()
                 }
@@ -479,7 +490,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         } else {
             delete this.selectedBeforeOpen
             this.layerFactory.hide()
-            this._backButton.off()
         }
     }
 

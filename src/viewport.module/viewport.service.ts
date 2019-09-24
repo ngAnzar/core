@@ -5,7 +5,7 @@ import { Observable, NEVER, of, Subject, Subscription, merge } from "rxjs"
 import { share, filter, map, startWith, switchMap, debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../util"
-import { KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../common.module"
+import { ShortcutService, MediaQueryService, Shortcuts } from "../common.module"
 
 
 export interface VPItem {
@@ -72,8 +72,7 @@ export class ViewportService implements OnDestroy {
     public readonly menu = new VPPanel()
     public readonly right = new VPPanel()
 
-    private _menuBackWatch: KeyWatcher
-    private _rightBackWatch: KeyWatcher
+    private _backShortcut: Shortcuts
 
 
     // public readonly menuChanges: Observable<any> = new EventEmitter()
@@ -123,18 +122,19 @@ export class ViewportService implements OnDestroy {
     public constructor(
         @Inject(Router) router: Router,
         @Inject(Injector) protected readonly injector: Injector,
-        @Inject(KeyEventService) protected readonly keyEvent: KeyEventService,
+        @Inject(ShortcutService) protected readonly shortcutSvc: ShortcutService,
         @Inject(MediaQueryService) protected readonly mq: MediaQueryService) {
 
-        this._menuBackWatch = this.destruct.disposable(keyEvent.newWatcher(SpecialKey.BackButton, () => {
-            this.menu.opened = false
-            return true
+        this._backShortcut = this.destruct.disposable(shortcutSvc.create({
+            "sidepanel.close": {
+                shortcut: "escape, back", handler: () => {
+                    this.menu.opened = false
+                    this.right.opened = false
+                }
+            }
         }))
+        this._backShortcut.on()
 
-        this._rightBackWatch = this.destruct.disposable(keyEvent.newWatcher(SpecialKey.BackButton, () => {
-            this.right.opened = false
-            return true
-        }))
 
         this.destruct.subscription(merge(this.menu.changes, this.right.changes))
             .pipe(debounceTime(10))
@@ -143,16 +143,16 @@ export class ViewportService implements OnDestroy {
                     if (this.menu.style === VPPanelStyle.OVERLAY) {
                         this.menu.opened = false
                     }
-                    this._rightBackWatch.on()
+                    this._backShortcut.off()
                 } else {
-                    this._rightBackWatch.off()
+
                     if (this.menu.opened && this.menu.style === VPPanelStyle.OVERLAY) {
                         if (this.right.style === VPPanelStyle.OVERLAY) {
                             this.right.opened = false
                         }
-                        this._menuBackWatch.on()
+                        this._backShortcut.on()
                     } else {
-                        this._menuBackWatch.off()
+                        this._backShortcut.off()
                     }
                 }
             })

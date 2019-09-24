@@ -1,11 +1,12 @@
 import { EventEmitter, Injector, ComponentRef, TemplateRef, EmbeddedViewRef, ViewContainerRef } from "@angular/core"
 import { ComponentPortal, TemplatePortal, ComponentType } from "@angular/cdk/portal"
+import { FocusTrap, FocusTrapFactory } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
 import { PreventableEvent } from "../../util"
-import { KeyEventService, KeyWatcher, SpecialKey } from "../../common.module"
+import { ShortcutService, Shortcuts } from "../../common.module"
 import { LayerOutletRef } from "./layer-container"
 import { LayerBehavior } from "./layer-behavior"
 
@@ -42,14 +43,26 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
 
     public abstract readonly opener: LayerRef
     protected abstract vcr: ViewContainerRef
-    protected backBtnWatcher: KeyWatcher
+    protected shortcuts: Shortcuts
+    protected focusTrap: FocusTrap
+    protected lastFocused: HTMLElement
 
     public constructor(
         public readonly behavior: LayerBehavior,
         public readonly outlet: LayerOutletRef,
-        protected readonly keyEventSvc: KeyEventService) {
+        protected readonly shortcutSvc: ShortcutService,
+        protected readonly focusTrapSvc: FocusTrapFactory) {
         this.destruct.disposable(behavior)
         this.destruct.disposable(outlet)
+
+        this.shortcuts = this.destruct.disposable(this.shortcutSvc.create(outlet.nativeElement, {
+            "layer.close": {
+                shortcut: "escape, back", handler: () => {
+                    this.close()
+                }
+            }
+        }))
+        this.shortcuts.enabled = false
     }
 
     public get onClose(): Observable<void> {
@@ -102,14 +115,23 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
             return Promise.resolve()
         } else {
             (this as any).isVisible = true
+            this.saveFocus()
+            this.shortcuts.enabled = true
             this.attach()
-            this.updateBackButton()
             this.behavior.initShow(this)
             this.behavior.levitate.begin()
+            if (this.behavior.options.trapFocus && !this.focusTrap) {
+                this.focusTrap = this.focusTrapSvc.create(this.outlet.nativeElement, false)
+                this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
+            }
             this.emit(new LayerEvent("showing") as E)
             return Promise.all([
                 // this.behavior.showBackdrop(this),
-                this.behavior.animateShow(this)
+                this.behavior.animateShow(this).then(() => {
+                    if (this.focusTrap) {
+                        this.focusTrap.focusInitialElement() || this.focusTrap.focusFirstTabbableElement()
+                    }
+                })
             ])
         }
     }
@@ -119,6 +141,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
     public hide(): Promise<any> {
         if (this.isVisible) {
             (this as any).isVisible = false
+            this.restoreFocus()
             this.behavior.initHide(this)
             this.behavior.levitate.suspend()
             this.emit(new LayerEvent("hiding") as E)
@@ -135,17 +158,17 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
         this.destruct.run()
     }
 
-    protected updateBackButton() {
-        if (this.behavior.options.closeable) {
-            if (!this.backBtnWatcher) {
-                this.backBtnWatcher = this.destruct.disposable(this.keyEventSvc.newWatcher(SpecialKey.BackButton, () => {
-                    this.close()
-                    return false
-                }))
+    private saveFocus() {
+        this.lastFocused = document.activeElement as HTMLElement
+    }
+
+    private restoreFocus() {
+        if (this.lastFocused && document.contains(this.lastFocused) && typeof this.lastFocused.focus !== "undefined") {
+            const rootEl = this.outlet.nativeElement
+            const focusedEl = document.activeElement
+            if (rootEl === focusedEl || rootEl.contains(focusedEl)) {
+                this.lastFocused.focus()
             }
-            this.backBtnWatcher.on()
-        } else if (this.backBtnWatcher) {
-            this.backBtnWatcher.off()
         }
     }
 }
@@ -155,11 +178,11 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
     public readonly component: ComponentRef<C>
     protected portal: ComponentPortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, keyEventSvc: KeyEventService,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: FocusTrapFactory,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
-        super(behavior, outlet, keyEventSvc)
+        super(behavior, outlet, shortcutSvc, focusTrap)
         this.destruct.any(() => {
             if (this.portal && this.portal.isAttached) {
                 this.portal.detach()
@@ -187,12 +210,12 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
     public readonly view: EmbeddedViewRef<C>
     protected readonly portal: TemplatePortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, keyEventSvc: KeyEventService,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: FocusTrapFactory,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         tpl: TemplateRef<C>,
         ctx: C) {
-        super(behavior, outlet, keyEventSvc)
+        super(behavior, outlet, shortcutSvc, focusTrap)
         this.portal = new TemplatePortal(tpl, vcr, ctx)
 
         this.destruct.any(() => {

@@ -47,8 +47,10 @@ import { MediaQueryService } from "./services/media-query.service"
 import { ZING_TOUCH_PLUGIN } from "./services/zingtouch.service"
 export { FileDownloadService, FileDownloadEvent, TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, ZING_TOUCH_PLUGIN, TOUCH_EVENT_PLUGIN, TapEvent }
 
+import { ShortcutService } from "./shortcut/shortcut.service"
+export { ShortcutService }
+export { Shortcuts, ShortcutDef, ShortcutHandler, Shortcut } from "./shortcut/shortcuts"
 
-import { HAMMER_CONFIG } from "./hammer"
 
 
 const content = [
@@ -93,6 +95,7 @@ const content = [
         DragEventService,
         KeyEventService,
         MediaQueryService,
+        ShortcutService,
         // ZING_TOUCH_PLUGIN,
         TOUCH_EVENT_PLUGIN,
     ]

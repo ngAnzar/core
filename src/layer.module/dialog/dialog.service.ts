@@ -12,7 +12,7 @@ import { ComponentLayerRef, LayerEvent } from "../layer/layer-ref"
 import { LayerOptions } from "../layer/layer-options"
 import {
     LayerMessageComponent, getProviders, ButtonOption,
-    BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_OK, BUTTON_ERROR, BUTTON_DELETE
+    BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_OK, BUTTON_ERROR, BUTTON_DELETE, BUTTON_CLOSE
 } from "../_shared"
 
 import { DialogComponent } from "./dialog.component"
@@ -80,6 +80,21 @@ export class DialogService {
         ).output.pipe(
             filter(event => event.type === "button"),
             map(event => event.button === "ok"),
+            take(1))
+    }
+
+    public confirmClose(title: string, message: string): Observable<boolean> {
+        return this._show(
+            getProviders({
+                title, message,
+                options: { isPlainText: true },
+                content: LayerMessageComponent,
+                buttons: [BUTTON_CANCEL, BUTTON_SEPARATOR, BUTTON_CLOSE]
+            }),
+            { closeable: false }
+        ).output.pipe(
+            filter(event => event.type === "button"),
+            map(event => event.button === "close"),
             take(1))
     }
 

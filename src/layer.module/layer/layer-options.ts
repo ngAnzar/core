@@ -1,5 +1,7 @@
+import { Observable } from "rxjs"
 import { Margin, Rect, Align, AlignInput } from "../../layout.module"
 import { Anchor, Constraint } from "../levitate/levitate-options"
+import { LayerRef } from "./layer-ref"
 
 
 export interface LevitateOptions {
@@ -30,10 +32,16 @@ export interface LayerOptions {
     rounded?: number
     // Can close layer with backButton (esc, or back button on mobile device)
     closeable?: boolean
+    trapFocus?: boolean
 }
 
 
 export interface DropdownLayerOptions extends LayerOptions {
     initialWidth?: number
     initialHeight?: number
+}
+
+
+export interface ClosingGuarded {
+    canClose(layerRef: LayerRef): Observable<boolean>
 }

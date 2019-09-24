@@ -1,9 +1,10 @@
 import { AnimationBuilder, AnimationOptions, AnimationPlayer, AnimationMetadata } from "@angular/animations"
+import { take } from "rxjs/operators"
 
 import { IDisposable } from "../../util"
 import { LevitateRef } from "../levitate/levitate-ref"
-import { LayerOptions, DropdownLayerOptions } from "./layer-options"
-import { LayerRef } from "./layer-ref"
+import { LayerOptions, DropdownLayerOptions, ClosingGuarded } from "./layer-options"
+import { LayerRef, ComponentLayerRef } from "./layer-ref"
 import { fallAnimation, ddAnimation } from "./layer-animations"
 
 
@@ -47,6 +48,15 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
     }
 
     public canClose(layer: LayerRef): Promise<boolean> {
+        if (layer instanceof ComponentLayerRef) {
+            const cmp = layer.component.instance as ClosingGuarded
+            if (cmp.canClose) {
+                return new Promise(resolve => {
+                    cmp.canClose(layer).pipe(take(1)).subscribe(resolve)
+                })
+            }
+        }
+
         return Promise.resolve(true)
     }
 
@@ -87,11 +97,15 @@ export class ModalLayer extends LayerBehavior {
         if (!this.options.backdrop) {
             this.options.backdrop = { type: "filled", hideOnClick: false }
         } else {
-            this.options.backdrop.hideOnClick = false
+            // this.options.backdrop.hideOnClick = false
         }
 
         if (options.closeable == null) {
             options.closeable = true
+        }
+
+        if (options.trapFocus == null) {
+            options.trapFocus = true
         }
     }
 

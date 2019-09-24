@@ -16,15 +16,12 @@ export class LayerBackdropRef implements IDisposable {
             this._visibleUnder = val
             if (val) {
                 let idx = this.attached.indexOf(val)
-                if (idx !== this.attached.length - 1) {
-                    if (idx !== -1) {
-                        this.attached.splice(idx, 1)
-                        this.attached.push(val)
-                    } else {
-                        this.attached.push(val)
-                    }
+                if (idx === -1) {
+                    this.attached.push(val)
+                } else if (idx !== this.attached.length - 1) {
+                    this.attached.splice(idx, 1)
+                    this.attached.push(val)
                 }
-
                 this.show(val.outlet)
             }
         }
