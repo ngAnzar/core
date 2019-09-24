@@ -52,6 +52,8 @@ export { ShortcutService }
 export { Shortcuts, ShortcutDef, ShortcutHandler, Shortcut } from "./shortcut/shortcuts"
 
 
+import { NzRouterLink, NzRouterLinkHref } from "./ngpatches/router-link"
+
 
 const content = [
     ButtonComponent,
@@ -76,7 +78,10 @@ const content = [
 
     ChipComponent,
 
-    DragHandleDirective
+    DragHandleDirective,
+
+    NzRouterLink,
+    NzRouterLinkHref
 ]
 
 
