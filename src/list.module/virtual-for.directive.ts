@@ -84,15 +84,15 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         tap(() => {
             let sp = this._scroller.scrollPercent
             if (sp.top !== 0 || sp.left !== 0) {
-                this._scroller.scrollPercent = { top: 0, left: 0 }
+                this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
             }
         })
     )
 
     private _scroll = new Subject()
     private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
-        debounceTime(10),
-        map(this.visibleItems.getVisibleRange.bind(this.visibleItems)),
+        // debounceTime(10),
+        map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpRender)),
         map((vr: NzRange) => {
             if (vr.begin === -1) {
                 return new NzRange(0, this.itemsPerRequest)
@@ -174,7 +174,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     public ngOnInit() {
         this.destruct.subscription(this.render$).subscribe()
 
-        this.destruct.subscription(this._scroller.vpImmediate.scroll)
+        this.destruct.subscription(this._scroller.vpRender.scroll)
             .pipe(startWith(0))
             .subscribe(this._scroll)
     }

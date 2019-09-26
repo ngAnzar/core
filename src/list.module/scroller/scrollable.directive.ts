@@ -26,6 +26,11 @@ export class ScrollableDirective {
                 nativeEl.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
             })
 
+            // service.destruct.subscription(service.vpImmediate.scroll).subscribe(event => {
+            //     const pos = event.position
+            //     nativeEl.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
+            // })
+
             service.destruct.subscription(rectMutation.watchDimension(el)).subscribe(dim => {
                 service.vpImmediate.update({
                     scrollWidth: dim.width,

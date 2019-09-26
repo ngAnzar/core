@@ -1,7 +1,7 @@
 import { Directive, forwardRef, Inject, Input, ViewContainerRef, EmbeddedViewRef } from "@angular/core"
 import { Subject } from "rxjs"
 
-import { ScrollerService } from "./scroller/scroller.service"
+import { ScrollerService, Viewport } from "./scroller/scroller.service"
 import { ScrollableDirective } from "./scroller/scrollable.directive"
 import { NzRange } from "../util"
 import { Rect } from "../layout.module"
@@ -11,7 +11,7 @@ import { VirtualForContext } from "./virtual-for.directive"
 export abstract class VirtualForVisibleItems {
     public readonly changes = new Subject()
 
-    public abstract getVisibleRange(): NzRange
+    public abstract getVisibleRange(viewport: Viewport): NzRange
     public abstract clearCache(): void
     public abstract cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void
     public abstract onRender(range: NzRange): void
@@ -36,12 +36,11 @@ export class VirtualForFixedItems extends VirtualForVisibleItems {
     public get fixedItemHeight(): number { return this._fixedItemHeight }
     private _fixedItemHeight: number
 
-    public constructor(@Inject(ScrollerService) private readonly scroller: ScrollerService) {
+    public constructor() {
         super()
     }
 
-    public getVisibleRange(): NzRange {
-        const viewport = this.scroller.vpImmediate
+    public getVisibleRange(viewport: Viewport): NzRange {
         let begin: number = Math.floor(viewport.visible.top / this._fixedItemHeight)
         let end: number = begin + Math.ceil(viewport.visible.height / this._fixedItemHeight)
         return new NzRange(begin, end)
@@ -73,20 +72,19 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
     private _minHeight: number = 0
 
     public constructor(
-        @Inject(ScrollerService) private readonly scroller: ScrollerService,
         @Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective,
         @Inject(ViewContainerRef) private readonly vcr: ViewContainerRef) {
         super()
     }
 
-    public getVisibleRange(): NzRange {
+    public getVisibleRange(viewport: Viewport): NzRange {
         let begin: number = -1
         let end: number = -1
         let rendered = this._renderedSize()
 
-        let range = this._getVisibleRangeFormCache(rendered.begin)
+        let range = this._getVisibleRangeFormCache(viewport, rendered.begin)
         if (!range && rendered.begin !== 0) {
-            range = this._getVisibleRangeFormCache(0)
+            range = this._getVisibleRangeFormCache(viewport, 0)
         }
 
         if (range) {
@@ -125,10 +123,10 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
         this._minHeight = 0
     }
 
-    private _getVisibleRangeFormCache(startFrom: number) {
+    private _getVisibleRangeFormCache(viewport: Viewport, startFrom: number) {
         let begin: number = -1
         let end: number = -1
-        let visibleRect = this.scroller.vpImmediate.visible
+        let visibleRect = viewport.visible
 
         for (const items = this._cache, l = items.length; startFrom < l; startFrom++) {
             const item = items[startFrom]

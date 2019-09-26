@@ -1,12 +1,14 @@
 import {
     Component, Inject, ContentChildren, QueryList, AfterContentInit,
-    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, Output
+    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, Output, ElementRef
 } from "@angular/core"
 import { Subject } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
+import { RectMutationService } from "../../layout.module"
 import { TabComponent } from "./tab.component"
+
 
 
 @Component({
@@ -39,7 +41,14 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
     @Output() public readonly changes = new Subject<number>()
 
-    public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
+    public constructor(
+        @Inject(ElementRef) el: ElementRef<HTMLElement>,
+        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
+        @Inject(RectMutationService) mutation: RectMutationService) {
+
+        this.destruct.subscription(mutation.watchDimension(el)).subscribe(_ => {
+            cdr.detectChanges()
+        })
     }
 
     public ngAfterContentInit() {

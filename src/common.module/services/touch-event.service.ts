@@ -11,14 +11,19 @@ const __zone_symbol__ =
     (typeof Zone !== "undefined") && (Zone as any)["__symbol__"] || function (v: string): string {
         return "__zone_symbol__" + v;
     };
-const ADD_EVENT_LISTENER: "addEventListener" = __zone_symbol__("addEventListener");
-const REMOVE_EVENT_LISTENER: "removeEventListener" = __zone_symbol__("removeEventListener");
+const ADD_EVENT_LISTENER: "addEventListener" = __zone_symbol__("addEventListener")
+const REMOVE_EVENT_LISTENER: "removeEventListener" = __zone_symbol__("removeEventListener")
+const SET_INTERVAL: "setInterval" = __zone_symbol__("setInterval")
+const CLEAR_INTERVAL: "clearInterval" = __zone_symbol__("clearInterval")
 
 const LISTENERS = Symbol("anzar.touchListeners")
-const REFCOUNT = Symbol("anzar.touchListeners.rc")
+// const REFCOUNT = Symbol("anzar.touchListeners.rc")
 
-export type TouchRecognizers = { [key: string]: Recognizer }
-export const TOUCH_RECOGNIZERS = new InjectionToken<TouchRecognizers>("TOUCH_RECOGNIZERS")
+export type TouchEventHandler = (event: NzTouchEvent) => any
+export type TouchEventFactory = [string, (handler: TouchEventHandler) => TouchEventHandler]
+export type TouchEventFactories = { [key: string]: TouchEventFactory }
+export const TOUCH_EVENTS = new InjectionToken<TouchEventFactories>("TOUCH_EVENTS")
+export const TOUCH_RECOGNIZERS = new InjectionToken<Recognizer[]>("TOUCH_RECOGNIZERS")
 
 
 export type PointerEvent =
@@ -26,48 +31,265 @@ export type PointerEvent =
     (TouchEvent & { type: "touchstart" | "touchend" | "touchcancel" | "touchmove" });
 
 
-export interface TapEvent extends Event {
-    readonly detail: {
-        readonly clientX: number
-        readonly clientY: number
+export type PointerType = "mouse" | "touch"
+export type Direction = "left" | "top" | "right" | "bottom"
+
+
+export interface TouchEventDetails {
+    readonly clientX: number
+    readonly clientY: number
+    readonly direction?: Direction
+    readonly orient?: "vertical" | "horizontal"
+    readonly distanceX?: number
+    readonly distanceY?: number
+    readonly velocity?: number
+    readonly velocityX?: number
+    readonly velocityY?: number
+    readonly angle?: number
+}
+
+
+export interface NzTouchEvent extends Event, TouchEventDetails {
+    readonly originalEvent: PointerEvent
+    readonly pointerType: PointerType
+    readonly isFinal: boolean
+}
+
+
+export interface RecognizerOptions {
+    name: string
+    pointerTypes: PointerType[]
+    maxPointer: number
+    isMoving: boolean
+    isTimed: boolean
+    maxDistance?: number
+    minDistance?: number
+    maxDelay?: number
+    minDelay?: number
+    angleDispersion?: number
+}
+
+
+export abstract class Recognizer<O extends RecognizerOptions = RecognizerOptions> implements RecognizerOptions {
+    public readonly name: string
+    public readonly pointerTypes: PointerType[]
+    public readonly maxPointer: number
+    public readonly isMoving: boolean
+    public readonly isTimed: boolean
+    public readonly maxDistance: number
+    public readonly minDistance: number
+    public readonly maxDelay: number
+    public readonly minDelay: number
+    public readonly angleDispersion: number
+
+    public match: (event: PointerEvent, state: TouchState) => boolean
+
+    public constructor(public options: O) {
+        Object.assign(this, options)
+        this.match = this.buildMatcher()
+    }
+
+    public patchEvent(result: NzTouchEvent, source: PointerEvent, state: TouchState) {
+        Object.assign(result, this._eventDetails(source, state, result.isFinal))
+    }
+
+    protected _eventDetails(event: PointerEvent, state: TouchState, final: boolean): TouchEventDetails {
+        const lastPath = state.path[state.path.length - 1][0]
+        return {
+            clientX: lastPath.x,
+            clientY: lastPath.y,
+        }
+    }
+
+    protected buildMatcherBody(): string {
+        let expr = [
+            `state.maxPointer <= this.maxPointer`
+        ]
+
+        let ptExpr: string[] = []
+        for (const pt of this.pointerTypes) {
+            ptExpr.push(`state.pointerType === "${pt}"`)
+        }
+        expr.push(`(${ptExpr.join(" || ")})`)
+
+        if (this.maxDistance != null
+            || this.minDistance != null) {
+            expr.push(
+                `(pathBeg = state.path[0][0])`,
+                `(pathEnd = state.path[state.path.length - 1][0])`
+            )
+        }
+
+        if (this.maxDistance != null) {
+            expr.push(
+                `Math.abs(pathBeg.x - pathEnd.x) < ${this.maxDistance}`,
+                `Math.abs(pathBeg.y - pathEnd.y) < ${this.maxDistance}`
+            )
+        }
+
+        if (this.minDistance != null) {
+            expr.push(
+                `(Math.abs(pathBeg.x - pathEnd.x) >= ${this.minDistance} || Math.abs(pathBeg.y - pathEnd.y) >= ${this.minDistance})`
+            )
+        }
+
+        if (this.maxDelay != null) {
+            expr.push(
+                `state.elapsedTime < ${this.maxDelay}`
+            )
+        }
+
+        if (this.minDelay != null) {
+            expr.push(
+                `state.elapsedTime >= ${this.minDelay}`
+            )
+        }
+
+        return `return ${expr.join(" && ")}`
+    }
+
+    protected buildMatcher(): (event: PointerEvent, state: TouchState) => boolean {
+        console.log(this.buildMatcherBody())
+        return new Function("event", "state", this.buildMatcherBody()) as any
     }
 }
 
 
-export abstract class Recognizer extends Destructible {
+export class TapRecognizer extends Recognizer<RecognizerOptions> {
 
 }
 
 
-export class TapRecognizer extends Recognizer {
+export class MoveRecognizer extends Recognizer<RecognizerOptions> {
+    protected _eventDetails(event: PointerEvent, state: TouchState, final: boolean): TouchEventDetails {
+        const path = state.path
+        const lastPath = path[path.length - 1][0]
+        const clientX = lastPath.x
+        const clientY = lastPath.y
+        const firstPath = path[0][0]
+        const angle = Math.atan2(clientY - firstPath.y, clientX - firstPath.x)
+        const disp = this.angleDispersion * (Math.PI / 180)
 
+        let direction: Direction
+        let orient: "horizontal" | "vertical"
+
+        if (angle >= -disp && angle <= disp) {
+            orient = "horizontal"
+            direction = "right"
+        } else if (angle >= Math.PI - disp || angle <= -Math.PI + disp) {
+            orient = "horizontal"
+            direction = "left"
+        } else if (angle >= Math.PI / 2 - disp && angle <= Math.PI / 2 + disp) {
+            orient = "vertical"
+            direction = "bottom"
+        } else if (angle >= -Math.PI / 2 - disp && angle <= -Math.PI / 2 + disp) {
+            orient = "vertical"
+            direction = "top"
+        }
+
+        let velocityX: number = PAN_VELOCITY
+        let velocityY: number = PAN_VELOCITY
+        if (path.length >= 2) {
+            const lpath = path[path.length - 2][0]
+            const duration = lastPath.t - lpath.t
+            velocityX = Math.abs(lpath.x - lastPath.x) / duration
+            velocityY = Math.abs(lpath.y - lastPath.y) / duration
+        }
+        let velocity = Math.max(velocityX, velocityY)
+
+        let distanceX: number = lastPath.x - firstPath.x
+        let distanceY: number = lastPath.y - firstPath.y
+
+        return {
+            clientX,
+            clientY,
+            angle,
+            orient,
+            direction,
+            velocity,
+            velocityX,
+            velocityY,
+            distanceX,
+            distanceY
+        }
+    }
 }
 
 
+const MAX_DISTANCE_TOLERANCE = 10
+const LONG_TAP_INTERVAL = 300
+const PAN_VELOCITY = 0.3
 
-export const DEFAULT_RECOGNIZERS: TouchRecognizers = {
-    "tap": new TapRecognizer()
-    // "tap": TapRecognizer.factory,
-    // "longtap": TapRecognizer.factory,
-    // "tapbegin": TapRecognizer.factory,
-    // "tapend": TapRecognizer.factory,
+
+export const DEFAULT_RECOGNIZERS = [
+    new TapRecognizer({
+        name: "tap",
+        isMoving: false,
+        isTimed: false,
+        // maxDelay: LONG_TAP_INTERVAL,
+        maxDistance: MAX_DISTANCE_TOLERANCE,
+        maxPointer: 1,
+        pointerTypes: ["mouse", "touch"]
+    }),
+    new TapRecognizer({
+        name: "longtap",
+        isMoving: false,
+        isTimed: true,
+        minDelay: LONG_TAP_INTERVAL,
+        maxDistance: MAX_DISTANCE_TOLERANCE,
+        maxPointer: 1,
+        pointerTypes: ["touch"]
+    }),
+    new MoveRecognizer({
+        name: "pan",
+        isMoving: true,
+        isTimed: false,
+        minDistance: MAX_DISTANCE_TOLERANCE,
+        maxPointer: 1,
+        angleDispersion: 45,
+        pointerTypes: ["touch", "mouse"]
+    }),
+]
+
+
+export const DEFAULT_EVENT_FACTORIES: TouchEventFactories = {
+    "tap": ["tap", (handler: TouchEventHandler) => handler],
+    "longtap": ["longtap", (handler: TouchEventHandler) => handler],
+    "pan": ["pan", (handler: TouchEventHandler) => handler],
+    "swipe": ["pan", (handler: TouchEventHandler) => handler],
+    "drag": ["pan", (handler: TouchEventHandler) => handler],
+
 }
 
 
 // type Listeners = Array<{ handler: any, recognizer: Recognizer, rc: number }>
 
+interface TouchPoint {
+    x: number,
+    y: number,
+    t: number
+}
+
+type TouchState = {
+    path: TouchPoint[][],
+    pointerType: PointerType,
+    maxPointer: number,
+    startEvent: PointerEvent,
+    lastEvent: PointerEvent,
+    elapsedTime: number
+}
+
 class Listeners {
-    public readonly handlers: Map<Recognizer, Array<{ rc: number, handler: Function }>> = new Map()
+    public readonly handlers: { [key: string]: Array<{ rc: number, handler: Function, listener: Function }> } = {}
 
-    public beginTime: number
-    public beginCoords: Point[]
-    public isMoving = false
+    public readonly state: TouchState = {} as any
 
-    public add(recognizer: Recognizer, handler: any) {
-        let target = this.handlers.get(recognizer)
+    public activeRecognizer: Recognizer
+
+    public add(name: string, handler: any, listener: any) {
+        let target = this.handlers[name]
         if (!target) {
-            target = []
-            this.handlers.set(recognizer, target)
+            this.handlers[name] = target = []
         }
 
         for (const h of target) {
@@ -77,12 +299,35 @@ class Listeners {
             }
         }
 
-        target.push({ rc: 1, handler })
+        target.push({ rc: 1, handler, listener })
     }
 
-    public del(recognizer: Recognizer, handler: any) {
-
+    public del(name: string, handler: any, cb: (listener: any) => void): number {
+        let target = this.handlers[name]
+        if (target) {
+            let l = target.length
+            while (--l >= 0) {
+                const h = target[l]
+                if (h.handler === handler) {
+                    h.rc--
+                    if (h.rc <= 0) {
+                        target.splice(l, 1)
+                        cb(h.listener)
+                    }
+                }
+            }
+            if (target.length === 0) {
+                delete this.handlers[name]
+            }
+        }
+        return Object.keys(this.handlers).length
     }
+}
+
+
+const CUSTOM_EVENT_OPTIONS = {
+    bubbles: true,
+    cancelable: true
 }
 
 
@@ -90,19 +335,23 @@ export class TouchEventService extends ɵDomEventsPlugin {
     public readonly longtapInterval = 300
     public readonly moveDistance = 10
 
-    protected recognizers: TouchRecognizers
+    protected recognizers: Recognizer[]
+    protected eventFactories: TouchEventFactories
+    protected eventNames: string[]
 
     private _activeElement: HTMLElement
-    private _matchedRecognizer: Recognizer
-
+    private _interval: any
 
     public constructor(
         @Inject(DOCUMENT) private doc: HTMLDocument,
         @Inject(NgZone) zone: NgZone,
         @Inject(PLATFORM_ID) @Optional() platformId: {} | null,
-        @Inject(TOUCH_RECOGNIZERS) @Optional() recognizers: TouchRecognizers) {
+        @Inject(TOUCH_RECOGNIZERS) @Optional() recognizers: Recognizer[],
+        @Inject(TOUCH_EVENTS) @Optional() eventFactories: TouchEventFactories) {
         super(doc, zone, platformId)
+
         this.recognizers = recognizers || DEFAULT_RECOGNIZERS
+        this.eventFactories = eventFactories || DEFAULT_EVENT_FACTORIES
 
         doc[ADD_EVENT_LISTENER]("mousemove", this._mousemove)
         doc[ADD_EVENT_LISTENER]("mouseup", this._mouseup)
@@ -112,58 +361,47 @@ export class TouchEventService extends ɵDomEventsPlugin {
     }
 
     public supports(eventName: string): boolean {
-        return eventName in this.recognizers
+        return eventName in this.eventFactories
     }
 
-    public addEventListener(element: HTMLElement, eventName: string, handler: Function): Function {
-        const recognizer = this.recognizers[eventName]
+    public addEventListener(element: HTMLElement, eventName: string, handler: TouchEventHandler): Function {
         let listeners = (element as any)[LISTENERS] as Listeners
 
         if (!listeners) {
             (element as any)[LISTENERS] = listeners = new Listeners();
-            (element as any)[REFCOUNT] = 1
             this.install(element)
-        } else {
-            (element as any)[REFCOUNT]++
         }
 
-        listeners.add(recognizer, handler)
-        element.addEventListener(eventName as any, handler as any)
+        const [listenFor, factory] = this.eventFactories[eventName]
+        const newHandler = factory(handler)
+        listeners.add(eventName, handler, newHandler)
+        element[ADD_EVENT_LISTENER](listenFor as any, newHandler as any)
 
         return this.removeEventListener.bind(this, element, eventName, handler)
-        // let zone: NgZone = (this as any).ngZone
-
-        // return zone.runOutsideAngular(() => {
-        //     this.install(element, eventName)
-
-        //     const cb = (event?: Event) => {
-        //         zone.run(() => {
-        //             handler(event)
-        //         })
-        //     }
-        //     element.addEventListener(eventName, cb)
-
-        //     return () => {
-        //         element.removeEventListener(eventName, cb)
-        //         this.uninstall(element, eventName)
-        //     }
-        // })
     }
 
-    public removeEventListener(target: any, eventName: string, callback: Function): void {
-        console.log("TODO: removeEventListener")
+    public removeEventListener(element: HTMLElement, eventName: string, handler: TouchEventHandler): void {
+        let listeners = (element as any)[LISTENERS] as Listeners
+        if (listeners) {
+            const remaining = listeners.del(eventName, handler, (listener) => {
+                element[REMOVE_EVENT_LISTENER](eventName, listener as any)
+            })
+            if (remaining === 0) {
+                this.uninstall(element)
+            }
+        }
     }
-
-    // protected install(element: HTMLElement, eventName: string) {
-
-    // }
-
-    // protected uninstall(element: HTMLElement, eventName: string) {
-    // }
 
     protected install(element: HTMLElement) {
         element[ADD_EVENT_LISTENER]("mousedown", this._begin)
         element[ADD_EVENT_LISTENER]("touchstart", this._begin)
+    }
+
+    protected uninstall(element: HTMLElement) {
+        delete (element as any)[LISTENERS]
+
+        element[REMOVE_EVENT_LISTENER]("mousedown", this._begin)
+        element[REMOVE_EVENT_LISTENER]("touchstart", this._begin)
     }
 
     private _begin = (event: PointerEvent) => {
@@ -171,33 +409,76 @@ export class TouchEventService extends ɵDomEventsPlugin {
         const listeners = (el as any)[LISTENERS] as Listeners
 
         if (listeners) {
-            listeners.beginTime = new Date().getTime()
-            listeners.isMoving = false
+            event.stopPropagation()
+            const state = listeners.state
+            state.path = []
+            state.maxPointer = 0
+            state.startEvent = state.lastEvent = event
 
             if (event.type === "touchstart") {
                 event.preventDefault() // stop firing mouse events
-                listeners.beginCoords = this._touchCoords(event)
+                state.pointerType = "touch"
+                this._extendTouchPath(listeners, event)
             } else if (event.type === "mousedown") {
                 // handle only primary button click
                 if (event.button !== 0) {
                     return
                 }
-                listeners.beginCoords = this._mouseCoords(event)
+                state.pointerType = "mouse"
+                this._extendMousePath(listeners, event)
             }
 
             this._activeElement = el
+            this._installPeriodic()
         }
     }
 
-    private _end = () => {
-        // const el = this._activeElement
-        // const recognizer = this._matchedRecognizer
-        delete this._activeElement
-        delete this._matchedRecognizer
+    private _end = (event: PointerEvent, listeners: Listeners) => {
+        listeners.state.lastEvent = event
+        const zone = (this as any).ngZone as NgZone
+        this._uninstallPeriodic()
+        zone.run(() => {
+            this._fireEvent(event, listeners, true)
 
-        // if (el && recognizer) {
-        //     console.log({ el, recognizer })
-        // }
+            delete listeners.activeRecognizer;
+            (listeners as { state: any }).state = {}
+
+            delete this._activeElement
+        })
+    }
+
+    private _installPeriodic() {
+        this._uninstallPeriodic()
+        this._interval = window[SET_INTERVAL](this._checkPeriodically, 50)
+    }
+
+    private _uninstallPeriodic() {
+        if (this._interval) {
+            window[CLEAR_INTERVAL](this._interval)
+            delete this._interval
+        }
+    }
+
+    private _checkPeriodically = () => {
+        if (this._activeElement) {
+            const el = this._activeElement as HTMLElement
+            const listeners = (el as any)[LISTENERS] as Listeners
+            const state = listeners.state
+            if (listeners) {
+                if (listeners.activeRecognizer) {
+                    this._uninstallPeriodic()
+                    return
+                } else if (this._inActiveElement(state.lastEvent.target)) {
+
+                    state.elapsedTime = performance.now() - state.startEvent.timeStamp
+                    const recognizer = this._findRecognizer(listeners.state.startEvent, listeners, false, true)
+                    if (recognizer) {
+                        listeners.activeRecognizer = recognizer
+                        this._end(listeners.state.startEvent, listeners)
+                    }
+                }
+            }
+        }
     }
 
     private _docEvtHandler(handler: (event: PointerEvent, el: HTMLElement, listeners: Listeners) => void) {
@@ -213,100 +494,106 @@ export class TouchEventService extends ɵDomEventsPlugin {
     }
 
     private _mousemove = this._docEvtHandler((event, el, listeners) => {
+        listeners.state.lastEvent = event
+        this._extendMousePath(listeners, event as MouseEvent)
 
+        let rec = listeners.activeRecognizer
+        if (!rec) {
+            rec = listeners.activeRecognizer = this._findRecognizer(event, listeners, true, false)
+        }
+
+        if (rec && rec.isMoving) {
+            this._fireEvent(event, listeners, false)
+        }
     })
 
     private _mouseup = this._docEvtHandler((event, el, listeners) => {
-        if (!listeners.isMoving && this._inActiveElement(event.target)) {
-            this._fireTap(event)
+        this._extendMousePath(listeners, event as MouseEvent)
+        if (!listeners.activeRecognizer && this._inActiveElement(event.target)) {
+            listeners.activeRecognizer = this._findRecognizer(event, listeners, false, false)
         }
-        this._end()
+        this._end(event, listeners)
     })
 
     private _touchcancel = this._docEvtHandler((event, el, listeners) => {
-        this._end()
+        this._end(event, listeners)
     })
 
     private _touchend = this._docEvtHandler((event, el, listeners) => {
-        if (!listeners.isMoving && this._inActiveElement(event.target)) {
-            const end = new Date().getTime()
-            if (end - listeners.beginTime >= this.longtapInterval) {
-                this._fireLongtap(event)
-            } else {
-                this._fireTap(event)
-            }
+        this._extendTouchPath(listeners, event as TouchEvent)
+        if (!listeners.activeRecognizer && this._inActiveElement(event.target)) {
+            listeners.activeRecognizer = this._findRecognizer(event, listeners, false, false)
         }
-        this._end()
+        this._end(event, listeners)
     })
 
     private _touchmove = this._docEvtHandler((event, el, listeners) => {
+        listeners.state.lastEvent = event
+        this._extendTouchPath(listeners, event as TouchEvent)
 
-    })
-
-    private _touchCoords(event: TouchEvent): Point[] {
-        let res: Point[] = []
-
-        for (let i = 0, l = event.touches.length; i < l; i++) {
-            const t = event.touches[i]
-            res.push(new Point(t.clientX, t.clientY))
+        let rec = listeners.activeRecognizer
+        if (!rec) {
+            rec = listeners.activeRecognizer = this._findRecognizer(event, listeners, true, false)
         }
 
-        return res
+        if (rec && rec.isMoving) {
+            this._fireEvent(event, listeners, false)
+        }
+    })
+
+    private _findRecognizer(event: PointerEvent, listeners: Listeners, isMoving: boolean, isTimed: boolean): Recognizer {
+        const state = listeners.state
+        for (const r of this.recognizers) {
+            if (r.isMoving === isMoving && r.isTimed === isTimed && r.match(event, state)) {
+                return r
+            }
+        }
+        return null
     }
 
-    private _mouseCoords(event: MouseEvent): Point[] {
-        return [new Point(event.clientX, event.clientY)]
+    private _extendMousePath(listeners: Listeners, event: MouseEvent) {
+        const state = listeners.state
+        state.path.push(
+            [{ x: event.clientX, y: event.clientY, t: event.timeStamp }]
+        )
+        state.maxPointer = 1
+        state.elapsedTime = event.timeStamp - state.startEvent.timeStamp
+    }
+
+    private _extendTouchPath(listeners: Listeners, event: TouchEvent) {
+        const state = listeners.state
+        const touches = event.touches
+        let points: TouchPoint[] = []
+
+        if (touches.length > 0) {
+            for (let i = 0, l = touches.length; i < l; i++) {
+                const t = touches[i]
+                points.push({ x: t.clientX, y: t.clientY, t: event.timeStamp })
+            }
+            state.path.push(points)
+            state.maxPointer = Math.max(points.length, state.maxPointer)
+            state.elapsedTime = event.timeStamp - state.startEvent.timeStamp
+        }
     }
 
     private _inActiveElement(el: any) {
         return this._activeElement && (el === this._activeElement || this._activeElement.contains(el))
     }
 
-    private _fireTap(event: PointerEvent) {
-        this._fire(event, "tap", {})
-    }
-
-    private _fireLongtap(event: PointerEvent) {
-        this._fire(event, "longtap", {})
-    }
-
-    private _fire(original: Event, type: string, options: { [key: string]: any }) {
+    private _fireEvent(event: PointerEvent, listeners: Listeners, final: boolean) {
         if (this._activeElement) {
-            this._activeElement.dispatchEvent(this._createEvent(original, type, options))
+            const recognizer = listeners.activeRecognizer
+            const state = listeners.state
+            if (recognizer) {
+                const evt = new CustomEvent(recognizer.name, CUSTOM_EVENT_OPTIONS) as any as { -readonly [P in keyof NzTouchEvent]: NzTouchEvent[P] }
+                evt.originalEvent = event
+                evt.pointerType = state.pointerType
+                evt.isFinal = final
+                recognizer.patchEvent(evt, event, listeners.state)
+                this._activeElement.dispatchEvent(evt)
+            }
         }
     }
-
-    private _createEvent(original: Event, type: string, options: { [key: string]: any }) {
-        if (!("bubbles" in options)) {
-            options.bubbles = true
-            options.cancelable = true
-        }
-        options.originalEvent = original
-
-        const event = new CustomEvent(type, options)
-
-        return event
-    }
-
-    // private _mouseup = (event: MouseEvent) => {
-    //     this._end()
-    // }
-
-    // private _mousemove = (event: MouseEvent) => {
-
-    // }
-
-    // private _touchend = (event: TouchEvent) => {
-    //     this._end()
-    // }
-
-    // private _touchcancel = (event: TouchEvent) => {
-    //     this._end()
-    // }
-
-    // private _touchmove = (event: TouchEvent) => {
-
-    // }
 }
 
 

@@ -354,7 +354,6 @@ export class RichtextEditableDirective implements OnDestroy {
         if (this.scroller) {
             let nodes = this.rt.stream.selection.nodes
             if (nodes && nodes.length) {
-                this.scroller.velocityX = this.scroller.velocityY = 5
                 this.scroller.scrollIntoViewport(nodes[nodes.length - 1])
             }
         }

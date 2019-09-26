@@ -7,6 +7,14 @@ import { Rect } from "../../layout.module"
 import { ScrollableDirective } from "./scrollable.directive"
 
 
+const Zone = (window as any).Zone
+const __zone_symbol__ =
+    (typeof Zone !== "undefined") && (Zone as any)["__symbol__"] || function (v: string): string {
+        return "__zone_symbol__" + v;
+    };
+const RAF: "requestAnimationFrame" = __zone_symbol__("requestAnimationFrame");
+
+
 export type ScrollOrient = "horizontal" | "vertical"
 
 
@@ -67,12 +75,14 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
             const deltaTop = oldTop - top
             const deltaLeft = oldLeft - left
 
-            this._scrollPercent = { top, left }
+            if (deltaTop || deltaLeft) {
+                this._scrollPercent = { top, left }
 
-            this._recalcPosition();
+                this._recalcPosition();
 
-            (this.scroll as Subject<ScrollEvent>)
-                .next(this._lastEvent = new ScrollEvent(this._scrollPercent, this._scrollPosition, deltaTop, deltaLeft, directionX, directionY))
+                (this.scroll as Subject<ScrollEvent>)
+                    .next(this._lastEvent = new ScrollEvent(this._scrollPercent, this._scrollPosition, deltaTop, deltaLeft, directionX, directionY))
+            }
         }
     }
     public get scrollPercent(): ScrollPosition { return this._scrollPercent }
@@ -82,8 +92,8 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
     public set scrollPosition(val: ScrollPosition) {
         const maxTop = Math.max(0, this.scrollHeight - this.height)
         const maxLeft = Math.max(0, this.scrollWidth - this.width)
-        const top = Math.min(val ? val.top || 0 : 0, maxTop)
-        const left = Math.min(val ? val.left || 0 : 0, maxLeft)
+        const top = Math.min(val ? Math.round(val.top) || 0 : 0, maxTop)
+        const left = Math.min(val ? Math.round(val.left) || 0 : 0, maxLeft)
 
         this.scrollPercent = {
             top: (top / (this.scrollHeight - this.height)) || 0,
@@ -195,99 +205,38 @@ function constrainPercent(num: number): number {
 }
 
 
+export type ScrollOption = ({ smooth: true, velocity: number } | { smooth: false })
+    & { done?: () => void }
+
 
 export class ScrollerService implements OnDestroy {
     public readonly destruct = new Destruct()
     public readonly vpImmediate: ImmediateViewport
     public readonly vpRender: RenderedViewport
+    public orient: ScrollOrient
 
-    public set scrollPercent(val: ScrollPosition) { this.vpImmediate.scrollPercent = val }
     public get scrollPercent(): ScrollPosition { return this.vpImmediate.scrollPercent }
-
-    public set scrollPosition(val: ScrollPosition) { this.vpImmediate.scrollPosition = val }
     public get scrollPosition(): ScrollPosition { return this.vpImmediate.scrollPosition }
-
     public get verticalOverflow(): number { return Math.max(0, this.vpImmediate.scrollHeight - this.vpImmediate.height) }
     public get horizontalOverflow(): number { return Math.max(0, this.vpImmediate.scrollWidth - this.vpImmediate.width) }
 
     public scrollable: ScrollableDirective
 
-    public velocityX: number = 1 // pixel / ms
-    public velocityY: number = 1 // pixel / ms
     private activeMethod: ScrollingMethod = null
-    private rafId: any
-    private _animationTick: (timestamp: number) => void
+    private animation: Animation
 
     public constructor(@Inject(NgZone) protected readonly zone: NgZone) {
         this.zone.runOutsideAngular(() => {
             (this as any).vpImmediate = this.destruct.disposable(new ImmediateViewport());
             (this as any).vpRender = this.destruct.disposable(new RenderedViewport(this.vpImmediate))
 
-            const easeOutQuart = (t: number) => { return 1 - (--t) * t * t * t }
-            const easeOutCubic = (t: number) => { return (--t) * t * t + 1 }
-
-            let animBegin = 0
-            let lastImmediatePos: ScrollPosition
-            let lastRenderPos: ScrollPosition
-            let animDuration = 400
-            this._animationTick = (timestamp: number): void => {
-                if (this.destruct.done) {
-                    return
+            this.animation = new Animation((x, y) => {
+                this.vpRender.scrollPosition = {
+                    top: y,
+                    left: x
                 }
-
-                const tpos = (this.vpImmediate as any)._scrollPosition as ScrollPosition
-                const rpos = (this.vpRender as any)._scrollPosition as ScrollPosition
-
-                if (!lastRenderPos || !lastImmediatePos || lastImmediatePos.left !== tpos.left || lastImmediatePos.top !== tpos.top) {
-                    lastImmediatePos = tpos
-                    lastRenderPos = rpos
-                    animBegin = timestamp
-                }
-
-                let topDiff = lastImmediatePos.top - lastRenderPos.top
-                let leftDiff = lastImmediatePos.left - lastRenderPos.left
-
-                if (topDiff !== 0 || leftDiff !== 0) {
-                    let progress = (timestamp - animBegin) / animDuration * this.velocityY
-                    if (progress <= 1.0) {
-                        // let easing = easeOutQuart(progress)
-                        let easing = easeOutCubic(progress)
-
-                        this.vpRender.scrollPosition = {
-                            top: lastRenderPos.top + topDiff * easing,
-                            left: lastRenderPos.left + leftDiff * easing
-                        }
-
-                        this.rafId = requestAnimationFrame(this._animationTick)
-                        return
-                    } else {
-                        this.vpRender.scrollPosition = {
-                            top: lastRenderPos.top + topDiff,
-                            left: lastRenderPos.left + leftDiff
-                        }
-                    }
-                }
-
-                if (this.rafId) {
-                    cancelAnimationFrame(this.rafId)
-                    delete this.rafId
-                }
-            }
-        })
-
-        this.destruct.any(() => {
-            if (this.rafId) {
-                cancelAnimationFrame(this.rafId)
-                delete this.rafId
-            }
-        })
-
-        this.destruct.subscription(merge(this.vpImmediate.change, this.vpImmediate.scroll)).subscribe(event => {
-            if (!this.rafId) {
-                this.zone.runOutsideAngular(() => {
-                    this.rafId = requestAnimationFrame(this._animationTick)
-                })
-            }
+            })
+            this.destruct.disposable(this.animation)
         })
     }
 
@@ -307,12 +256,43 @@ export class ScrollerService implements OnDestroy {
         }
     }
 
+    public methodIsLocked(method: ScrollingMethod): boolean {
+        return this.activeMethod === method
+    }
+
+    public scrollTo(pos: Partial<ScrollPosition>, options: ScrollOption) {
+        const scrollPos = this.vpImmediate.scrollPosition
+        let target: ScrollPosition = {
+            top: pos.top != null ? pos.top : scrollPos.top,
+            left: pos.left != null ? pos.left : scrollPos.left,
+        }
+        this.vpImmediate.scrollPosition = target
+        target = this.vpImmediate.scrollPosition
+        if (options.smooth) {
+            const rendered = this.vpRender.scrollPosition
+            this.animation.update({
+                fromX: rendered.left,
+                fromY: rendered.top,
+                toX: target.left,
+                toY: target.top,
+                velocity: options.velocity
+            })
+            if (options.done) {
+                this.animation.didDone(options.done)
+            }
+        } else {
+            this.animation.stop()
+            this.vpRender.scrollPosition = target
+            if (options.done) {
+                options.done()
+            }
+        }
+    }
+
     public scrollIntoViewport(el: Node): void {
         const visibleRect = this.vpImmediate.visible
         const elRect = this.getElementImmediateRect(el)
         let pos = { ...this.scrollPosition }
-
-        // console.log(visibleRect, elRect)
 
         let topSpace = elRect.top - visibleRect.top
         if (topSpace < 0) {
@@ -334,7 +314,7 @@ export class ScrollerService implements OnDestroy {
             }
         }
 
-        this.scrollPosition = pos
+        this.scrollTo(pos, { smooth: true, velocity: 1 })
     }
 
     public elementIsVisible(el: HTMLElement): boolean {
@@ -348,15 +328,6 @@ export class ScrollerService implements OnDestroy {
 
     public getElementImmediateRect(el: Node) {
         const renderedRect = this.scrollable!.getElementRect(el)
-        // const immediatePos = this.vpImmediate.scrollPosition
-        // const renderedPos = this.vpRender.scrollPosition
-        // const topDiff = immediatePos.top - renderedPos.top
-        // const leftDiff = immediatePos.left - renderedPos.left
-
-        // console.log(renderedRect, immediatePos, renderedPos, topDiff, leftDiff)
-
-        // renderedRect.top -= topDiff
-        // renderedRect.left -= leftDiff
         return renderedRect
     }
 
@@ -364,4 +335,126 @@ export class ScrollerService implements OnDestroy {
     public ngOnDestroy() {
         this.destruct.run()
     }
+}
+
+
+interface AnimProps {
+    fromX: number
+    toX: number
+    fromY: number
+    toY: number
+    velocity: number
+}
+
+
+class Animation implements AnimProps, IDisposable {
+    public readonly fromX: number
+    public readonly toX: number
+    public readonly fromY: number
+    public readonly toY: number
+    public readonly velocity: number
+
+    private beginTime: number
+    private rafId: any
+    private _pending: Partial<AnimProps>
+    private _lastFrameTime: number
+    private _doneListeners: Array<() => void> = []
+
+    public constructor(private onTick: (x: number, y: number) => void) {
+
+    }
+
+    public didDone(cb: () => void) {
+        this._doneListeners.push(cb)
+    }
+
+    public update(props: Partial<AnimProps>) {
+        this._pending = props
+        this.play()
+    }
+
+    private _update(): boolean {
+        if (this._pending) {
+            const pending = this._pending
+            delete this._pending
+            let changed = false
+            for (const k in pending) {
+                if (pending.hasOwnProperty(k)) {
+                    const value = (pending as any)[k]
+                    const selfValue = (this as any)[k]
+                    if (value !== selfValue) {
+                        (this as any)[k] = value
+                        changed = true
+                    }
+                }
+            }
+            return changed
+        }
+        return false
+    }
+
+    private tick = (timestamp: number) => {
+        const changed = this._update()
+
+        if (this.beginTime == null || changed) {
+            this.beginTime = this._lastFrameTime
+        }
+
+        this._lastFrameTime = timestamp
+        const x = this.calc(timestamp, this.fromX, this.toX)
+        const y = this.calc(timestamp, this.fromY, this.toY)
+
+        this.onTick(x.value, y.value)
+
+        if (!changed && x.progress === 1.0 && y.progress === 1.0) {
+            this.stop()
+        } else {
+            this.rafId = window[RAF](this.tick)
+        }
+    }
+
+    private calc(timestamp: number, from: number, to: number): { progress: number, value: number } {
+        const diff = to - from
+        if (diff !== 0) {
+            const duration = Math.max(1, Math.abs(diff) * this.velocity)
+            const progress = Math.min(1.0, (timestamp - this.beginTime) / duration)
+            const value = from + diff * easeOutCubic(progress)
+            // const value = progress <= 1.0 ? from + diff * progress : to
+            return { progress, value }
+        } else {
+            return { progress: 1.0, value: to }
+        }
+    }
+
+    public play() {
+        if (!this.rafId) {
+            this.rafId = window[RAF](this.tick)
+        }
+    }
+
+    public stop() {
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId)
+            delete this.rafId
+            delete this.beginTime
+
+            for (const cb of this._doneListeners) {
+                cb()
+            }
+            this._doneListeners.length = 0
+        }
+    }
+
+    public dispose() {
+        this.stop()
+    }
+}
+
+
+function easeOutQuart(t: number) {
+    return 1 - (--t) * t * t * t
+}
+
+function easeOutCubic(t: number) {
+    return (--t) * t * t + 1
 }

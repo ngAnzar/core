@@ -90,7 +90,7 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         this.cdr.detectChanges()
     }
 
-    private recalcContentPadding() {
+    protected recalcContentPadding() {
         let padding = 0
 
         if (this.vps.menu.opened && this.vps.menu.style === VPPanelStyle.SLIDE) {
@@ -107,10 +107,11 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         }
     }
 
-    private updateOverlayVisibility(event: Event) {
+    protected updateOverlayVisibility(event: Event) {
         let display = this.overlayOpacity === 0 ? "none" : "block"
 
         if (this.overlayDisplay !== display) {
+            this.overlayDisplay = display
             this.cdr.detectChanges()
         }
     }
