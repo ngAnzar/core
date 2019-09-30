@@ -9,7 +9,7 @@ import { LocaleService } from "../../../common.module"
 
 @Component({
     selector: "nz-date-picker",
-    templateUrl: "./date-picker.template.pug",
+    templateUrl: "./date-picker.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatePickerComponent implements OnInit {
@@ -19,24 +19,27 @@ export class DatePickerComponent implements OnInit {
     public days: Date[]
 
     @Input()
-    public set selected(val: Date) {
-        if (this._setDateField("_selected", val)) {
-            this.displayed = val;
-            (this.changed as Subject<Date>).next(val)
+    public set value(val: Date) {
+        if (this._setDateField("_value", val)) {
+            if (this._value) {
+                this.displayed = this._value
+            }
+            (this.valueChange as Subject<Date>).next(this._value)
             this.cdr.detectChanges()
         }
     }
-    public get selected(): Date { return this._selected }
-    private _selected: Date
+    public get value(): Date { return this._value }
+    private _value: Date
 
     @Input()
     public set displayed(val: Date) {
         if (this._setDateField("_displayed", val)) {
-            this.days = this._createDays()
-
-            let rc = this.days.length / 7 + 1
-            this.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`repeat(${rc}, 1fr) / repeat(7, 1fr)`)
-            this.cdr.detectChanges()
+            if (this._displayed) {
+                this.days = this._createDays()
+                let rc = this.days.length / 7 + 1
+                this.gridTemplate = this.snitizer.bypassSecurityTrustStyle(`repeat(${rc}, 1fr) / repeat(7, 1fr)`)
+                this.cdr.detectChanges()
+            }
         }
     }
     public get displayed(): Date { return this._displayed }
@@ -60,16 +63,14 @@ export class DatePickerComponent implements OnInit {
     public get max(): Date { return this._max }
     private _max: Date
 
-    @Output() public changed: Observable<Date> = new Subject()
+    @Output("value") public valueChange: Observable<Date> = new Subject()
 
     public gridTemplate: SafeStyle
 
     public constructor(
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(LocaleService) protected readonly locale: LocaleService,
-    ) {
-
+        @Inject(LocaleService) protected readonly locale: LocaleService) {
         this.dayNames = this._createDayNames()
     }
 
@@ -82,7 +83,7 @@ export class DatePickerComponent implements OnInit {
     }
 
     public isSelected(d: Date) {
-        return isSameDay(this._selected, d)
+        return isSameDay(this._value, d)
     }
 
     public isSameMonth(d: Date) {
@@ -100,6 +101,14 @@ export class DatePickerComponent implements OnInit {
 
     public incMonth() {
         this.displayed = addMonths(this._displayed, 1)
+    }
+
+    public onWheel(event: WheelEvent) {
+        if (event.deltaY < 0) {
+            this.decMonth()
+        } else {
+            this.incMonth()
+        }
     }
 
     private _createDayNames(): string[] {
@@ -129,7 +138,7 @@ export class DatePickerComponent implements OnInit {
         return result
     }
 
-    private _setDateField(name: "_selected" | "_displayed" | "_min" | "_max", val: Date): boolean {
+    private _setDateField(name: "_value" | "_displayed" | "_min" | "_max", val: Date): boolean {
         if (val) {
             val = setTzToUTC(startOfDay(val))
         }

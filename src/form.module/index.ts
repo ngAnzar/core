@@ -28,10 +28,17 @@ export { CheckboxComponent, CheckboxGroupDirective, CheckboxChangeEvent, Checkbo
 import { DateInputComponent } from "./input/date/date-input.component"
 import { DatePickerComponent } from "./input/date/date-picker.component"
 import { DatePickerService } from "./input/date/date-picker.service"
-// import { DatetimeInputComponent } from "./input/date/datetime-input.component"
+import { DatetimeInputComponent } from "./input/date/datetime-input.component"
+import { DatetimePickerComponent } from "./input/date/datetime-picker.component"
+import { DatetimePickerService } from "./input/date/datetime-picker.service"
 import { TimeInputComponent, TimeValidator } from "./input/date/time-input.component"
+import { TimePickerService } from "./input/date/time-picker.service"
+import { NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator } from "./input/date/number-scroll.component"
+import { TimePickerComponent } from "./input/date/time-picker.component"
 export {
-    DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent, TimeValidator
+    DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent, TimeValidator, TimePickerService,
+    NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator,
+    DatetimePickerService
 }
 
 import { RadioComponent } from "./input/radio/radio.component"
@@ -86,8 +93,20 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
 
         DateInputComponent,
         DatePickerComponent,
+
+        DatetimeInputComponent,
+        DatetimePickerComponent,
+
         TimeInputComponent,
         TimeValidator,
+        TimePickerComponent,
+
+        NumberScrollComponent,
+        YearGenerator,
+        MonthGenerator,
+        DayGenerator,
+        HourGenerator,
+        MinuteGenerator,
 
         RadioComponent,
         RadioGroupDirective,
@@ -117,8 +136,20 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
 
         DateInputComponent,
         DatePickerComponent,
+
+        DatetimeInputComponent,
+        DatetimePickerComponent,
+
         TimeInputComponent,
         TimeValidator,
+        TimePickerComponent,
+
+        NumberScrollComponent,
+        YearGenerator,
+        MonthGenerator,
+        DayGenerator,
+        HourGenerator,
+        MinuteGenerator,
 
         RadioComponent,
         RadioGroupDirective,
@@ -136,6 +167,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
     ],
     providers: [
         DatePickerService,
+        TimePickerService,
+        DatetimePickerService,
         {
             provide: DEFAULT_ERROR_MESSAGES,
             useValue: {
@@ -146,7 +179,9 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
     entryComponents: [
         RichtextMenu,
         RichtextAcComponent,
-        DatePickerComponent
+        DatePickerComponent,
+        TimePickerComponent,
+        DatetimePickerComponent,
     ]
 })
 export class NzFormModule { }

@@ -74,7 +74,7 @@ export class ScrollerComponent implements OnInit {
         let deltaY = 0
 
         if (event.shiftKey) {
-            deltaX = event.deltaY * deltaMultipler
+            deltaX = event.deltaX * deltaMultipler
         } else {
             deltaY = event.deltaY * deltaMultipler
         }

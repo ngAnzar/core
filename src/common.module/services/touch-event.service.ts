@@ -149,7 +149,6 @@ export abstract class Recognizer<O extends RecognizerOptions = RecognizerOptions
     }
 
     protected buildMatcher(): (event: PointerEvent, state: TouchState) => boolean {
-        console.log(this.buildMatcherBody())
         return new Function("event", "state", this.buildMatcherBody()) as any
     }
 }

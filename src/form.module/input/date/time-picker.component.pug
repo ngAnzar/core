@@ -1,0 +1,16 @@
+:stylus
+  nz-time-picker
+    background: $theme.base.normal
+    padding: 16px
+    width: (16 * 2 + 28 * 2 + 8 * 2 + 25)px
+
+  .topdot
+    margin-bottom: -12px
+
+
+div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+  .nz-number-scroll(fxFlex="none", type="hour", [value]="hour", (value)="hour=$event")
+  div(fxFlex="grow", fxLayout="column", fxLayoutAlign="center center")
+    i.nz-icon.topdot(class=icon("mdi/circle-small"), color="common")
+    i.nz-icon(class=icon("mdi/circle-small"), color="common")
+  .nz-number-scroll(fxFlex="none", type="minute", [value]="minute", (value)="minute=$event")

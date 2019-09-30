@@ -32,10 +32,14 @@ export class LocaleService {
     public constructor(@Inject(LOCALE_DATE) public readonly dateLocale: any) { }
 
     public formatDate(date: Date, dateFormat: DateFormat): string {
-        switch (dateFormat) {
-            case "relative-to": return formatDistance(new Date(), date, { locale: this.dateLocale })
-            case "relative-from": return formatDistance(date, new Date(), { locale: this.dateLocale })
-            default: return format(date, FORMATS[dateFormat] || dateFormat, { locale: this.dateLocale })
+        try {
+            switch (dateFormat) {
+                case "relative-to": return formatDistance(new Date(), date, { locale: this.dateLocale })
+                case "relative-from": return formatDistance(date, new Date(), { locale: this.dateLocale })
+                default: return format(date, FORMATS[dateFormat] || dateFormat, { locale: this.dateLocale })
+            }
+        } catch (e) {
+            return (e as Error).message
         }
     }
 
@@ -45,7 +49,6 @@ export class LocaleService {
 
     public parseDate(format: DateFormat, date: string): Date {
         let fmt = this.getDateFormat(format)
-        console.log(fmt, date)
         return parse(date, fmt, new Date())
     }
 }

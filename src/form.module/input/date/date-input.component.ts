@@ -1,5 +1,5 @@
 import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, Input, HostBinding } from "@angular/core"
-import { FormControl } from "@angular/forms"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { take } from "rxjs/operators"
 import { parse, isDate, format, startOfDay } from "date-fns"
 import { IMaskDirective } from "angular-imask"
@@ -15,22 +15,32 @@ import { MASK_BLOCKS } from "./mask-blocks"
 
 @Component({
     selector: ".nz-date-input",
-    templateUrl: "./date-input.template.pug",
+    templateUrl: "./date-input.component.pug",
     providers: INPUT_MODEL
 })
 export class DateInputComponent extends InputComponent<Date> implements AfterViewInit {
-    public get type(): string { return "text" }
-
     @ViewChild("input", { read: ElementRef }) public readonly input: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: IMaskDirective }) public readonly inputMask: IMaskDirective<any>
 
     @Input() public min: Date
     @Input() public max: Date
 
+    @Input()
+    public set withoutPicker(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._withoutPicker !== val) {
+            this._withoutPicker = val
+            if (val) {
+                this.opened = false
+            }
+        }
+    }
+    public get withoutPicker(): boolean { return this._withoutPicker }
+    private _withoutPicker: boolean = false
+
     @HostBinding("attr.tabindex")
     public readonly tabIndexAttr = -1
 
-    public readonly destruct = new Destruct()
     public imaskOptions: any
 
     protected dpRef: ComponentLayerRef<DatePickerComponent>
@@ -43,14 +53,15 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                 delete this.dpRef
             }
 
-            if (val) {
+            if (val && !this._withoutPicker) {
                 let date: Date = this.value ? isDate(this.value) ? this.value as any : this.parseString(this.value as any) : null
 
                 this.dpRef = this.datePicker.show({
                     position: {
                         anchor: {
                             ref: this.el.nativeElement,
-                            align: "bottom left"
+                            align: "bottom left",
+                            margin: "6 0 6 0"
                         },
                         align: "top left"
                     },
@@ -61,7 +72,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     max: this.max
                 })
 
-                let s = this.dpRef.component.instance.changed.pipe(take(1)).subscribe(date => {
+                let s = this.dpRef.component.instance.valueChange.pipe(take(1)).subscribe(date => {
                     date = setTzToUTC(startOfDay(date))
                     this._renderValue(date)
                     this.model.emitValue(date)
@@ -159,10 +170,5 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     public ngAfterViewInit() {
         this._renderValue(this.model.value)
-    }
-
-    public ngOnDestroy() {
-        super.ngOnDestroy()
-        this.destruct.run()
     }
 }

@@ -46,7 +46,7 @@ export class DatePickerService {
         }
 
         if (options.value) {
-            cmp.selected = options.value
+            cmp.value = options.value
         }
 
         if (options.min) {
@@ -57,7 +57,7 @@ export class DatePickerService {
             cmp.max = options.max
         }
 
-        cmp.changed.pipe(take(1)).subscribe(() => {
+        cmp.valueChange.pipe(take(1)).subscribe(() => {
             layer.hide()
         })
 

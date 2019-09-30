@@ -1,0 +1,42 @@
+:stylus
+  .container
+    overflow: hidden
+
+  .numbers
+    overflow: hidden
+    height: (36 * 3)px
+    min-height: (36 * 3)px
+    max-height: (36 * 3)px
+
+  .number
+    color: $theme.accent.normal
+    opacity: 0.4
+    nz-typo: $typo.h5
+    height: 36px
+    line-height: 36px
+    font-size: nz-remify(20px)
+    width: 100%
+    text-align: center
+    transition: font-size 50ms, opacity 50ms
+
+  .active-number
+    opacity: 1 !important
+    font-size: nz-remify(24px) !important
+
+  .button-container
+    text-align: center
+
+
+.container(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px")
+  //- .button-container(fxFlex="none")
+  //-   button.nz-button(color="dark-common", variant="tiny icon", tabindex="-1", on-tap="up(1)")
+  //-     .nz-icon(class=icon("mdi/chevron-up"))
+
+  .numbers(fxFlex="grow", on-wheel="onWheel($event)", on-pan="onPan($event)")
+    .strip(#strip)
+      ng-template(ngFor, [ngForOf]="numbers", [ngForTrackBy]="trackNumber", let-number, let-index="index")
+        .number([ngClass]=`{"${style('active-number')}": centerIndex === index}`) {{ number.label }}
+
+  //- .button-container(fxFlex="none")
+  //-   button.nz-button(color="dark-common", variant="tiny icon", tabindex="-1", on-tap="down(1)")
+  //-     .nz-icon(class=icon("mdi/chevron-down"))

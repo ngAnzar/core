@@ -2,7 +2,7 @@ import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Inj
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
-import { map, filter } from "rxjs/operators"
+import { map, filter, debounceTime } from "rxjs/operators"
 
 import isPlainObject from "is-plain-object"
 
@@ -198,12 +198,20 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     protected _inited = false
 
+    private _focus = this.destruct.subject(new Subject<FocusOrigin>())
+
     public constructor(@Inject(InputModel) protected readonly model: InputModel<T>) {
         this.destruct.subscription(model.renderValueChanges).subscribe((value: T) => {
             if (this._inited) {
                 this._renderValue(value)
             }
         })
+
+        this.destruct.subscription(this._focus)
+            .pipe(debounceTime(50))
+            .subscribe(focus => {
+                this.model.focused = focus
+            })
     }
 
     public ngOnInit() {
@@ -214,9 +222,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     protected abstract _renderValue(value: T): void
 
     protected monitorFocus(el: HTMLElement, checkChildren?: boolean): void {
-        this.destruct.subscription(this.model.focusMonitor.monitor(el, checkChildren)).subscribe(f => {
-            this.model.focused = f
-        })
+        this.destruct.subscription(this.model.focusMonitor.monitor(el, checkChildren)).subscribe(f => this._focus.next(f))
         this.destruct.any(() => this.model.focusMonitor.stopMonitoring(el))
     }
 

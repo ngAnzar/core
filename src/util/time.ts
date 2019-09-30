@@ -1,8 +1,22 @@
+import { format } from "date-fns"
+
 
 /**
  * can parse iso-8601 time format
  */
 export class Time {
+    public static coerce(val: Time | Date | string): Time | null {
+        if (val instanceof Time) {
+            return val
+        } else if (val instanceof Date) {
+            return new Time(format(val, "HH:mm:ss.SSS"))
+        } else if (typeof val === "string") {
+            return new Time(val)
+        } else {
+            return null
+        }
+    }
+
     public readonly hours: number
     public readonly minutes: number
     public readonly seconds: number

@@ -15,7 +15,7 @@
     justify-content: space-around
 
 
-div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px")
+div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px", tabindex="0")
   div.month(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
     div(fxFlex="grow")
       .nz-button(color="dark-common", tabindex="-1") {{ locale.formatDate(this.displayed, "yyyy MMMM") }}
@@ -26,15 +26,14 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap
     .nz-button(fxFlex="noshrink", tabindex="-1", variant="tiny icon", color="dark-common")
       .nz-icon(class=icon("mdi/chevron-down"), on-tapbegin="$event.preventDefault()", on-tap="incMonth()")
 
-  div.days(fxFlex="grow", [style.gridTemplate]="this.gridTemplate")
+  div.days(fxFlex="grow", [style.gridTemplate]="this.gridTemplate", on-wheel="onWheel($event)")
     div.dayname(*ngFor="let name of dayNames") {{ name }}
     div.day(*ngFor="let day of days")
       .nz-button(
         [color]="isSelected(day) ? 'accent' : isToday(day) ? 'dark-base' : isSameMonth(day) ? 'base' : 'dark-base'",
         [variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
-        [disabled]="!isAllowed(day)",
-        on-tap="$event.preventDefault()",
-        on-action="selected=day") {{ day.getDate() }}
+        [disabled]="!isAllowed(day)"
+        on-action="value=day") {{ day.getDate() }}
 
 
 
