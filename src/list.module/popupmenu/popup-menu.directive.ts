@@ -22,6 +22,8 @@ export class PopupMenuDirective extends LayerFactoryDirective {
     }
     protected _menu: PopupMenuComponent
 
+
+
     public constructor(
         @Inject(LevitateAnchorDirective) @Optional() @Self() levitateAnchor: LevitateAnchorDirective,
         @Inject(TargetAnchorDirective) @Optional() @Self() targetAnchor: TargetAnchorDirective,

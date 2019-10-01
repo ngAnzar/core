@@ -32,7 +32,7 @@
     margin: 0
     text-align: inherit
     display: inline-block
-    flex: 1
+    flex: 1 !important
     max-width: 100%
     width: 100%
     min-width: 30px
@@ -76,7 +76,10 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
     [tabindex]="_tabIndex",
     on-input="_onInput($event)",
     on-tap="$event.preventDefault()",
-    style="flex:1")
+    autocomplete="off",
+    autocorrect="off",
+    autocapitalize="off",
+    spellcheck="false")
 
 .nz-button.trigger(*ngIf="clearable && selection.items.length > 0", on-tap="_clearValue($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
   i.nz-icon(class=icon("mdi/close", 18))

@@ -17,6 +17,9 @@ import { matchTagName, removeNode, uuidv4 } from "./util"
 
 @Directive({
     selector: "[nzRichtext]",
+    host: {
+        "[style.white-space]": "'normal'"
+    },
     exportAs: "nzRichtext",
     providers: [RichtextService, RichtextStream]
 })

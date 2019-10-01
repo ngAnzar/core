@@ -1,4 +1,7 @@
-import { Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, Self, StaticProvider, ElementRef, OnDestroy, Attribute, Host } from "@angular/core"
+import {
+    Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, Self, StaticProvider,
+    ElementRef, OnDestroy, Attribute, Host, Output, EventEmitter
+} from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
 
 
@@ -95,6 +98,10 @@ export class LayerFactoryDirective implements OnDestroy {
         }
     }
 
+    @Output() public readonly layerShowing = new EventEmitter<LayerRef>()
+    @Output() public readonly layerShow = new EventEmitter<LayerRef>()
+    @Output() public readonly layerHide = new EventEmitter<LayerRef>()
+
     public get isVisible(): boolean { return !!this.visibleRef }
 
     public get targetEl(): ElementRef<HTMLElement> {
@@ -149,10 +156,14 @@ export class LayerFactoryDirective implements OnDestroy {
                     delete this.visibleRef
                 }
                 subscription.unsubscribe()
+                this.layerHide.next(layerRef)
+            } else if (event.type === "showing") {
+                this.layerShow.next(layerRef)
             }
         })
 
         this.visibleRef = layerRef
+        this.layerShowing.next(layerRef)
         layerRef.show()
         return layerRef
     }
