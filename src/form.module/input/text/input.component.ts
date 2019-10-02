@@ -46,7 +46,7 @@ export class TextareaComponent extends InputComponent<string> implements OnInit 
     }
 
     protected _renderValue(value: string) {
-        this.el.nativeElement.value = value
+        this.el.nativeElement.innerText = value
     }
 
     @HostListener("input", ["$event"])

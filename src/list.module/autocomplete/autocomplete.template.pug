@@ -18,15 +18,12 @@
     display: inline-grid
 
   .notfound
-    height: 48px
-    color: $theme.common.dark
     padding: 0 12px !important
 
 
 div(fxFlex="grow", fxLayout="column inline", tabindex="0")
 
-  .notfound(*ngIf="source.storage && source.storage.isEmpty && !source.storage.isBusy", fxFlex="none", fxLayout="row", fxLayoutAlign="start center")
-    i Nem található
+  .nz-list-empty.notfound(*ngIf="source.storage && source.storage.isEmpty && !source.storage.isBusy") Nem található
 
   //- TODO: loading anim
 

@@ -11,7 +11,7 @@ export interface RichtextStaticFactory {
 
 
 export const RICHTEXT_COMPONENT = new InjectionToken<RichtextStaticFactory>("nzRichtextComponent")
-export const RICHTEXT_COMPONENT_PARAMS = new InjectionToken<RichtextStaticFactory>("nzRichtextComponentParams")
+// export const RICHTEXT_COMPONENT_PARAMS = new InjectionToken<RichtextStaticFactory>("nzRichtextComponentParams")
 export const RICHTEXT_AUTO_COMPLETE = new InjectionToken<RichtextStaticFactory>("nzRichtextAutoComplete")
 
 
@@ -36,3 +36,20 @@ export class RichtextService {
         return null
     }
 }
+
+
+// export type RichtextComponentParamsData = { [key: string]: string | number | boolean | Date }
+
+
+// export class RichtextComponentParams {
+//     public constructor(
+//         public readonly data: RichtextComponentParamsData,
+
+//     ) {
+
+//     }
+
+//     public commit() {
+
+//     }
+// }

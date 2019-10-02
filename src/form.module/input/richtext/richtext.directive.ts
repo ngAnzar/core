@@ -1,18 +1,19 @@
 import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef, Optional } from "@angular/core"
 import { DomSanitizer } from "@angular/platform-browser"
 import { UP_ARROW, DOWN_ARROW, ESCAPE, BACKSPACE } from "@angular/cdk/keycodes"
-import { DomPortalOutlet, ComponentType, ComponentPortal } from "@angular/cdk/portal"
+import { DomPortalOutlet, ComponentPortal } from "@angular/cdk/portal"
 import { Observable, Subject } from "rxjs"
 
-import { Destruct, IDisposable } from "../../../util"
+import { Destruct } from "../../../util"
 import { LayerService } from "../../../layer.module"
 import { ScrollerService } from "../../../list.module"
 
-import { RichtextService, RICHTEXT_COMPONENT_PARAMS } from "./richtext.service"
+import { RichtextService } from "./richtext.service"
 import { RichtextStream, Word } from "./richtext-stream"
 import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
 
 import { matchTagName, removeNode, uuidv4 } from "./util"
+import { RichtextComponentRef } from "./richtext-component-ref"
 
 
 @Directive({
@@ -41,7 +42,7 @@ export class RichtextDirective implements OnDestroy {
     @Output("changed")
     public readonly changes: Observable<string> = new EventEmitter<string>()
 
-    private _components: { [key: string]: RichtextComponentManager<any> } = {}
+    private _components: { [key: string]: RichtextComponentRef<any> } = {}
     private _mutationObserver: MutationObserver
 
     public constructor(
@@ -59,11 +60,11 @@ export class RichtextDirective implements OnDestroy {
         })
     }
 
-    public getCmp(el: HTMLElement): RichtextComponentManager<any> | null {
+    public getCmp(el: HTMLElement): RichtextComponentRef<any> | null {
         return this._components[el.id]
     }
 
-    public initCmp(el: HTMLElement): RichtextComponentManager<any> {
+    public initCmp(el: HTMLElement): RichtextComponentRef<any> {
         let id = el.getAttribute("id")
         if (!id) {
             id = uuidv4()
@@ -75,21 +76,23 @@ export class RichtextDirective implements OnDestroy {
             throw new Error("Runtime error: missing richtext component: " + el.getAttribute("component"))
         }
 
-        let params = el.getAttribute("params")
+        let params = el.getAttribute("params") as any
         if (params) {
             params = JSON.parse(decodeURIComponent(params))
         } else {
             params = null
         }
 
-        let injector = Injector.create([
-            { provide: RICHTEXT_COMPONENT_PARAMS, useValue: params }
+        const ref = new RichtextComponentRef(el, params, this.onParamsChanged) as { -readonly [K in keyof RichtextComponentRef]: RichtextComponentRef[K] }
+        const injector = Injector.create([
+            { provide: RichtextComponentRef, useValue: ref }
         ], this.injector)
 
-        let outlet = new DomPortalOutlet(el, this.cfr, this.appRef, injector)
-        let portal = new ComponentPortal(cmpType, this.vcr, injector, this.cfr)
-        let mgr = new RichtextComponentManager(el, outlet, portal)
-        return this._components[id] = mgr
+        ref.outlet = new DomPortalOutlet(el, this.cfr, this.appRef, injector)
+        ref.portal = new ComponentPortal(cmpType, this.vcr, injector, this.cfr)
+        ref.component = ref.outlet.attachComponentPortal(ref.portal)
+        ref.component.changeDetectorRef.markForCheck()
+        return this._components[id] = ref
     }
 
     public ngOnDestroy() {
@@ -142,6 +145,10 @@ export class RichtextDirective implements OnDestroy {
                 }
             }
         }
+    }
+
+    protected onParamsChanged = () => {
+        (this.changes as EventEmitter<string>).emit(this._value = this.stream.value)
     }
 }
 
@@ -360,35 +367,5 @@ export class RichtextEditableDirective implements OnDestroy {
                 this.scroller.scrollIntoViewport(nodes[nodes.length - 1])
             }
         }
-    }
-}
-
-
-
-export class RichtextComponentManager<T> implements IDisposable {
-    public readonly component: ComponentRef<T>
-
-    public constructor(
-        public readonly el: HTMLElement,
-        public readonly outlet: DomPortalOutlet,
-        public readonly portal: ComponentPortal<T>) {
-        this.component = outlet.attachComponentPortal(portal)
-        this.component.changeDetectorRef.markForCheck()
-    }
-
-    public dispose() {
-        if (this.outlet) {
-            this.outlet.detach()
-            delete (this as any).outlet
-        }
-        if (this.component) {
-            this.component.destroy()
-            delete (this as any).component
-        }
-        if (document.contains(this.el)) {
-            removeNode(this.el)
-        }
-        delete (this as any).el
-        delete (this as any).portal
     }
 }
