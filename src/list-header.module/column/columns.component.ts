@@ -55,7 +55,6 @@ export class ColumnsComponent<T extends Model = Model> implements AfterContentIn
 
     public ngAfterContentInit() {
         this.destruct.subscription(this.columnsChange).subscribe(() => {
-            console.log("updateLayout")
             this.updateLayout(NaN)
         })
 
