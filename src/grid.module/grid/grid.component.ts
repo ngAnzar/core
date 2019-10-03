@@ -1,6 +1,7 @@
 import {
     Component, Inject, Host, Input, DoCheck, OnInit, Attribute,
-    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList
+    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList,
+    Output, EventEmitter
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
@@ -21,6 +22,8 @@ import { GridRowDirective } from "./grid-row.directive"
 export class GridComponent<T extends Model = Model> implements AfterContentInit, OnDestroy, OnInit {
     @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent<T>
     @ViewChildren(GridRowDirective) public readonly rows: QueryList<GridRowDirective<T>>
+
+    @Output() public rowTap = new EventEmitter<T>()
 
     public get gtRows(): SafeStyle { return this._gtRows }
     protected _gtRows: SafeStyle = ""
