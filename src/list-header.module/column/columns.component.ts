@@ -1,10 +1,11 @@
 import {
     Component, ContentChildren, QueryList, AfterContentInit,
-    EventEmitter, ElementRef, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy
+    EventEmitter, ElementRef, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy,
+    Output
 } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
-import { Observable } from "rxjs"
-import { startWith } from "rxjs/operators"
+import { Observable, Subscription, Subject, race } from "rxjs"
+import { startWith, debounceTime, shareReplay, switchMap } from "rxjs/operators"
 
 
 import { Destruct } from "../../util"
@@ -30,8 +31,9 @@ export class ColumnsComponent<T extends Model = Model> implements AfterContentIn
 
     @ContentChildren(ColumnComponent) public readonly items: QueryList<ColumnComponent<T>>
 
+    private _columnsChange = new Subject<ColumnComponent[]>()
     // melyik column látszik, milyen sorrendben
-    public readonly columnsChanged: Observable<ColumnComponent[]>
+    @Output() public readonly columnsChange = this._columnsChange.pipe(debounceTime(10), shareReplay(1))
 
     // oszlopok szélessége
     public readonly layoutChanged: Observable<ColumnsLayout> = new EventEmitter()
@@ -52,9 +54,24 @@ export class ColumnsComponent<T extends Model = Model> implements AfterContentIn
     }
 
     public ngAfterContentInit() {
-        this.destruct.subscription(this.items.changes).pipe(startWith(null)).subscribe(change => {
-            this.updateLayout(400)
+        this.destruct.subscription(this.columnsChange).subscribe(() => {
+            console.log("updateLayout")
+            this.updateLayout(NaN)
         })
+
+        this.destruct.subscription(this.items.changes)
+            .pipe(
+                startWith(null),
+                switchMap(_ => {
+                    let observables = this.items.map(col => col.widthChange)
+                    return race(observables).pipe(startWith(null))
+                }),
+                debounceTime(10)
+            )
+            .subscribe(_ => {
+                this._columnsChange.next(this.items.toArray())
+            })
+
     }
 
     protected updateLayout(maxWidth: number) {
@@ -78,7 +95,6 @@ export class ColumnsComponent<T extends Model = Model> implements AfterContentIn
         (this as any).gridColTemplate = col.join(" ")
         this.gridTemplate = this.sanitizer.bypassSecurityTrustStyle(`44px / ${this.gridColTemplate}`);
         (this.layoutChanged as EventEmitter<ColumnsLayout>).emit(this.layout)
-        console.log(this.gridTemplate)
     }
 
     public ngOnDestroy() {

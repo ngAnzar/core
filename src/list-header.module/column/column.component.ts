@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, Input, Inject, ElementRef, TemplateRef, OnDestroy,
-    HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding
+    HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding, Output, EventEmitter
 } from "@angular/core"
 import { Subscription } from "rxjs"
 import { startWith } from "rxjs/operators"
@@ -44,9 +44,16 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     @ContentChild("editor") public readonly editor: TemplateRef<any>
 
     @Input()
-    public set width(val: NumberWithUnit) { this._width = parseNumber(val) }
+    public set width(val: NumberWithUnit) {
+        let width = parseNumber(val)
+        if (!this._width || !width || this._width.unit !== width.unit || this._width.number !== width.number) {
+            this.widthChange.next(this._width = width)
+        }
+    }
     public get width(): NumberWithUnit { return this._width }
     protected _width: NumberWithUnit = { number: -1, unit: "auto" }
+
+    @Output() public widthChange = new EventEmitter<NumberWithUnit>()
 
     @Input()
     @HostBinding("attr.sortable")
