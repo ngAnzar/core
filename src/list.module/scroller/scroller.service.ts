@@ -314,7 +314,7 @@ export class ScrollerService implements OnDestroy {
             }
         }
 
-        this.scrollTo(pos, { smooth: true, velocity: 1 })
+        this.scrollTo(pos, { smooth: true, velocity: 0.5 })
     }
 
     public elementIsVisible(el: HTMLElement): boolean {
@@ -397,7 +397,7 @@ class Animation implements AnimProps, IDisposable {
         const changed = this._update()
 
         if (this.beginTime == null || changed) {
-            this.beginTime = this._lastFrameTime
+            this.beginTime = this._lastFrameTime || timestamp
         }
 
         this._lastFrameTime = timestamp
@@ -437,6 +437,7 @@ class Animation implements AnimProps, IDisposable {
             cancelAnimationFrame(this.rafId)
             delete this.rafId
             delete this.beginTime
+            delete this._lastFrameTime
 
             for (const cb of this._doneListeners) {
                 cb()
