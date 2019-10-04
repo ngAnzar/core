@@ -16,8 +16,6 @@ import { Destruct } from "../../util"
 })
 export class DrawerComponent implements AfterContentInit, OnDestroy {
     @ContentChildren(PanelComponent) readonly panels: QueryList<PanelComponent>
-    // @ViewChild("content") readonly content: ElementRef<HTMLElement>
-    // @ViewChild("overlay") readonly overlay: ElementRef<HTMLElement>
 
     @Input()
     public set overlayed(val: boolean) { this._overlayed = coerceBooleanProperty(val) }

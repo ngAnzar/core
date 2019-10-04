@@ -26,7 +26,7 @@ import { ExlistComponent, RowTplContext } from "./exlist.component"
     }
 })
 export class ExlistItemComponent<T extends Model = Model> implements RowTplContext<T>, ISelectable<T>, OnDestroy {
-    @ViewChild("header", { read: ElementRef })
+    @ViewChild("header", { read: ElementRef, static: false })
     public set elHeader(val: HTMLElement) {
         if (!this._elHeader || !val || this._elHeader !== (val as any).nativeElement) {
             this._elHeader = val ? (val as any).nativeElement : null
@@ -36,7 +36,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public get elHeader(): HTMLElement { return this._elHeader }
     private _elHeader: HTMLElement
 
-    @ViewChild("content", { read: ElementRef })
+    @ViewChild("content", { read: ElementRef, static: false })
     public set elContent(val: HTMLElement) {
         if (!this._elContent || !val || this._elContent !== (val as any).nativeElement) {
             this._elContent = val ? (val as any).nativeElement : null
@@ -46,7 +46,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public get elContent(): HTMLElement { return this._elContent }
     private _elContent: HTMLElement
 
-    @ViewChild("footer", { read: ElementRef })
+    @ViewChild("footer", { read: ElementRef, static: false })
     public set elFooter(val: HTMLElement) {
         if (!this._elFooter || !val || this._elFooter !== (val as any).nativeElement) {
             this._elFooter = val ? (val as any).nativeElement : null

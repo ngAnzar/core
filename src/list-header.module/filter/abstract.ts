@@ -16,8 +16,8 @@ export interface ListFilterLayerContext {
 
 
 export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDestroy {
-    @ViewChild("layer", { read: TemplateRef }) public readonly layer: TemplateRef<ListFilterLayerContext>
-    @ViewChild("chip", { read: TemplateRef }) public readonly chip: TemplateRef<ListFilterLayerContext>
+    @ViewChild("layer", { read: TemplateRef, static: true }) public readonly layer: TemplateRef<ListFilterLayerContext>
+    @ViewChild("chip", { read: TemplateRef, static: true }) public readonly chip: TemplateRef<ListFilterLayerContext>
     public layerFilter: LayerFactoryDirective
 
     public abstract readonly isEmpty: boolean

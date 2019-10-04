@@ -1,5 +1,5 @@
 import { Injectable, Inject, OnDestroy, Injector, ApplicationRef, ComponentFactoryResolver, ElementRef } from "@angular/core"
-import { DOCUMENT } from "@angular/platform-browser"
+import { DOCUMENT } from "@angular/common"
 import { DomPortalOutlet } from "@angular/cdk/portal"
 import { Subject } from "rxjs"
 

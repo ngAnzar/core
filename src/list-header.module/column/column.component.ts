@@ -38,10 +38,10 @@ function parseNumber(val: any): NumberWithUnit {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ColumnComponent<T extends Model = Model> implements AfterContentInit, OnDestroy {
-    @ContentChild(LabelDirective, { read: ElementRef }) public readonly label: ElementRef<HTMLElement>
-    @ContentChild(ColumnFilter) public readonly filter: ColumnFilter
-    @ContentChild("content") public readonly content: TemplateRef<any>
-    @ContentChild("editor") public readonly editor: TemplateRef<any>
+    @ContentChild(LabelDirective, { read: ElementRef, static: true }) public readonly label: ElementRef<HTMLElement>
+    @ContentChild(ColumnFilter, { static: true }) public readonly filter: ColumnFilter
+    @ContentChild("content", { static: true }) public readonly content: TemplateRef<any>
+    @ContentChild("editor", { static: true }) public readonly editor: TemplateRef<any>
 
     @Input()
     public set width(val: NumberWithUnit) {

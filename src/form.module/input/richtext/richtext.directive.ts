@@ -15,6 +15,9 @@ import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
 import { matchTagName, removeNode, uuidv4 } from "./util"
 import { RichtextComponentRef } from "./richtext-component-ref"
 
+import { RangyService } from "./core/rangy"
+import { RichtextStream2 } from "./core/richtext-stream"
+
 
 @Directive({
     selector: "[nzRichtext]",
@@ -22,7 +25,12 @@ import { RichtextComponentRef } from "./richtext-component-ref"
         "[style.white-space]": "'normal'"
     },
     exportAs: "nzRichtext",
-    providers: [RichtextService, RichtextStream]
+    providers: [
+        RichtextService,
+        RichtextStream,
+        RichtextStream2,
+        RangyService
+    ]
 })
 export class RichtextDirective implements OnDestroy {
     @Input("nzRichtext")
@@ -51,7 +59,9 @@ export class RichtextDirective implements OnDestroy {
         @Inject(ComponentFactoryResolver) protected readonly cfr: ComponentFactoryResolver,
         @Inject(ApplicationRef) protected readonly appRef: ApplicationRef,
         @Inject(RichtextService) public readonly svc: RichtextService,
-        @Inject(RichtextStream) public readonly stream: RichtextStream) {
+        @Inject(RichtextStream) public readonly stream: RichtextStream,
+        @Inject(RichtextStream2) public readonly stream2: RichtextStream2,
+    ) {
 
         let mutation = new MutationObserver(this.onMuation)
         mutation.observe(stream.el, {

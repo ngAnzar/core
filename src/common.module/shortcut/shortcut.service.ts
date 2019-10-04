@@ -1,5 +1,5 @@
 import { Inject, Injectable, NgZone } from "@angular/core"
-import { DOCUMENT } from "@angular/platform-browser"
+import { DOCUMENT } from "@angular/common"
 import { Shortcuts, ShortcutDefs, Shortcut } from "./shortcuts"
 
 

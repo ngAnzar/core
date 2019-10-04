@@ -44,8 +44,7 @@ import { TouchEventService, TOUCH_EVENT_PLUGIN, NzTouchEvent } from "./services/
 import { ScriptService } from "./services/script.service"
 import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
 import { MediaQueryService } from "./services/media-query.service"
-import { ZING_TOUCH_PLUGIN } from "./services/zingtouch.service"
-export { FileDownloadService, FileDownloadEvent, TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, ZING_TOUCH_PLUGIN, TOUCH_EVENT_PLUGIN, NzTouchEvent }
+export { FileDownloadService, FileDownloadEvent, TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, TOUCH_EVENT_PLUGIN, NzTouchEvent }
 
 import { ShortcutService } from "./shortcut/shortcut.service"
 export { ShortcutService }
@@ -93,7 +92,6 @@ const content = [
     declarations: content,
     exports: content,
     providers: [
-        // HAMMER_CONFIG,
         LocaleService,
         FileDownloadService,
         ScriptService,
@@ -101,7 +99,6 @@ const content = [
         KeyEventService,
         MediaQueryService,
         ShortcutService,
-        // ZING_TOUCH_PLUGIN,
         TOUCH_EVENT_PLUGIN,
     ]
 })

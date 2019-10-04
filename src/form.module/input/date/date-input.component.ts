@@ -19,8 +19,8 @@ import { MASK_BLOCKS } from "./mask-blocks"
     providers: INPUT_MODEL
 })
 export class DateInputComponent extends InputComponent<Date> implements AfterViewInit {
-    @ViewChild("input", { read: ElementRef }) public readonly input: ElementRef<HTMLInputElement>
-    @ViewChild("input", { read: IMaskDirective }) public readonly inputMask: IMaskDirective<any>
+    @ViewChild("input", { read: ElementRef, static: true }) public readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { read: IMaskDirective, static: true }) public readonly inputMask: IMaskDirective<any>
 
     @Input() public min: Date
     @Input() public max: Date

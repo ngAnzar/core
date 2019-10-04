@@ -10,8 +10,8 @@ import { Observable } from "rxjs"
 export class TabComponent {
     @Input() public label: string
 
-    @ContentChild("label", { read: TemplateRef }) protected readonly cLabelTpl: TemplateRef<any>
-    @ViewChild("vLabelTpl", { read: TemplateRef }) protected readonly vLabelTpl: TemplateRef<any>
+    @ContentChild("label", { read: TemplateRef, static: true }) protected readonly cLabelTpl: TemplateRef<any>
+    @ViewChild("vLabelTpl", { read: TemplateRef, static: true }) protected readonly vLabelTpl: TemplateRef<any>
 
     @Input()
     public set selected(val: boolean) {
@@ -43,5 +43,5 @@ export class TabComponent {
         return this.cLabelTpl || this.vLabelTpl
     }
 
-    @ContentChild("content", { read: TemplateRef }) public readonly contentTpl: TemplateRef<any>
+    @ContentChild("content", { read: TemplateRef, static: true }) public readonly contentTpl: TemplateRef<any>
 }

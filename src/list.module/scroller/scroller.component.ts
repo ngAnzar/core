@@ -15,7 +15,7 @@ import { ScrollableDirective } from "./scrollable.directive"
     ]
 })
 export class ScrollerComponent implements OnInit {
-    @ContentChild(ScrollableDirective) protected readonly scrollable: ScrollableDirective
+    @ContentChild(ScrollableDirective, { static: true }) protected readonly scrollable: ScrollableDirective
 
     @Input()
     @HostBinding("attr.orient")

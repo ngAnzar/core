@@ -1,5 +1,5 @@
 import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, ChangeDetectorRef, HostListener, HostBinding, ElementRef } from "@angular/core"
-import { DOCUMENT } from "@angular/platform-browser"
+import { DOCUMENT } from "@angular/common"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable } from "rxjs"
 

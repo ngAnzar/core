@@ -1,5 +1,6 @@
 import { Provider, InjectionToken, Inject, Optional, NgZone, PLATFORM_ID } from "@angular/core"
-import { EventManager, ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS, DOCUMENT } from "@angular/platform-browser"
+import { DOCUMENT } from "@angular/common"
+import { EventManager, ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS } from "@angular/platform-browser"
 
 import { Observable, fromEvent, race } from "rxjs"
 

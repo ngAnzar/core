@@ -24,8 +24,6 @@ export type TPState = "progress" | "success" | "failure";
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToastProgressComponent extends ToastBase implements OnDestroy, AfterViewInit, OnInit {
-    // @ViewChild("info") public readonly infoEl: ElementRef<HTMLElement>
-
     public readonly destruct = new Destruct()
 
     public set infoText(val: string) {

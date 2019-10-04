@@ -17,10 +17,10 @@ export interface RowTplContext<T> {
 export class ExlistComponent<T extends Model = Model> implements OnDestroy {
     public readonly destruct = new Destruct()
 
-    @ContentChild("item", { read: TemplateRef }) public readonly tplItem: TemplateRef<RowTplContext<T>>
-    @ContentChild("exHeader", { read: TemplateRef }) public readonly tplExHeader: TemplateRef<RowTplContext<T>>
-    @ContentChild("exContent", { read: TemplateRef }) public readonly tplExContent: TemplateRef<RowTplContext<T>>
-    @ContentChild("exFooter", { read: TemplateRef }) public readonly tplExFooter: TemplateRef<RowTplContext<T>>
+    @ContentChild("item", { read: TemplateRef, static: true }) public readonly tplItem: TemplateRef<RowTplContext<T>>
+    @ContentChild("exHeader", { read: TemplateRef, static: true }) public readonly tplExHeader: TemplateRef<RowTplContext<T>>
+    @ContentChild("exContent", { read: TemplateRef, static: true }) public readonly tplExContent: TemplateRef<RowTplContext<T>>
+    @ContentChild("exFooter", { read: TemplateRef, static: true }) public readonly tplExFooter: TemplateRef<RowTplContext<T>>
 
     @Input()
     public set padding(val: Margin) {

@@ -1,5 +1,6 @@
 import { Injectable, ElementRef, Inject, Optional, PLATFORM_ID, NgZone, Provider } from "@angular/core"
-import { EventManager, ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS, DOCUMENT } from "@angular/platform-browser"
+import { EventManager, ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS } from "@angular/platform-browser"
+import { DOCUMENT } from "@angular/common"
 
 const ZingTouch = require("zingtouch")
 

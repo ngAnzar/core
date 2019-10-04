@@ -150,8 +150,8 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
     protected _animationState: "void" | "opened" | "closed" = "void"
     protected _contentRendered: boolean
 
-    @ViewChild(TemplateRef) protected readonly tpl?: TemplateRef<any>
-    @ViewChild("vc", { read: ViewContainerRef }) protected readonly vc?: ViewContainerRef
+    @ViewChild(TemplateRef, { static: true }) protected readonly tpl?: TemplateRef<any>
+    @ViewChild("vc", { read: ViewContainerRef, static: true }) protected readonly vc?: ViewContainerRef
 
     public readonly destruct: Destruct = new Destruct(() => {
         if (this._focusTrap) {

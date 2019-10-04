@@ -36,7 +36,7 @@ export class ProgressCircleComponent extends ProgressComponent implements AfterV
 
     protected dashArray: number
 
-    @ViewChild("circle") protected readonly circle: ElementRef<SVGCircleElement>
+    @ViewChild("circle", { static: true }) protected readonly circle: ElementRef<SVGCircleElement>
 
     protected animation: Timeline
 

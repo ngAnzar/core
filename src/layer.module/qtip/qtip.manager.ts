@@ -1,5 +1,6 @@
 import { Injectable, Inject } from "@angular/core"
-import { DOCUMENT, EventManager } from "@angular/platform-browser"
+import { EventManager } from "@angular/platform-browser"
+import { DOCUMENT } from "@angular/common"
 import { Observable, Subject, Observer, timer, of } from "rxjs"
 import { map, distinctUntilChanged, switchMap, mapTo } from "rxjs/operators"
 

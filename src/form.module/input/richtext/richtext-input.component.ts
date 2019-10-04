@@ -18,8 +18,8 @@ import { ScrollerComponent } from "../../../list.module"
     providers: INPUT_MODEL
 })
 export class RichtextInputComponent extends InputComponent<string> implements OnDestroy {
-    @ViewChild("input") public readonly input: RichtextDirective
-    @ViewChild("scroller", { read: ElementRef }) public readonly scrollerEl: ElementRef
+    @ViewChild("input", { static: true }) public readonly input: RichtextDirective
+    @ViewChild("scroller", { read: ElementRef, static: true }) public readonly scrollerEl: ElementRef
 
 
     public set menuVisible(val: boolean) {

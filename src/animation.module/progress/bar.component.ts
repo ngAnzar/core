@@ -38,7 +38,7 @@ export class ProgressBarComponent extends ProgressComponent implements AfterView
     protected animation: Timeline
     private indeterminateTime: number
 
-    @ViewChild("line") protected readonly line: ElementRef<SVGLineElement>
+    @ViewChild("line", { static: true }) protected readonly line: ElementRef<SVGLineElement>
 
     public constructor(
         @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef,

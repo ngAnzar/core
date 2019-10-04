@@ -31,7 +31,7 @@ export interface RadioChangeEvent {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RadioComponent<T = any> extends InputComponent<T> implements OnDestroy, OnInit {
-    @ViewChild("input") public readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { static: true }) public readonly input: ElementRef<HTMLInputElement>
 
     @Input()
     public set checked(val: boolean) {

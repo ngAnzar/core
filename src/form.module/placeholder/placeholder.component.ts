@@ -14,7 +14,7 @@ import { InputModel } from "../input/abstract"
 export class PlaceholderComponent implements AfterContentInit, OnDestroy {
     public readonly destruct = new Destruct();
 
-    @ContentChild(InputModel) protected _inputModel: InputModel<any>
+    @ContentChild(InputModel, { static: true }) protected _inputModel: InputModel<any>
 
     @Input()
     public set hideLabel(val: boolean) {

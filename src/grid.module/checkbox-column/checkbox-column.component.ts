@@ -15,7 +15,7 @@ import { PrimaryKey } from "../../data.module"
     ]
 })
 export class CheckboxColumnComponent extends ColumnComponent implements OnInit {
-    @ViewChild("defaultContent") protected readonly defaultContent: TemplateRef<any>
+    @ViewChild("defaultContent", { static: true }) protected readonly defaultContent: TemplateRef<any>
 
     public get content(): TemplateRef<any> {
         return this._content || this.defaultContent

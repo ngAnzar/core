@@ -129,7 +129,14 @@ type Calculators = { [key: string]: Calculator }
 function placementCalculator(levitateAlign: HAlign | VAlign, targetAlign: HAlign | VAlign, orient: "H" | "V"): Calculator {
     return function (levitate: Readonly<Rect>, target: Readonly<Rect>, constraint: Readonly<Rect>): Placement {
         let placement = constraint.copy()
-        placement[levitateAlign] = target[targetAlign]
+
+        if (levitateAlign === "center" && targetAlign === "center") {
+            placement[levitateAlign] = target[targetAlign]
+        } else if (levitateAlign === "center" || targetAlign === "center") {
+            throw new Error("Not implemented...")
+        } else {
+            placement[levitateAlign] = target[targetAlign]
+        }
 
         return {
             rect: constraint.constraint(placement),

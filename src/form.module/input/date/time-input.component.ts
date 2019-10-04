@@ -96,8 +96,8 @@ export class TimeValidator implements Validator {
     providers: INPUT_MODEL
 })
 export class TimeInputComponent extends InputComponent<Time> {
-    @ViewChild("input", { read: ElementRef }) public readonly input: ElementRef<HTMLInputElement>
-    @ViewChild("input", { read: IMaskDirective }) public readonly inputMask: IMaskDirective<any>
+    @ViewChild("input", { read: ElementRef, static: true }) public readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { read: IMaskDirective, static: true }) public readonly inputMask: IMaskDirective<any>
 
     @Input()
     public set withoutPicker(val: boolean) {

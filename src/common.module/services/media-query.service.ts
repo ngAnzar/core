@@ -1,5 +1,5 @@
 import { Inject } from "@angular/core"
-import { BreakPointRegistry, MatchMedia, MediaChange } from "@angular/flex-layout"
+import { BreakPointRegistry, ɵMatchMedia as MatchMedia, MediaChange } from "@angular/flex-layout"
 import { Observable, of } from "rxjs"
 import { filter, distinctUntilChanged, switchMap, startWith } from "rxjs/operators"
 

@@ -20,7 +20,7 @@ import { GridRowDirective } from "./grid-row.directive"
     providers: [ListFilterService]
 })
 export class GridComponent<T extends Model = Model> implements AfterContentInit, OnDestroy, OnInit {
-    @ContentChild(ColumnsComponent) public readonly columns: ColumnsComponent<T>
+    @ContentChild(ColumnsComponent, { static: true }) public readonly columns: ColumnsComponent<T>
     @ViewChildren(GridRowDirective) public readonly rows: QueryList<GridRowDirective<T>>
 
     @Output() public rowTap = new EventEmitter<T>()

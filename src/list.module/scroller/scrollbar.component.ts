@@ -17,9 +17,9 @@ import { ScrollerService, ScrollOrient } from "./scroller.service"
     ]
 })
 export class ScrollbarComponent implements OnDestroy {
-    @ViewChild("btnUp") public readonly btnUp: ElementRef<HTMLElement>
-    @ViewChild("btnDown") public readonly btnDown: ElementRef<HTMLElement>
-    @ViewChild("bar") public readonly bar: ElementRef<HTMLElement>
+    @ViewChild("btnUp", { static: false }) public readonly btnUp: ElementRef<HTMLElement>
+    @ViewChild("btnDown", { static: false }) public readonly btnDown: ElementRef<HTMLElement>
+    @ViewChild("bar", { static: true }) public readonly bar: ElementRef<HTMLElement>
 
     public set position(val: number) {
         if (this._position !== val) {

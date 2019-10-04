@@ -11,24 +11,10 @@ import { VPAnimState, VPSidenavAnimation, VPContentAnimation, VPOverlayAnimation
 @Component({
     selector: ".nz-viewport",
     templateUrl: "./viewport.template.pug",
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    // animations: [
-    //     VPSidenavAnimation,
-    //     VPContentAnimation,
-    //     VPOverlayAnimation
-    // ]
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ViewportComponent implements AfterViewInit, OnInit {
-    // @ViewChild("sidenav", { read: ElementRef }) public readonly sidenav: ElementRef<HTMLElement>
-
     public readonly destruct = new Destruct()
-    // public animationState: {
-    //     value: VPAnimState,
-    //     params: {
-    //         sidenavWidth: number,
-    //         rightpanelWidth: number
-    //     }
-    // }
 
     public contentPadding: SafeStyle
     public menuTransform: SafeStyle

@@ -37,19 +37,3 @@ export class RichtextService {
     }
 }
 
-
-// export type RichtextComponentParamsData = { [key: string]: string | number | boolean | Date }
-
-
-// export class RichtextComponentParams {
-//     public constructor(
-//         public readonly data: RichtextComponentParamsData,
-
-//     ) {
-
-//     }
-
-//     public commit() {
-
-//     }
-// }

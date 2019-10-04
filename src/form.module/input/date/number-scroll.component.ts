@@ -121,7 +121,7 @@ export class MinuteGenerator extends InfiniteGen {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NumberScrollComponent implements AfterViewInit {
-    @ViewChild("strip", { read: ElementRef }) public readonly strip: ElementRef<HTMLElement>
+    @ViewChild("strip", { read: ElementRef, static: true }) public readonly strip: ElementRef<HTMLElement>
 
     @Input()
     public set value(val: number) {

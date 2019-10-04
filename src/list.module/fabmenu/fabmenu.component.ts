@@ -10,7 +10,7 @@ import { LayerService, LayerRef, DropdownLayer } from "../../layer.module"
 })
 export class FabmenuComponent implements OnDestroy {
     @ContentChildren(MenuItemDirective) protected buttons: QueryList<MenuItemDirective>
-    @ViewChild("layer", { read: TemplateRef }) protected readonly layerTpl: TemplateRef<any>
+    @ViewChild("layer", { read: TemplateRef, static: true }) protected readonly layerTpl: TemplateRef<any>
 
     protected layerRef: LayerRef
 

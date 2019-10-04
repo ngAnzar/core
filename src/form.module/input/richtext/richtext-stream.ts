@@ -6,9 +6,6 @@ import { Destruct, IDisposable } from "../../../util"
 import { removeNode } from "./util"
 
 
-// export const RT_AC_TAG_NAME = "nz-richtext-acanchor"
-// export const RT_PORTAL_TAG_NAME = "nz-richtext-portal"
-
 export class CustomElement {
     public constructor(public readonly type: string) {
 

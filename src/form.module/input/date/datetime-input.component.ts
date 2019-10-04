@@ -18,8 +18,8 @@ import { DatetimePickerService } from "./datetime-picker.service"
     providers: INPUT_MODEL
 })
 export class DatetimeInputComponent extends InputComponent<Date> {
-    @ViewChild("input", { read: ElementRef }) public readonly input: ElementRef<HTMLInputElement>
-    @ViewChild("input", { read: IMaskDirective }) public readonly inputMask: IMaskDirective<any>
+    @ViewChild("input", { read: ElementRef, static: true }) public readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { read: IMaskDirective, static: true }) public readonly inputMask: IMaskDirective<any>
 
     @HostBinding("attr.tabindex")
     public readonly tabIndexAttr = -1

@@ -19,7 +19,7 @@ export class ListActionComponent implements OnDestroy {
     @Input() public readonly behavior: "selectable" | "virtual" = "virtual"
     @Input() public readonly text: string
 
-    @ViewChild("tpl", { read: TemplateRef }) public readonly tpl: TemplateRef<any>
+    @ViewChild("tpl", { read: TemplateRef, static: true }) public readonly tpl: TemplateRef<any>
 
     @Output("action") public readonly onAction: Observable<ListActionComponent> = new EventEmitter()
 

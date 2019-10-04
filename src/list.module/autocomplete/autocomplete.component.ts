@@ -27,8 +27,8 @@ export class DDContext<T> {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AutocompleteComponent<T extends Model> implements OnDestroy, OnInit {
-    @ViewChild("list", { read: ListDirective }) protected readonly list: ListDirective
-    @ViewChild("scroller", { read: ScrollerComponent }) protected readonly scroller: ScrollerComponent
+    @ViewChild("list", { read: ListDirective, static: false }) protected readonly list: ListDirective
+    @ViewChild("scroller", { read: ScrollerComponent, static: false }) protected readonly scroller: ScrollerComponent
 
     public get gridTemplateRows(): SafeStyle {
         const actionsLength = this.actions ? this.actions.length : 0

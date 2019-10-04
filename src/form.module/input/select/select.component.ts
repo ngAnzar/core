@@ -66,12 +66,12 @@ export type AutoTrigger = "all" | "query" | null;
     providers: INPUT_MODEL
 })
 export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy {
-    @ContentChild("selected", { read: TemplateRef }) @Input() public readonly selectedTpl: SelectTemplateRef<T>
-    @ContentChild("item", { read: TemplateRef }) @Input() public readonly itemTpl: SelectTemplateRef<T>
+    @ContentChild("selected", { read: TemplateRef, static: true }) @Input() public readonly selectedTpl: SelectTemplateRef<T>
+    @ContentChild("item", { read: TemplateRef, static: true }) @Input() public readonly itemTpl: SelectTemplateRef<T>
     @ContentChildren(ListActionComponent) @Input() public readonly actions: QueryList<ListActionComponent>
 
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
-    @ViewChild("input", { read: ElementRef })
+    @ViewChild("input", { read: ElementRef, static: false })
     protected set input(val: ElementRef<HTMLInputElement>) {
         if (!this._input || !val || val.nativeElement !== this._input.nativeElement) {
             this._input = val
@@ -85,10 +85,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
     protected _input: ElementRef<HTMLInputElement>
 
-    @ViewChild("default_selected_single", { read: TemplateRef }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
-    @ViewChild("default_selected_multi", { read: TemplateRef }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
-    @ViewChild("default_item", { read: TemplateRef }) protected readonly defaultItemTpl: SelectTemplateRef<T>
-    @ViewChild("dropdown", { read: TemplateRef }) protected readonly dropdownTpl: SelectTemplateRef<T>
+    @ViewChild("default_selected_single", { read: TemplateRef, static: true }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
+    @ViewChild("default_selected_multi", { read: TemplateRef, static: true }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
+    @ViewChild("default_item", { read: TemplateRef, static: true }) protected readonly defaultItemTpl: SelectTemplateRef<T>
+    @ViewChild("dropdown", { read: TemplateRef, static: true }) protected readonly dropdownTpl: SelectTemplateRef<T>
 
     public displayField: string
     public queryField: string

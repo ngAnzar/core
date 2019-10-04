@@ -39,7 +39,7 @@ export interface CheckboxChangeEvent<T> extends CheckboxState {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckboxComponent<T = boolean> extends InputComponent<T> implements OnDestroy {
-    @ViewChild("input") protected readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { static: true }) protected readonly input: ElementRef<HTMLInputElement>
     @Input()
     public set noninteractive(val: boolean) {
         val = coerceBooleanProperty(val)
