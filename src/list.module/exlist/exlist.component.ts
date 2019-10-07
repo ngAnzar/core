@@ -1,13 +1,26 @@
-import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy } from "@angular/core"
+import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy, Optional } from "@angular/core"
+import { of } from "rxjs"
+import { take } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective, Model, SelectionItems, ISelectable, SelectOrigin } from "../../data.module"
 import { Margin, MarginParsed, parseMargin } from "../../layout.module"
+import { ExlistSwitchHandler } from "./exlist-switch-handler"
 
 
 export interface RowTplContext<T> {
     $implicit: T
 }
+
+
+class DefaultSwitchHandler extends ExlistSwitchHandler<any> {
+    public canSwitch(from: any, to: any) {
+        return of(true)
+    }
+}
+
+
+const DEFAULT_SWITCH_HANDLER = new DefaultSwitchHandler()
 
 
 @Component({
@@ -42,11 +55,21 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy {
     public readonly opened = this.destruct.disposable(new SelectionItems(this._rows))
 
     public constructor(
-        @Inject(DataSourceDirective) public readonly source: DataSourceDirective) {
+        @Inject(DataSourceDirective) public readonly source: DataSourceDirective,
+        @Inject(ExlistSwitchHandler) @Optional() private readonly switchHandler: ExlistSwitchHandler<T> = DEFAULT_SWITCH_HANDLER) {
     }
 
     public setOpened(model: any, origin: SelectOrigin) {
-        this.opened.set([model], origin)
+        let from: T = this.opened.get()[0] || null
+        let to: T = origin ? model : null
+
+        this.switchHandler.canSwitch(from, to)
+            .pipe(take(1))
+            .subscribe(val => {
+                if (val) {
+                    this.opened.set([model], origin)
+                }
+            })
     }
 
     public _handleOnDestroy(cmp: ISelectable<T>): void {

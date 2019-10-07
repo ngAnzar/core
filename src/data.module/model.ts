@@ -321,10 +321,16 @@ export class Model {
         }
     }
 
-
+    /** @internal */
     private [RAW]: { [key: string]: any }
+
+    /** @internal */
     private [CACHE]: { [key: string]: any }
+
+    /** @internal */
     private [FIELDS]: Fields
+
+    /** @internal */
     private [PK]: PrimaryKey
 
     public constructor(data?: { [key: string]: any }) {
@@ -338,6 +344,7 @@ export class Model {
         return this
     }
 
+    /** @internal */
     private [MODEL_EQ](other: Model) {
         return this === other || (Model.isModel(other) && other.pk === this.pk)
     }

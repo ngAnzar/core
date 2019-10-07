@@ -56,12 +56,9 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
                 this.filter.changed.subscribe(observer),
                 this.sorter.changed.subscribe(observer),
                 this.meta.changed.subscribe(observer),
-                this.reseted.subscribe(observer)
+                this.reseted.subscribe(observer),
+                this.source.changed.subscribe(observer)
             ]
-
-            if (!this.source.async) {
-                items.push((this.source as StaticSource<any>).changed.subscribe(observer))
-            }
 
             return () => {
                 for (const item of items) {

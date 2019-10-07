@@ -3,7 +3,7 @@ import {
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef
 } from "@angular/core"
 import { merge, Observable, Subject, Subscription, EMPTY, of } from "rxjs"
-import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize } from "rxjs/operators"
+import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items } from "../data.module"
 import { Destruct, NzRange, ListDiffKind, ListDiffItem } from "../util"
@@ -38,7 +38,7 @@ const EMPTY_ITEMS = new Items([], new NzRange(0, 0), 0)
     selector: "[nzVirtualFor][nzVirtualForOf]",
     exportAs: "nzVirtualFor"
 })
-export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, DoCheck {
+export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     @Input()
     public set nzVirtualForOf(value: DataSourceDirective<T>) {
         this._nzVirtualForOf = value
@@ -133,6 +133,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
     private items$ = this.destruct.subscription(this.requestRange$).pipe(
         switchMap(r => {
             return this.nzVirtualForOf.getRange(r).pipe(
+                take(1),
                 map(items => items.getRange(r))
             )
         }),
@@ -152,7 +153,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
         }),
         filter(result => result.changes.length > 0),
         tap(result => this._applyChanges(result.changes, result.renderedRange, result.currentRange)),
-        tap(() => this.ngDoCheck()),
+        // tap(() => this.ngDoCheck()),
         // tap(() => this._cdr.markForCheck()),
         tap(result => this.visibleItems.onRender(result.renderedRange)),
     )
@@ -179,14 +180,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy, 
             .subscribe(this._scroll)
     }
 
-    public ngDoCheck() {
-        for (let i = 0, l = this._vcr.length; i < l; i++) {
-            let v: EmbeddedView<T> = this._vcr.get(i) as any
-            if (v && v.context && v.context.index !== -1) {
-                v.detectChanges()
-            }
-        }
-    }
+    // public ngDoCheck() {
+    //     for (let i = 0, l = this._vcr.length; i < l; i++) {
+    //         let v: EmbeddedView<T> = this._vcr.get(i) as any
+    //         if (v && v.context && v.context.index !== -1) {
+    //             v.detectChanges()
+    //         }
+    //     }
+    // }
 
     public ngOnDestroy() {
         this.destruct.run()

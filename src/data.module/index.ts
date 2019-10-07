@@ -7,6 +7,7 @@ export { DataSource, Filter, Sorter, LoadFields, Meta } from "./data-source"
 export { DataStorage, Diff, DiffKind } from "./data-storage"
 export { Model, ModelFields, ModelProxy, ModelClass, ModelFactory, Field, IDField, MODEL_ID, PrimaryKey, MODEL_EQ } from "./model"
 export { StaticSource } from "./static-source"
+export { CombinedSource } from "./combined-source"
 
 
 import { SingleSelection, MultiSelection, NoneSelection, PropagateSelection } from "./selection/selection.directive"

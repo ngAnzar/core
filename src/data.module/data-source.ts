@@ -1,5 +1,5 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, of } from "rxjs"
+import { Observable, of, Subject } from "rxjs"
 import { map } from "rxjs/operators"
 
 import { NzRange } from "../util"
@@ -50,6 +50,7 @@ export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
     public abstract readonly async: boolean
+    public readonly changed: Observable<void> = new Subject()
     // public abstract readonly model: ModelClass<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<Items<T>> {

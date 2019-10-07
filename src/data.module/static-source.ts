@@ -12,7 +12,6 @@ export type CustomFilter<T extends Model = Model> = (record: T, filterValue: any
 export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly async = false
     public readonly data: Readonly<Array<Readonly<T>>>
-    public readonly changed: Observable<Readonly<Array<Readonly<T>>>> = new Subject()
 
     protected readonly _customFilter: { [key: string]: CustomFilter<T> } = {}
 
@@ -162,7 +161,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
     public replace(data: T[]) {
         (this as any).data = data;
-        (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
+        (this.changed as Subject<void>).next()
     }
 
     public add(model: T, index?: number) {
@@ -171,7 +170,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         } else {
             (this.data as any).push(model)
         }
-        (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
+        (this.changed as Subject<void>).next()
     }
 
     public del(model: T) {
@@ -184,7 +183,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     public removeAt(idx: number) {
         const removed = (this.data as any).splice(idx, 1)
         if (removed && removed.length > 0) {
-            (this.changed as Subject<Readonly<Array<Readonly<T>>>>).next(this.data)
+            (this.changed as Subject<void>).next()
         }
     }
 }

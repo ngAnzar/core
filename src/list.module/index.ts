@@ -14,6 +14,7 @@ export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL }
 
 import { ExlistComponent } from "./exlist/exlist.component"
 import { ExlistItemComponent } from "./exlist/exlist-item.component"
+export { ExlistSwitchHandler } from "./exlist/exlist-switch-handler"
 export { ExlistComponent, ExlistItemComponent }
 
 import { FabmenuComponent } from "./fabmenu/fabmenu.component"
