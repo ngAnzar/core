@@ -2,12 +2,9 @@ import { Provider, InjectionToken, Inject, Optional, NgZone, PLATFORM_ID } from 
 import { ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS } from "@angular/platform-browser"
 import { DOCUMENT } from "@angular/common"
 
+import { __zone_symbol__ } from "../../util"
 
-const Zone = (window as any).Zone
-const __zone_symbol__ =
-    (typeof Zone !== "undefined") && (Zone as any)["__symbol__"] || function (v: string): string {
-        return "__zone_symbol__" + v;
-    };
+
 const ADD_EVENT_LISTENER: "addEventListener" = __zone_symbol__("addEventListener")
 const REMOVE_EVENT_LISTENER: "removeEventListener" = __zone_symbol__("removeEventListener")
 const SET_INTERVAL: "setInterval" = __zone_symbol__("setInterval")

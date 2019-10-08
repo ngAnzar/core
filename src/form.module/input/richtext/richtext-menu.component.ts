@@ -1,6 +1,6 @@
 import { Component, Inject, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core"
 
-import { RichtextStream } from "./richtext-stream"
+import { RichtextStream } from "./core/richtext-stream"
 
 
 @Component({

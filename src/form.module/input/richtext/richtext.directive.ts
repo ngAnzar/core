@@ -1,22 +1,21 @@
-import { Directive, Input, Output, Inject, ElementRef, EventEmitter, HostListener, OnDestroy, ViewContainerRef, Injector, ComponentFactoryResolver, ApplicationRef, ComponentRef, Optional } from "@angular/core"
-import { DomSanitizer } from "@angular/platform-browser"
-import { UP_ARROW, DOWN_ARROW, ESCAPE, BACKSPACE } from "@angular/cdk/keycodes"
-import { DomPortalOutlet, ComponentPortal } from "@angular/cdk/portal"
-import { Observable, Subject } from "rxjs"
+import { Directive, Input, Inject, ElementRef, Output, HostListener, Optional } from "@angular/core"
+import { BACKSPACE, DELETE, LEFT_ARROW, RIGHT_ARROW } from "@angular/cdk/keycodes"
+import { Subject, Observable } from "rxjs"
 
-import { Destruct } from "../../../util"
-import { LayerService } from "../../../layer.module"
+
+import { Destructible, __zone_symbol__ } from "../../../util"
 import { ScrollerService } from "../../../list.module"
-
-import { RichtextService } from "./richtext.service"
-import { RichtextStream, Word } from "./richtext-stream"
-import { RichtextAcManager, RichtextAcProvider } from "./richtext-ac.component"
-
-import { matchTagName, removeNode, uuidv4 } from "./util"
-import { RichtextComponentRef } from "./richtext-component-ref"
-
 import { RangyService } from "./core/rangy"
-import { RichtextStream2 } from "./core/richtext-stream"
+import { RichtextStream, Word } from "./core/richtext-stream"
+import { ComponentManager, RICHTEXT_CMP_PORTAL_EL } from "./core/component-manager"
+import { ContentEditable } from "./core/content-editable"
+import { AutocompleteManager, RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
+import { removeNode, matchTagName } from "./util"
+import { AutocompletePopup } from "./autocomplete.component"
+import { take } from 'rxjs/operators'
+
+
+const MUTATION_OBSERVER: "MutationObserver" = __zone_symbol__("MutationObserver")
 
 
 @Directive({
@@ -26,356 +25,195 @@ import { RichtextStream2 } from "./core/richtext-stream"
     },
     exportAs: "nzRichtext",
     providers: [
-        RichtextService,
+        RangyService,
         RichtextStream,
-        RichtextStream2,
-        RangyService
+        ComponentManager
     ]
 })
-export class RichtextDirective implements OnDestroy {
+export class RichtextDirective extends Destructible {
     @Input("nzRichtext")
-    public set value(val: string) {
-        if (this._value !== val) {
-            this.stream.value = val
+    public set value(val: string) { this.stream.content = val }
+    public get value(): string { return this.stream.content }
 
-            let newValue = this.stream.value;
-            if (this._value !== newValue) {
-                (this.changes as EventEmitter<string>).emit(this._value = newValue)
-            }
-        }
-    }
-    public get value(): string { return this._value }
-    private _value: string
-
-    @Output("changed")
-    public readonly changes: Observable<string> = new EventEmitter<string>()
-
-    private _components: { [key: string]: RichtextComponentRef<any> } = {}
-    private _mutationObserver: MutationObserver
+    @Output("value") public readonly valueChange = this.stream.changes
 
     public constructor(
-        @Inject(ViewContainerRef) protected readonly vcr: ViewContainerRef,
-        @Inject(Injector) protected readonly injector: Injector,
-        @Inject(ComponentFactoryResolver) protected readonly cfr: ComponentFactoryResolver,
-        @Inject(ApplicationRef) protected readonly appRef: ApplicationRef,
-        @Inject(RichtextService) public readonly svc: RichtextService,
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
         @Inject(RichtextStream) public readonly stream: RichtextStream,
-        @Inject(RichtextStream2) public readonly stream2: RichtextStream2,
-    ) {
+        @Inject(ComponentManager) public readonly cmpManager: ComponentManager) {
+        super()
 
-        let mutation = new MutationObserver(this.onMuation)
-        mutation.observe(stream.el, {
+        this.destruct.any(watchMutation(el.nativeElement, this.onMutation.bind(this), {
             childList: true,
             subtree: true
-        })
+        }))
+
+        this.destruct.disposable(cmpManager)
     }
 
-    public getCmp(el: HTMLElement): RichtextComponentRef<any> | null {
-        return this._components[el.id]
-    }
-
-    public initCmp(el: HTMLElement): RichtextComponentRef<any> {
-        let id = el.getAttribute("id")
-        if (!id) {
-            id = uuidv4()
-            el.setAttribute("id", id)
-        }
-
-        let cmpType = this.svc.getComponentType(el.getAttribute("component"))
-        if (!cmpType) {
-            throw new Error("Runtime error: missing richtext component: " + el.getAttribute("component"))
-        }
-
-        let params = el.getAttribute("params") as any
-        if (params) {
-            params = JSON.parse(decodeURIComponent(params))
-        } else {
-            params = null
-        }
-
-        const ref = new RichtextComponentRef(el, params, this.onParamsChanged) as { -readonly [K in keyof RichtextComponentRef]: RichtextComponentRef[K] }
-        const injector = Injector.create([
-            { provide: RichtextComponentRef, useValue: ref }
-        ], this.injector)
-
-        ref.outlet = new DomPortalOutlet(el, this.cfr, this.appRef, injector)
-        ref.portal = new ComponentPortal(cmpType, this.vcr, injector, this.cfr)
-        ref.component = ref.outlet.attachComponentPortal(ref.portal)
-        ref.component.changeDetectorRef.markForCheck()
-        return this._components[id] = ref
-    }
-
-    public ngOnDestroy() {
-        if (this._mutationObserver) {
-            this._mutationObserver.disconnect()
-        }
-        for (const k in this._components) {
-            const cmp = this._components[k]
-            cmp.dispose()
-        }
-        delete this._components
-    }
-
-    protected onMuation = (mutations: MutationRecord[]) => {
-        const isPortalEl = this.stream.portalEl.isMatch
+    private onMutation(mutations: MutationRecord[]) {
         let nodes: NodeList
         let node: Node
 
         for (const record of mutations) {
-            // nodes = record.removedNodes
-            // for (let i = 0, l = nodes.length; i < l; i++) {
-            //     node = nodes[i]
-
-            //     if (isPortalEl(node)) {
-            //         let cmp = this.getCmp(node as HTMLElement)
-            //         if (cmp) {
-            //             cmp.dispose()
-            //             delete this._components[(node as HTMLElement).id]
-            //         }
-            //     }
-            // }
-
             nodes = record.addedNodes
             for (let i = 0, l = nodes.length; i < l; i++) {
                 node = nodes[i]
 
-                if (isPortalEl(node)) {
-                    let cmp = this.getCmp(node as HTMLElement)
-                    if (!cmp) {
-                        this.initCmp(node as HTMLElement)
-                    }
+                if (RICHTEXT_CMP_PORTAL_EL.testNode(node)) {
+                    this.cmpManager.getRef(node as HTMLElement)
                 } else if (node.nodeType === 1) {
-                    const portals = (node as HTMLElement).querySelectorAll(this.stream.portalEl.selector)
-                    for (let i = 0, l = portals.length; i < l; i++) {
-                        const cmp = this.getCmp(portals[i] as HTMLElement)
-                        if (!cmp) {
-                            this.initCmp(portals[i] as HTMLElement)
-                        }
+                    let portalEls = (node as HTMLElement).querySelectorAll(RICHTEXT_CMP_PORTAL_EL.selector)
+                    for (let k = 0, kl = portalEls.length; k < kl; k++) {
+                        this.cmpManager.getRef(portalEls[k] as HTMLElement)
                     }
                 }
             }
         }
     }
-
-    protected onParamsChanged = () => {
-        (this.changes as EventEmitter<string>).emit(this._value = this.stream.value)
-    }
 }
 
-
+//
 @Directive({
-    selector: "[nzRichtext][contenteditable='true']"
+    selector: "[nzRichtext][contenteditable='true']",
+    host: {
+        "[attr.autocomplete]": "'off'"
+    },
+    providers: [
+        ContentEditable,
+        AutocompleteManager,
+        AutocompletePopup
+    ]
 })
-export class RichtextEditableDirective implements OnDestroy {
-    public readonly destruct = new Destruct()
-
-    @Output("cursorMove")
-    public readonly cursorMove: Observable<any> = new EventEmitter()
-
-    // public readonly inAutoComplete: boolean
-
-    private _acManagers: { [key: string]: RichtextAcManager } = {}
+export class RichtextEditableDirective extends Destructible {
+    @Output() public readonly cursorMove: Observable<any> = new Subject()
 
     public constructor(
-        @Inject(LayerService) public readonly layerSvc: LayerService,
-        @Inject(RichtextDirective) public readonly rt: RichtextDirective,
-        @Inject(ScrollerService) @Optional() public readonly scroller: ScrollerService,
-        @Inject(DomSanitizer) private readonly sanitizer: DomSanitizer) {
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
+        @Inject(RichtextStream) private readonly stream: RichtextStream,
+        @Inject(ContentEditable) private readonly ce: ContentEditable,
+        @Inject(AutocompleteManager) private readonly acManager: AutocompleteManager,
+        @Inject(AutocompletePopup) private readonly acPopup: AutocompletePopup,
+        @Inject(ComponentManager) private readonly cmpManager: ComponentManager,
+        @Inject(ScrollerService) @Optional() private readonly scroller: ScrollerService) {
+        super()
 
-        let mutation = new MutationObserver(this.onMuation)
-        this.destruct.any(mutation.disconnect.bind(mutation))
-        mutation.observe(rt.stream.el, {
+        this.destruct.any(watchMutation(el.nativeElement, this.onMutation.bind(this), {
             childList: true,
             subtree: true
-        })
-    }
-
-    public ngOnDestroy() {
-        this.destruct.run()
-        for (const k in this._acManagers) {
-            this._acManagers[k].dispose()
-        }
-        delete this._acManagers
+        }))
     }
 
     @HostListener("input", ["$event"])
     public onInput(event: Event) {
-        this.triggerAutoComplete();
-        let newValue = this.rt.stream.value
-        if ((this.rt as any)._value !== newValue) {
-            (this.rt.changes as EventEmitter<string>).emit((this.rt as any)._value = newValue)
+        const target = event.target as HTMLElement
+        const firstChild = target.firstChild
+
+        if (firstChild && firstChild.nodeType === 3) {
+            this.ce.formatBlock(`<${this.ce.defaultParagraph}>`)
         }
+
+        this.stream.emitChanges()
+        this.triggerAc()
+    }
+
+    @HostListener("pointerup", ["$event"])
+    public onPointerUp(event: Event) {
+        this.emitCursorMove()
     }
 
     @HostListener("keydown", ["$event"])
-    public onKeydown(event: KeyboardEvent) {
-        this.scrollToCursor()
-
-        if (this._handleKeyEvent(event) || event.defaultPrevented) {
+    public onKeyDown(event: KeyboardEvent) {
+        if (event.defaultPrevented || this.acPopup.handleKeyEvent(event)) {
             return
         }
 
-        // http://jsfiddle.net/Sviatoslav/4d23y74j/
-        if (event.keyCode === BACKSPACE) {
-            let selection = window.getSelection()
-            if (!selection.isCollapsed || !selection.rangeCount) {
-                return
-            }
-
-            let curRange = selection.getRangeAt(selection.rangeCount - 1)
-            if (curRange.commonAncestorContainer.nodeType == 3 && curRange.startOffset > 0) {
-                // we are in child selection. The characters of the text node is being deleted
-                return
-            }
-
-            let range = document.createRange()
-            if (selection.anchorNode !== this.rt.stream.el) {
-                // selection is in character mode. expand it to the whole editable field
-                range.selectNodeContents(this.rt.stream.el)
-                range.setEndBefore(selection.anchorNode)
-            } else if (selection.anchorOffset > 0) {
-                range.setEnd(this.rt.stream.el, selection.anchorOffset)
-            } else {
-                // reached the beginning of editable field
-                return
-            }
-            range.setStart(this.rt.stream.el, range.endOffset - 1)
-
-
-            let previousNode = range.cloneContents().lastChild as HTMLElement
-            if (previousNode && previousNode.contentEditable == "false") {
-                // this is some rich content, e.g. smile. We should help the user to delete it
-                range.deleteContents()
+        if (event.keyCode === BACKSPACE || event.keyCode === DELETE) {
+            const nodes = event.keyCode === BACKSPACE
+                ? this.stream.getNodesBeforeCaret()
+                : this.stream.getNodesAfterCaret()
+            const portalEl = nodes.filter(n => RICHTEXT_CMP_PORTAL_EL.testNode(n))
+            if (portalEl && portalEl.length) {
                 event.preventDefault()
+                this.cmpManager.remove(portalEl[0] as HTMLElement)
+                    .pipe(take(1))
+                    .subscribe(this.emitCursorMove.bind(this))
             }
         }
+
+        this.emitCursorMove()
     }
 
     @HostListener("keyup", ["$event"])
-    public onKeyup(event: KeyboardEvent) {
-        this.scrollToCursor()
-        if (this._handleKeyEvent(event) || event.defaultPrevented) {
+    public onKeyUp(event: KeyboardEvent) {
+        if (event.defaultPrevented || this.acPopup.handleKeyEvent(event)) {
             return
         }
-
-        (this.cursorMove as Subject<any>).next()
-        // console.log("keyup", this.rt.stream.selection.native)
+        this.emitCursorMove()
     }
 
-    @HostListener("blur")
-    public onBlur() {
-        // this.rt.stream.el.querySelectorAll(RT_AC_TAG_NAME).forEach(removeNode)
-    }
-
-    protected _handleKeyEvent(event: KeyboardEvent): boolean {
-        let handled = false
-        for (const k in this._acManagers) {
-            let manager = this._acManagers[k]
-            if (manager.selection.keyboard.handleKeyEvent(event)) {
-                handled = true
-            }
-        }
-
-        if (event.type === "keyup" && event.keyCode === ESCAPE) {
-            let ac = this.rt.stream.state.autocomplete
-            if (ac.enabled) {
-                removeNode(ac.value)
-                handled = true
-                event.stopImmediatePropagation()
-                event.preventDefault()
-            }
-        }
-
-        return handled
-    }
-
-    @HostListener("pointerup")
-    public onPointerup() {
-        (this.cursorMove as Subject<any>).next()
-    }
-
-    protected onMuation = (mutations: MutationRecord[]) => {
-        const isAutocompleteEl = this.rt.stream.autoCompleteEl.isMatch
-        let nodes: NodeList
-        let node: Node
-
-        for (const record of mutations) {
-            nodes = record.removedNodes
-            for (let i = 0, l = nodes.length; i < l; i++) {
-                node = nodes[i]
-
-                // dispose autocomplete manager
-                if (isAutocompleteEl(node)) {
-                    let id = (node as HTMLElement).id
-                    if (id in this._acManagers) {
-                        this._acManagers[id].dispose()
-                        delete this._acManagers[id]
-                    }
-                }
-            }
-
-            // remove empty ac anchor element
-            if (isAutocompleteEl(record.target)) {
-                let content = (record.target as HTMLElement).innerText
-                if (content) {
-                    content = content.replace(/^\s+|\s+$/, "")
-                }
-
-                if (!content) {
-                    removeNode(record.target)
+    private onMutation(mutations: MutationRecord[]) {
+        // remove empty <div><br></div>
+        const el = this.el.nativeElement
+        if (el.childNodes.length === 1) {
+            const line = el.childNodes[0] as HTMLElement
+            if (matchTagName(line, "div") && line.childNodes.length === 1) {
+                if (matchTagName(line.childNodes[0], "br")) {
+                    this.stream.content = ""
                 }
             }
         }
     }
 
-    protected triggerAutoComplete() {
-        const isAutocompleteEl = this.rt.stream.autoCompleteEl.isMatch
+    private triggerAc() {
+        let acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)
+        if (!acState) {
+            const word = this.stream.getWordUnderCaret()
+            if (word && this.acManager.hasAcProviderFor(word.value)) {
+                this.beginAc(word)
+                acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL, true)
+            }
 
-        let selection = this.rt.stream.selection
-        if (selection) {
-            let acNode = selection.findElement(isAutocompleteEl)
-            if (acNode) {
-                let rtid = acNode.id
-                let manager = this._acManagers[rtid]
-                if (manager) {
-                    manager.update(acNode.innerText)
-                }
-            } else {
-                let word = selection.word
-                if (word) {
-                    let ac = this.rt.svc.getAcProviders(word.value)
-                    if (ac.length) {
-                        this.beginAc(ac, word)
-                    }
-                }
+            if (!acState) {
+                return
             }
         }
-    }
 
-    protected beginAc(providers: RichtextAcProvider[], word: Word) {
-        let id = uuidv4()
-        let el = this.rt.stream.autoCompleteEl.create()
-        el.setAttribute("id", id)
-        el.innerHTML = word.value
-        let html = el.outerHTML
-        word.select()
-        this.rt.stream.command().insertHTML(html).exec()
+        const qs = (acState.value as HTMLElement).innerText
 
-        let acNode = this.rt.stream.state.autocomplete.value
-        if (acNode) {
-            this._acManagers[id] = new RichtextAcManager(this.rt.stream, acNode, providers, this.layerSvc, this.sanitizer)
-            this._acManagers[id].update(word.value)
+        if (!this.acManager.hasAcProviderFor(qs)) {
+            removeNode(acState.value)
         } else {
-            throw new Error("Runtime error")
+            this.acManager.trigger(acState.value)
         }
     }
 
-    protected scrollToCursor() {
+    private beginAc(word: Word) {
+        let el = RICHTEXT_AUTO_COMPLETE_EL.create()
+        el.innerHTML = word.value
+        el.setAttribute("spellcheck", "false")
+        el.setAttribute("focused", "true")
+        word.select()
+        this.ce.insertHTML(el.outerHTML)
+    }
+
+    private emitCursorMove() {
+        (this.cursorMove as Subject<any>).next()
+        this.stream.updatePosition()
         if (this.scroller) {
-            let nodes = this.rt.stream.selection.nodes
-            if (nodes && nodes.length) {
-                this.scroller.scrollIntoViewport(nodes[nodes.length - 1])
+            const node = this.stream.getNodeUnerCaret()
+            if (node) {
+                this.scroller.scrollIntoViewport(node)
             }
         }
+    }
+}
+
+
+function watchMutation(el: HTMLElement, callback: (mutations: MutationRecord[]) => void, options?: MutationObserverInit): () => void {
+    const observer = new window[MUTATION_OBSERVER](callback)
+    observer.observe(el, options)
+    return function () {
+        return observer.disconnect()
     }
 }

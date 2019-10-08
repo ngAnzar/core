@@ -1,11 +1,14 @@
 import { InjectionToken, Inject, Optional, Injector, ComponentFactoryResolver, ApplicationRef, ViewContainerRef, ElementRef } from "@angular/core"
 import { ComponentType, DomPortalOutlet, ComponentPortal } from "@angular/cdk/portal"
-import { Subject } from "rxjs"
+import { Subject, Observable, of } from "rxjs"
+import { map, filter, tap } from "rxjs/operators"
 
 import { IDisposable } from "../../../../util"
-import { uuidv4 } from "../util"
+import { LayerService, DeleteConfirmDialogComponent, DropdownLayer, LAYER_MESSAGE, DialogEvent } from "../../../../layer.module"
+import { uuidv4, removeNode } from "../util"
 import { RichtextComponentRef, RichtextComponent, RichtextComponentParams } from "./component-ref"
-import { RichtextElement } from "./richtext-stream"
+import { RichtextElement } from "./richtext-el"
+import { RichtextStream } from "./richtext-stream"
 
 
 export interface RichtextComponentProvider {
@@ -18,8 +21,6 @@ export const RICHTEXT_COMPONENT = new InjectionToken<RichtextComponentProvider>(
 export const RICHTEXT_CMP_PORTAL_EL = new RichtextElement("nz-richtext-portal")
 
 export class ComponentManager implements IDisposable {
-    public readonly changes = new Subject()
-
     private _instances: { [key: string]: RichtextComponentRef<RichtextComponent> } = {}
 
     public constructor(
@@ -28,7 +29,10 @@ export class ComponentManager implements IDisposable {
         @Inject(Injector) private readonly injector: Injector,
         @Inject(ComponentFactoryResolver) protected readonly cfr: ComponentFactoryResolver,
         @Inject(ApplicationRef) protected readonly appRef: ApplicationRef,
-        @Inject(ViewContainerRef) protected readonly vcr: ViewContainerRef) {
+        @Inject(ViewContainerRef) protected readonly vcr: ViewContainerRef,
+        @Inject(RichtextStream) private readonly stream: RichtextStream,
+        @Inject(LayerService) private readonly layerSvc: LayerService) {
+        stream.addElementHandler(RICHTEXT_CMP_PORTAL_EL, cleanupPortalEl)
     }
 
     public getComponentType(name: string): ComponentType<RichtextComponent> | null {
@@ -45,6 +49,7 @@ export class ComponentManager implements IDisposable {
         node.setAttribute("contenteditable", "false")
         node.setAttribute("id", id)
         node.setAttribute("component", type)
+        node.setAttribute("spellcheck", "false")
         node.setAttribute("params", this.encodeParams(params))
         return node
     }
@@ -62,6 +67,9 @@ export class ComponentManager implements IDisposable {
         } else {
             const portalEl = id
             id = portalEl.getAttribute("id")
+            if (!id) {
+                portalEl.setAttribute("id", id = uuidv4())
+            }
             if (this._instances[id]) {
                 return this._instances[id]
             } else {
@@ -70,10 +78,32 @@ export class ComponentManager implements IDisposable {
         }
     }
 
-    private _createRef(portalEl: HTMLElement): RichtextComponentRef<RichtextComponent> {
-        const id = portalEl.getAttribute("id") || uuidv4()
-        portalEl.setAttribute("id", id)
+    public handleKeyDown(event: KeyboardEvent, portalEl: HTMLElement) {
+        event.preventDefault()
+        // const ref = this.getRef(portalEl.id)
+        console.log("handleKeyDown", this._instances)
+    }
 
+    private _removing: boolean = false
+    public remove(portalEl: HTMLElement): Observable<boolean> {
+        if (this._removing) {
+            return of(false)
+        }
+        this._removing = true
+        portalEl.setAttribute("focused", "true")
+        return this.deleteConfirm(portalEl).pipe(
+            tap(result => {
+                if (result) {
+                    removeNode(portalEl)
+                } else {
+                    portalEl.removeAttribute("focused")
+                }
+                this._removing = false
+            })
+        )
+    }
+
+    private _createRef(portalEl: HTMLElement): RichtextComponentRef<RichtextComponent> {
         const cmpId = portalEl.getAttribute("component")
         const cmpType = this.getComponentType(cmpId)
         if (!cmpType) {
@@ -116,13 +146,41 @@ export class ComponentManager implements IDisposable {
     }
 
     private onParamsChanged = () => {
-        this.changes.next()
+        this.stream.emitChanges()
     }
 
     private onRefDispose = (ref: RichtextComponentRef<RichtextComponent>) => {
         delete this._instances[ref.el.getAttribute("id")]
     }
+
+    private deleteConfirm(portalEl: HTMLElement): Observable<boolean> {
+        const behavior = new DropdownLayer({
+            position: {
+                anchor: {
+                    ref: portalEl,
+                    align: "bottom center",
+                    margin: 4
+                },
+                align: "top center"
+            },
+            backdrop: { hideOnClick: false, type: "filled" },
+            closeable: true,
+            trapFocus: true,
+            elevation: 10,
+            rounded: 3
+        })
+        const ref = this.layerSvc.createFromComponent(DeleteConfirmDialogComponent, behavior, null, [
+            { provide: LAYER_MESSAGE, useValue: "Biztosan törlöd?" }
+        ])
+        ref.show()
+        return ref.output.pipe(
+            filter(event => event.type === "button"),
+            map((event: DialogEvent) => event.button === "delete")
+        )
+    }
 }
 
 
-
+function cleanupPortalEl(el: HTMLElement) {
+    el.innerHTML = ""
+}

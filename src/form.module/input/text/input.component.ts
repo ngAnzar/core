@@ -39,14 +39,14 @@ export class TextFieldComponent extends InputComponent<string> {
 export class TextareaComponent extends InputComponent<string> implements OnInit {
     public constructor(
         @Inject(InputModel) model: InputModel<string>,
-        @Inject(ElementRef) protected readonly el: ElementRef<HTMLInputElement>) {
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLTextAreaElement>) {
         super(model)
 
         this.monitorFocus(el.nativeElement)
     }
 
     protected _renderValue(value: string) {
-        this.el.nativeElement.innerText = value
+        this.el.nativeElement.value = value
     }
 
     @HostListener("input", ["$event"])

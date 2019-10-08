@@ -1,20 +1,25 @@
 import { Component, Inject, InjectionToken, Optional } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
-import { Observable, Subject, forkJoin } from "rxjs"
-import { take, map, debounceTime } from "rxjs/operators"
+import { Observable, Subject, forkJoin, EMPTY } from "rxjs"
+import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap } from "rxjs/operators"
 
-import { Destruct, IDisposable } from "../../../../util"
-import { Model, Field, SingleSelection, ISelectionModel, SelectionModel } from "../../../data.module"
-import { LayerService, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
-import { RichtextStream, RangeFactory } from "./richtext-stream"
-import { removeNode } from "./util"
+import { Destructible } from "../../../../util"
+import { Model, Field } from "../../../../data.module"
+import { removeNode } from "../util"
+import { RichtextStream } from "./richtext-stream"
+import { RichtextElement } from "./richtext-el"
+import { ComponentManager } from "./component-manager"
+import { ContentEditable } from "./content-editable"
+import { RangeFactory } from "./rangy"
+
 
 
 export const RICHTEXT_AUTO_COMPLETE = new InjectionToken<RichtextAcProvider>("nzRichtextAutoComplete")
+export const RICHTEXT_AUTO_COMPLETE_EL = new RichtextElement("nz-richtext-autocomplete")
 
 const circleSmallSvg = require("mdi/circle-small.svg")
 
-const PROVIDER = Symbol("@AcProvider")
+export const PROVIDER = Symbol("@AcProvider")
 
 
 export class RichtextAcItem extends Model {
@@ -28,6 +33,15 @@ export class RichtextAcItem extends Model {
 }
 
 
+export class RichtextAcSession {
+    public constructor(
+        public readonly stream: RichtextStream,
+        public readonly anchor: HTMLElement,
+        public readonly cmpManager: ComponentManager,
+        public readonly content: ContentEditable) { }
+}
+
+
 export abstract class RichtextAcProvider {
     public abstract readonly trigger: RegExp
     public abstract readonly terminate: RegExp | null
@@ -35,82 +49,67 @@ export abstract class RichtextAcProvider {
     public abstract readonly minChars: number
 
     public abstract query(value: string): Observable<RichtextAcItem[]>
-    public abstract onSelect(item: RichtextAcItem, rt: RichtextStream, anchor: HTMLElement): void
-    public abstract onTerminate(text: string, rt: RichtextStream, anchor: HTMLElement): boolean
+    public abstract onSelect(sess: RichtextAcSession, item: RichtextAcItem): void
+    public abstract onTerminate(sess: RichtextAcSession, text: string): boolean
 
-    protected replaceWithComponent(rt: RichtextStream, anchor: HTMLElement, type: string, params: { [key: string]: any }) {
-        let cmp = this.createComponentNode(rt, anchor.id, type, params)
+    protected replaceWithComponent(sess: RichtextAcSession, type: string, params: { [key: string]: any }) {
+        const { anchor, cmpManager, content } = sess
+        const portalEl = cmpManager.createPortalEl(anchor.id, type, params)
 
-        anchor.parentNode.insertBefore(cmp, anchor)
+        anchor.parentNode.insertBefore(portalEl, anchor)
 
         let range = new RangeFactory(anchor, 0, anchor, 0)
         range.select()
         removeNode(anchor)
-        // console.log("AAAA", cmp.outerHTML)
-        rt.command().insertText(" ").exec()
+        content.insertText(" ")
     }
 
-    protected createComponentNode(rt: RichtextStream, id: string, type: string, params: any): HTMLElement {
-        let node = rt.portalEl.create()
-        node.setAttribute("contenteditable", "false")
-        node.setAttribute("id", id)
-        node.setAttribute("component", type)
-        node.setAttribute("params", encodeURIComponent(JSON.stringify(params)))
-        return node
-    }
-
-    protected removeAnchor(rt: RichtextStream, anchor: HTMLElement) {
-        removeNode(anchor)
+    protected removeAnchor(sess: RichtextAcSession) {
+        removeNode(sess.anchor)
     }
 }
 
 
 
-export class AutocompleteManager implements IDisposable {
-    public readonly destruct = new Destruct()
-    public readonly items: Observable<RichtextAcItem[]> = this.destruct.subject(new Subject())
+export class AutocompleteManager extends Destructible {
+    private readonly trigger$: Subject<[HTMLElement, string]> = this.destruct.subject(new Subject())
 
-    private _debounce: Subject<string> = this.destruct.subject(new Subject())
+    public readonly anchor$ = this.destruct.subscription(this.trigger$).pipe(
+        distinctUntilChanged(distinctElComparator),
+        map(val => val[0]),
+        shareReplay(1)
+    )
 
-    public constructor(
-        @Inject(RICHTEXT_AUTO_COMPLETE) @Optional() protected readonly providers: RichtextAcProvider[],
-        @Inject(DomSanitizer) private readonly sanitizer: DomSanitizer) {
+    public readonly items$ = this.destruct.subscription(this.trigger$).pipe(
+        debounceTime(250),
+        distinctUntilChanged(distinctTextComparator),
+        switchMap(val => {
+            const [el, query] = val
+            const providers = this.getProviders(query)
+            const terminated = providers.filter(p => p.terminate && p.terminate.test(query))
 
-        this.destruct.subscription(this._debounce).pipe(debounceTime(250)).subscribe(this._update)
-    }
+            if (terminated.length) {
+                const sess = new RichtextAcSession(this.stream, el, this.cmpManager, this.ce)
+                let isTerminated = false
 
-    public update(query: string) {
-        this._debounce.next(query)
-    }
+                for (const p of terminated) {
+                    isTerminated = isTerminated || (p.terminate && p.onTerminate(sess, query))
+                    let idx = providers.indexOf(p)
+                    if (idx !== -1) {
+                        providers.splice(idx, 1)
+                    }
+                }
 
-    private _update = (query: string) => {
-        if (this.destruct.done || !this.providers) {
-            return
-        }
-        const terminated = this.providers.filter(p => p.terminate && p.terminate.test(query))
-
-        if (terminated.length) {
-            let isTerminated = false
-
-            for (const p of terminated) {
-                isTerminated = isTerminated || (p.terminate && p.onTerminate(query, this.rt, this.anchorEl))
-                let idx = this.providers.indexOf(p)
-                if (idx !== -1) {
-                    this.providers.splice(idx, 1)
+                if (isTerminated) {
+                    return EMPTY
                 }
             }
 
-            if (isTerminated) {
-                return
-            }
-        }
+            const queryFrom = providers.filter(p => p.minChars <= query.length)
 
-        const queryFrom = this.providers.filter(p => p.minChars <= query.length)
-
-        if (queryFrom.length) {
-            this.destruct.subscription(forkJoin(queryFrom.map(p => p.query(query))))
-                .pipe(take(1))
-                .pipe(map(value => {
+            return forkJoin(queryFrom.map(p => p.query(query))).pipe(
+                take(1),
+                map(value => {
                     let result: RichtextAcItem[] = []
                     for (let i = 0, l = value.length; i < l; i++) {
                         for (let v of value[i]) {
@@ -123,16 +122,52 @@ export class AutocompleteManager implements IDisposable {
                         }
                     }
                     return result.sort((a, b) => a.label.localeCompare(b.label))
-                }))
-                .subscribe(result => (this.items as Subject<RichtextAcItem[]>).next(result))
-        } else {
-            (this.items as Subject<RichtextAcItem[]>).next([])
-        }
+                })
+            )
+        }),
+        shareReplay(1)
+    )
+
+    public constructor(
+        @Inject(RICHTEXT_AUTO_COMPLETE) @Optional() protected readonly providers: RichtextAcProvider[],
+        @Inject(DomSanitizer) private readonly sanitizer: DomSanitizer,
+        @Inject(RichtextStream) public readonly stream: RichtextStream,
+        @Inject(ComponentManager) public readonly cmpManager: ComponentManager,
+        @Inject(ContentEditable) public readonly ce: ContentEditable) {
+        super()
+
+        stream.addElementHandler(RICHTEXT_AUTO_COMPLETE_EL, removeNode)
     }
 
-    public dispose() {
-        this.destruct.run()
-        delete (this as any).providers
+    public hasAcProviderFor(query: string): boolean {
+        for (const provider of this.providers) {
+            if (provider.trigger.test(query)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    public getProviders(query: string): RichtextAcProvider[] {
+        let result = []
+        for (const provider of this.providers) {
+            if (provider.trigger.test(query)) {
+                result.push(provider)
+            }
+        }
+        return result
+    }
+
+    public trigger(node: HTMLElement) {
+        this.trigger$.next([node, node.innerText])
     }
 }
 
+function distinctElComparator(a: [HTMLElement, string], b: [HTMLElement, string]) {
+    return a[0] === b[0]
+}
+
+
+function distinctTextComparator(a: [HTMLElement, string], b: [HTMLElement, string]) {
+    return a[1] === b[1]
+}

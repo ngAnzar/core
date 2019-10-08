@@ -1,7 +1,7 @@
 import { Inject, ElementRef } from "@angular/core"
 
 import * as rangy from "@rangy/core"
-import "core-js/features/object/assign"
+import { WrappedSelection } from "@rangy/core"
 
 
 export class RangyService {
@@ -15,8 +15,24 @@ export class RangyService {
         return rangy.getSelection(this.el)
     }
 
-    public getCaretPosition() {
+    public createRange() {
+        return rangy.createRangyRange()
+    }
 
+    public getSelectedNodes(selection: WrappedSelection): Node[] {
+        let result: Node[] = []
+
+        for (const range of selection.getAllRanges()) {
+            if (range.collapsed) {
+                result.push(range.startContainer)
+            } else {
+                // TODO:
+                throw new Error("NOT IMPLEMENTED")
+                // result = result.concat(range.getNodes([1, 3]))
+            }
+        }
+
+        return result
     }
 }
 

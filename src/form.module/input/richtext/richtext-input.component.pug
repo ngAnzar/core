@@ -12,11 +12,11 @@
 
 
 .nz-scroller.scroller(#scroller)
-  div(scrollable)
+  div(scrollable )
     .editor(
       #input="nzRichtext",
       [nzRichtext]="",
-      contenteditable="true",
       [attr.tabindex]="tabIndex",
-      on-cursorMove="_updateMenu()",
-      on-changed="_handleInput($event)")
+      contenteditable="true",
+      (cursorMove)="_updateMenu()",
+      (value)="_handleInput($event)")

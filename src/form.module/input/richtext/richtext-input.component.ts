@@ -8,7 +8,7 @@ import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../ab
 import { LayerService, LayerRef, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
 import { RichtextDirective } from "./richtext.directive"
 import { RichtextMenu } from "./richtext-menu.component"
-import { RichtextStream } from "./richtext-stream"
+import { RichtextStream } from "./core/richtext-stream"
 import { ScrollerComponent } from "../../../list.module"
 
 
@@ -17,7 +17,7 @@ import { ScrollerComponent } from "../../../list.module"
     templateUrl: "./richtext-input.component.pug",
     providers: INPUT_MODEL
 })
-export class RichtextInputComponent extends InputComponent<string> implements OnDestroy {
+export class RichtextInputComponent extends InputComponent<string> {
     @ViewChild("input", { static: true }) public readonly input: RichtextDirective
     @ViewChild("scroller", { read: ElementRef, static: true }) public readonly scrollerEl: ElementRef
 
@@ -71,7 +71,8 @@ export class RichtextInputComponent extends InputComponent<string> implements On
         this.input.value = normalizedValue
     }
 
-    protected _handleInput(value: string | null) {
+    protected _handleInput(stream: RichtextStream) {
+        let value = stream.contentTpl
         if (!value || value.length === 0) {
             value = null
         } else if (value === "<br>") {
@@ -82,16 +83,16 @@ export class RichtextInputComponent extends InputComponent<string> implements On
     }
 
     protected _handleFocus(event: FocusChangeEvent) {
-        const focused = event.current
-        this.menuVisible = !this.input.stream.state.autocomplete.enabled && (
-            focused !== null
-            || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
-        )
-        if (focused) {
-            this._startScrollHack()
-        } else {
-            this._stopScrollHack()
-        }
+        // const focused = event.current
+        // this.menuVisible = !this.input.stream.state.autocomplete.enabled && (
+        //     focused !== null
+        //     || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
+        // )
+        // if (focused) {
+        //     this._startScrollHack()
+        // } else {
+        //     this._stopScrollHack()
+        // }
     }
 
     protected _showMenu() {
@@ -124,11 +125,11 @@ export class RichtextInputComponent extends InputComponent<string> implements On
     }
 
     protected _updateMenu() {
-        let ac = this.input.stream.state.autocomplete
-        this.menuVisible = !ac.enabled
-        if (this._menuRef && this._menuRef.component) {
-            this._menuRef.component.instance.cdr.detectChanges()
-        }
+        // let ac = this.input.stream.state.autocomplete
+        // this.menuVisible = !ac.enabled
+        // if (this._menuRef && this._menuRef.component) {
+        //     this._menuRef.component.instance.cdr.detectChanges()
+        // }
     }
 
     private _startScrollHack() {

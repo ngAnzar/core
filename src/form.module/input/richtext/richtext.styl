@@ -29,12 +29,35 @@ nz-richtext-acpopup
   background: $theme.base.normal
 
 nz-richtext-autocomplete
-  display: inline-block
-  position: relative
-  background: alpha($theme.base.on.normal, 0.05)
-  border: 1px solid alpha($theme.base.on.normal, 0.1)
-  padding: 0 1px
+  display: inline
 
+  &[focused]
+    background-color: alpha($theme.info.normal, 0.1)
+    background-image: linear-gradient($theme.info.normal, $theme.info.normal)
+    background-position: 0% 100%
+    background-repeat: no-repeat
+    background-size: 100% 2px
 
 nz-richtext-portal
   display: inline
+
+  &[focused]
+    background-color: alpha($theme.info.normal, 0.1)
+    background-image: linear-gradient($theme.info.normal, $theme.info.normal)
+    background-position: 0% 100%
+    background-repeat: no-repeat
+    background-size: 100% 2px
+
+// .nz-richtext-highlight
+//   position: relative
+//   background: alpha($theme.primary.dark, 0.05)
+
+//   &:before
+//     content: " "
+//     overflow: hidden
+//     position: absolute
+//     height: 2px
+//     background: $theme.primary.normal
+//     left: 0px
+//     right: 0px
+//     bottom: -2px

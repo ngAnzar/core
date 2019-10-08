@@ -10,7 +10,7 @@ import { removeNode } from "../util"
 export type RichtextComponentParams = { [key: string]: string | number | boolean | Date }
 
 
-export interface RichtextComponent {
+export abstract class RichtextComponent {
 
 }
 

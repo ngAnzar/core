@@ -45,22 +45,19 @@ import { RadioComponent } from "./input/radio/radio.component"
 import { RadioGroupDirective } from "./input/radio/radio-group.directive"
 export { RadioComponent, RadioGroupDirective }
 
+
+import { RICHTEXT_AUTO_COMPLETE, RichtextAcItem, RichtextAcProvider, RichtextAcSession } from "./input/richtext/core/autocomplete"
+import { RICHTEXT_COMPONENT } from "./input/richtext/core/component-manager"
+import { RichtextComponent, RichtextComponentParams, RichtextComponentRef } from "./input/richtext/core/component-ref"
 import { RichtextInputComponent } from "./input/richtext/richtext-input.component"
-import {
-    RichtextService,
-    RICHTEXT_COMPONENT, RichtextStaticFactory,
-    RICHTEXT_AUTO_COMPLETE
-} from "./input/richtext/richtext.service"
-import { RichtextComponentRef, RichtextComponentParams } from "./input/richtext/richtext-component-ref"
-import { RichtextAcProvider, RichtextAcItem, RichtextAcComponent } from "./input/richtext/richtext-ac.component"
 import { RichtextDirective, RichtextEditableDirective } from "./input/richtext/richtext.directive"
 import { RichtextMenu } from "./input/richtext/richtext-menu.component"
-export { RichtextStream } from "./input/richtext/richtext-stream"
+import { AutocompleteComponent } from "./input/richtext/autocomplete.component"
+export { RichtextStream } from "./input/richtext/core/richtext-stream"
 export {
-    RichtextInputComponent, RichtextService, RichtextDirective,
-    RICHTEXT_COMPONENT, RichtextStaticFactory,
-    RICHTEXT_AUTO_COMPLETE, RichtextAcProvider, RichtextAcItem,
-    RichtextComponentRef, RichtextComponentParams
+    RichtextInputComponent, RichtextDirective,
+    RICHTEXT_AUTO_COMPLETE, RichtextAcItem, RichtextAcProvider, RichtextAcSession,
+    RICHTEXT_COMPONENT, RichtextComponent, RichtextComponentParams, RichtextComponentRef
 }
 
 import { SelectComponent } from "./input/select/select.component"
@@ -117,7 +114,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         RichtextDirective,
         RichtextEditableDirective,
         RichtextMenu,
-        RichtextAcComponent,
+        AutocompleteComponent,
 
         SelectComponent,
 
@@ -160,7 +157,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         RichtextDirective,
         RichtextEditableDirective,
         RichtextMenu,
-        RichtextAcComponent,
+        AutocompleteComponent,
 
         SelectComponent,
 
@@ -180,7 +177,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
     ],
     entryComponents: [
         RichtextMenu,
-        RichtextAcComponent,
+        AutocompleteComponent,
         DatePickerComponent,
         TimePickerComponent,
         DatetimePickerComponent,
