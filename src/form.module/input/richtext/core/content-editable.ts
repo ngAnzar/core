@@ -36,11 +36,12 @@ export class ContentEditable {
         if (name instanceof Command) {
             return this.exec(name.name, name.arg)
         }
-        this.el.focus()
-        // if (this.isFocused) {
-        this.doc.execCommand(name, false, arg)
-        // }
-        this.stream.emitChanges()
+
+        setTimeout(() => {
+            this.el.focus()
+            this.doc.execCommand(name, false, arg)
+            this.stream.emitChanges()
+        }, 0)
     }
 }
 

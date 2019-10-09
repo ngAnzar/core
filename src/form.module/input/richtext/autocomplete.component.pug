@@ -15,6 +15,6 @@
 
 .nz-scroller.scroller(fxFlex="grow")
   .nz-list(fxLayout="column", fxLayoutAlign="start stretch", scrollable)
-    .nz-list-item.item(*ngFor="let item of items | async; let i=index", [selectable]="item", [selectionIndex]="i")
+    .nz-list-item.item(*ngFor="let item of items; let i=index", [selectable]="item", [selectionIndex]="i", (mousedown)="$event.preventDefault()", (touchstart)="$event.preventDefault()")
       i.icon([style.background-image]="item.iconSafe")
       span {{ item.label }}

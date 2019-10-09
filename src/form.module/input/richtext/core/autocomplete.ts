@@ -1,7 +1,7 @@
 import { Component, Inject, InjectionToken, Optional } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
-import { Observable, Subject, forkJoin, EMPTY } from "rxjs"
-import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap } from "rxjs/operators"
+import { Observable, Subject, forkJoin, EMPTY, merge, zip, of } from "rxjs"
+import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap, filter, tap } from "rxjs/operators"
 
 import { Destructible } from "../../../../util"
 import { Model, Field } from "../../../../data.module"
@@ -70,41 +70,69 @@ export abstract class RichtextAcProvider {
 }
 
 
+interface AcTrigger {
+    type: "query" | "terminate",
+    anchor?: HTMLElement,
+    text?: string
+}
+
 
 export class AutocompleteManager extends Destructible {
-    private readonly trigger$: Subject<[HTMLElement, string]> = this.destruct.subject(new Subject())
+    private readonly trigger$: Subject<AcTrigger> = this.destruct.subject(new Subject())
+    private readonly _trigger$ = this.trigger$.pipe(shareReplay(1))
 
-    public readonly anchor$ = this.destruct.subscription(this.trigger$).pipe(
+    public readonly anchor$ = this._trigger$.pipe(
+        debounceTime(20),
         distinctUntilChanged(distinctElComparator),
-        map(val => val[0]),
+        map(v => v.anchor),
         shareReplay(1)
     )
 
-    public readonly items$ = this.destruct.subscription(this.trigger$).pipe(
-        debounceTime(250),
+    public readonly providers$ = this._trigger$.pipe(
+        debounceTime(20),
+        filter(val => val.type === "query"),
         distinctUntilChanged(distinctTextComparator),
-        switchMap(val => {
-            const [el, query] = val
-            const providers = this.getProviders(query)
-            const terminated = providers.filter(p => p.terminate && p.terminate.test(query))
+        map(val => this.getProviders(val.text)),
+        shareReplay(1)
+    )
+
+    private readonly _providers$ = merge(this._trigger$, this.providers$).pipe(
+        switchMap(_ => zip(this._trigger$, this.providers$)),
+        map(([trigger, providers]) => {
+            if (!trigger.anchor) {
+                return []
+            }
+
+            const terminated = trigger.type === "terminate"
+                ? providers
+                : providers.filter(p => p.terminate && p.terminate.test(trigger.text))
 
             if (terminated.length) {
-                const sess = new RichtextAcSession(this.stream, el, this.cmpManager, this.ce)
+                const sess = new RichtextAcSession(this.stream, trigger.anchor, this.cmpManager, this.ce)
                 let isTerminated = false
-
                 for (const p of terminated) {
-                    isTerminated = isTerminated || (p.terminate && p.onTerminate(sess, query))
-                    let idx = providers.indexOf(p)
-                    if (idx !== -1) {
-                        providers.splice(idx, 1)
-                    }
+                    isTerminated = isTerminated || p.onTerminate(sess, trigger.text)
                 }
 
                 if (isTerminated) {
-                    return EMPTY
+                    return []
                 }
             }
 
+            return trigger.type === "terminate" ? [] : providers
+        }),
+        shareReplay(1)
+    )
+
+    public readonly items$ = merge(this._trigger$.pipe(distinctUntilChanged(distinctTextComparator)), this._providers$).pipe(
+        debounceTime(250),
+        switchMap(_ => zip(this._trigger$, this._providers$).pipe(take(1))),
+        switchMap(([trigger, providers]) => {
+            if (trigger.type === "terminate" || providers.length === 0) {
+                return of([] as RichtextAcItem[])
+            }
+
+            const query = trigger.text
             const queryFrom = providers.filter(p => p.minChars <= query.length)
 
             return forkJoin(queryFrom.map(p => p.query(query))).pipe(
@@ -159,15 +187,23 @@ export class AutocompleteManager extends Destructible {
     }
 
     public trigger(node: HTMLElement) {
-        this.trigger$.next([node, node.innerText])
+        this.trigger$.next({ type: "query", anchor: node, text: node.innerText })
+    }
+
+    public terminate(node?: HTMLElement) {
+        if (node) {
+            this.trigger$.next({ type: "terminate", anchor: node, text: node.innerText })
+        } else {
+            this.trigger$.next({ type: "terminate" })
+        }
     }
 }
 
-function distinctElComparator(a: [HTMLElement, string], b: [HTMLElement, string]) {
-    return a[0] === b[0]
+function distinctElComparator(a: AcTrigger, b: AcTrigger) {
+    return a.anchor === b.anchor
 }
 
 
-function distinctTextComparator(a: [HTMLElement, string], b: [HTMLElement, string]) {
-    return a[1] === b[1]
+function distinctTextComparator(a: AcTrigger, b: AcTrigger) {
+    return a.text === b.text
 }

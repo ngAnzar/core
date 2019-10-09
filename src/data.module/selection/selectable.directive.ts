@@ -13,7 +13,7 @@ import { SelectionModel, ISelectable, SelectOrigin } from "./abstract"
 export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy {
     @Input("selectable")
     public set model(val: T) {
-        if (!Model.isEq(this._model, val)) {
+        if (this._model !== val) {
             let old = this._model
             this._model = val
             this._selected = val ? this.selection.getSelectOrigin(val.pk) : null

@@ -152,7 +152,31 @@ export class RichtextEditableDirective extends Destructible {
         this.emitCursorMove()
     }
 
+    @HostListener("blur", ["$event"])
+    public onBlur(event: Event) {
+        const acEls = this.el.nativeElement.querySelectorAll(RICHTEXT_AUTO_COMPLETE_EL.selector)
+        if (acEls.length === 1) {
+            this.acManager.terminate(acEls[0] as HTMLElement)
+        } else if (acEls.length !== 0) {
+            throw new Error("Something went worng...")
+        }
+    }
+
     private onMutation(mutations: MutationRecord[]) {
+        let nodes: NodeList
+        let node: Node
+
+        for (const record of mutations) {
+            nodes = record.removedNodes
+            for (let i = 0, l = nodes.length; i < l; i++) {
+                node = nodes[i]
+
+                if (RICHTEXT_AUTO_COMPLETE_EL.testNode(node)) {
+                    this.acManager.terminate()
+                }
+            }
+        }
+
         // remove empty <div><br></div>
         const el = this.el.nativeElement
         if (el.childNodes.length === 1) {

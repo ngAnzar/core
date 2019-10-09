@@ -186,6 +186,10 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                 this.selection.setFocused(selectable.model.pk, origin)
                 break
         }
+
+        if (mode !== SelectMode.FOCUS) {
+            this._keyboardFocused = -1
+        }
     }
 
     protected determineMode(ctrl: boolean, shift: boolean, isMouse: boolean): SelectMode {

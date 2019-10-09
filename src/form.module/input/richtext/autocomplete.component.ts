@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Inject } from "@angular/core"
+import { Component, ChangeDetectionStrategy, Inject, ChangeDetectorRef } from "@angular/core"
 
 import { Destructible } from "../../../util"
 import { ComponentLayerRef, DropdownLayer, LayerService } from "../../../layer.module"
@@ -27,11 +27,16 @@ export class AutocompletePopup extends Destructible {
 
         this.destruct.subscription(acManager.anchor$).subscribe(anchor => {
             this._anchor = anchor
+            if (!anchor) {
+                this.hide()
+            }
         })
 
         this.destruct.subscription(acManager.items$).subscribe(items => {
             if (items.length) {
                 this.show()
+                this._layerRef.component.instance.items = items
+                this._layerRef.component.instance.cdr.detectChanges()
             } else {
                 this.hide()
             }
@@ -69,8 +74,8 @@ export class AutocompletePopup extends Destructible {
                     align: "top left",
                 }
             })
+
             this._layerRef = this.layerSvc.createFromComponent(AutocompleteComponent, behavior, null, [
-                { provide: AutocompleteManager, useValue: this.acManager },
                 { provide: SelectionModel, useValue: this.selection },
             ])
             this._layerRef.show()
@@ -82,6 +87,7 @@ export class AutocompletePopup extends Destructible {
             this._layerRef.hide()
             delete this._layerRef
         }
+        this.selection.clear()
     }
 }
 
@@ -92,10 +98,10 @@ export class AutocompletePopup extends Destructible {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AutocompleteComponent {
-    public readonly items = this.acManager.items$
+    public items: RichtextAcItem[] = []
 
     public constructor(
         @Inject(SelectionModel) protected readonly selection: ISelectionModel<RichtextAcItem>,
-        @Inject(AutocompleteManager) private readonly acManager: AutocompleteManager) {
+        @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef) {
     }
 }
