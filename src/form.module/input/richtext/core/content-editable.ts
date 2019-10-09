@@ -1,6 +1,9 @@
 import { Inject, ElementRef } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 
+import { RichtextStream } from "./richtext-stream"
+
+
 export class Command {
     public constructor(
         public readonly name: string,
@@ -20,7 +23,8 @@ export class ContentEditable {
 
     public constructor(
         @Inject(ElementRef) el: ElementRef<HTMLElement>,
-        @Inject(DOCUMENT) private readonly doc: Document) {
+        @Inject(DOCUMENT) private readonly doc: Document,
+        @Inject(RichtextStream) private readonly stream: RichtextStream) {
         this.el = el.nativeElement
         doc.execCommand("defaultParagraphSeparator", false, this.defaultParagraph)
     }
@@ -35,6 +39,7 @@ export class ContentEditable {
         if (this.isFocused) {
             this.doc.execCommand(name, false, arg)
         }
+        this.stream.emitChanges()
     }
 }
 

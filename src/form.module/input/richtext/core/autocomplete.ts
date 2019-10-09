@@ -54,7 +54,7 @@ export abstract class RichtextAcProvider {
 
     protected replaceWithComponent(sess: RichtextAcSession, type: string, params: { [key: string]: any }) {
         const { anchor, cmpManager, content } = sess
-        const portalEl = cmpManager.createPortalEl(anchor.id, type, params)
+        const portalEl = cmpManager.createPortalEl(type, params)
 
         anchor.parentNode.insertBefore(portalEl, anchor)
 

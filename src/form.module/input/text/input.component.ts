@@ -36,7 +36,7 @@ export class TextFieldComponent extends InputComponent<string> {
     template: "",
     providers: INPUT_MODEL
 })
-export class TextareaComponent extends InputComponent<string> implements OnInit {
+export class TextareaComponent extends InputComponent<string> {
     public constructor(
         @Inject(InputModel) model: InputModel<string>,
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLTextAreaElement>) {
@@ -56,6 +56,7 @@ export class TextareaComponent extends InputComponent<string> implements OnInit 
     }
 
     public ngOnInit() {
+        super.ngOnInit()
         autosize(this.el.nativeElement)
         this.destruct.any(() => autosize.destroy(this.el.nativeElement))
     }

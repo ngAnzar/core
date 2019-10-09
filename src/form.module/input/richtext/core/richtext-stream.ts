@@ -126,6 +126,7 @@ export class RichtextStream extends Destructible {
     }
 
     public emitChanges() {
+        this.updatePosition();
         (this.changes as Subject<RichtextStream>).next(this)
     }
 }

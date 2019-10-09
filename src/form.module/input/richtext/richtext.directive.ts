@@ -198,7 +198,6 @@ export class RichtextEditableDirective extends Destructible {
     }
 
     private emitCursorMove() {
-        (this.cursorMove as Subject<any>).next()
         this.stream.updatePosition()
         if (this.scroller) {
             const node = this.stream.getNodeUnerCaret()
@@ -206,6 +205,7 @@ export class RichtextEditableDirective extends Destructible {
                 this.scroller.scrollIntoViewport(node)
             }
         }
+        (this.cursorMove as Subject<any>).next()
     }
 }
 

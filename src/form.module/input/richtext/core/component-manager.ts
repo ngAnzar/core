@@ -44,10 +44,10 @@ export class ComponentManager implements IDisposable {
         return null
     }
 
-    public createPortalEl(id: string, type: string, params: RichtextComponentParams): HTMLElement {
+    public createPortalEl(type: string, params: RichtextComponentParams): HTMLElement {
         let node = RICHTEXT_CMP_PORTAL_EL.create()
         node.setAttribute("contenteditable", "false")
-        node.setAttribute("id", id)
+        node.setAttribute("id", uuidv4())
         node.setAttribute("component", type)
         node.setAttribute("spellcheck", "false")
         node.setAttribute("params", this.encodeParams(params))
@@ -67,8 +67,8 @@ export class ComponentManager implements IDisposable {
         } else {
             const portalEl = id
             id = portalEl.getAttribute("id")
-            if (!id) {
-                portalEl.setAttribute("id", id = uuidv4())
+            if (!id || !id.length) {
+                throw new Error("Missing portal element id")
             }
             if (this._instances[id]) {
                 return this._instances[id]
@@ -95,6 +95,7 @@ export class ComponentManager implements IDisposable {
             tap(result => {
                 if (result) {
                     removeNode(portalEl)
+                    this.stream.emitChanges()
                 } else {
                     portalEl.removeAttribute("focused")
                 }
@@ -125,7 +126,8 @@ export class ComponentManager implements IDisposable {
         ref.outlet = new DomPortalOutlet(portalEl, this.cfr, this.appRef, injector)
         ref.portal = new ComponentPortal(cmpType, this.vcr, injector, this.cfr)
         ref.component = ref.outlet.attachComponentPortal(ref.portal)
-        ref.component.changeDetectorRef.markForCheck()
+        ref.component.changeDetectorRef.detectChanges()
+        this.stream.emitChanges()
         return ref as any
     }
 
