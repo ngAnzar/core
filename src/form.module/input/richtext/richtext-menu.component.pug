@@ -2,30 +2,30 @@
 
 div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="4px")
   button.nz-button(
-    [color]="stream.state.bold.enabled ? 'dark-base' : 'base'",
+    [color]="btnState.bold ? 'dark-base' : 'base'",
     variant="tiny filled icon",
     nzQtip="Vastag", nzQtipAlign="top center",
-    on-tap="stream.command().bold().exec()")
+    (tap)="exec('bold')")
     i.nz-icon(class=icon("mdi/format-bold", 20))
 
   button.nz-button(
-    [color]="stream.state.italic.enabled ? 'dark-base' : 'base'",
+    [color]="btnState.italic ? 'dark-base' : 'base'",
     variant="tiny filled icon",
     nzQtip="Dőlt", nzQtipAlign="top center",
-    on-tap="stream.command().italic().exec()")
+    (tap)="exec('italic')")
     i.nz-icon(class=icon("mdi/format-italic", 20))
 
   button.nz-button(
-    [color]="stream.state.underline.enabled ? 'dark-base' : 'base'",
+    [color]="btnState.underline ? 'dark-base' : 'base'",
     variant="tiny filled icon",
     nzQtip="Aláhúzott", nzQtipAlign="top center",
-    on-tap="stream.command().underline().exec()")
+    (tap)="exec('underline')")
     i.nz-icon(class=icon("mdi/format-underline", 20))
 
   button.nz-button(
-    [color]="stream.state.strikeThrough.enabled ? 'dark-base' : 'base'",
+    [color]="btnState.strikeThrough ? 'dark-base' : 'base'",
     variant="tiny filled icon",
     nzQtip="Áthúzott", nzQtipAlign="top center",
-    on-tap="stream.command().strikeThrough().exec()")
+    (tap)="exec('strikeThrough')")
     i.nz-icon(class=icon("mdi/format-strikethrough", 20))
 

@@ -15,6 +15,7 @@ export type CleanupElementFn = (el: HTMLElement) => void
 export class RichtextStream extends Destructible {
     public readonly el: HTMLElement
     public readonly changes: Observable<RichtextStream> = this.destruct.subject(new Subject<RichtextStream>())
+    public readonly cursorMove: Observable<any> = this.destruct.subject(new Subject())
 
     public set content(val: string) {
         if (this.el.innerHTML !== val) {
@@ -55,9 +56,16 @@ export class RichtextStream extends Destructible {
     }
 
     public getState(query: StateQuery, refresh: boolean = false): RichtextState {
-        if (refresh) {
-            this._nodesForSelection = this.rangy.getSelectedNodes(this.rangy.getSelection())
-        } else if (!this._nodesForSelection) {
+        if (refresh || !this.selection) {
+            (this as { selection: WrappedSelection }).selection = this.rangy.getSelection()
+            delete this._nodesForSelection
+        }
+
+        if (!this.selection) {
+            return null
+        }
+
+        if (!this._nodesForSelection) {
             this._nodesForSelection = this.rangy.getSelectedNodes(this.selection)
         }
 
@@ -122,7 +130,8 @@ export class RichtextStream extends Destructible {
 
     public updatePosition() {
         (this as { selection: WrappedSelection }).selection = this.rangy.getSelection()
-        delete this._nodesForSelection
+        delete this._nodesForSelection;
+        (this.cursorMove as Subject<any>).next()
     }
 
     public emitChanges() {

@@ -10,7 +10,8 @@ export interface IDisposable {
 
 export class Destruct {
     public readonly on: Observable<void> = new Subject<void>().pipe(share())
-    public get done(): boolean { return (this.on as Subject<void>).closed }
+    // public get done(): boolean { return (this.on as Subject<void>).closed }
+    public get done(): boolean { return this.on != null }
 
     public constructor(fn?: () => void) {
         if (fn) {
@@ -49,6 +50,7 @@ export class Destruct {
         if (!this.done) {
             (this.on as Subject<void>).next();
             (this.on as Subject<void>).complete()
+            delete (this as any).on
         }
     }
 }
@@ -58,7 +60,10 @@ export abstract class Destructible implements OnDestroy, IDisposable {
     public readonly destruct = new Destruct()
 
     public ngOnDestroy() {
-        this.destruct.run()
+        if (this.destruct) {
+            this.destruct.run()
+            delete (this as any).destruct
+        }
     }
 
     public dispose() {

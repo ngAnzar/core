@@ -26,9 +26,7 @@ export class RangyService {
             if (range.collapsed) {
                 result.push(range.startContainer)
             } else {
-                // TODO:
-                throw new Error("NOT IMPLEMENTED")
-                // result = result.concat(range.getNodes([1, 3]))
+                result = result.concat(range.getNodes([1, 3]))
             }
         }
 

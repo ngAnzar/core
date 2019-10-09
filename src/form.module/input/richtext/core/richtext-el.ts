@@ -60,7 +60,9 @@ export class RichtextFormatElement extends RichtextElement {
     }
 
     public getState(stream: RichtextStream, nodes: Node[]): RichtextState | null {
+        if (document.queryCommandState(this.commandName)) {
+            return new RichtextState(this, document.queryCommandValue(this.commandName))
+        }
         return null
-        // return !!document.queryCommandState(this.commandName)
     }
 }

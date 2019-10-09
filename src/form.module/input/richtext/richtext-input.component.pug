@@ -14,9 +14,9 @@
 .nz-scroller.scroller(#scroller)
   div(scrollable )
     .editor(
-      #input="nzRichtext",
-      [nzRichtext]="",
+      #input,
+      nzRichtext,
+      nzRichtextMenu,
       [attr.tabindex]="tabIndex",
       contenteditable="true",
-      (cursorMove)="_updateMenu()",
       (value)="_handleInput($event)")

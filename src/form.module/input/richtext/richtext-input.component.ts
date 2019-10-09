@@ -1,15 +1,11 @@
-import { Component, Inject, ViewChild, Optional, ElementRef, NgZone, OnDestroy, Input, HostBinding } from "@angular/core"
-import { NgControl, NgModel } from "@angular/forms"
-import { Observable } from "rxjs"
+import { Component, Inject, ViewChild, ElementRef, NgZone, HostBinding } from "@angular/core"
 
 
-import { Destruct } from "../../../util"
 import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
-import { LayerService, LayerRef, ComponentLayerRef, DropdownLayer } from "../../../layer.module"
 import { RichtextDirective } from "./richtext.directive"
-import { RichtextMenu } from "./richtext-menu.component"
+import { RichtextMenuDirective } from "./richtext-menu.component"
 import { RichtextStream } from "./core/richtext-stream"
-import { ScrollerComponent } from "../../../list.module"
+import { RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
 
 
 @Component({
@@ -18,31 +14,20 @@ import { ScrollerComponent } from "../../../list.module"
     providers: INPUT_MODEL
 })
 export class RichtextInputComponent extends InputComponent<string> {
-    @ViewChild("input", { static: true }) public readonly input: RichtextDirective
+    @ViewChild("input", { read: RichtextDirective, static: true }) public readonly input: RichtextDirective
+    @ViewChild("input", { read: RichtextMenuDirective, static: true }) public readonly menu: RichtextMenuDirective
     @ViewChild("scroller", { read: ElementRef, static: true }) public readonly scrollerEl: ElementRef
-
-
-    public set menuVisible(val: boolean) {
-        if (this._menuVisible !== val) {
-            this._menuVisible = val
-            this[val ? "_showMenu" : "_hideMenu"]()
-        }
-    }
-    public get menuVisible(): boolean { return this._menuVisible }
-    private _menuVisible: boolean
 
     @HostBinding("attr.tabindex")
     public readonly tabIndexAttr = -1
 
-    private _menuRef: ComponentLayerRef<RichtextMenu>
     private _checkScrollRaf: any
     private _scrollHack: () => void
 
     public constructor(
         @Inject(InputModel) model: InputModel<string>,
-        @Inject(ElementRef) protected readonly el: ElementRef,
-        @Inject(LayerService) protected readonly layerSvc: LayerService,
-        @Inject(NgZone) protected readonly zone: NgZone) {
+        @Inject(ElementRef) el: ElementRef,
+        @Inject(NgZone) private readonly zone: NgZone) {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
@@ -75,61 +60,24 @@ export class RichtextInputComponent extends InputComponent<string> {
         let value = stream.contentTpl
         if (!value || value.length === 0) {
             value = null
-        } else if (value === "<br>") {
-            value = null
-            this.input.value = ""
         }
         this.model.emitValue(value)
     }
 
     protected _handleFocus(event: FocusChangeEvent) {
-        // const focused = event.current
-        // this.menuVisible = !this.input.stream.state.autocomplete.enabled && (
-        //     focused !== null
-        //     || (this._menuRef && this._menuRef.component && this._menuRef.component.instance.mouseIsOver)
-        // )
-        // if (focused) {
-        //     this._startScrollHack()
-        // } else {
-        //     this._stopScrollHack()
-        // }
-    }
+        const focused = event.current
 
-    protected _showMenu() {
-        if (!this._menuRef || !this._menuRef.isVisible) {
-            let behavior = new DropdownLayer({
-                backdrop: null,
-                elevation: 4,
-                rounded: 2,
-                position: {
-                    anchor: {
-                        ref: this.el.nativeElement,
-                        align: "top left",
-                        margin: 10
-                    },
-                    align: "bottom left"
-                }
-            })
-            this._menuRef = this.layerSvc.createFromComponent(RichtextMenu, behavior, null, [
-                { provide: RichtextStream, useValue: this.input.stream }
-            ])
-            this._menuRef.show()
+        if (focused) {
+            this._startScrollHack()
+            if (!this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
+                this.menu.show()
+            }
+        } else {
+            this._stopScrollHack()
+            if (!this.menu.isMouseOver) {
+                this.menu.hide()
+            }
         }
-    }
-
-    protected _hideMenu() {
-        if (this._menuRef) {
-            this._menuRef.hide()
-            delete this._menuRef
-        }
-    }
-
-    protected _updateMenu() {
-        // let ac = this.input.stream.state.autocomplete
-        // this.menuVisible = !ac.enabled
-        // if (this._menuRef && this._menuRef.component) {
-        //     this._menuRef.component.instance.cdr.detectChanges()
-        // }
     }
 
     private _startScrollHack() {
@@ -147,7 +95,6 @@ export class RichtextInputComponent extends InputComponent<string> {
 
     public ngOnDestroy() {
         this._stopScrollHack()
-        this._hideMenu()
         return super.ngOnDestroy()
     }
 }

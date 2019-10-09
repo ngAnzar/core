@@ -51,7 +51,7 @@ import { RICHTEXT_COMPONENT } from "./input/richtext/core/component-manager"
 import { RichtextComponent, RichtextComponentParams, RichtextComponentRef } from "./input/richtext/core/component-ref"
 import { RichtextInputComponent } from "./input/richtext/richtext-input.component"
 import { RichtextDirective, RichtextEditableDirective } from "./input/richtext/richtext.directive"
-import { RichtextMenu } from "./input/richtext/richtext-menu.component"
+import { RichtextMenuComponent, RichtextMenuDirective } from "./input/richtext/richtext-menu.component"
 import { AutocompleteComponent } from "./input/richtext/autocomplete.component"
 export { RichtextStream } from "./input/richtext/core/richtext-stream"
 export {
@@ -113,7 +113,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         RichtextInputComponent,
         RichtextDirective,
         RichtextEditableDirective,
-        RichtextMenu,
+        RichtextMenuComponent,
+        RichtextMenuDirective,
         AutocompleteComponent,
 
         SelectComponent,
@@ -156,7 +157,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         RichtextInputComponent,
         RichtextDirective,
         RichtextEditableDirective,
-        RichtextMenu,
+        RichtextMenuComponent,
+        RichtextMenuDirective,
         AutocompleteComponent,
 
         SelectComponent,
@@ -176,7 +178,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         }
     ],
     entryComponents: [
-        RichtextMenu,
+        RichtextMenuComponent,
         AutocompleteComponent,
         DatePickerComponent,
         TimePickerComponent,

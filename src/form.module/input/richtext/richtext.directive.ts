@@ -86,7 +86,7 @@ export class RichtextDirective extends Destructible {
     ]
 })
 export class RichtextEditableDirective extends Destructible {
-    @Output() public readonly cursorMove: Observable<any> = new Subject()
+    @Output() public readonly cursorMove = this.stream.cursorMove
 
     public constructor(
         @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
@@ -205,7 +205,6 @@ export class RichtextEditableDirective extends Destructible {
                 this.scroller.scrollIntoViewport(node)
             }
         }
-        (this.cursorMove as Subject<any>).next()
     }
 }
 
