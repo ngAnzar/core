@@ -71,14 +71,6 @@ export class RichtextStream extends Destructible {
         return null
     }
 
-    public getInfoBeforeCaret() {
-        return this._selection.getInfoBeforeCaret()
-    }
-
-    public getInfoAfterCaret() {
-        return this._selection.getInfoAfterCaret()
-    }
-
     public updatePosition() {
         (this.cursorMove as Subject<any>).next()
     }

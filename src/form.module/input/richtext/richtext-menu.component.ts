@@ -1,4 +1,5 @@
-import { Directive, Component, Inject, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core"
+import { Directive, Component, Inject, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnInit } from "@angular/core"
+import { startWith } from "rxjs/operators"
 
 
 import { Destructible } from "../../../util"
@@ -6,6 +7,7 @@ import { LayerService, LayerRef, DropdownLayer, ComponentLayerRef } from "../../
 import { RichtextStream } from "./core/richtext-stream"
 import { ContentEditable } from "./core/content-editable"
 import { RichtextFormatElement } from "./core/richtext-el"
+import { RICHTEXT_CMP_PORTAL_EL } from "./core/component-manager"
 
 
 const BOLD_EL = new RichtextFormatElement("b", "bold")
@@ -91,7 +93,7 @@ export class RichtextMenuDirective extends Destructible {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: "./richtext-menu.component.pug"
 })
-export class RichtextMenuComponent extends Destructible {
+export class RichtextMenuComponent extends Destructible implements OnInit {
     public readonly mouseIsOver: boolean = false
     public readonly btnState: { [key: string]: boolean } = {}
 
@@ -100,11 +102,21 @@ export class RichtextMenuComponent extends Destructible {
         @Inject(ContentEditable) protected readonly ce: ContentEditable,
         @Inject(ChangeDetectorRef) public readonly cdr: ChangeDetectorRef) {
         super()
+    }
 
-        this.destruct.subscription(stream.cursorMove).subscribe(_ => {
-            for (const el of ELEMENTS) {
-                this.btnState[el.commandName] = !!this.stream.getState(el)
+    public ngOnInit() {
+        this.destruct.subscription(this.stream.cursorMove).pipe(startWith(null)).subscribe(_ => {
+            let inComponent = this.stream.getState(RICHTEXT_CMP_PORTAL_EL)
+            if (!inComponent) {
+                for (const el of ELEMENTS) {
+                    this.btnState[el.commandName] = !!this.stream.getState(el)
+                }
+            } else {
+                for (const el of ELEMENTS) {
+                    this.btnState[el.commandName] = false
+                }
             }
+
             this.cdr.detectChanges()
         })
     }

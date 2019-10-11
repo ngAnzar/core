@@ -1,7 +1,7 @@
 import { Inject, ElementRef } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 
-import { getDeepestNode, getParentsUntil, matchTagName } from "../util"
+import { getDeepestNode, getParentsUntil, matchTagName, getSiblingInside, findUpwards } from "../util"
 
 
 export class SelectionService {
@@ -32,23 +32,19 @@ export class SelectionService {
         return result
     }
 
+    public get caret() {
+        return Caret.create(this.current, this.root)
+    }
+
     public getRangeNodes(range: Range): Node[] {
         return getRangeNodes(range)
-    }
-
-    public getInfoBeforeCaret() {
-        return CaretSibling.create(this.current, this.root, -1)
-    }
-
-    public getInfoAfterCaret() {
-        return CaretSibling.create(this.current, this.root, 1)
     }
 
     public moveCaretBefore(node: Node) {
         const range = this.createRange()
         range.setStartBefore(node)
         range.setEndBefore(node)
-        range.collapse()
+        range.collapse(true)
         this.current.empty()
         this.current.addRange(range)
     }
@@ -57,7 +53,7 @@ export class SelectionService {
         const range = this.createRange()
         range.setStartAfter(node)
         range.setEndAfter(node)
-        range.collapse()
+        range.collapse(false)
         this.current.empty()
         this.current.addRange(range)
     }
@@ -124,17 +120,9 @@ function getRangeNodes(range: Range): Node[] {
     return result
 }
 
-function rangeNode(container: Node, offset: number): Node {
-    if (container.nodeType === 1) {
-        return container.childNodes[Math.max(0, Math.min(container.childNodes.length - 1, offset))]
-    } else {
-        return container
-    }
-}
 
-
-export class CaretSibling {
-    public static create(selection: Selection, root: Node, direction: -1 | 1) {
+export class Caret {
+    public static create(selection: Selection, root: Node): Caret {
         if (selection.type !== "Caret") {
             return null
         }
@@ -144,103 +132,102 @@ export class CaretSibling {
         }
 
         const container = range.commonAncestorContainer
-        const startNode = rangeNode(range.startContainer, range.startOffset)
-        const endNode = rangeNode(range.endContainer, range.endOffset)
 
-        if (!startNode) {
-            return null
-        }
+        let inside: CaretNode
+        let before: CaretNode = null
+        let after: CaretNode = null
 
-        console.log("NFO", range, (container as HTMLElement).children, (container as HTMLElement).childNodes, { container, startNode, endNode })
-
-        let resultNode: Node
-        let char: string
-        let offset: number
-        if (direction === -1) {
-            if (container.nodeType === 3) {
-                if (range.startOffset !== 0) {
-                    return new CaretSibling("before", startNode, startNode.nodeValue[range.startOffset], range.startOffset, root)
-                } else {
-                    resultNode = getBlock(startNode, root, "previousSibling")
-                }
-            } else if (startNode.nodeType === 3 || matchTagName(startNode, "br")) {
-                resultNode = getBlock(startNode, root, "previousSibling")
-            } else {
-                resultNode = startNode
-            }
-
-            if (!resultNode) {
-                return null
-            }
-
-            resultNode = getDeepestNode(resultNode, "lastChild")
-            if (resultNode.nodeValue) {
-                offset = resultNode.nodeValue.length - 1
-                char = resultNode.nodeValue[offset]
-            } else {
-                offset = NaN
-                char = null
+        if (container.nodeType === 3) {
+            inside = CaretNode.create("inside", container, range.startOffset, root)
+            if (range.startOffset === 0) {
+                after = CaretNode.create("after", container, range.startOffset, root)
+                before = CaretNode.create("before", getSiblingInside(container, root, "previousSibling"), range.startOffset, root)
+            } else if (range.startOffset === container.nodeValue.length) {
+                before = inside
+                after = CaretNode.create("after", getSiblingInside(container, root, "nextSibling"), range.startOffset, root)
             }
         } else {
-            if (endNode.nodeType === 3) {
-                let value = endNode.nodeValue
-                if (value.length === range.endOffset) {
-                    resultNode = getBlock(endNode, root, "nextSibling")
-                } else {
-                    return new CaretSibling("after", endNode, value[range.endOffset], range.endOffset, root)
-                }
-            } else {
-                resultNode = endNode
-            }
-
-            if (!resultNode) {
+            const startNode = rangeNode(range.startContainer, range.startOffset)
+            if (!startNode) {
                 return null
             }
 
-            resultNode = getDeepestNode(resultNode, "firstChild")
-            if (resultNode.nodeValue) {
-                offset = 0
-                char = resultNode.nodeValue[offset]
+            inside = CaretNode.create("inside", startNode, range.startOffset, root)
+
+            if (startNode.nodeType === 3) {
+                before = CaretNode.create("before", getSiblingInside(startNode, root, "previousSibling"), range.startOffset, root)
+                after = inside
             } else {
-                offset = NaN
-                char = null
+                if (range.startOffset === 0 || container.childNodes.length - 1 === range.startOffset) {
+                    before = CaretNode.create("before", getSiblingInside(startNode, root, "previousSibling"), range.startOffset, root)
+                    after = inside
+                }
             }
         }
 
-        return new CaretSibling(direction === -1 ? "before" : "after", resultNode, char, offset, root)
+        return new Caret(inside, before, after)
     }
 
     public constructor(
-        public readonly type: "before" | "after",
+        public inside: CaretNode,
+        public before: CaretNode | null,
+        public after: CaretNode | null) {
+    }
+}
+
+
+export type CaretNodeType = "before" | "after" | "inside"
+
+
+export class CaretNode {
+    public static create(type: CaretNodeType, node: Node, offset: number, root: Node) {
+        if (!node) {
+            return null
+        }
+
+        if (node.nodeType === 1) {
+            let deepest = getDeepestNode(node, type === "before" ? "lastChild" : "firstChild")
+            if (deepest !== node) {
+                offset = type === "before" ? deepest.parentNode.childNodes.length - 1 : 0
+            }
+            node = deepest
+        } else if (node.nodeType === 3 && type !== "inside") {
+            offset = node.nodeValue
+                ? type === "before" ? node.nodeValue.length : 0
+                : NaN
+        }
+        return new CaretNode(type, node, offset, root)
+    }
+
+    public get character(): string | null {
+        return !isNaN(this.offset) && this.node.nodeValue ? this.node.nodeValue[this.offset] : null
+    }
+
+    public constructor(
+        public readonly type: CaretNodeType,
         public readonly node: Node,
-        public readonly character: string,
         public readonly offset: number,
-        public readonly root: Node) {
+        public readonly root: Node
+    ) {
+
     }
 
-    public get parents() {
-        return getParentsUntil(this.node, this.root)
+    public findNode(filter: (node: HTMLElement) => boolean): HTMLElement {
+        return findUpwards(this.node, this.root, filter)
     }
 }
 
 
-function getBlock(fromNode: Node, container: Node, direction: "previousSibling" | "nextSibling"): Node | null {
-    let prev: Node
-
-    while (fromNode && fromNode !== container) {
-        prev = fromNode[direction]
-        while (prev && prev.nodeType === 3 && !prev.nodeValue) {
-            prev = prev[direction]
-        }
-        if (prev) {
-            return prev
-        } else {
-            fromNode = fromNode.parentNode
-        }
+function rangeNode(container: Node, offset: number): Node {
+    if (container.nodeType === 1) {
+        return container.childNodes[Math.max(0, Math.min(container.childNodes.length - 1, offset))]
+    } else {
+        return container
     }
-
-    return null
 }
+
+
+
 
 function nodeWalker(node: Node, cb: (path: Node[], childIndex: number) => boolean) {
     let xx = node.parentNode.children

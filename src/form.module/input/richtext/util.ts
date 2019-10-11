@@ -42,3 +42,33 @@ export function getDeepestNode(start: Node, direction: "firstChild" | "lastChild
     }
     return start
 }
+
+
+export function getSiblingInside(fromNode: Node, container: Node, direction: "previousSibling" | "nextSibling"): Node | null {
+    let prev: Node
+
+    while (fromNode && fromNode !== container) {
+        prev = fromNode[direction]
+        while (prev && prev.nodeType === 3 && !prev.nodeValue) {
+            prev = prev[direction]
+        }
+        if (prev) {
+            return prev
+        } else {
+            fromNode = fromNode.parentNode
+        }
+    }
+
+    return null
+}
+
+export function findUpwards(fromNode: Node, container: Node, filter: (node: HTMLElement) => boolean): HTMLElement {
+    let node = fromNode as HTMLElement
+    while (node && node.nodeType === 3 || !filter(node)) {
+        if (node === container) {
+            return null
+        }
+        node = node.parentNode as HTMLElement
+    }
+    return node
+}

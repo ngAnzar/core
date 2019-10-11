@@ -54,7 +54,8 @@ export abstract class RichtextAcProvider {
         const { anchor, cmpManager, content } = sess
         const portalEl = cmpManager.createPortalEl(type, params)
 
-        sess.content.replaceNode(anchor, portalEl)
+        content.replaceNode(anchor, portalEl)
+        content.insertText(" ")
     }
 
     protected removeAnchor(sess: RichtextAcSession) {

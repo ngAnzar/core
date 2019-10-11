@@ -1,6 +1,6 @@
 import { Directive, Input, Inject, ElementRef, Output, HostListener, Optional } from "@angular/core"
-import { BACKSPACE, DELETE, LEFT_ARROW, RIGHT_ARROW, ENTER } from "@angular/cdk/keycodes"
-import { Subject, Observable } from "rxjs"
+import { BACKSPACE, DELETE, ENTER } from "@angular/cdk/keycodes"
+import { take } from "rxjs/operators"
 
 
 import { Destructible, __zone_symbol__ } from "../../../util"
@@ -12,7 +12,6 @@ import { ContentEditable } from "./core/content-editable"
 import { AutocompleteManager, RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
 import { removeNode, matchTagName } from "./util"
 import { AutocompletePopup } from "./autocomplete.component"
-import { take } from 'rxjs/operators'
 
 
 const MUTATION_OBSERVER: "MutationObserver" = __zone_symbol__("MutationObserver")
@@ -73,7 +72,6 @@ export class RichtextDirective extends Destructible {
     }
 }
 
-//
 @Directive({
     selector: "[nzRichtext][contenteditable='true']",
     host: {
@@ -116,7 +114,10 @@ export class RichtextEditableDirective extends Destructible {
 
         if (firstChild && firstChild.nodeType === 3) {
             this.ce.formatBlock(`<${this.ce.defaultParagraph}>`)
+            return
         }
+
+        // console.log("input", event.inputType, event.data, this.selection.caret)
 
         this.stream.emitChanges()
         this.emitCursorMove()
@@ -133,38 +134,46 @@ export class RichtextEditableDirective extends Destructible {
             return
         }
 
-        if (event.keyCode === BACKSPACE || event.keyCode === DELETE) {
-            const caretNfo = event.keyCode === BACKSPACE
-                ? this.stream.getInfoBeforeCaret()
-                : this.stream.getInfoAfterCaret()
+        const caret = this.selection.caret
 
-            if (caretNfo) {
-                const parents = caretNfo.parents
-                const portalEl = parents.filter(RICHTEXT_CMP_PORTAL_EL.testNode)
-                if (portalEl.length) {
-                    event.preventDefault()
-                    this.cmpManager.remove(portalEl[0] as HTMLElement)
-                        .pipe(take(1))
-                        .subscribe(this.emitCursorMove.bind(this))
-                } else {
-                    const autoCompleteEl = parents.filter(RICHTEXT_AUTO_COMPLETE_EL.testNode)
-                    if (autoCompleteEl.length) {
-                        if (event.keyCode === DELETE) {
-                            if (caretNfo.offset === 0) {
+        if (caret) {
+            if (event.keyCode === BACKSPACE || event.keyCode === DELETE) {
+                const caretNfo = event.keyCode === BACKSPACE
+                    ? caret.before || caret.inside
+                    : caret.after || caret.inside
+
+                if (caretNfo) {
+                    const portalEl = caretNfo.findNode(RICHTEXT_CMP_PORTAL_EL.testNode)
+                    if (portalEl) {
+                        if (event.keyCode === BACKSPACE) {
+                            this.selection.moveCaretAfter(portalEl)
+                        } else {
+                            this.selection.moveCaretBefore(portalEl)
+                        }
+                        event.preventDefault()
+                        this.cmpManager.remove(portalEl)
+                            .pipe(take(1))
+                            .subscribe(this.emitCursorMove.bind(this))
+                    } else {
+                        const autoCompleteEl = caretNfo.findNode(RICHTEXT_AUTO_COMPLETE_EL.testNode)
+                        if (autoCompleteEl) {
+                            if (event.keyCode === DELETE) {
+                                if (caretNfo.offset === 0) {
+                                    event.preventDefault()
+                                    this.acManager.terminate(autoCompleteEl)
+                                }
+                            } else if (autoCompleteEl.innerText.length <= 1) {
                                 event.preventDefault()
-                                this.acManager.terminate(autoCompleteEl[0] as HTMLElement)
+                                this.acManager.terminate(autoCompleteEl)
                             }
-                        } else if ((autoCompleteEl[0] as HTMLElement).innerText.length <= 1) {
-                            event.preventDefault()
-                            this.acManager.terminate(autoCompleteEl[0] as HTMLElement)
                         }
                     }
                 }
-            }
-        } else if (event.keyCode === ENTER) {
-            let acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)
-            if (acState) {
-                this.acManager.terminate(acState.value)
+            } else if (event.keyCode === ENTER) {
+                let acState = caret.inside.findNode(RICHTEXT_AUTO_COMPLETE_EL.testNode)
+                if (acState) {
+                    this.acManager.terminate(acState)
+                }
             }
         }
 
@@ -225,8 +234,7 @@ export class RichtextEditableDirective extends Destructible {
             if (matchTagName(node, "br")) {
                 removeNode(node)
             } else if (node.firstChild !== node.lastChild && matchTagName(node.lastChild, "br")) {
-                // remove paragraph last br, if any other nodes inside
-                removeNode(node.lastChild)
+                // removeNode(node.lastChild)
             }
         }
     }
