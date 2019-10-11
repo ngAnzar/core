@@ -104,12 +104,13 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
             return
         }
 
-        if (this._keyboardFocused === -1) {
-            let selected = selectables.filter(s => s.selected)
-            if (selected.length) {
-                this._keyboardFocused = direction > 0 ? selected[selected.length - 1].selectionIndex : selected[0].selectionIndex
-            }
-        }
+        // if (this._keyboardFocused === -1) {
+        //     let selected = selectables.filter(s => s.selected)
+        //     console.log("selected", selected)
+        //     if (selected.length) {
+        //         this._keyboardFocused = direction > 0 ? selected[selected.length - 1].selectionIndex : selected[0].selectionIndex
+        //     }
+        // }
 
         if (this._keyboardFocused === -1) {
             let selected = selectables.filter(s => s.selected)

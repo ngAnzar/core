@@ -101,6 +101,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
         }
 
         this._tmpModels = models
+        this.origin = {}
         this.update(fullUpdate)
         delete this._tmpModels
     }
@@ -183,11 +184,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
 
     public clear() {
         if (this._items.length > 0) {
-            let event = [] as SelectionEvent<T>
-            event.removed = this._items.slice(0) as SelectionEvent<T>;
-            this.origin = {}
-            this._items = [];
-            (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
+            this.set([], null)
         }
     }
 
@@ -234,6 +231,7 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
 
     public clear() {
         this.selected.clear()
+        delete this._focusedItem
     }
 
     public getSelectOrigin(what: PrimaryKey): SelectOrigin {
