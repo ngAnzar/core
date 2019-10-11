@@ -1,11 +1,11 @@
 import { Directive, Input, Inject, ElementRef, Output, HostListener, Optional } from "@angular/core"
-import { BACKSPACE, DELETE, LEFT_ARROW, RIGHT_ARROW } from "@angular/cdk/keycodes"
+import { BACKSPACE, DELETE, LEFT_ARROW, RIGHT_ARROW, ENTER } from "@angular/cdk/keycodes"
 import { Subject, Observable } from "rxjs"
 
 
 import { Destructible, __zone_symbol__ } from "../../../util"
 import { ScrollerService } from "../../../list.module"
-import { RangyService } from "./core/rangy"
+import { SelectionService } from "./core/selection"
 import { RichtextStream, Word } from "./core/richtext-stream"
 import { ComponentManager, RICHTEXT_CMP_PORTAL_EL } from "./core/component-manager"
 import { ContentEditable } from "./core/content-editable"
@@ -25,7 +25,7 @@ const MUTATION_OBSERVER: "MutationObserver" = __zone_symbol__("MutationObserver"
     },
     exportAs: "nzRichtext",
     providers: [
-        RangyService,
+        SelectionService,
         RichtextStream,
         ComponentManager
     ]
@@ -95,17 +95,22 @@ export class RichtextEditableDirective extends Destructible {
         @Inject(AutocompleteManager) private readonly acManager: AutocompleteManager,
         @Inject(AutocompletePopup) private readonly acPopup: AutocompletePopup,
         @Inject(ComponentManager) private readonly cmpManager: ComponentManager,
-        @Inject(ScrollerService) @Optional() private readonly scroller: ScrollerService) {
+        @Inject(ScrollerService) @Optional() private readonly scroller: ScrollerService,
+        @Inject(SelectionService) private readonly selection: SelectionService) {
         super()
 
         this.destruct.any(watchMutation(el.nativeElement, this.onMutation.bind(this), {
             childList: true,
             subtree: true
         }))
+
+        this.destruct.subscription(acManager.terminate$).subscribe(trigger => {
+            trigger.anchor && removeNode(trigger.anchor)
+        })
     }
 
     @HostListener("input", ["$event"])
-    public onInput(event: Event) {
+    public onInput(event: InputEvent) {
         const target = event.target as HTMLElement
         const firstChild = target.firstChild
 
@@ -114,7 +119,7 @@ export class RichtextEditableDirective extends Destructible {
         }
 
         this.stream.emitChanges()
-        this.triggerAc()
+        this.emitCursorMove()
     }
 
     @HostListener("pointerup", ["$event"])
@@ -129,15 +134,37 @@ export class RichtextEditableDirective extends Destructible {
         }
 
         if (event.keyCode === BACKSPACE || event.keyCode === DELETE) {
-            const nodes = event.keyCode === BACKSPACE
-                ? this.stream.getNodesBeforeCaret()
-                : this.stream.getNodesAfterCaret()
-            const portalEl = nodes.filter(n => RICHTEXT_CMP_PORTAL_EL.testNode(n))
-            if (portalEl && portalEl.length) {
-                event.preventDefault()
-                this.cmpManager.remove(portalEl[0] as HTMLElement)
-                    .pipe(take(1))
-                    .subscribe(this.emitCursorMove.bind(this))
+            const caretNfo = event.keyCode === BACKSPACE
+                ? this.stream.getInfoBeforeCaret()
+                : this.stream.getInfoAfterCaret()
+
+            if (caretNfo) {
+                const parents = caretNfo.parents
+                const portalEl = parents.filter(RICHTEXT_CMP_PORTAL_EL.testNode)
+                if (portalEl.length) {
+                    event.preventDefault()
+                    this.cmpManager.remove(portalEl[0] as HTMLElement)
+                        .pipe(take(1))
+                        .subscribe(this.emitCursorMove.bind(this))
+                } else {
+                    const autoCompleteEl = parents.filter(RICHTEXT_AUTO_COMPLETE_EL.testNode)
+                    if (autoCompleteEl.length) {
+                        if (event.keyCode === DELETE) {
+                            if (caretNfo.offset === 0) {
+                                event.preventDefault()
+                                this.acManager.terminate(autoCompleteEl[0] as HTMLElement)
+                            }
+                        } else if ((autoCompleteEl[0] as HTMLElement).innerText.length <= 1) {
+                            event.preventDefault()
+                            this.acManager.terminate(autoCompleteEl[0] as HTMLElement)
+                        }
+                    }
+                }
+            }
+        } else if (event.keyCode === ENTER) {
+            let acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)
+            if (acState) {
+                this.acManager.terminate(acState.value)
             }
         }
 
@@ -149,7 +176,9 @@ export class RichtextEditableDirective extends Destructible {
         if (event.defaultPrevented || this.acPopup.handleKeyEvent(event)) {
             return
         }
+
         this.emitCursorMove()
+        this.triggerAc()
     }
 
     @HostListener("blur", ["$event"])
@@ -158,7 +187,8 @@ export class RichtextEditableDirective extends Destructible {
         if (acEls.length === 1) {
             this.acManager.terminate(acEls[0] as HTMLElement)
         } else if (acEls.length !== 0) {
-            throw new Error("Something went worng...")
+            console.error("Multiple autocomplete el found")
+            // throw new Error("Something went worng...")
         }
     }
 
@@ -187,38 +217,47 @@ export class RichtextEditableDirective extends Destructible {
                 }
             }
         }
+
+        let l = el.childNodes.length
+        while (--l >= 0) {
+            node = el.childNodes[l]
+            // remove top level br-s
+            if (matchTagName(node, "br")) {
+                removeNode(node)
+            } else if (node.firstChild !== node.lastChild && matchTagName(node.lastChild, "br")) {
+                // remove paragraph last br, if any other nodes inside
+                removeNode(node.lastChild)
+            }
+        }
     }
 
     private triggerAc() {
         let acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)
         if (!acState) {
+            let acNodes = this.el.nativeElement.querySelectorAll(RICHTEXT_AUTO_COMPLETE_EL.selector)
+            acNodes.forEach(node => this.acManager.terminate(node as HTMLElement))
+
             const word = this.stream.getWordUnderCaret()
             if (word && this.acManager.hasAcProviderFor(word.value)) {
                 this.beginAc(word)
-                acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL, true)
+                acState = this.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)
             }
 
             if (!acState) {
+                this.acManager.terminate()
                 return
             }
         }
 
-        const qs = (acState.value as HTMLElement).innerText
-
-        if (!this.acManager.hasAcProviderFor(qs)) {
-            removeNode(acState.value)
-        } else {
-            this.acManager.trigger(acState.value)
-        }
+        this.acManager.trigger(acState.value)
     }
 
     private beginAc(word: Word) {
         let el = RICHTEXT_AUTO_COMPLETE_EL.create()
         el.innerHTML = word.value
-        el.setAttribute("spellcheck", "false")
         el.setAttribute("focused", "true")
         word.select()
-        this.ce.insertHTML(el.outerHTML)
+        this.ce.insertNode(el)
     }
 
     private emitCursorMove() {

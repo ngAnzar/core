@@ -1,11 +1,11 @@
 import { Inject, ElementRef } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
 import { Observable, Subject } from "rxjs"
-import { WrappedSelection } from "@rangy/core"
 
 import { Destructible } from "../../../../util"
 
-import { RangyService, RangeFactory } from "./rangy"
+import { getParentsUntil } from "../util"
+import { SelectionService, RangeFactory } from "./selection"
 import { RichtextElement, StateQuery, RichtextState } from "./richtext-el"
 
 
@@ -37,15 +37,11 @@ export class RichtextStream extends Destructible {
         return clone.innerHTML
     }
 
-    public readonly selection: WrappedSelection
-    private _nodesForSelection: Node[]
-
     private _elementHandlers: Array<{ handler: RichtextElement, cleanup: CleanupElementFn }> = []
 
     public constructor(
         @Inject(ElementRef) el: ElementRef<HTMLElement>,
-        @Inject(EventManager) protected readonly evtManager: EventManager,
-        @Inject(RangyService) protected readonly rangy: RangyService) {
+        @Inject(SelectionService) private readonly _selection: SelectionService) {
         super()
         this.el = el.nativeElement
 
@@ -55,82 +51,35 @@ export class RichtextStream extends Destructible {
         this._elementHandlers.push({ handler, cleanup })
     }
 
-    public getState(query: StateQuery, refresh: boolean = false): RichtextState {
-        if (refresh || !this.selection) {
-            (this as { selection: WrappedSelection }).selection = this.rangy.getSelection()
-            delete this._nodesForSelection
-        }
-
-        if (!this.selection) {
-            return null
-        }
-
-        if (!this._nodesForSelection) {
-            this._nodesForSelection = this.rangy.getSelectedNodes(this.selection)
-        }
-
-        return query.getState(this, this._nodesForSelection)
+    public getState(query: StateQuery): RichtextState {
+        return query.getState(this, this._selection.nodes)
     }
 
     public getWordUnderCaret(): Word {
-        const native = this.selection ? this.selection.nativeSelection : null
-        if (native && native.type === "Caret") {
-            return extractWord(native, /\s/)
+        const selection = this._selection.current
+        if (selection && selection.type === "Caret") {
+            return extractWord(selection, /\s/)
         }
         return null
     }
 
     public getNodeUnerCaret(): Node {
-        const native = this.selection ? this.selection.nativeSelection : null
-        if (native && native.type === "Caret") {
-            return native.anchorNode
+        const selection = this._selection.current
+        if (selection && selection.type === "Caret") {
+            return selection.anchorNode
         }
         return null
     }
 
-    public getNodesBeforeCaret(): Node[] {
-        return this._getCaretSiblings(-1)
+    public getInfoBeforeCaret() {
+        return this._selection.getInfoBeforeCaret()
     }
 
-    public getNodesAfterCaret() {
-        return this._getCaretSiblings(1)
-    }
-
-    private _getCaretSiblings(direction: number): Node[] {
-        const native = this.selection ? this.selection.nativeSelection : null
-        let result: Node[] = []
-
-        if (native && native.type === "Caret") {
-            const range = this.selection.getRangeAt(this.selection.rangeCount - 1)
-            if (!range) {
-                return
-            }
-
-            const newRange = this.rangy.createRange()
-            let start: Node
-            if (direction === -1) {
-                newRange.setStart(this.el, 0)
-                newRange.setEnd(range.startContainer, range.startOffset)
-                const nodes = newRange.getNodes([1, 3])
-                start = nodes[nodes.length - 1]
-            } else {
-                newRange.setStart(range.endContainer, range.endOffset)
-                newRange.setEnd(this.el, this.el.childNodes.length)
-                const nodes = newRange.getNodes([1, 3])
-                start = nodes[1]
-            }
-
-            while (start && start !== this.el) {
-                result.unshift(start)
-                start = start.parentElement
-            }
-        }
-        return result
+    public getInfoAfterCaret() {
+        return this._selection.getInfoAfterCaret()
     }
 
     public updatePosition() {
-        (this as { selection: WrappedSelection }).selection = this.rangy.getSelection()
-        delete this._nodesForSelection;
         (this.cursorMove as Subject<any>).next()
     }
 

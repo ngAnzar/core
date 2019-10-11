@@ -47,6 +47,7 @@ export class ComponentManager implements IDisposable {
     public createPortalEl(type: string, params: RichtextComponentParams): HTMLElement {
         let node = RICHTEXT_CMP_PORTAL_EL.create()
         node.setAttribute("contenteditable", "false")
+        // node.setAttribute("immutable", "true")
         node.setAttribute("id", uuidv4())
         node.setAttribute("component", type)
         node.setAttribute("spellcheck", "false")

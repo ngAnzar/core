@@ -19,3 +19,26 @@ export function uuidv4() {
         return v.toString(16);
     });
 }
+
+
+export function getParentsUntil(fromNode: Node, toNode: Node): Node[] {
+    let result: Node[] = [fromNode]
+    let parent = fromNode.parentNode
+    do {
+        result.push(parent)
+        parent = parent.parentNode
+    } while (parent && parent !== toNode)
+    return result
+}
+
+
+export function getDeepestNode(start: Node, direction: "firstChild" | "lastChild") {
+    while (start) {
+        if (start[direction]) {
+            start = start[direction]
+        } else {
+            break
+        }
+    }
+    return start
+}

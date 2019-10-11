@@ -1,7 +1,7 @@
 import { Component, Inject, InjectionToken, Optional } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { Observable, Subject, forkJoin, EMPTY, merge, zip, of } from "rxjs"
-import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap, filter, tap } from "rxjs/operators"
+import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap, filter, tap, mapTo, switchMapTo, pairwise, startWith, share } from "rxjs/operators"
 
 import { Destructible } from "../../../../util"
 import { Model, Field } from "../../../../data.module"
@@ -10,12 +10,10 @@ import { RichtextStream } from "./richtext-stream"
 import { RichtextElement } from "./richtext-el"
 import { ComponentManager } from "./component-manager"
 import { ContentEditable } from "./content-editable"
-import { RangeFactory } from "./rangy"
-
 
 
 export const RICHTEXT_AUTO_COMPLETE = new InjectionToken<RichtextAcProvider>("nzRichtextAutoComplete")
-export const RICHTEXT_AUTO_COMPLETE_EL = new RichtextElement("nz-richtext-autocomplete")
+export const RICHTEXT_AUTO_COMPLETE_EL = new RichtextElement("nz-richtext-autocomplete", null, { spellcheck: "false" })
 
 const circleSmallSvg = require("mdi/circle-small.svg")
 
@@ -56,12 +54,7 @@ export abstract class RichtextAcProvider {
         const { anchor, cmpManager, content } = sess
         const portalEl = cmpManager.createPortalEl(type, params)
 
-        anchor.parentNode.insertBefore(portalEl, anchor)
-
-        let range = new RangeFactory(anchor, 0, anchor, 0)
-        range.select()
-        removeNode(anchor)
-        content.insertText(" ")
+        sess.content.replaceNode(anchor, portalEl)
     }
 
     protected removeAnchor(sess: RichtextAcSession) {
@@ -71,38 +64,51 @@ export abstract class RichtextAcProvider {
 
 
 interface AcTrigger {
-    type: "query" | "terminate",
-    anchor?: HTMLElement,
+    type: "query" | "terminate"
+    anchor?: HTMLElement
     text?: string
+    providers?: RichtextAcProvider[]
+    items?: RichtextAcItem[]
 }
 
 
 export class AutocompleteManager extends Destructible {
-    private readonly trigger$: Subject<AcTrigger> = this.destruct.subject(new Subject())
-    private readonly _trigger$ = this.trigger$.pipe(shareReplay(1))
+    private readonly _trigger$: Subject<AcTrigger> = this.destruct.subject(new Subject())
 
-    public readonly anchor$ = this._trigger$.pipe(
-        debounceTime(20),
-        distinctUntilChanged(distinctElComparator),
-        map(v => v.anchor),
-        shareReplay(1)
-    )
-
-    public readonly providers$ = this._trigger$.pipe(
-        debounceTime(20),
-        filter(val => val.type === "query"),
-        distinctUntilChanged(distinctTextComparator),
-        map(val => this.getProviders(val.text)),
-        shareReplay(1)
-    )
-
-    private readonly _providers$ = merge(this._trigger$, this.providers$).pipe(
-        switchMap(_ => zip(this._trigger$, this.providers$)),
-        map(([trigger, providers]) => {
-            if (!trigger.anchor) {
-                return []
+    public readonly trigger$ = this._trigger$.pipe(
+        distinctUntilChanged((a, b) => {
+            if (a.type === b.type) {
+                if (a.type === "terminate") {
+                    return true
+                } else {
+                    return a.text === b.text && a.anchor === b.anchor
+                }
+            } else {
+                return false
             }
+        }),
+        share()
+    )
 
+    public readonly providers$ = this.trigger$.pipe(
+        distinctUntilChanged((a, b) => a.type === b.type && a.text === b.text),
+        startWith(null),
+        pairwise(),
+        map(([prev, curr]) => {
+            if (curr.type === "terminate") {
+                if (prev && prev.type === "query") {
+                    curr.providers = prev.providers
+                }
+            } else {
+                curr.providers = this.getProviders(curr.text)
+            }
+            if (!curr.providers || !curr.anchor) {
+                curr.providers = []
+            }
+            return curr
+        }),
+        map(trigger => {
+            const providers = trigger.providers
             const terminated = trigger.type === "terminate"
                 ? providers
                 : providers.filter(p => p.terminate && p.terminate.test(trigger.text))
@@ -115,25 +121,38 @@ export class AutocompleteManager extends Destructible {
                 }
 
                 if (isTerminated) {
-                    return []
+                    trigger.providers = []
+                    return trigger
                 }
             }
 
-            return trigger.type === "terminate" ? [] : providers
+            trigger.providers = trigger.type === "terminate" ? [] : providers
+            return trigger
         }),
-        shareReplay(1)
+        share()
     )
 
-    public readonly items$ = merge(this._trigger$.pipe(distinctUntilChanged(distinctTextComparator)), this._providers$).pipe(
+    public readonly terminate$ = this.providers$.pipe(
+        filter(v => !v.providers || v.providers.length === 0),
+        share()
+    )
+
+    public readonly items$ = this.providers$.pipe(
         debounceTime(250),
-        switchMap(_ => zip(this._trigger$, this._providers$).pipe(take(1))),
-        switchMap(([trigger, providers]) => {
+        switchMap(trigger => {
+            const providers = trigger.providers
             if (trigger.type === "terminate" || providers.length === 0) {
-                return of([] as RichtextAcItem[])
+                trigger.items = []
+                return of(trigger)
             }
 
             const query = trigger.text
             const queryFrom = providers.filter(p => p.minChars <= query.length)
+
+            if (queryFrom.length === 0) {
+                trigger.items = []
+                return of(trigger)
+            }
 
             return forkJoin(queryFrom.map(p => p.query(query))).pipe(
                 take(1),
@@ -149,7 +168,8 @@ export class AutocompleteManager extends Destructible {
                             result.push(v)
                         }
                     }
-                    return result.sort((a, b) => a.label.localeCompare(b.label))
+                    trigger.items = result.sort((a, b) => a.label.localeCompare(b.label))
+                    return trigger
                 })
             )
         }),
@@ -187,14 +207,14 @@ export class AutocompleteManager extends Destructible {
     }
 
     public trigger(node: HTMLElement) {
-        this.trigger$.next({ type: "query", anchor: node, text: node.innerText })
+        this._trigger$.next({ type: "query", anchor: node, text: node.innerText })
     }
 
     public terminate(node?: HTMLElement) {
         if (node) {
-            this.trigger$.next({ type: "terminate", anchor: node, text: node.innerText })
+            this._trigger$.next({ type: "terminate", anchor: node, text: node.innerText })
         } else {
-            this.trigger$.next({ type: "terminate" })
+            this._trigger$.next({ type: "terminate" })
         }
     }
 }

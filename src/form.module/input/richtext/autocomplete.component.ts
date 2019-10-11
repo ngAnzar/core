@@ -25,15 +25,10 @@ export class AutocompletePopup extends Destructible {
 
         this.selection.keyboard.instantSelection = false
 
-        this.destruct.subscription(acManager.anchor$).subscribe(anchor => {
-            this._anchor = anchor
-            if (!anchor) {
-                this.hide()
-            }
-        })
-
-        this.destruct.subscription(acManager.items$).subscribe(items => {
-            if (items.length) {
+        this.destruct.subscription(acManager.items$).subscribe(trigger => {
+            this._anchor = trigger.anchor
+            const items = trigger.items
+            if (items && items.length) {
                 this.show()
                 this._layerRef.component.instance.items = items
                 this._layerRef.component.instance.cdr.detectChanges()
