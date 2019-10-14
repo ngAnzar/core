@@ -18,6 +18,7 @@ import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
+import { parseMargin } from '@anzar/core/layout.module'
 
 // import { ChipComponent } from "./chip.component"
 
@@ -432,25 +433,31 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             let targetAnchor = this.layerFactory.targetAnchor
 
             if (!targetAnchor.targetEl) {
-                targetAnchor.targetEl = (this.ffc ? this.ffc.el : this.el)
+                targetAnchor.targetEl = this.el
                 if (this.editable) {
                     if (!targetAnchor.nzTargetAnchor) {
                         targetAnchor.nzTargetAnchor = "left bottom"
                     }
+
                     if (!targetAnchor.margin) {
-                        targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
+                        if (this.ffc) {
+                            targetAnchor.margin = { top: 4, bottom: 6, left: 12, right: 12 }
+                        } else {
+                            targetAnchor.margin = { top: 4, bottom: 4, left: 12, right: 12 }
+                        }
                     }
                 } else {
                     if (!targetAnchor.nzTargetAnchor) {
-                        targetAnchor.nzTargetAnchor = "left bottom"
+                        targetAnchor.nzTargetAnchor = "left top"
                     }
                     if (!targetAnchor.margin) {
-                        targetAnchor.margin = { bottom: this.ffc ? -19 : 0 }
+                        targetAnchor.margin = { left: 12, right: 12, top: 16 }
                     }
                 }
             }
 
             const targetEl = targetAnchor.targetEl.nativeElement
+            const margin = parseMargin(targetAnchor.margin)
             let layerRef = this.layerFactory.show(
                 new DropdownLayer({
                     backdrop: {
@@ -458,11 +465,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                         crop: targetEl,
                         hideOnClick: true
                     },
-                    minWidth: targetEl.offsetWidth,
+                    minWidth: targetEl.offsetWidth + margin.left + margin.right,
                     minHeight: this.editable ? 0 : targetEl.offsetHeight,
-                    initialWidth: targetEl.offsetWidth,
+                    initialWidth: targetEl.offsetWidth + margin.left + margin.right,
                     initialHeight: this.editable ? 0 : targetEl.offsetHeight,
-                    elevation: 10
+                    elevation: 6
                 }),
                 {
                     $implicit: this
