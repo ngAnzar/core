@@ -7,8 +7,8 @@ import {
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { FocusMonitor } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
-import { Observable, Subject, Subscription, Observer, forkJoin } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, take, tap, map } from "rxjs/operators"
+import { Observable, Subject, Subscription, Observer, forkJoin, timer } from "rxjs"
+import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay } from "rxjs/operators"
 
 import { NzRange } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection } from "../../../data.module"
@@ -118,7 +118,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._editable !== val) {
             this._editable = val
-            this._watchInputStream(val)
             this._detectChanges()
         }
     }
@@ -143,7 +142,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this.model.disabled !== val) {
             this.model.disabled = val
             this._updateDropDown()
-            this._watchInputStream(!val && this.editable)
             this._detectChanges()
         }
     }
@@ -209,7 +207,22 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         return this.selection.items
     }
 
-    protected inputStream: Observable<string> = new Subject()
+    protected queryAllowed: boolean = true
+
+    protected input$: Observable<string> = this.destruct.subject(new Subject())
+
+    protected query$ = this.input$.pipe(
+        filter(() => this.editable && !this.disabled),
+        distinctUntilChanged(),
+        tap(value => {
+            if (this.selection.type === "single" && (!value || !value.length)) {
+                this.selection.clear()
+            }
+        }),
+        debounce(() => timer(this.source.async ? 300 : 0)),
+        shareReplay(1)
+    )
+
     protected lastKeyup: number
     protected pendingValue: any
     // protected readonly chipSelection: SelectionModel = new SingleSelection()
@@ -300,15 +313,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }))
         this._closeShortcuts.enabled = false
 
-        // this._backButton = this.destruct.disposable(this.keyEvent.newWatcher(SpecialKey.BackButton, () => {
-        //     if (this.selectedBeforeOpen) {
-        //         let bso = this.selectedBeforeOpen
-        //         delete this.selectedBeforeOpen
-        //         this.selection.items = bso
-        //     }
-        //     this.opened = false
-        //     return true
-        // }))
+        this.destruct.subscription(this.query$).subscribe(this._querySuggestions)
     }
 
     public reset() {
@@ -517,39 +522,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _onInput(event: Event): void {
         const value = this.input.nativeElement.value;
-        (this.inputStream as Subject<string>).next(value)
+        (this.input$ as Subject<string>).next(value)
         this.inputState = "typing"
     }
 
     protected _querySuggestions = (text: string): void => {
-        const emptyQuery = !text || text.length === 0
         this.inputState = "querying"
-        this.opened = true
         this._updateFilter(text)
-    }
 
-    protected _watchInputStream(on: boolean) {
-        if (on) {
-            if (!this._iss && this.source.storage) {
-                let ml = this.source.async ? Number(this.minLength) : 0
-                this._iss = this.destruct.subscription(this.inputStream)
-                    .pipe(
-                        tap(v => {
-                            if (!v || !v.length) {
-                                if (this.selection.type === "single") {
-                                    this.selection.clear()
-                                }
-                            }
-                        }),
-                        debounceTime(this.source.async ? 400 : 50),
-                        filter(v => ml === 0 || !v || v.length === 0 || (v && v.length >= ml))
-                    )
-                    .subscribe(this._querySuggestions)
-            }
-        } else if (this._iss) {
-            this._iss.unsubscribe()
-            delete this._iss
-        }
+        // TODO: ha nem volt nyitva, akkor megvárni, amíg betölti az első X elemet, és csak utána kinyitni
+
+        this.opened = true
     }
 
     @HostListener("keydown", ["$event"])
@@ -592,28 +575,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         event.preventDefault()
         this.value = null
     }
-
-    // @HostListener("click")
-    // protected _onClick() {
-    //     if (!this.source.async || !this.editable) {
-    //         this.opened = true
-    //     }
-    // }
-
-    // protected _applySelected() {
-    //     let value = this.valueField
-    //         ? this.selected.map(item => (item as any)[this.valueField])
-    //         : this.selected.slice(0)
-
-    //     if (this.selection.type === "single") {
-    //         this.model.emitValue(value[0])
-    //     } else {
-    //         this.model.emitValue(value)
-    //     }
-
-    //     // this.writeValue(this.value)
-    //     this._resetTextInput()
-    // }
 
     protected _resetTextInput() {
         if (!this.input || !this.selection) {
@@ -659,15 +620,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {
         switch (code) {
-            // case ESCAPE:
-            //     if (this.selectedBeforeOpen) {
-            //         let bso = this.selectedBeforeOpen
-            //         delete this.selectedBeforeOpen
-            //         this.selection.items = bso
-            //     }
-            //     this.opened = false
-            //     return true
-
             case UP_ARROW:
             case DOWN_ARROW:
                 this.opened = true
@@ -706,7 +658,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     private _updateFilter(qv: string | null) {
-        let filter = (this.source.filter || {}) as any
+        let filter = { ...this.source.filter } as any
         if (!qv || qv.length === 0) {
             delete filter[this.queryField]
         } else {
