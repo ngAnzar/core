@@ -56,7 +56,6 @@ export abstract class RichtextAcProvider {
         const portalEl = cmpManager.createPortalEl(type, params)
 
         sess.anchor.focus()
-        console.log(sess.anchor, document.activeElement)
         content.replaceNode(anchor, portalEl)
         content.insertText(" ")
     }
