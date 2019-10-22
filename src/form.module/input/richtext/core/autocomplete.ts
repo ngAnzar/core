@@ -27,6 +27,7 @@ export class RichtextAcItem extends Model {
     @Field() public note: string
     @Field() public icon: string
     @Field() public data: any
+    @Field() public isAction: boolean
     public readonly iconSafe: SafeStyle
 }
 
@@ -54,8 +55,14 @@ export abstract class RichtextAcProvider {
         const { anchor, cmpManager, content } = sess
         const portalEl = cmpManager.createPortalEl(type, params)
 
+        sess.anchor.focus()
+        console.log(sess.anchor, document.activeElement)
         content.replaceNode(anchor, portalEl)
         content.insertText(" ")
+    }
+
+    protected persistAnchor(sess: RichtextAcSession) {
+        sess.anchor.setAttribute("persist", "true")
     }
 
     protected removeAnchor(sess: RichtextAcSession) {
@@ -169,7 +176,13 @@ export class AutocompleteManager extends Destructible {
                             result.push(v)
                         }
                     }
-                    trigger.items = result.sort((a, b) => a.label.localeCompare(b.label))
+                    trigger.items = result.sort((a, b) => {
+                        if (a.isAction === b.isAction) {
+                            return a.label.localeCompare(b.label)
+                        } else {
+                            return a.isAction ? 1 : -1
+                        }
+                    })
                     return trigger
                 })
             )

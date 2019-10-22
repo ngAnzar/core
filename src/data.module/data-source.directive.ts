@@ -129,7 +129,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
 
     public get(id: PrimaryKey): Observable<T> {
-        return this.storage.source.get(id)
+        return this.storage.source.get(id, this.storage.meta.get())
     }
 
     public reload() {

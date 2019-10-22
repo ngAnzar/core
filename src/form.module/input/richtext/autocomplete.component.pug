@@ -12,9 +12,22 @@
     height: 20px
     margin-right: 8px
 
+  .note
+    nz-typo: $typo.body2
+    opacity: 0.7
+
 
 .nz-scroller.scroller(fxFlex="grow")
   .nz-list(fxLayout="column", fxLayoutAlign="start stretch", scrollable)
-    .nz-list-item.item(*ngFor="let item of items; let i=index", [selectable]="item", [selectionIndex]="i", (mousedown)="$event.preventDefault()", (touchstart)="$event.preventDefault()")
+    .nz-list-item.item(*ngFor="let item of items; let i=index",
+        [selectable]="item",
+        [selectionIndex]="i",
+        [attr.color]="item.isAction ? 'accent' : 'common'",
+        (mousedown)="$event.preventDefault()",
+        (touchstart)="$event.preventDefault()")
       i.icon([style.background-image]="item.iconSafe")
-      span {{ item.label }}
+      div([style.font-style]="item.isAction ? 'italic' : 'normal'")
+        span {{ item.label }}
+        ng-template([ngIf]="item.note")
+          br
+          span.note {{ item.note }}

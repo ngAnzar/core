@@ -47,7 +47,7 @@ export interface IAutocompleteModel {
 
 
 export class ProvisionalModel extends Model {
-
+    @Field({ primary: true }) public _id: string
 }
 
 
@@ -112,6 +112,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _opened: boolean = false
 
     @Output("opened") public readonly openedChanges: Observable<boolean> = new EventEmitter<boolean>()
+    @Output("select") public readonly selectionChanges: Observable<T[]> = new EventEmitter<T[]>()
 
     @Input()
     public set editable(val: boolean) {
@@ -274,7 +275,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
 
             let vals = this.valueField
-                ? selected.map(s => (s as any)[this.valueField])
+                ? selected.map(s => getPath(s, this.valueField))
                 : selected
 
             if (this.selection.type === "single") {
@@ -287,6 +288,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             if (!this.input && this.cdr) {
                 this.cdr.detectChanges()
             }
+
+            (this.selectionChanges as EventEmitter<T[]>).next(selected)
         })
 
         this.destruct.subscription(this.model.focusChanges)
@@ -331,14 +334,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public getDisplayValue(model: T): string {
-        let parts = (this.displayField || "").split(".")
-        let obj = (model as any)
-
-        for (const p of parts) {
-            obj = obj ? obj[p] : ""
-        }
-
-        return obj || ""
+        return getPath(model, this.displayField || "") || ""
     }
 
     protected _renderValue(obj: SelectValue<T>): void {
@@ -383,7 +379,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         for (let item of value as Array<T | PrimaryKey>) {
             if (typeof item === "string" || typeof item === "number") {
-                let existing = this.selection.items.find(selected => (selected as any)[idField] === item)
+                let existing = this.selection.items.find(selected => getPath(selected, idField) === item)
                 if (existing) {
                     models.push(existing)
                 } else {
@@ -595,10 +591,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 let inputValue = this.input.nativeElement.value
                 if (inputValue && inputValue.length) {
                     if (!this._provisionalModel) {
-                        this._provisionalModel = new ProvisionalModel({ id: Math.random().toString(36) }) as T
+                        this._provisionalModel = new ProvisionalModel({ _id: Math.random().toString(36) }) as any
                     }
-                    (this._provisionalModel as any)[this.valueField] = { $new: inputValue };
-                    (this._provisionalModel as any)[this.displayField] = inputValue;
+                    setPath(this._provisionalModel, this.valueField, { $new: inputValue })
+                    setPath(this._provisionalModel, this.displayField, inputValue)
                     this.selection.items = [this._provisionalModel]
                     value = inputValue
                 } else {
@@ -666,4 +662,29 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
         this.source.filter = filter
     }
+}
+
+
+function getPath(obj: any, path: string): any {
+    let parts = path.split(".")
+
+    for (const p of parts) {
+        obj = obj ? obj[p] : null
+    }
+
+    return obj || null
+}
+
+function setPath(obj: any, path: string, value: any) {
+    let parts = path.split(".")
+    let last = parts.pop()
+
+    for (const p of parts) {
+        if (obj[p] === undefined) {
+            obj[p] = {}
+        }
+        obj = obj[p]
+    }
+
+    obj[last] = value
 }

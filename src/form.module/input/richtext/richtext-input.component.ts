@@ -6,6 +6,7 @@ import { RichtextDirective } from "./richtext.directive"
 import { RichtextMenuDirective } from "./richtext-menu.component"
 import { RichtextStream } from "./core/richtext-stream"
 import { RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
+import { RichtextComponentParams } from "./core/component-ref"
 
 
 @Component({

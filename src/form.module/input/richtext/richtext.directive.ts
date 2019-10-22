@@ -8,6 +8,7 @@ import { ScrollerService } from "../../../list.module"
 import { SelectionService } from "./core/selection"
 import { RichtextStream, Word } from "./core/richtext-stream"
 import { ComponentManager, RICHTEXT_CMP_PORTAL_EL } from "./core/component-manager"
+import { RichtextComponentParams } from "./core/component-ref"
 import { ContentEditable } from "./core/content-editable"
 import { AutocompleteManager, RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
 import { removeNode, matchTagName } from "./util"
@@ -103,8 +104,17 @@ export class RichtextEditableDirective extends Destructible {
         }))
 
         this.destruct.subscription(acManager.terminate$).subscribe(trigger => {
-            trigger.anchor && removeNode(trigger.anchor)
+            trigger.anchor && trigger.anchor.getAttribute("persist") !== "true" && removeNode(trigger.anchor)
         })
+    }
+
+    public insertComponent(type: string, params: RichtextComponentParams) {
+        const node = this.cmpManager.createPortalEl(type, params)
+        if (this.ce.isFocused) {
+            this.ce.insertNode(node)
+        } else {
+            this.el.nativeElement.appendChild(node)
+        }
     }
 
     @HostListener("input", ["$event"])
