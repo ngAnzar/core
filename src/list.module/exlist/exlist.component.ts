@@ -56,7 +56,10 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy {
 
     public constructor(
         @Inject(DataSourceDirective) public readonly source: DataSourceDirective,
-        @Inject(ExlistSwitchHandler) @Optional() private readonly switchHandler: ExlistSwitchHandler<T> = DEFAULT_SWITCH_HANDLER) {
+        @Inject(ExlistSwitchHandler) @Optional() private readonly switchHandler: ExlistSwitchHandler<T>) {
+        if (!this.switchHandler) {
+            this.switchHandler = DEFAULT_SWITCH_HANDLER
+        }
     }
 
     public setOpened(model: any, origin: SelectOrigin) {
