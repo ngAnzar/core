@@ -18,10 +18,7 @@ export interface RichtextComponentProvider {
 
 
 export const RICHTEXT_COMPONENT = new InjectionToken<RichtextComponentProvider>("nzRichtextComponent")
-export const RICHTEXT_CMP_PORTAL_EL = new RichtextElement("nz-richtext-portal", null, {
-    spellcheck: "false",
-    immutable: "true"
-})
+export const RICHTEXT_CMP_PORTAL_EL = new RichtextElement("nz-richtext-portal")
 
 
 export class ComponentManager implements IDisposable {
@@ -51,6 +48,7 @@ export class ComponentManager implements IDisposable {
     public createPortalEl(type: string, params: RichtextComponentParams): HTMLElement {
         let node = RICHTEXT_CMP_PORTAL_EL.create()
         node.setAttribute("contenteditable", "false")
+        node.setAttribute("spellcheck", "false")
         node.setAttribute("id", uuidv4())
         node.setAttribute("component", type)
         node.setAttribute("params", this.encodeParams(params))
@@ -108,6 +106,9 @@ export class ComponentManager implements IDisposable {
     }
 
     private _createRef(portalEl: HTMLElement): RichtextComponentRef<RichtextComponent> {
+        portalEl.setAttribute("contenteditable", "false")
+        portalEl.setAttribute("spellcheck", "false")
+
         const cmpId = portalEl.getAttribute("component")
         const cmpType = this.getComponentType(cmpId)
         if (!cmpType) {

@@ -127,8 +127,6 @@ export class RichtextEditableDirective extends Destructible {
             return
         }
 
-        // console.log("input", event.inputType, event.data, this.selection.caret)
-
         this.stream.emitChanges()
         this.emitCursorMove()
     }
