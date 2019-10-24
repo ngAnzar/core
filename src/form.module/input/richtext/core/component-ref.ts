@@ -30,19 +30,23 @@ export class RichtextComponentRef<T = RichtextComponent> implements IDisposable 
     }
 
     public updateParams(params: RichtextComponentParams) {
-        Object.assign(this.params, params)
-        this.el.setAttribute("params", encodeURIComponent(JSON.stringify(this.params)))
-        this.paramsChange.next(this.params)
-        this.component.changeDetectorRef.markForCheck()
-        this.onParamsChanged()
+        if (this.paramsChange && !this.paramsChange.closed) {
+            Object.assign(this.params, params)
+            this.el.setAttribute("params", encodeURIComponent(JSON.stringify(this.params)))
+            this.paramsChange.next(this.params)
+            this.component.changeDetectorRef.markForCheck()
+            this.onParamsChanged()
+        }
     }
 
     public replaceParams(params: RichtextComponentParams) {
-        (this as any).params = params
-        this.el.setAttribute("params", encodeURIComponent(JSON.stringify(this.params)))
-        this.paramsChange.next(this.params)
-        this.component.changeDetectorRef.markForCheck()
-        this.onParamsChanged()
+        if (this.paramsChange && !this.paramsChange.closed) {
+            (this as any).params = params
+            this.el.setAttribute("params", encodeURIComponent(JSON.stringify(this.params)))
+            this.paramsChange.next(this.params)
+            this.component.changeDetectorRef.markForCheck()
+            this.onParamsChanged()
+        }
     }
 
     public dispose() {

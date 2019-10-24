@@ -31,6 +31,9 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
             layer.container.style.borderRadius = `${this.options.rounded}px`
             layer.container.style.overflow = "hidden"
         }
+        if (this.options.trapFocus) {
+            layer.container.setAttribute("tabindex", "-1")
+        }
     }
 
     public animateShow(layer: LayerRef): Promise<void> {

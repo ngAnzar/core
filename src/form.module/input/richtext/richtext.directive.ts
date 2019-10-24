@@ -1,4 +1,4 @@
-import { Directive, Input, Inject, ElementRef, Output, HostListener, Optional } from "@angular/core"
+import { Directive, Input, Inject, ElementRef, Output, HostListener, Optional, InjectionToken } from "@angular/core"
 import { BACKSPACE, DELETE, ENTER } from "@angular/cdk/keycodes"
 import { take } from "rxjs/operators"
 
@@ -16,6 +16,7 @@ import { AutocompletePopup } from "./autocomplete.component"
 
 
 const MUTATION_OBSERVER: "MutationObserver" = __zone_symbol__("MutationObserver")
+export const RICHTEXT_EDITABLE = new InjectionToken<boolean>("RICHTEXT_EDITABLE")
 
 
 @Directive({
@@ -27,7 +28,8 @@ const MUTATION_OBSERVER: "MutationObserver" = __zone_symbol__("MutationObserver"
     providers: [
         SelectionService,
         RichtextStream,
-        ComponentManager
+        ComponentManager,
+        { provide: RICHTEXT_EDITABLE, useValue: false }
     ]
 })
 export class RichtextDirective extends Destructible {
@@ -81,7 +83,8 @@ export class RichtextDirective extends Destructible {
     providers: [
         ContentEditable,
         AutocompleteManager,
-        AutocompletePopup
+        AutocompletePopup,
+        { provide: RICHTEXT_EDITABLE, useValue: true }
     ]
 })
 export class RichtextEditableDirective extends Destructible {

@@ -96,7 +96,6 @@ export class ComponentManager implements IDisposable {
             tap(result => {
                 if (result) {
                     removeNode(portalEl)
-                    this.stream.emitChanges()
                 } else {
                     portalEl.removeAttribute("focused")
                 }
@@ -157,6 +156,7 @@ export class ComponentManager implements IDisposable {
 
     private onRefDispose = (ref: RichtextComponentRef<RichtextComponent>) => {
         delete this._instances[ref.el.getAttribute("id")]
+        this.stream.emitChanges()
     }
 
     private deleteConfirm(portalEl: HTMLElement): Observable<boolean> {

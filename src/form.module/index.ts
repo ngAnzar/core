@@ -50,14 +50,15 @@ import { RICHTEXT_AUTO_COMPLETE, RichtextAcItem, RichtextAcProvider, RichtextAcS
 import { RICHTEXT_COMPONENT } from "./input/richtext/core/component-manager"
 import { RichtextComponent, RichtextComponentParams, RichtextComponentRef } from "./input/richtext/core/component-ref"
 import { RichtextInputComponent } from "./input/richtext/richtext-input.component"
-import { RichtextDirective, RichtextEditableDirective } from "./input/richtext/richtext.directive"
+import { RichtextDirective, RichtextEditableDirective, RICHTEXT_EDITABLE } from "./input/richtext/richtext.directive"
 import { RichtextMenuComponent, RichtextMenuDirective } from "./input/richtext/richtext-menu.component"
 import { AutocompleteComponent } from "./input/richtext/autocomplete.component"
 export { RichtextStream } from "./input/richtext/core/richtext-stream"
 export {
     RichtextInputComponent, RichtextDirective,
     RICHTEXT_AUTO_COMPLETE, RichtextAcItem, RichtextAcProvider, RichtextAcSession,
-    RICHTEXT_COMPONENT, RichtextComponent, RichtextComponentParams, RichtextComponentRef
+    RICHTEXT_COMPONENT, RichtextComponent, RichtextComponentParams, RichtextComponentRef,
+    RICHTEXT_EDITABLE
 }
 
 import { SelectComponent } from "./input/select/select.component"
