@@ -81,10 +81,10 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
     autocapitalize="off",
     spellcheck="false")
 
-.nz-button.trigger(*ngIf="clearable && selection.items.length > 0", on-tap="_clearValue($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
+.nz-button.trigger(*ngIf="clearable && selection.items.length > 0", on-tap="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon")
   i.nz-icon(class=icon("mdi/close", 18))
 
-.nz-button.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)", tabindex="-1", variant="tiny filled icon", style="background-color:transparent")
+.nz-button.trigger(*ngIf="!hideTrigger", on-tap="_onTriggerClick($event)", tabindex="-1", color="common", variant="tiny icon")
   i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/chevron-down"))}'`)
 
 ng-template(#default_selected_single let-item)

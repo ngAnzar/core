@@ -1,10 +1,9 @@
-import { Component, Input, Inject, ElementRef, HostListener, Directive, ViewChild, HostBinding } from "@angular/core"
+import { Component, Input, Inject, ElementRef, Directive, ViewChild, HostBinding, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
 import { Validator, AbstractControl, ValidationErrors, NG_VALIDATORS } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { merge } from "rxjs"
+import { map } from "rxjs/operators"
 import { debounceTime } from "rxjs/operators"
-import { format } from "date-fns"
-import { IMaskDirective } from "angular-imask"
+import { setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
 
 
 import { Time } from "../../../util"
@@ -14,6 +13,8 @@ import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "../ab
 import { MASK_BLOCKS } from "./mask-blocks"
 import { TimePickerComponent } from "./time-picker.component"
 import { TimePickerService } from "./time-picker.service"
+import { InputMask } from "../input-mask.service"
+import { InvalidDateValidator } from "./invalid-date.validator"
 
 
 const MIDNIGHT = new Time("24:00:00")
@@ -93,11 +94,16 @@ export class TimeValidator implements Validator {
 @Component({
     selector: ".nz-time-input",
     templateUrl: "./time-input.component.pug",
-    providers: INPUT_MODEL
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [
+        ...INPUT_MODEL,
+        InputMask,
+        InvalidDateValidator,
+        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true }
+    ]
 })
 export class TimeInputComponent extends InputComponent<Time> {
     @ViewChild("input", { read: ElementRef, static: true }) public readonly input: ElementRef<HTMLInputElement>
-    @ViewChild("input", { read: IMaskDirective, static: true }) public readonly inputMask: IMaskDirective<any>
 
     @Input()
     public set withoutPicker(val: boolean) {
@@ -123,6 +129,10 @@ export class TimeInputComponent extends InputComponent<Time> {
         if (this._opened !== val) {
             this._opened = val
 
+            if (val && this.input) {
+                this.input.nativeElement.focus()
+            }
+
             if (val && !this._withoutPicker) {
                 if (!this.tpRef) {
                     this.tpRef = this._showPicker()
@@ -138,85 +148,87 @@ export class TimeInputComponent extends InputComponent<Time> {
     private _opened: boolean
     private tpRef: ComponentLayerRef<TimePickerComponent>
 
+    private _hour: number
+    private _minute: number
+    private _second: number
+
     public constructor(
         @Inject(InputModel) model: InputModel<Time>,
-        @Inject(ElementRef) private el: ElementRef<HTMLElement>,
+        @Inject(InputMask) private readonly mask: InputMask,
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
         @Inject(LocaleService) protected readonly locale: LocaleService,
-        @Inject(TimePickerService) private readonly timePicker: TimePickerService) {
+        @Inject(TimePickerService) private readonly timePicker: TimePickerService,
+        @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
+        @Inject(InvalidDateValidator) private readonly dtValidator: InvalidDateValidator) {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
 
-        this.destruct.subscription(this.focused).subscribe(this._handleFocus.bind(this))
+        this.destruct.subscription(this.focused).subscribe(event => {
+            if (!event.current) {
+                this.opened = false
+            }
+            this.cdr.detectChanges()
+        })
+
         this.destruct.any(() => {
             this.opened = false
         })
 
-        this.imaskOptions = {
-            mask: this.displayFormat,
-            lazy: true,
-            blocks: MASK_BLOCKS
-        }
-    }
+        this.destruct.subscription(mask.accept)
+            .pipe(
+                map(mask => {
+                    const blockVals = mask.blockValues
 
-    protected _renderValue(obj: Time | Date | string): void {
-        let value = Time.coerce(obj)
+                    this._hour = toNumber(blockVals["HH"])
+                    this._minute = toNumber(blockVals["mm"])
+                    this._second = toNumber(blockVals["ss"])
 
-        if (value && value.isValid) {
-            (this.input.nativeElement as HTMLInputElement).value = value.format(this.displayFormat)
-            this._updatePickerValue(value)
-        } else {
-            (this.input.nativeElement as HTMLInputElement).value = ""
-            this._updatePickerValue(ZEROTIME)
-        }
-
-        this.inputMask.maskRef && this.inputMask.maskRef.updateValue()
-    }
-
-    public _handleFocus(event: FocusChangeEvent) {
-        const focused = event.current
-        this.opened = !!focused
-        this.imaskOptions.lazy = !focused
-
-        this.inputMask.maskRef.updateOptions(this.imaskOptions)
-
-        if (!focused) {
-            if (!this.model.value) {
-                this._renderValue(null)
-                this.model.emitValue(null)
-            }
-        }
-    }
-
-    public _onAccept() {
-        const value = this.inputMask.maskRef.value
-        if (!/_/.test(value)) {
-            const parts = value.split(/:/g)
-            const set = (idx: number, name: string) => {
-                if (parts[idx] != null && !/_/.test(parts[idx]) && this.tpRef) {
-                    const cmp = this.tpRef.component.instance as any
-                    cmp[name] = parseInt(parts[idx])
+                    const value = mask.value
+                    if (!/_/g.test(value)) {
+                        return Time.coerce(value)
+                    } else {
+                        return mask.unmaskedValue ? mask.unmaskedValue : null
+                    }
+                })
+            )
+            .subscribe(value => {
+                let isValid = value === null
+                if (value instanceof Time && value.isValid) {
+                    this.model.emitValue(value)
+                    isValid = true
+                } else {
+                    this.model.emitValue(value = this._createPartialValue())
                 }
-            }
-            set(0, "hour")
-            set(1, "minute")
-            set(2, "second")
-        } else {
-            this.model.emitValue(null)
-        }
-    }
+                this._updatePickerValue(value)
 
-    public _onComplete(value: string) {
-        let time = Time.coerce(value)
-
-        if (time.isValid) {
-            this.model.emitValue(time)
-            this._updatePickerValue(time)
-        }
+                if (this.dtValidator.isValid !== isValid) {
+                    this.dtValidator.isValid = isValid
+                    this.model.control.updateValueAndValidity()
+                }
+            })
     }
 
     public ngAfterViewInit() {
-        this._renderValue(this.model.value)
+        this.mask.connect(this.input.nativeElement, {
+            mask: this.displayFormat.replace(/([\s-\.:\/\\])(?=\w)/g, "$1`"),
+            lazy: false,
+            overwrite: true,
+            autofix: true,
+            blocks: MASK_BLOCKS
+        })
+    }
+
+    protected _renderValue(obj: Time | Date | string): void {
+        let time = Time.coerce(obj)
+        let value = ""
+
+
+        if (time && time.isValid) {
+            value = time.format(this.displayFormat)
+        }
+
+        this.mask.value = value
     }
 
     private _showPicker() {
@@ -247,25 +259,36 @@ export class TimeInputComponent extends InputComponent<Time> {
 
     private _updatePickerValue(time: Time) {
         if (this.tpRef && time) {
-            const cmp = this.tpRef.component.instance
-            cmp.hour = time.hours || 0
-            cmp.minute = time.minutes || 0
-            cmp.second = time.seconds || 0
+            this.tpRef.component.instance.writeValue(time)
         }
+    }
+
+    private _createPartialValue(): Time {
+        let date = new Date()
+
+        if (this._hour) {
+            date = setHours(date, this._hour)
+        }
+
+        if (this._minute) {
+            date = setMinutes(date, this._minute)
+        }
+
+        if (this._second) {
+            date = setSeconds(date, this._second)
+        }
+
+        date = setMilliseconds(date, 0)
+
+        return Time.coerce(date)
     }
 }
 
 
-// function coerceTime(val: Time | Date | string): Time | null {
-//     if (val instanceof Time) {
-//         return val
-//     } else if (val instanceof Date) {
-//         return new Time(format(val, "HH:mm:ss.SSS"))
-//     } else if (typeof val === "string") {
-//         return new Time(val)
-//     } else {
-//         return null
-//     }
-// }
-
-
+function toNumber(val: string): number | null {
+    if (/^\d+$/.test(val)) {
+        return Number(val)
+    } else {
+        return null
+    }
+}

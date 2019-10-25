@@ -1,8 +1,17 @@
-input.nz-input(
-  [tabindex]="tabIndex",
-  #input,
-  type="text",
-  [imask]="imaskOptions",
-  [unmask]="false",
-  on-accept="_onAccept($event)",
-  on-complete="_onComplete($event)")
+:stylus
+  .picker-btn
+    margin: -4px 4px -10px 4px
+    align-self: start
+
+  .input
+    transition: opacity 180ms
+
+div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="4px")
+  input.nz-input.input(
+    type="text",
+    #input,
+    [tabindex]="tabIndex",
+    [style.opacity]="(model.value || model.focused) ? '1' : '0'")
+
+  .nz-button.picker-btn(fxFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
+    i.nz-icon(class=icon("mdi/alarm", 18))

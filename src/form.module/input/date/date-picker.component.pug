@@ -33,7 +33,7 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap
         [color]="isSelected(day) ? 'accent' : isToday(day) ? 'dark-base' : isSameMonth(day) ? 'base' : 'dark-base'",
         [variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
         [disabled]="!isAllowed(day)"
-        on-action="value=day") {{ day.getDate() }}
+        on-action="_emitValue(day)") {{ day.getDate() }}
 
 
 

@@ -3,5 +3,5 @@
     background: $theme.base.normal
 
 .container(fxFlex="grow", fxLayout="column", fxLayoutAlign="start center", tabindex="0")
-  nz-date-picker([value]="date", [displayed]="displayDate", (value)="date=$event")
-  nz-time-picker([value]="time", (value)="time=$event")
+  nz-date-picker(#dayPicker, [displayed]="displayDate", (value)="date=$event")
+  nz-time-picker(#timePicker, (value)="time=$event")

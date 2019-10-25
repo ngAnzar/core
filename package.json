@@ -20,7 +20,7 @@
     "@types/element-resize-detector": "^1.1.2",
     "@types/googlemaps": "^3.37.7",
     "@types/hammerjs": "^2.0.36",
-    "angular-imask": "^5.2.1",
+    "imask": "^5.2.1",
     "autosize": "^4.0.2",
     "date-fns": "^2.4.1",
     "deep-diff": "^1.0.2",

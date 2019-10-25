@@ -46,7 +46,7 @@ export class DatePickerService {
         }
 
         if (options.value) {
-            cmp.value = options.value
+            cmp.writeValue(options.value)
         }
 
         if (options.min) {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input } from "@angular/core"
+import { Component, EventEmitter, Output, Input, Inject, ChangeDetectorRef } from "@angular/core"
 import { merge } from "rxjs"
 import { debounceTime, shareReplay, map } from "rxjs/operators"
 
@@ -40,23 +40,6 @@ export class TimePickerComponent extends Destructible {
     private _second: number = 0
     public readonly secondChange = this.destruct.subject(new EventEmitter<number>())
 
-    @Input()
-    public set value(val: Time | Date | string) {
-        let time = Time.coerce(val)
-
-        if (!this._value || !val || time.compare(this._value) !== 0) {
-            this._value = time
-            if (time) {
-                this.hour = time.hours || 0
-                this.minute = time.minutes || 0
-                this.second = time.seconds || 0
-            } else {
-                this.hour = 0
-                this.minute = 0
-                this.second = 0
-            }
-        }
-    }
     public get value(): Time | Date | string { return this._value }
     private _value: Time
 
@@ -70,6 +53,28 @@ export class TimePickerComponent extends Destructible {
             }),
             shareReplay(1)
         )
+
+    public constructor(@Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef) {
+        super()
+    }
+
+    public writeValue(value: Time | Date) {
+        let time = Time.coerce(value)
+
+        if (!this._value || !value || time.compare(this._value) !== 0) {
+            this._value = time
+            if (time) {
+                this._hour = time.hours || 0
+                this._minute = time.minutes || 0
+                this._second = time.seconds || 0
+            } else {
+                this._hour = 0
+                this._minute = 0
+                this._second = 0
+            }
+            this.cdr.detectChanges()
+        }
+    }
 }
 
 function zero(num: number): string {

@@ -2,8 +2,6 @@ import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { ReactiveFormsModule } from "@angular/forms"
 
-import { IMaskModule } from "angular-imask"
-
 import { NzCommonModule } from "../common.module"
 import { NzDataModule } from "../data.module"
 import { NzListModule } from "../list.module"
@@ -170,13 +168,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
     providers: [
         DatePickerService,
         TimePickerService,
-        DatetimePickerService,
-        {
-            provide: DEFAULT_ERROR_MESSAGES,
-            useValue: {
-                required: "A mező kitöltése kötelező"
-            }
-        }
+        DatetimePickerService
     ],
     entryComponents: [
         RichtextMenuComponent,

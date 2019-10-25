@@ -5,7 +5,7 @@ export const MASK_BLOCKS = {
     yyyy: {
         mask: IMask.MaskedRange,
         from: 1900,
-        to: 3000,
+        to: 2999,
         maxLength: 4
     },
 

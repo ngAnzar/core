@@ -18,18 +18,20 @@ export class DatePickerComponent implements OnInit {
     public dayNames: string[] = []
     public days: Date[]
 
-    @Input()
-    public set value(val: Date) {
-        if (this._setDateField("_value", val)) {
-            if (this._value) {
-                this.displayed = this._value
-            }
-            (this.valueChange as Subject<Date>).next(this._value)
-            this.cdr.detectChanges()
-        }
-    }
-    public get value(): Date { return this._value }
+    public get value() { return this._value }
     private _value: Date
+    // @Input()
+    // public set value(val: Date) {
+    //     if (this._setDateField("_value", val)) {
+    //         if (this._value) {
+    //             this.displayed = this._value
+    //         }
+    //         (this.valueChange as Subject<Date>).next(this._value)
+    //         this.cdr.detectChanges()
+    //     }
+    // }
+    // public get value(): Date { return this._value }
+    // private _value: Date
 
     @Input()
     public set displayed(val: Date) {
@@ -76,6 +78,18 @@ export class DatePickerComponent implements OnInit {
 
     public ngOnInit() {
         this.displayed = new Date()
+    }
+
+    public writeValue(date: Date) {
+        if (this._setDateField("_value", date)) {
+            this.displayed = this._value
+            this.cdr.detectChanges()
+        }
+    }
+
+    public _emitValue(date: Date) {
+        this.writeValue(date);
+        (this.valueChange as Subject<Date>).next(this._value)
     }
 
     public isToday(d: Date) {

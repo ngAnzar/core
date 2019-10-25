@@ -1,7 +1,9 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy, Inject } from "@angular/core"
-import { differenceInSeconds, startOfDay, isSameDay } from "date-fns"
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy, Inject, ViewChild } from "@angular/core"
+import { differenceInSeconds, startOfDay, isSameDay, setYear, setMonth, setDate, setHours, setMinutes, setSeconds } from "date-fns"
 
 import { Time, setTzToUTC } from "../../../util"
+import { DatePickerComponent } from "./date-picker.component"
+import { TimePickerComponent } from "./time-picker.component"
 
 
 @Component({
@@ -10,16 +12,21 @@ import { Time, setTzToUTC } from "../../../util"
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatetimePickerComponent {
-    @Input()
-    public set value(val: Date) {
-        if (!this._value || !val || differenceInSeconds(this._value, val) !== 0) {
-            this._value = val
-            this.date = val
-            this.time = val
-            this.valueChange.next(val)
-            this.cdr.detectChanges()
-        }
-    }
+    @ViewChild("dayPicker", { static: true, read: DatePickerComponent }) public readonly dayPicker: DatePickerComponent
+    @ViewChild("timePicker", { static: true, read: TimePickerComponent }) public readonly timePicker: TimePickerComponent
+
+    // @Input()
+    // public set value(val: Date) {
+    //     if (!this._value || !val || differenceInSeconds(this._value, val) !== 0) {
+    //         this._value = val
+    //         this.date = val
+    //         this.time = val
+    //         this.valueChange.next(val)
+    //         this.cdr.detectChanges()
+    //     }
+    // }
+    // public get value(): Date { return this._value }
+    // private _value: Date
     public get value(): Date { return this._value }
     private _value: Date
 
@@ -55,11 +62,30 @@ export class DatetimePickerComponent {
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef) {
     }
 
+    public writeValue(date: Date) {
+        this._date = setTzToUTC(startOfDay(date))
+        this._time = Time.coerce(date)
+        this.dayPicker.writeValue(date)
+        this.timePicker.writeValue(date)
+    }
+
     private _emitValue() {
-        if (this._date && this._time && this._time.isValid && !isNaN(this._date.getTime())) {
-            this.value = new Date(
-                this._date.getFullYear(), this._date.getMonth(), this._date.getDate(),
-                this._time.hours, this._time.minutes, this._time.seconds)
+        let value = new Date()
+
+        if (this._date && !isNaN(this._date.getTime())) {
+            value = setYear(value, this._date.getFullYear())
+            value = setMonth(value, this._date.getMonth())
+            value = setDate(value, this._date.getDate())
+        }
+
+        if (this._time && this._time.isValid) {
+            value = setHours(value, this._time.hours)
+            value = setMinutes(value, this._time.minutes)
+            value = setSeconds(value, this._time.seconds)
+        }
+
+        if (!this._value || differenceInSeconds(this._value, value) !== 0) {
+            this.valueChange.next(this._value = value)
         }
     }
 }

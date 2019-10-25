@@ -31,9 +31,11 @@ export class PlaceholderComponent implements AfterContentInit, OnDestroy {
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(ElementRef) el: ElementRef<HTMLElement>) {
 
-        this._hideLabel$.pipe(debounceTime(50), takeUntil(this.destruct.on)).subscribe(val => {
-            el.nativeElement.classList[val ? "add" : "remove"]("hide-label")
-        })
+        this.destruct.subscription(this._hideLabel$)
+            .pipe(debounceTime(10), takeUntil(this.destruct.on))
+            .subscribe(val => {
+                el.nativeElement.classList[val ? "add" : "remove"]("hide-label")
+            })
     }
 
     public ngAfterContentInit() {

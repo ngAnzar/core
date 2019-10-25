@@ -29,6 +29,8 @@ export const LOCALE_DATE = new InjectionToken("Locale.date")
 
 @Injectable({ providedIn: "root" })
 export class LocaleService {
+    public readonly weekStartsOn = 1
+
     public constructor(@Inject(LOCALE_DATE) public readonly dateLocale: any) { }
 
     public formatDate(date: Date, dateFormat: DateFormat): string {
@@ -44,11 +46,11 @@ export class LocaleService {
     }
 
     public getDateFormat(format: DateFormat): string {
-        return FORMATS[format]
+        return FORMATS[format] || format
     }
 
     public parseDate(format: DateFormat, date: string): Date {
         let fmt = this.getDateFormat(format)
-        return parse(date, fmt, new Date())
+        return parse(date, fmt, new Date(), { weekStartsOn: this.weekStartsOn, locale: this.dateLocale })
     }
 }
