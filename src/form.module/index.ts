@@ -71,7 +71,6 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
 @NgModule({
     imports: [
         CommonModule,
-        IMaskModule,
         ReactiveFormsModule,
         NzCommonModule,
         NzDataModule,

@@ -12,7 +12,7 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
 
     public set options(val: T) {
         this._options = (val || {} as any)
-        if (this.imask) {
+        if (this._isValid) {
             this.imask.updateOptions(this._options)
         }
     }
@@ -20,29 +20,34 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
     private _options: T = {} as any
 
     public set value(val: string) {
-        if (this.imask) {
-            this.imask.value = val
+        if (this._isValid) {
+            try {
+                this.imask.value = val
+            } catch (e) { }
         } else {
             this._pendingValue = val
         }
     }
-    public get value() { return this.imask && this.imask.value }
+    public get value() { return this._isValid && this.imask.value }
 
-    public set typedValue(val: any) { this.imask && (this.imask.typedValue = val) }
-    public get typedValue() { return this.imask && this.imask.typedValue }
+    public set typedValue(val: any) { this._isValid && (this.imask.typedValue = val) }
+    public get typedValue() { return this._isValid && this.imask.typedValue }
 
-    public set unmaskedValue(val: string) { this.imask && (this.imask.unmaskedValue = val) }
-    public get unmaskedValue() { return this.imask && this.imask.unmaskedValue }
+    public set unmaskedValue(val: string) { this._isValid && (this.imask.unmaskedValue = val) }
+    public get unmaskedValue() { return this._isValid && this.imask.unmaskedValue }
 
     public get blockValues(): { [key: string]: string } {
         let result = {} as any
-        let inputBlocks = this.imask.masked.state._blocks.filter((block: any) => block._isRawInput !== false)
-        let maskedBlocks = (this.imask.masked as any)._maskedBlocks as { [key: string]: any }
-        let i = 0
 
-        for (const k in maskedBlocks) {
-            result[k] = inputBlocks[i]._value
-            i++
+        if (this._isValid) {
+            let inputBlocks = this.imask.masked.state._blocks.filter((block: any) => block._isRawInput !== false)
+            let maskedBlocks = (this.imask.masked as any)._maskedBlocks as { [key: string]: any }
+            let i = 0
+
+            for (const k in maskedBlocks) {
+                result[k] = inputBlocks[i]._value
+                i++
+            }
         }
 
         return result
@@ -50,7 +55,7 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
 
     private _pendingValue: any
 
-    // private readonly _el: HTMLInputElement
+    private get _isValid(): boolean { return this.imask && this.imask.el && !this.destruct.done }
 
     public constructor() {
         super()
@@ -66,8 +71,6 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
         if (options) {
             this._options = options
         }
-
-        // (this as any)._el = el
 
         if (this.imask) {
             this.imask.destroy()
