@@ -96,6 +96,7 @@ export class ComponentManager implements IDisposable {
             tap(result => {
                 if (result) {
                     removeNode(portalEl)
+                    this.stream.emitChanges()
                 } else {
                     portalEl.removeAttribute("focused")
                 }
