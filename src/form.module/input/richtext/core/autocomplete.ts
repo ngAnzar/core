@@ -1,7 +1,7 @@
 import { Component, Inject, InjectionToken, Optional } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { Observable, Subject, forkJoin, EMPTY, merge, zip, of } from "rxjs"
-import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap, filter, tap, mapTo, switchMapTo, pairwise, startWith, share } from "rxjs/operators"
+import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap, filter, tap, mapTo, switchMapTo, pairwise, startWith, share, catchError } from "rxjs/operators"
 
 import { Destructible } from "../../../../util"
 import { Model, Field } from "../../../../data.module"
@@ -161,7 +161,13 @@ export class AutocompleteManager extends Destructible {
                 return of(trigger)
             }
 
-            return forkJoin(queryFrom.map(p => p.query(query))).pipe(
+            const queries = queryFrom.map(p => {
+                return p.query(query).pipe(
+                    catchError(_ => of([] as RichtextAcItem[]))
+                )
+            })
+
+            return forkJoin(queries).pipe(
                 take(1),
                 map(value => {
                     let result: RichtextAcItem[] = []
