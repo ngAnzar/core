@@ -72,4 +72,8 @@ export abstract class ToastBase {
             this.layerRef.hide()
         }
     }
+
+    public lengthenHide() {
+        this._autohideElapsed = 0
+    }
 }

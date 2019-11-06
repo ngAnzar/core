@@ -13,6 +13,7 @@ export { RippleRef } from "./ripple/ripple-ref"
 export { RippleOptions } from "./ripple/ripple-options"
 export { RippleService, RippleComponent }
 
+export { Animation, Transition, easeLineral, easeOutCubic, easeOutQuart } from "./animation"
 
 import { Renderer } from "./renderer.service"
 

@@ -17,14 +17,16 @@
     position: absolute
     top: 50%
     left: 50%
+    transition: opacity 200ms
+    opacity: 0
 
 
 
 div.container(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
   div.spinner(fxFlex="noshrink")
     nz-progress(type="circle", radius="20", [source]="progress", [color]="spinnerColor")
-    i.nz-icon.status-icon(*ngIf="state==='success'" bind-color="spinnerColor" class=icon("mdi/check-outline", 20) style="margin: -10px 0 0 -10px")
-    i.nz-icon.status-icon(*ngIf="state==='failure'" bind-color="spinnerColor" class=icon("mdi/close-outline", 20) style="margin: -11px 0 0 -10px")
+    i.nz-icon.status-icon([style.opacity]="state==='success' ? 1 : 0", [color]="spinnerColor" class=icon("mdi/check-outline", 20) style="margin: -10px 0 0 -10px")
+    i.nz-icon.status-icon([style.opacity]="state==='failure' ? 1 : 0", [color]="spinnerColor" class=icon("mdi/close-outline", 20) style="margin: -11px 0 0 -10px")
 
   div.text-container(fxFlex="grow", *ngIf="infoText") {{ infoText }}
 

@@ -7,6 +7,7 @@ import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
 import { getProviders, LayerMessageComponent } from "../_shared"
 import { ProgressEvent } from "../../animation.module"
+import { FileDownloadEvent } from "../../common.module"
 
 import { ToastLayer } from "./toast-behavior"
 import { ToastComponent } from "./toast.component"
@@ -29,6 +30,12 @@ function defaultOptions(options: ToastOptions): ToastOptions {
 export interface SaveHandlerOptions extends ToastOptions {
     beginMsg?: string
     successMsg?: string
+}
+
+
+export interface FileDownloadOptions extends ToastOptions {
+    beginMsg?: string
+    message?: string
 }
 
 
@@ -98,6 +105,47 @@ export class ToastService {
         //     console.log("toast switch map", value)
         //     return of(value)
         // })
+    }
+
+    public handleFileDownload<T extends Observable<FileDownloadEvent>>(options: FileDownloadOptions): (src: T) => T {
+        const progress = new Subject<ProgressEvent>()
+
+        this.progress({
+            progress,
+            ...options
+        })
+
+        if (options.beginMsg) {
+            progress.next({ message: options.beginMsg })
+        }
+
+        return ((src: T) => {
+            return src.pipe(
+                catchError(err => {
+                    progress.error({ percent: 1, message: err.message })
+                    return NEVER
+                }),
+                tap(v => {
+                    switch (v.state) {
+                        case "starting":
+                            progress.next({ message: options.message || v.filename })
+                            break
+
+                        case "progress":
+                        case "done":
+                            if (v.total) {
+                                progress.next({
+                                    message: options.message || v.filename,
+                                    total: v.total,
+                                    current: v.current,
+                                    percent: v.percent
+                                })
+                            }
+                            break
+                    }
+                })
+            )
+        }) as any
     }
 
     public catchError() {

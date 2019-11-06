@@ -2,8 +2,8 @@ import {
     Component, Inject, OnDestroy, InjectionToken, ViewChild, AfterViewInit, ElementRef,
     ChangeDetectionStrategy, ChangeDetectorRef, OnInit
 } from "@angular/core"
-import { Observable, of } from "rxjs"
-import { tap, catchError, share, finalize } from "rxjs/operators"
+import { Observable, of, interval } from "rxjs"
+import { tap, catchError, share, finalize, switchMap, takeWhile, mapTo } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"
@@ -67,7 +67,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         if (this.options.progress) {
             this.progress = this.options.progress.pipe(
                 tap(val => {
-                    this.state = "success"
+                    this.state = val.percent >= 1 ? "success" : "progress"
                 }),
                 catchError(err => {
                     this.state = "failure"
@@ -82,6 +82,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
             )
 
             this.destruct.subscription(this.progress).subscribe(event => {
+                this.lengthenHide()
                 this.infoText = event.message
             })
         }

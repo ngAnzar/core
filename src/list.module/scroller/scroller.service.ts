@@ -4,15 +4,8 @@ import { startWith } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
 import { Rect } from "../../layout.module"
+import { Animation, Transition, easeOutCubic } from "../../animation.module"
 import { ScrollableDirective } from "./scrollable.directive"
-
-
-const Zone = (window as any).Zone
-const __zone_symbol__ =
-    (typeof Zone !== "undefined") && (Zone as any)["__symbol__"] || function (v: string): string {
-        return "__zone_symbol__" + v;
-    };
-const RAF: "requestAnimationFrame" = __zone_symbol__("requestAnimationFrame");
 
 
 export type ScrollOrient = "horizontal" | "vertical"
@@ -223,14 +216,14 @@ export class ScrollerService implements OnDestroy {
     public scrollable: ScrollableDirective
 
     private activeMethod: ScrollingMethod = null
-    private animation: Animation
+    private animation: ScrollerAnimation
 
     public constructor(@Inject(NgZone) protected readonly zone: NgZone) {
         this.zone.runOutsideAngular(() => {
             (this as any).vpImmediate = this.destruct.disposable(new ImmediateViewport());
             (this as any).vpRender = this.destruct.disposable(new RenderedViewport(this.vpImmediate))
 
-            this.animation = new Animation((x, y) => {
+            this.animation = new ScrollerAnimation((x, y) => {
                 this.vpRender.scrollPosition = {
                     top: y,
                     left: x
@@ -347,115 +340,25 @@ interface AnimProps {
 }
 
 
-class Animation implements AnimProps, IDisposable {
+class ScrollerAnimation extends Animation<AnimProps> implements AnimProps, IDisposable {
     public readonly fromX: number
     public readonly toX: number
     public readonly fromY: number
     public readonly toY: number
     public readonly velocity: number
 
-    private beginTime: number
-    private rafId: any
-    private _pending: Partial<AnimProps>
-    private _lastFrameTime: number
-    private _doneListeners: Array<() => void> = []
+    private _trans = this.transition(easeOutCubic, (diff) => Math.max(1, Math.abs(diff) * this.velocity))
 
     public constructor(private onTick: (x: number, y: number) => void) {
-
+        super()
     }
 
-    public didDone(cb: () => void) {
-        this._doneListeners.push(cb)
-    }
-
-    public update(props: Partial<AnimProps>) {
-        this._pending = props
-        this.play()
-    }
-
-    private _update(): boolean {
-        if (this._pending) {
-            const pending = this._pending
-            delete this._pending
-            let changed = false
-            for (const k in pending) {
-                if (pending.hasOwnProperty(k)) {
-                    const value = (pending as any)[k]
-                    const selfValue = (this as any)[k]
-                    if (value !== selfValue) {
-                        (this as any)[k] = value
-                        changed = true
-                    }
-                }
-            }
-            return changed
-        }
-        return false
-    }
-
-    private tick = (timestamp: number) => {
-        const changed = this._update()
-
-        if (this.beginTime == null || changed) {
-            this.beginTime = this._lastFrameTime || timestamp
-        }
-
-        this._lastFrameTime = timestamp
-        const x = this.calc(timestamp, this.fromX, this.toX)
-        const y = this.calc(timestamp, this.fromY, this.toY)
+    protected tick(timestamp: number): boolean {
+        const x = this._trans(timestamp, this.fromX, this.toX)
+        const y = this._trans(timestamp, this.fromY, this.toY)
 
         this.onTick(x.value, y.value)
 
-        if (!changed && x.progress === 1.0 && y.progress === 1.0) {
-            this.stop()
-        } else {
-            this.rafId = window[RAF](this.tick)
-        }
+        return !(x.progress === 1.0 && y.progress === 1.0)
     }
-
-    private calc(timestamp: number, from: number, to: number): { progress: number, value: number } {
-        const diff = to - from
-        if (diff !== 0) {
-            const duration = Math.max(1, Math.abs(diff) * this.velocity)
-            const progress = Math.min(1.0, (timestamp - this.beginTime) / duration)
-            const value = from + diff * easeOutCubic(progress)
-            // const value = progress <= 1.0 ? from + diff * progress : to
-            return { progress, value }
-        } else {
-            return { progress: 1.0, value: to }
-        }
-    }
-
-    public play() {
-        if (!this.rafId) {
-            this.rafId = window[RAF](this.tick)
-        }
-    }
-
-    public stop() {
-        if (this.rafId) {
-            cancelAnimationFrame(this.rafId)
-            delete this.rafId
-            delete this.beginTime
-            delete this._lastFrameTime
-
-            for (const cb of this._doneListeners) {
-                cb()
-            }
-            this._doneListeners.length = 0
-        }
-    }
-
-    public dispose() {
-        this.stop()
-    }
-}
-
-
-function easeOutQuart(t: number) {
-    return 1 - (--t) * t * t * t
-}
-
-function easeOutCubic(t: number) {
-    return (--t) * t * t + 1
 }
