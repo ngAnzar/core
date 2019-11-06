@@ -27,7 +27,9 @@
     "imask": "^5.2.1",
     "is-plain-object": "^3.0.0",
     "log4javascript": "^1.4.15",
-    "tslint": "^5.20.0"
+    "tslint": "^5.20.0",
+    "content-disposition": "^0.5.3",
+    "@types/content-disposition": "^0.5.2"
   },
   "peerDependencies": {
     "@angular/animations": "^8.2.12",

@@ -1,52 +1,152 @@
 import { Injectable, Inject } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
-import { Observable, Observer, fromEvent } from "rxjs"
-import { share } from "rxjs/operators"
+import { HttpClient, HttpRequest, HttpEventType } from "@angular/common/http"
+import { Observable, Observer, fromEvent, EMPTY } from "rxjs"
+import { share, catchError } from "rxjs/operators"
+const contentDisposition = require("content-disposition")
 
-
+// import { __zone_symbol__ } from "../../util/zone"
 import { ProgressEvent } from "../../animation.module"
 
 
+// const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
+
+
 export interface FileDownloadEvent extends ProgressEvent {
-    state: "starting" | "progress"
+    state: "starting" | "progress" | "done"
+    filename: string
+    url?: string
 }
 
 
 @Injectable()
 export class FileDownloadService {
-    public constructor(@Inject(DOCUMENT) protected readonly doc: Document) {
+    public constructor(
+        @Inject(DOCUMENT) protected readonly doc: Document,
+        @Inject(HttpClient) private readonly http: HttpClient) {
 
     }
 
-    public download(url: string, progress?: boolean): Observable<FileDownloadEvent> {
-        url = this._qualifyUrl(url)
-
+    public download(url: string, filename?: string): Observable<FileDownloadEvent> {
         return Observable.create((observer: Observer<FileDownloadEvent>) => {
-            const iframe = this._iframe()
-            this.doc.body.appendChild(iframe)
+            url = this._qualifyUrl(url)
 
-            const loadS = fromEvent(iframe, "load").subscribe(event => {
-                observer.next({ state: "progress" })
-            })
-            const messageS = fromEvent(window, "message").subscribe((event: any) => {
-                let data = event.data as any
-                if (data && data.type === "url-load-error" && data.url === url) {
-                    observer.error(data)
-                    observer.complete()
-                }
+            const request = new HttpRequest("GET", url, {
+                reportProgress: true,
+                responseType: "blob",
+                withCredentials: true
             })
 
-            observer.next({ state: "starting" })
-            iframe.src = url
+            let total: number
+            let downloadUrl: string
+
+            const subscription = this.http.request(request)
+                .pipe(
+                    catchError((err: any) => {
+                        observer.error(err)
+                        return EMPTY
+                    })
+                )
+                .subscribe(event => {
+                    let cd: string
+
+                    switch (event.type) {
+                        case HttpEventType.Sent:
+                            break
+
+                        case HttpEventType.ResponseHeader:
+                            if (!filename) {
+                                cd = event.headers.get("Content-Disposition")
+                                if (cd) {
+                                    filename = contentDisposition.parse(cd).parameters.filename
+                                }
+
+                                if (!filename) {
+                                    filename = "file"
+                                }
+                            }
+                            observer.next({ state: "starting", filename: filename, total: Number(event.headers.get("Content-Length")) || null })
+                            break
+
+                        case HttpEventType.DownloadProgress:
+                            observer.next({
+                                state: "progress",
+                                filename: filename,
+                                current: event.loaded,
+                                total: total = event.total,
+                                percent: event.total ? event.loaded / event.total : null
+                            })
+                            break
+
+                        case HttpEventType.Response:
+                            downloadUrl = URL.createObjectURL(event.body)
+                            this._save(downloadUrl, filename || "")
+
+                            observer.next({
+                                state: "done",
+                                filename: filename,
+                                current: total,
+                                total: total,
+                                percent: 1,
+                                url: downloadUrl
+                            })
+                            break
+                    }
+                })
 
             return () => {
-                loadS.unsubscribe()
-                messageS.unsubscribe()
-                if (iframe.parentNode) {
-                    iframe.parentNode.removeChild(iframe)
+                subscription.unsubscribe()
+                if (downloadUrl) {
+                    URL.revokeObjectURL(downloadUrl)
                 }
+                // window[SET_TIMEOUT](URL.revokeObjectURL.bind(URL, downloadUrl), 1000)
+                console.log("UNSUBSCRIBE")
             }
         }).pipe(share())
+    }
+
+    // public __download(url: string, progress?: boolean): Observable<FileDownloadEvent> {
+    //     url = this._qualifyUrl(url)
+
+    //     return Observable.create((observer: Observer<FileDownloadEvent>) => {
+    //         const iframe = this._iframe()
+    //         this.doc.body.appendChild(iframe)
+
+    //         const loadS = fromEvent(iframe, "load").subscribe(event => {
+    //             observer.next({ state: "progress" })
+    //         })
+    //         const messageS = fromEvent(window, "message").subscribe((event: any) => {
+    //             let data = event.data as any
+    //             if (data && data.type === "url-load-error" && data.url === url) {
+    //                 observer.error(data)
+    //                 observer.complete()
+    //             }
+    //         })
+
+    //         observer.next({ state: "starting" })
+    //         iframe.src = url
+
+    //         return () => {
+    //             loadS.unsubscribe()
+    //             messageS.unsubscribe()
+    //             if (iframe.parentNode) {
+    //                 iframe.parentNode.removeChild(iframe)
+    //             }
+    //         }
+    //     }).pipe(share())
+    // }
+
+    protected _save(objectUrl: string, filename: string) {
+        const a = this.doc.createElement("a")
+        a.href = objectUrl
+        a.download = filename
+        a.style.visibility = "hidden"
+        a.style.position = "absolute"
+
+        this.doc.body.appendChild(a)
+
+        a.click()
+        a.parentNode.removeChild(a)
     }
 
     protected _iframe(): HTMLIFrameElement {
