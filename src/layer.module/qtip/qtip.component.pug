@@ -1,1 +1,11 @@
-span.nz-qtip-content {{ text }}
+:stylus
+  .content
+    display: inline-block
+    background: $theme.base.on.light
+    color: $theme.base.normal
+    nz-typo: $typo.caption
+    padding: 8px 12px
+    max-width: 300px
+
+
+span.content {{ text }}
