@@ -45,6 +45,13 @@ export class RichtextMenuDirective extends Destructible {
         // stream.addElementHandler(STRIKE_THROUGHT_EL, null)
     }
 
+    public canShowByState(): boolean {
+        return Boolean(this.stream.getState(BOLD_EL)
+            || this.stream.getState(ITALIC_EL)
+            || this.stream.getState(UNDERLINE_EL)
+            || this.stream.getState(STRIKE_THROUGHT_EL))
+    }
+
     public show() {
         if (!this._layerRef || !this._layerRef.isVisible) {
             let behavior = new DropdownLayer({

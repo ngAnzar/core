@@ -72,18 +72,18 @@ export const fadeAnimation: AnimationSet = {
 export const ddAnimation: AnimationSet = {
     show: [
         style({
-            "transform": "scale(0.5)",
+            "transform": "scale({{ scaleXStart }}, {{ scaleYStart }}) translate({{ translateX }}, {{ translateY }})",
             "opacity": "0",
             "transform-origin": "{{ origin }}",
             "visibility": "visible"
         }),
-        animate(`200ms ease-in`, style({
+        animate(`150ms ease-in`, style({
             "opacity": "1",
-            "transform": "scale(1)"
+            "transform": "scale(1, 1) translate(0px, 0px)"
         }))
     ],
     hide: [
-        animate(`200ms ease-in`, style({ opacity: 0 }))
+        animate(`150ms ease-in`, style({ opacity: 0 }))
     ]
 }
 

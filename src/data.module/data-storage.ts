@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, of, Subject, Observer } from "rxjs"
-import { map, startWith, debounceTime, tap, shareReplay, finalize } from "rxjs/operators"
+import { Observable, of, Subject, Observer, merge } from "rxjs"
+import { map, startWith, debounceTime, tap, shareReplay, finalize, share } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
 
@@ -50,23 +50,31 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public readonly busy: Observable<boolean> = new EventEmitter()
     public readonly empty: Observable<boolean> = new EventEmitter()
 
-    public get invalidated(): Observable<void> {
-        return Observable.create((observer: Observer<any>) => {
-            const items = [
-                this.filter.changed.subscribe(observer),
-                this.sorter.changed.subscribe(observer),
-                this.meta.changed.subscribe(observer),
-                this.reseted.subscribe(observer),
-                this.source.changed.subscribe(observer)
-            ]
+    public readonly invalidated = merge(
+        this.filter.changed,
+        this.sorter.changed,
+        this.meta.changed,
+        this.reseted,
+        this.source.changed
+    ).pipe(debounceTime(10), share())
 
-            return () => {
-                for (const item of items) {
-                    item.unsubscribe()
-                }
-            }
-        }).pipe(debounceTime(10))
-    }
+    // public get invalidated(): Observable<void> {
+    //     return Observable.create((observer: Observer<any>) => {
+    //         const items = [
+    //             this.filter.changed.subscribe(observer),
+    //             this.sorter.changed.subscribe(observer),
+    //             this.meta.changed.subscribe(observer),
+    //             this.reseted.subscribe(observer),
+    //             this.source.changed.subscribe(observer)
+    //         ]
+
+    //         return () => {
+    //             for (const item of items) {
+    //                 item.unsubscribe()
+    //             }
+    //         }
+    //     }).pipe(debounceTime(10))
+    // }
 
     public get data(): Readonly<{ [key: number]: T }> { return this.cache }
 
@@ -153,6 +161,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.total = 0;
         (this as any).lastIndex = 0;
         (this as any).endReached = false;
+        (this as any).isBusy = this.source.async;
         (this as any).isEmpty = true;
         if (skipEvent !== true) {
             (this.reseted as EventEmitter<void>).emit()

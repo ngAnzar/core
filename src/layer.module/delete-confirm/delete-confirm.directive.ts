@@ -41,7 +41,8 @@ export class DeleteConfirmDirective implements OnDestroy {
             },
             backdrop: { hideOnClick: false, type: "filled" },
             elevation: 10,
-            rounded: 3
+            rounded: 3,
+            menuLike: true
         })
 
         this.layerRef = this.layerSvc.createFromComponent(DeleteConfirmDialogComponent, behavior, null, [

@@ -1,9 +1,9 @@
 import {
     Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
-    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef
+    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter
 } from "@angular/core"
 import { merge, Observable, Subject, Subscription, EMPTY, of } from "rxjs"
-import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take } from "rxjs/operators"
+import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items } from "../data.module"
 import { Destruct, NzRange, ListDiffKind, ListDiffItem } from "../util"
@@ -28,6 +28,13 @@ export interface VirtualForContext<T> {
 }
 
 
+export interface RenderedEvent<T> {
+    changes: ListDiffItem<T>[],
+    renderedRange: NzRange,
+    currentRange: NzRange
+}
+
+
 export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>;
 
 
@@ -46,7 +53,12 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             this._srcSub.unsubscribe()
         }
         if (value) {
-            this._srcSub = this.destruct.subscription(value.storage.invalidated).subscribe(this._reset as any)
+            this._srcSub = this.destruct
+                .subscription(value.storage.invalidated)
+                .pipe(startWith(null))
+                .subscribe(this._reset as any)
+        } else {
+            delete this._srcSub
         }
     }
     public get nzVirtualForOf(): DataSourceDirective<T> {
@@ -59,7 +71,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     public set itemsPerRequest(value: number) { this._itemsPerRequest = parseInt(value as any, 10) }
     public get itemsPerRequest(): number { return this._itemsPerRequest }
     protected _itemsPerRequest: number = 30
-
 
     protected destruct = new Destruct(() => {
         function d(view: ViewRef) {
@@ -132,15 +143,20 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private items$ = this.destruct.subscription(this.requestRange$).pipe(
         switchMap(r => {
-            return this.nzVirtualForOf.getRange(r).pipe(
-                take(1),
-                map(items => items.getRange(r))
-            )
+            if (this._nzVirtualForOf) {
+                return this._nzVirtualForOf.getRange(r).pipe(
+                    take(1),
+                    map(items => items.getRange(r))
+                )
+            } else {
+                return of(EMPTY_ITEMS)
+            }
         }),
         shareReplay(1)
     )
 
-    private render$ = this.destruct.subscription(this.items$).pipe(
+    @Output("rendered")
+    public readonly render$ = this.destruct.subscription(this.items$).pipe(
         withPrevious(),
         // withPrevious(this.reset$),
         map(vals => {
@@ -152,16 +168,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             }
         }),
         filter(result => result.changes.length > 0),
-        tap(result => this._applyChanges(result.changes, result.renderedRange, result.currentRange)),
-        // tap(() => this.ngDoCheck()),
-        // tap(() => this._cdr.markForCheck()),
-        tap(result => this.visibleItems.onRender(result.renderedRange)),
+        tap(result => {
+            this._applyChanges(result.changes, result.renderedRange, result.currentRange)
+            this.visibleItems.onRender(result.renderedRange)
+            console.log(result)
+        }),
+        shareReplay(1)
     )
-
-    private _suspend = new Subject()
-
-
-
 
     public constructor(
         @Inject(ViewContainerRef) private readonly _vcr: ViewContainerRef,
@@ -179,15 +192,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             .pipe(startWith(0))
             .subscribe(this._scroll)
     }
-
-    // public ngDoCheck() {
-    //     for (let i = 0, l = this._vcr.length; i < l; i++) {
-    //         let v: EmbeddedView<T> = this._vcr.get(i) as any
-    //         if (v && v.context && v.context.index !== -1) {
-    //             v.detectChanges()
-    //         }
-    //     }
-    // }
 
     public ngOnDestroy() {
         this.destruct.run()
@@ -231,16 +235,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             }
         }
     }
-
-    // private _clear() {
-    //     this.reusable.length = 0
-    //     for (let i = this._vcr.length - 1; i >= 0; i--) {
-    //         let v: EmbeddedView<T> = this._vcr.get(i) as any
-    //         v.context.index = -1
-    //         this._vcr.detach(i)
-    //         this.reusable.push(v)
-    //     }
-    // }
 
     private _getViewForItem(index: number, item: T, range: NzRange, pos: number): EmbeddedView<T> {
         let v = this.reusable.shift()

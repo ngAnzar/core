@@ -67,7 +67,9 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
                     return false
                 }
             case ENTER:
-                if (this._keyboardFocused !== -1) {
+                const focused = this.selection.focused
+                if (focused) {
+                    this._keyboardFocused = focused.selectionIndex
                     this.moveSelection(0, event.shiftKey, event.ctrlKey)
                 }
                 break

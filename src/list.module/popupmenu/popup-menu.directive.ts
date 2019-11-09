@@ -22,7 +22,7 @@ export class PopupMenuDirective extends LayerFactoryDirective {
     }
     protected _menu: PopupMenuComponent
 
-
+    @Input() public menuLikeAnimation: boolean
 
     public constructor(
         @Inject(LevitateAnchorDirective) @Optional() @Self() levitateAnchor: LevitateAnchorDirective,
@@ -42,6 +42,7 @@ export class PopupMenuDirective extends LayerFactoryDirective {
             layerSvc,
             vcr,
             el)
+        this.menuLikeAnimation = true
     }
 
     @HostListener("tap", ["$event"])
@@ -61,7 +62,8 @@ export class PopupMenuDirective extends LayerFactoryDirective {
                     crop: this.targetEl.nativeElement
                 },
                 elevation: 10,
-                minWidth: this.targetEl.nativeElement.offsetWidth
+                minWidth: this.targetEl.nativeElement.offsetWidth,
+                menuLike: this.menuLikeAnimation
             })
             this._menu._layerRef = this.show(behavior, { $implicit: this })
         }

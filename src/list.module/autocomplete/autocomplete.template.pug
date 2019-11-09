@@ -23,29 +23,36 @@
 
 div(fxFlex="grow", fxLayout="column inline", tabindex="0")
 
-  .nz-list-empty.notfound(*ngIf="source.storage && source.storage.isEmpty && !source.storage.isBusy", fxFlex="none") Nem található
+  .nz-list-empty.notfound(*ngIf="isNotFound", fxFlex="none") Nem található
 
   //- TODO: loading anim
 
   .nz-scroller.scroller(#scroller, *ngIf="source.storage", fxFlex="grow")
-    .nz-list.list(#list bind-style.gridTemplateRows="gridTemplateRows", scrollable)
-      ng-template(bind-ngIf="actionsByPosition.first")
-        ng-template(ngFor bind-ngForOf="actionsByPosition.first" let-action let-index="index")
-          .nz-list-item.item.action(bind-style.gridRow="index + 1" bind-selectableAction="action.model" bind-selectionIndex="index + 1")
-            ng-template(bind-ngTemplateOutlet="action.tpl")
+    .nz-list.list(#list, [style.gridTemplateRows]="gridTemplateRows", scrollable)
+      ng-template([ngIf]="actionsByPosition.first")
+        ng-template(ngFor, [ngForOf]="actionsByPosition.first", let-action, let-index="index")
+          .nz-list-item.item.action([style.gridRow]="index + 1", [selectableAction]="action.model", [selectionIndex]="index + 1")
+            ng-template([ngTemplateOutlet]="action.tpl")
 
-      ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", let-first="first", let-last="last", [fixedItemHeight]="48")
+      ng-template(nzVirtualFor,
+          [nzVirtualForOf]="source",
+          let-virtual,
+          let-index="index",
+          let-first="first",
+          let-last="last",
+          [fixedItemHeight]="48",
+          (rendered)="onItemsRendered($event)")
         .nz-list-item.item([style.gridRow]="offset(index)", [selectable]="virtual", [selectionIndex]="offset(index)")
           ng-template(
-            bind-ngTemplateOutlet="itemTpl"
-            bind-ngTemplateOutletContext="{$implicit:virtual}")
+            [ngTemplateOutlet]="itemTpl",
+            [ngTemplateOutletContext]="{$implicit:virtual}")
 
-      ng-template(bind-ngIf="actionsByPosition.last")
-        ng-template(ngFor bind-ngForOf="actionsByPosition.last" let-action let-index="index")
+      ng-template([ngIf]="actionsByPosition.last")
+        ng-template(ngFor, [ngForOf]="actionsByPosition.last", let-action, let-index="index")
           .nz-list-item.item.action(
             [style.gridRow]="offset(index) + source.storage.lastIndex",
             [selectableAction]="action.model",
             [selectionIndex]="offset(index) + source.storage.lastIndex",
             color="light-accent")
-            ng-template(bind-ngTemplateOutlet="action.tpl")
+            ng-template([ngTemplateOutlet]="action.tpl")
 

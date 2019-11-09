@@ -39,6 +39,7 @@ export interface LayerOptions {
 export interface DropdownLayerOptions extends LayerOptions {
     initialWidth?: number
     initialHeight?: number
+    menuLike?: boolean
 }
 
 

@@ -98,7 +98,7 @@ export class RichtextEditableDirective extends Destructible {
         @Inject(AutocompletePopup) private readonly acPopup: AutocompletePopup,
         @Inject(ComponentManager) private readonly cmpManager: ComponentManager,
         @Inject(ScrollerService) @Optional() private readonly scroller: ScrollerService,
-        @Inject(SelectionService) private readonly selection: SelectionService) {
+        @Inject(SelectionService) public readonly selection: SelectionService) {
         super()
 
         this.destruct.any(watchMutation(el.nativeElement, this.onMutation.bind(this), {

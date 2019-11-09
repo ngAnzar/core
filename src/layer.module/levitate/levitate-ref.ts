@@ -47,6 +47,14 @@ export class LevitateRef {
         this.resume()
     }
 
+    public reset() {
+        this.suspend()
+        const style = this.levitate.ref.style
+        style.maxWidth = "none"
+        style.maxHeight = "none"
+        this.resume()
+    }
+
     protected update = (rects: Rects) => {
         let pos = this.mc.levitate(rects);
         // TODO: CHECK EQ

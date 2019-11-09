@@ -7,18 +7,22 @@ import {
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { FocusMonitor } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
-import { Observable, Subject, Subscription, Observer, forkJoin, timer } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay } from "rxjs/operators"
+import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY } from "rxjs"
+import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError } from "rxjs/operators"
 
-import { NzRange } from "../../../util"
-import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection } from "../../../data.module"
+import { NzRange, __zone_symbol__ } from "../../../util"
+import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
 import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
 import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
-import { parseMargin } from '@anzar/core/layout.module'
+import { parseMargin } from "../../../layout.module"
+
+
+const CLEAR_TIMEOUT: "clearTimeout" = __zone_symbol__("clearTimeout")
+const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
 
 // import { ChipComponent } from "./chip.component"
 
@@ -210,7 +214,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     protected queryAllowed: boolean = true
 
-    protected input$: Observable<string> = this.destruct.subject(new Subject())
+    // text input value, when editable
+    protected input$ = this.destruct.subject(new Subject<string>())
 
     protected query$ = this.input$.pipe(
         filter(() => this.editable && !this.disabled),
@@ -221,6 +226,46 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         }),
         debounce(() => timer(this.source.async ? 300 : 0)),
+        shareReplay(1)
+    )
+
+    // pressed printable keycodes when not editable
+    protected search$ = this.destruct.subject(new Subject<string>())
+
+    protected focusItem$ = this.search$.pipe(
+        filter(() => !this.editable && !this.disabled),
+        collectTime(1000),
+        map(value => value.join("")),
+        switchMap(value => {
+            if (this.source.async) {
+                return this.source.storage.items.pipe(map(items => [value, items] as [string, T[]]))
+            } else {
+                return of([value, (this.source.storage.source as StaticSource<any>).data] as [string, T[]])
+            }
+        }),
+        map(([value, items]) => {
+            const focused = this.selection.focused
+            const start = (focused ? focused.selectionIndex : 0)
+            for (let i = start, l = items.length; i < l; i++) {
+                const item = items[i]
+                const searchIn = this.getDisplayValue(item)
+                if (searchIn && searchIn.toLowerCase().startsWith(value.toLowerCase())) {
+                    return [value, item, i]
+                }
+            }
+
+            if (start !== 0) {
+                for (let i = 0, l = Math.min(start, items.length); i < l; i++) {
+                    const item = items[i]
+                    const searchIn = this.getDisplayValue(item)
+                    if (searchIn && searchIn.toLowerCase().startsWith(value.toLowerCase())) {
+                        return [value, item, i]
+                    }
+                }
+            }
+
+            return null
+        }),
         shareReplay(1)
     )
 
@@ -316,7 +361,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }))
         this._closeShortcuts.enabled = false
 
-        this.destruct.subscription(this.query$).subscribe(this._querySuggestions)
+        this.destruct.subscription(this.query$).subscribe(this._querySuggestions.bind(this))
+        this.destruct.subscription(this.focusItem$).subscribe(this._focusItemByInput.bind(this))
     }
 
     public reset() {
@@ -522,13 +568,17 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.inputState = "typing"
     }
 
-    protected _querySuggestions = (text: string): void => {
+    protected _querySuggestions(text: string): void {
         this.inputState = "querying"
         this._updateFilter(text)
-
-        // TODO: ha nem volt nyitva, akkor megvárni, amíg betölti az első X elemet, és csak utána kinyitni
-
         this.opened = true
+    }
+
+    protected _focusItemByInput(value: [string, T, number]): void {
+        this.opened = true
+        if (value) {
+            this.selection.setFocused(value[1].pk, "keyboard")
+        }
     }
 
     @HostListener("keydown", ["$event"])
@@ -536,6 +586,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
             event.preventDefault()
             event.stopImmediatePropagation()
+        } else if (event.key && event.key.length === 1) {
+            this.search$.next(event.key)
         }
     }
 
@@ -639,7 +691,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     }
                     return true
                 }
-
         }
         return false
     }
@@ -687,4 +738,29 @@ function setPath(obj: any, path: string, value: any) {
     }
 
     obj[last] = value
+}
+
+
+function collectTime<T>(t: number): (src: Observable<T>) => Observable<T[]> {
+    let value: T[] = []
+    let timeout: any
+
+    const clear = () => {
+        value = []
+    }
+
+    return (src: Observable<T>) => {
+        return src.pipe(
+            map((v: T) => {
+                if (timeout) {
+                    window[CLEAR_TIMEOUT](timeout)
+                }
+
+                timeout = window[SET_TIMEOUT](clear, t)
+
+                value.push(v)
+                return value as T[]
+            })
+        )
+    }
 }

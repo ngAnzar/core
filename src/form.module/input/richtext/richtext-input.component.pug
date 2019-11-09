@@ -19,4 +19,5 @@
       nzRichtextMenu,
       [attr.tabindex]="tabIndex",
       contenteditable="true",
-      (value)="_handleInput($event)")
+      (value)="_handleInput($event)",
+      (cursorMove)="_onCursorMove($event)")

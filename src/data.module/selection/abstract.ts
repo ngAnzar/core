@@ -30,6 +30,7 @@ export interface ISelectionModel<T extends Model = Model> {
     readonly changes: Observable<SelectionEvent<T>>
     readonly keyboard: SelectionKeyboardHandler<T>
     readonly selected: SelectionItems<T>
+    readonly focused: ISelectable
 
     update(update: Update): void
     clear(): void
@@ -198,8 +199,9 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
 }
 
 
-export interface FocusingEvent<T> {
+export interface FocusingEvent<T extends Model> {
     item: T
+    component: ISelectable<T>
     origin: FocusOrigin
 }
 
@@ -221,6 +223,8 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
     @Output("focusing")
     public readonly focusing: Observable<FocusingEvent<T>> = new Subject()
     private _focusedItem: T
+
+    public readonly focused: ISelectable
 
     @Input()
     public maintainSelection: boolean = true
@@ -263,8 +267,9 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
             if (this._focusedItem.pk !== what) {
                 let focused = this._selectables[this._focusedItem.pk]
                 if (focused) {
+                    (this as { focused: ISelectable }).focused = null
                     focused.focused = null;
-                    (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, origin: null })
+                    (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, component: focused, origin: null })
                 }
             } else {
                 return
@@ -273,9 +278,10 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
 
         let focused = this._selectables[what]
         if (focused) {
+            (this as { focused: ISelectable }).focused = focused
             this._focusedItem = focused.model
             focused.focused = origin;
-            (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, origin })
+            (this.focusing as Subject<FocusingEvent<T>>).next({ item: focused.model, component: focused, origin })
         } else {
             this._focusedItem = null
         }

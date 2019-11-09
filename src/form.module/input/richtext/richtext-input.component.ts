@@ -6,6 +6,7 @@ import { RichtextDirective } from "./richtext.directive"
 import { RichtextMenuDirective } from "./richtext-menu.component"
 import { RichtextStream } from "./core/richtext-stream"
 import { RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
+import { SelectionService } from "./core/selection"
 import { RichtextComponentParams } from "./core/component-ref"
 
 
@@ -17,6 +18,7 @@ import { RichtextComponentParams } from "./core/component-ref"
 export class RichtextInputComponent extends InputComponent<string> {
     @ViewChild("input", { read: RichtextDirective, static: true }) public readonly input: RichtextDirective
     @ViewChild("input", { read: RichtextMenuDirective, static: true }) public readonly menu: RichtextMenuDirective
+    @ViewChild("input", { read: SelectionService, static: true }) public readonly selection: SelectionService
     @ViewChild("scroller", { read: ElementRef, static: true }) public readonly scrollerEl: ElementRef
 
     @HostBinding("attr.tabindex")
@@ -33,7 +35,6 @@ export class RichtextInputComponent extends InputComponent<string> {
 
         this.monitorFocus(el.nativeElement, true)
         this.destruct.subscription(model.focusChanges).subscribe(this._handleFocus.bind(this))
-
 
         // XXX: Atom heck, content editable, always try to scroll scroller element, when overflow...
         zone.runOutsideAngular(() => {
@@ -70,14 +71,21 @@ export class RichtextInputComponent extends InputComponent<string> {
 
         if (focused) {
             this._startScrollHack()
-            if (!this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
-                this.menu.show()
-            }
         } else {
             this._stopScrollHack()
             if (!this.menu.isMouseOver) {
                 this.menu.hide()
             }
+        }
+    }
+
+    protected _onCursorMove() {
+        if (this.selection.current.type === "Range" || this.menu.canShowByState()) {
+            if (!this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
+                this.menu.show()
+            }
+        } else {
+            this.menu.hide()
         }
     }
 

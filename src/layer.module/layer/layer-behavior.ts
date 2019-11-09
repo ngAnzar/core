@@ -141,8 +141,24 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
             initialHeight: `${this.options.initialHeight || 0}px`,
             finalWidth: `${layer.container.offsetWidth}px`,
             finalHeight: `${layer.container.offsetHeight}px`,
-            origin: `${this.levitate.position.origin.vertical} center`
+            origin: this.levitate.position.transformOrigin,
+            scaleXStart: 0,
+            scaleYStart: 0,
+            translateX: "0px",
+            translateY: "0px",
         }
+
+        if (this.options.menuLike) {
+            params.origin = this.levitate.position.transformOrigin
+            params.scaleXStart = 0.5
+            params.scaleYStart = 0.5
+        } else {
+            params.origin = `${this.levitate.position.origin.vertical} center`
+            params.scaleXStart = 1
+            params.scaleYStart = 0.8
+            // params.translateY = "-40px"
+        }
+
         return this.playAnimation(layer, ddAnimation.show, { params })
             .then(() => super.animateShow(layer))
     }

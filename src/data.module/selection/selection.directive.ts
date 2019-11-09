@@ -95,6 +95,7 @@ export class PropagateSelection<T extends Model = Model> implements ISelectionMo
     public get changes(): Observable<SelectionEvent<T>> { return this[SELECTION].changes }
     public get keyboard(): SelectionKeyboardHandler<T> { return this[SELECTION].keyboard }
     public get selected(): SelectionItems<T> { return this[SELECTION].selected }
+    public get focused(): ISelectable { return this[SELECTION].focused }
 
     public update(update: Update): void { this[SELECTION].update(update) }
     public clear(): void { this[SELECTION].clear() }
