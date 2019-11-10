@@ -229,6 +229,7 @@ export class TimeInputComponent extends InputComponent<Time> {
         }
 
         this.mask.value = value
+        !this.destruct.done && this.cdr.detectChanges()
     }
 
     private _showPicker() {

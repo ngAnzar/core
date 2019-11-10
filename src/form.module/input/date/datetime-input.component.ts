@@ -147,6 +147,7 @@ export class DatetimeInputComponent extends InputComponent<Date> {
         }
 
         this.mask.value = value
+        !this.destruct.done && this.cdr.detectChanges()
     }
 
     public ngAfterViewInit() {

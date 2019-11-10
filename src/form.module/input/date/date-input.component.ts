@@ -156,6 +156,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
             return
         }
         this.mask.value = value
+        !this.destruct.done && this.cdr.detectChanges()
     }
 
     protected parseString(str: string) {
