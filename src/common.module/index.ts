@@ -40,11 +40,17 @@ export { ChipComponent }
 
 
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
+import { FileUploadService, FileUploadEvent } from "./services/file-upload.service"
 import { TouchEventService, TOUCH_EVENT_PLUGIN, NzTouchEvent } from "./services/touch-event.service"
 import { ScriptService } from "./services/script.service"
 import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
 import { MediaQueryService } from "./services/media-query.service"
-export { FileDownloadService, FileDownloadEvent, TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService, TOUCH_EVENT_PLUGIN, NzTouchEvent }
+export {
+    FileDownloadService, FileDownloadEvent,
+    FileUploadService, FileUploadEvent,
+    TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService,
+    TOUCH_EVENT_PLUGIN, NzTouchEvent
+}
 
 import { ShortcutService } from "./shortcut/shortcut.service"
 export { ShortcutService }
@@ -94,6 +100,7 @@ const content = [
     providers: [
         LocaleService,
         FileDownloadService,
+        FileUploadService,
         ScriptService,
         DragEventService,
         KeyEventService,

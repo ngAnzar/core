@@ -7,6 +7,27 @@
     position: absolute
     z-index: -1
 
-label.nz-button([attr.tabindex]="tabIndex", variant="filled", color="accent")
-  input.fileinput(type="file", on-change="onFileChange($event)", tabindex="-1")
+  .btn
+    cursor: pointer
+    margin: -4px 4px -10px 4px
+
+  .progress
+    position: absolute
+    left: 0
+    right: 0
+    bottom: -4px
+
+
+input.nz-input(fxFlex="grow", readonly, tabindex="-1", [formControl]="filename")
+
+ng-template([ngIf]="this.file")
+  .nz-button.btn(fxFlex="none", (tap)="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+    i.nz-icon(class=icon("mdi/close", 18))
+
+label.nz-button.btn(fxFlex="none", [attr.tabindex]="tabIndex", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+  input.fileinput(type="file", (change)="onFileChange($event)", tabindex="-1", [disabled]="this.uploadInProgress")
+  i.nz-icon(class=icon("mdi/file-upload", 18))
   ng-content
+
+ng-template([ngIf]="this.uploadInProgress")
+  nz-progress.progress(type="bar", [source]="model.progress", height="4", color="info")

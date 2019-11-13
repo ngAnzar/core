@@ -7,6 +7,7 @@ import { NzDataModule } from "../data.module"
 import { NzListModule } from "../list.module"
 import { NzLayoutModule } from "../layout.module"
 import { NzLayerModule } from "../layer.module"
+import { NzAnimationModule } from "../animation.module"
 
 
 import { ErrorComponent, DEFAULT_ERROR_MESSAGES } from "./error/error.component"
@@ -42,6 +43,8 @@ export {
 import { RadioComponent } from "./input/radio/radio.component"
 import { RadioGroupDirective } from "./input/radio/radio-group.directive"
 export { RadioComponent, RadioGroupDirective }
+import { FileInputComponent } from "./input/file/file.component"
+export { FileInputComponent }
 
 
 import { RICHTEXT_AUTO_COMPLETE, RichtextAcItem, RichtextAcProvider, RichtextAcSession } from "./input/richtext/core/autocomplete"
@@ -76,7 +79,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         NzDataModule,
         NzListModule,
         NzLayoutModule,
-        NzLayerModule
+        NzLayerModule,
+        NzAnimationModule
     ],
     declarations: [
         ErrorComponent,
@@ -107,6 +111,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
 
         RadioComponent,
         RadioGroupDirective,
+
+        FileInputComponent,
 
         RichtextInputComponent,
         RichtextDirective,
@@ -151,6 +157,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
 
         RadioComponent,
         RadioGroupDirective,
+
+        FileInputComponent,
 
         RichtextInputComponent,
         RichtextDirective,

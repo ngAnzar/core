@@ -2,11 +2,12 @@ import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Inj
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
-import { map, filter, debounceTime } from "rxjs/operators"
+import { map, filter, debounceTime, shareReplay } from "rxjs/operators"
 
 import isPlainObject from "is-plain-object"
 
 import { Destruct } from "../../util"
+import { ProgressEvent } from "../../animation.module"
 
 
 export type ValueComparator<T> = (a: T, b: T) => boolean
@@ -37,11 +38,13 @@ export interface FocusChangeEvent {
 
 
 export class InputModel<T> extends AbstractControlDirective {
-    public inputChanges = new Subject<T>()
-    public renderValueChanges = new Subject<T>()
+    public readonly inputChanges = new Subject<T>()
+    public readonly renderValueChanges = new Subject<T>()
     // public disabledChanges = new Subject<boolean>()
-    public focusChanges = new Subject<FocusChangeEvent>()
-    public touchChanges = this.focusChanges.pipe(map(v => v.prev && !v.current))
+    public readonly focusChanges = new Subject<FocusChangeEvent>()
+    public readonly touchChanges = this.focusChanges.pipe(map(v => v.prev && !v.current))
+    private readonly _progress = new Subject<ProgressEvent>()
+    public readonly progress = this._progress.pipe(shareReplay(1))
 
     public get path(): string[] | null {
         return this.ngControl ? this.ngControl.path : this.ngModel ? this.ngModel.path : null
@@ -109,6 +112,10 @@ export class InputModel<T> extends AbstractControlDirective {
                 this.control.markAsPristine()
             }
         }
+    }
+
+    public emitProgress(event: ProgressEvent): void {
+        this._progress.next(event)
     }
 }
 

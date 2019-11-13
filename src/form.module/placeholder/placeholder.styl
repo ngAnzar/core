@@ -3,7 +3,7 @@
 .nz-placeholder
   position: relative
 
-  label
+  > label
     position: absolute
     top: 0px
     left: 2px
@@ -17,11 +17,11 @@
     opacity: 1
 
   &.hide-label[variant="hide"]
-    label
+    > label
       opacity: 0
 
   &.hide-label[variant="translate"]
-    label
+    > label
       nz-typo: $typo.caption
       top: -($nz-form-field-top-caption-height)
       left: 0px

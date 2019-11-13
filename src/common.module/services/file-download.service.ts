@@ -90,6 +90,7 @@ export class FileDownloadService {
                                 percent: 1,
                                 url: downloadUrl
                             })
+                            observer.complete()
                             break
                     }
                 })
@@ -99,8 +100,6 @@ export class FileDownloadService {
                 if (downloadUrl) {
                     URL.revokeObjectURL(downloadUrl)
                 }
-                // window[SET_TIMEOUT](URL.revokeObjectURL.bind(URL, downloadUrl), 1000)
-                console.log("UNSUBSCRIBE")
             }
         }).pipe(share())
     }
