@@ -20,6 +20,10 @@
 
 input.nz-input(fxFlex="grow", readonly, tabindex="-1", [formControl]="filename")
 
+ng-template([ngIf]="this.downloadUrl")
+  .nz-button.btn(fxFlex="none", (tap)="_download($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+    i.nz-icon(class=icon("mdi/download-outline", 18))
+
 ng-template([ngIf]="this.file")
   .nz-button.btn(fxFlex="none", (tap)="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
     i.nz-icon(class=icon("mdi/close", 18))

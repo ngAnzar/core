@@ -43,8 +43,8 @@ export {
 import { RadioComponent } from "./input/radio/radio.component"
 import { RadioGroupDirective } from "./input/radio/radio-group.directive"
 export { RadioComponent, RadioGroupDirective }
-import { FileInputComponent } from "./input/file/file.component"
-export { FileInputComponent }
+import { FileInputComponent, UploadedFile } from "./input/file/file.component"
+export { FileInputComponent, UploadedFile }
 
 
 import { RICHTEXT_AUTO_COMPLETE, RichtextAcItem, RichtextAcProvider, RichtextAcSession } from "./input/richtext/core/autocomplete"
