@@ -9,8 +9,18 @@ import { ProgressEvent } from "../../animation.module"
 
 export interface FileUploadEvent extends ProgressEvent {
     state: "starting" | "progress" | "done"
-    name: string
+    name?: string
     url?: string
+    response?: { [key: string]: any }
+}
+
+
+export class FileUploadError extends Error {
+    public constructor(
+        message: string,
+        public readonly data: { [key: string]: any }) {
+        super(message)
+    }
 }
 
 
@@ -37,6 +47,7 @@ export class FileUploadService {
             })
 
             let total: number = 0
+            let fileSize: number = file.size
             const subscription = this.http.request(request)
                 .pipe(
                     catchError(err => {
@@ -55,26 +66,36 @@ export class FileUploadService {
                             break
 
                         case HttpEventType.UploadProgress:
+                            let overhead = Math.max(0, event.total - fileSize)
+                            let loaded = Math.max(0, event.loaded - overhead)
                             observer.next({
                                 state: "progress",
                                 name: name,
-                                current: event.loaded,
-                                total: total = event.total,
-                                percent: event.total ? event.loaded / event.total : null,
+                                current: loaded,
+                                total: total = Math.max(0, event.total - overhead),
+                                percent: total ? loaded / total : null,
                                 url: url
                             })
                             break
 
                         case HttpEventType.Response:
-                            observer.next({
-                                state: "done",
-                                name: name,
-                                current: total,
-                                total: total,
-                                percent: 1,
-                                url: url
-                            })
-                            observer.complete()
+                            const body = event.body as { [key: string]: any }
+
+                            if (body.error) {
+                                const error = body.error
+                                observer.error(new FileUploadError(error.message, error))
+                            } else {
+                                observer.next({
+                                    state: "done",
+                                    name: name,
+                                    current: total,
+                                    total: total,
+                                    percent: 1,
+                                    url: url,
+                                    response: body.result
+                                })
+                                observer.complete()
+                            }
                             break
                     }
                 })
