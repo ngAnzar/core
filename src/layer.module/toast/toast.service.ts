@@ -1,7 +1,7 @@
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
 import { throwError, of, NEVER, Observable, Subject } from "rxjs"
-import { catchError, tap } from "rxjs/operators"
+import { catchError, tap, shareReplay } from "rxjs/operators"
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef } from "../layer/layer-ref"
@@ -79,7 +79,7 @@ export class ToastService {
         const progress = new Subject<ProgressEvent>()
 
         this.progress({
-            progress,
+            progress: progress.pipe(shareReplay(1)),
             ...options
         })
 
@@ -111,7 +111,7 @@ export class ToastService {
         const progress = new Subject<ProgressEvent>()
 
         this.progress({
-            progress,
+            progress: progress.pipe(shareReplay(1)),
             ...options
         })
 

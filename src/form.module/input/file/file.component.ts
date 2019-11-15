@@ -9,7 +9,7 @@ import { ToastService } from "../../../layer.module"
 // import { startWith, debounceTime } from 'rxjs/operators'
 
 export class UploadedFile extends Model {
-    @Field({ primary: true }) public id: any
+    @Field({ primary: true, save: true }) public id: any
     @Field() public name: string
     @Field() public size: number
     @Field() public downloadUrl: string
@@ -64,6 +64,7 @@ export class FileInputComponent extends InputComponent<File | UploadedFile> {
             (this as { file: File }).file = value
             this.filename.setValue(value.name)
         } else if (value instanceof UploadedFile) {
+            (this as { file: any }).file = value;
             (this as { uploaded: boolean }).uploaded = true;
             (this as { uploadInProgress: boolean }).uploadInProgress = false;
             (this as { downloadUrl: string }).downloadUrl = value.downloadUrl;
