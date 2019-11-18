@@ -4,7 +4,6 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { parse, format, getDaysInMonth } from "date-fns"
 import { map } from "rxjs/operators"
 
-import { setTzToUTC } from "../../../util"
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
 import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"

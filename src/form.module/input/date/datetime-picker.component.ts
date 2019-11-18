@@ -33,7 +33,7 @@ export class DatetimePickerComponent {
     @Output("value") public readonly valueChange = new EventEmitter<Date>()
 
     public set date(val: Date) {
-        val = val ? setTzToUTC(startOfDay(val)) : null
+        val = val ? startOfDay(val) : null
         if (!this._date || !val || !isSameDay(this._date, val)) {
             this._date = val
             this._emitValue()
@@ -63,7 +63,7 @@ export class DatetimePickerComponent {
     }
 
     public writeValue(date: Date) {
-        this._date = setTzToUTC(startOfDay(date))
+        this._date = startOfDay(date)
         this._time = Time.coerce(date)
         this.dayPicker.writeValue(date)
         this.timePicker.writeValue(date)

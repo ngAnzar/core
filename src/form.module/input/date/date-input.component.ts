@@ -122,7 +122,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
             .subscribe(value => {
                 let isValid = value === null
                 if (value instanceof Date && !isNaN(value.getTime())) {
-                    this.model.emitValue(value)
+                    this.model.emitValue(value = setTzToUTC(startOfDay(value)))
                     isValid = true
                 } else {
                     this.model.emitValue(value = this._createPartialValue())
@@ -150,7 +150,9 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     protected _renderValue(obj: Date | string): void {
         let value = ""
         if (obj instanceof Date) {
+            obj = setTzToUTC(startOfDay(obj))
             value = format(obj, this.displayFormat)
+            this.model.emitValue(obj, false)
         } else if (typeof obj === "string" && obj.length) {
             this._renderValue(this.parseString(obj))
             return
@@ -220,10 +222,10 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         const today = new Date()
         const year = this._year || today.getFullYear()
         const month = this._month === null ? today.getMonth() : this._month - 1
-        return new Date(
+        return setTzToUTC(new Date(
             year,
             month,
-            this._day || Math.min(getDaysInMonth(new Date(year, month)), today.getDate()))
+            this._day || Math.min(getDaysInMonth(new Date(year, month)), today.getDate())))
     }
 
     // public _onAccept() {
