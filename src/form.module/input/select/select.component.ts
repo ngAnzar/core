@@ -312,9 +312,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.selection.keyboard.alwaysAppend = this.selection.type === "multi"
 
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
-            if (this.selection.type === "single" &&
-                selected[0] &&
-                this.selection.getSelectOrigin(selected[0].pk) === "mouse") {
+            if (this.selection.type === "single" && selected[0]) {
                 this.opened = false
             }
 
@@ -561,7 +559,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         } else {
             this._resetTextInput()
-            // this.opened = false
+            this.opened = false
         }
     }
 

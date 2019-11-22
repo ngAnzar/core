@@ -64,9 +64,7 @@ export class ListFilterService implements OnDestroy {
         }
 
         this.subscriptions.set(editor, editor.valueChanges.subscribe(changes => {
-            console.log("Editor value change", { empty: editor.isEmpty })
             let idx = this.filters.indexOf(editor)
-            console.log({ idx })
             if (editor.isEmpty) {
                 if (idx !== -1) {
                     (this.filters as Array<IListFilterEditor<any>>).splice(idx, 1)
@@ -75,7 +73,6 @@ export class ListFilterService implements OnDestroy {
                 (this.filters as Array<IListFilterEditor<any>>).push(editor)
             }
             (this.changes as EventEmitter<void>).emit()
-            console.log(this.filters)
         }))
     }
 

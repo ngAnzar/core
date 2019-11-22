@@ -81,8 +81,6 @@ export class ComponentManager implements IDisposable {
 
     public handleKeyDown(event: KeyboardEvent, portalEl: HTMLElement) {
         event.preventDefault()
-        // const ref = this.getRef(portalEl.id)
-        console.log("handleKeyDown", this._instances)
     }
 
     private _removing: boolean = false
