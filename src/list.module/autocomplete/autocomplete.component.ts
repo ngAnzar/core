@@ -3,7 +3,7 @@ import {
     ViewChild, QueryList, OnInit
 } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
-import { Subject, merge } from "rxjs"
+import { Subject, merge, Observable } from "rxjs"
 import { startWith, filter, debounceTime, takeUntil } from "rxjs/operators"
 
 import { DataSourceDirective, Model, SelectionModel } from "../../data.module"
@@ -18,6 +18,7 @@ import { LayerRef } from "../../layer.module"
 
 export const AUTOCOMPLETE_ITEM_TPL = new InjectionToken<TemplateRef<any>>("autocomplete.itemTpl")
 export const AUTOCOMPLETE_ACTIONS = new InjectionToken<QueryList<ListActionComponent>>("autocomplete.actions")
+export const AUTOCOMPLETE_ITEM_FACTORY = new InjectionToken<() => void>("autocomplete.itemfactory")
 
 
 export class DDContext<T> {
@@ -36,8 +37,10 @@ export class DDContext<T> {
 export class AutocompleteComponent<T extends Model> extends Destructible implements OnDestroy, OnInit {
     @ViewChild("list", { read: ListDirective, static: false }) protected readonly list: ListDirective
     @ViewChild("scroller", { read: ScrollerComponent, static: false }) protected readonly scroller: ScrollerComponent
+    @ViewChild("createNewAction", { read: ListActionComponent, static: false }) protected readonly createNewAction: ListActionComponent
 
     public readonly gridTemplateRows: SafeStyle
+    public readonly hasCreateNew: boolean = false
 
     public get isNotFound() {
         return this.source.storage && this.source.storage.isEmpty && !this.source.storage.isBusy
@@ -50,6 +53,7 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
         @Inject(DataSourceDirective) public readonly source: DataSourceDirective<T>,
         @Inject(AUTOCOMPLETE_ITEM_TPL) public readonly itemTpl: TemplateRef<DDContext<T>>,
         @Inject(AUTOCOMPLETE_ACTIONS) public readonly actions: QueryList<ListActionComponent>,
+        @Inject(AUTOCOMPLETE_ITEM_FACTORY) public readonly itemFactory: () => void,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected sanitizer: DomSanitizer,
         @Inject(SelectionModel) protected selection: SelectionModel,
@@ -75,21 +79,11 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
                 takeUntil(this.destruct.on)
             )
             .subscribe(event => {
-                (this as { gridTemplateRows: SafeStyle }).gridTemplateRows = this.calcGridTemplateRows()
-                this.cdr.detectChanges()
+                this._updateActions()
             })
 
         this.destruct.subscription(this.actions.changes).pipe(startWith(this.actions)).subscribe(items => {
-            this.actionsByPosition = {}
-            for (const item of items) {
-                if (!this.actionsByPosition[item.position]) {
-                    this.actionsByPosition[item.position] = [item]
-                } else {
-                    this.actionsByPosition[item.position].push(item)
-                }
-            }
-            (this as { gridTemplateRows: SafeStyle }).gridTemplateRows = this.calcGridTemplateRows()
-            this.cdr.detectChanges()
+            this._updateActions()
         })
     }
 
@@ -106,7 +100,9 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
     }
 
     protected calcGridTemplateRows(): SafeStyle {
-        const actionsLength = this.actions ? this.actions.length : 0
+        const firstALength = this.actionsByPosition.first ? this.actionsByPosition.first.length : 0
+        const lastALength = this.actionsByPosition.last ? this.actionsByPosition.last.length : 0
+        const actionsLength = firstALength + lastALength
         let repeat = this.source.storage.lastIndex + actionsLength
         let rowHeight = 48
 
@@ -115,5 +111,29 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
         }
 
         return this.sanitizer.bypassSecurityTrustStyle(`repeat(${repeat}, ${rowHeight}px)`)
+    }
+
+    private _updateActions() {
+        this.actionsByPosition = {
+            first: []
+        }
+
+        if (this.itemFactory && this.createNewAction && this.isNotFound) {
+            (this as { hasCreateNew: boolean }).hasCreateNew = true
+            this.actionsByPosition.first.push(this.createNewAction)
+        } else {
+            (this as { hasCreateNew: boolean }).hasCreateNew = false
+        }
+
+        this.actions.forEach(item => {
+            if (!this.actionsByPosition[item.position]) {
+                this.actionsByPosition[item.position] = [item]
+            } else {
+                this.actionsByPosition[item.position].push(item)
+            }
+        });
+
+        (this as { gridTemplateRows: SafeStyle }).gridTemplateRows = this.calcGridTemplateRows()
+        this.cdr.detectChanges()
     }
 }

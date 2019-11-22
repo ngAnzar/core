@@ -13,10 +13,10 @@ import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, s
 import { NzRange, __zone_symbol__ } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
 import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
-import { LayerService, DropdownLayer, LayerFactoryDirective } from "../../../layer.module"
+import { LayerService, DropdownLayer, LayerFactoryDirective, ComponentLayerRef } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
-import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
+import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
 import { parseMargin } from "../../../layout.module"
 
@@ -274,7 +274,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     // protected readonly chipSelection: SelectionModel = new SingleSelection()
     protected selectedBeforeOpen: T[]
 
-    private _provisionalModel: T
     private _closeShortcuts: Shortcuts
 
     public constructor(
@@ -526,8 +525,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     { provide: DataSourceDirective, useValue: this.source },
                     { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
                     { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
+                    {
+                        provide: AUTOCOMPLETE_ITEM_FACTORY,
+                        useValue: this.freeSelect ? this._createNewValue.bind(this) : null
+                    },
                 ]
-            )
+            ) as ComponentLayerRef<AutocompleteComponent<T>>
 
             const outletEl = layerRef.outlet.nativeElement
             this.monitorFocus(outletEl, true)
@@ -558,7 +561,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         } else {
             this._resetTextInput()
-            this.opened = false
+            // this.opened = false
         }
     }
 
@@ -639,31 +642,22 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 } else {
                     value = this.getDisplayValue(selected[0])
                 }
-            } else if (this.freeSelect) {
-                let inputValue = this.input.nativeElement.value
-                if (inputValue && inputValue.length) {
-                    if (!this._provisionalModel) {
-                        this._provisionalModel = new ProvisionalModel({ _id: Math.random().toString(36) }) as any
-                    }
-                    setPath(this._provisionalModel, this.valueField, { $new: inputValue })
-                    setPath(this._provisionalModel, this.displayField, inputValue)
-                    this.selection.items = [this._provisionalModel]
-                    value = inputValue
-                } else {
-                    // if (this._provisionalModel) {
-                    //     delete this._provisionalModel
-                    // }
-
-                }
-
-                // throw new Error("TODO: implement canCreate")
             }
-        } else if (this.freeSelect) {
-            throw new Error("TODO: implement canCreate")
         }
 
         this.input.nativeElement.value = value
         this._detectChanges()
+    }
+
+    protected _createNewValue() {
+        const inputValue = this.input.nativeElement.value
+
+        if (inputValue && inputValue.length) {
+            let provisionalModel = new ProvisionalModel({ _id: Math.random().toString(36) }) as any
+            setPath(provisionalModel, this.valueField, { $new: inputValue })
+            setPath(provisionalModel, this.displayField, inputValue)
+            this.selection.items = [provisionalModel]
+        }
     }
 
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {

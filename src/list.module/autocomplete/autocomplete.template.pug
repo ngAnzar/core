@@ -23,7 +23,7 @@
 
 div(fxFlex="grow", fxLayout="column inline", tabindex="0")
 
-  .nz-list-empty.notfound(*ngIf="isNotFound", fxFlex="none") Nem található
+  .nz-list-empty.notfound(*ngIf="!hasCreateNew && isNotFound", fxFlex="none") Nem található
 
   //- TODO: loading anim
 
@@ -31,7 +31,11 @@ div(fxFlex="grow", fxLayout="column inline", tabindex="0")
     .nz-list.list(#list, [style.gridTemplateRows]="gridTemplateRows", scrollable)
       ng-template([ngIf]="actionsByPosition.first")
         ng-template(ngFor, [ngForOf]="actionsByPosition.first", let-action, let-index="index")
-          .nz-list-item.item.action([style.gridRow]="index + 1", [selectableAction]="action.model", [selectionIndex]="index + 1")
+          .nz-list-item.item.action(
+              [style.gridRow]="index + 1",
+              [selectableAction]="action.model",
+              [selectionIndex]="index + 1",
+              color="light-accent")
             ng-template([ngTemplateOutlet]="action.tpl")
 
       ng-template(nzVirtualFor,
@@ -50,9 +54,14 @@ div(fxFlex="grow", fxLayout="column inline", tabindex="0")
       ng-template([ngIf]="actionsByPosition.last")
         ng-template(ngFor, [ngForOf]="actionsByPosition.last", let-action, let-index="index")
           .nz-list-item.item.action(
-            [style.gridRow]="offset(index) + source.storage.lastIndex",
-            [selectableAction]="action.model",
-            [selectionIndex]="offset(index) + source.storage.lastIndex",
-            color="light-accent")
+              [style.gridRow]="offset(index) + source.storage.lastIndex",
+              [selectableAction]="action.model",
+              [selectionIndex]="offset(index) + source.storage.lastIndex",
+              color="light-accent")
             ng-template([ngTemplateOutlet]="action.tpl")
 
+
+nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()")
+  div(fxFlayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
+    i.nz-icon(class=icon("mdi/plus-circle-outline"))
+    span Új elem létrehozás

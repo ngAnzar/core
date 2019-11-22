@@ -95,21 +95,18 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
             fullUpdate[k] = null
         }
 
-        let models = {} as any
         for (const item of val) {
             fullUpdate[item.pk] = origin
-            models[item.pk] = item
+            this._tmpModels[item.pk] = item
         }
 
-        this._tmpModels = models
         this.origin = {}
         this.update(fullUpdate)
-        delete this._tmpModels
     }
     public get(): T[] { return this._items }
     private _items: T[] = []
 
-    private _tmpModels: { [key: string]: T }
+    private _tmpModels: { [key: string]: T } = {}
 
     public constructor(
         public readonly selectables: Readonly<{ [key: string]: ISelectable<T> }>) {
@@ -195,6 +192,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
         delete (this as any).selected
         delete (this as any).origin
         delete (this as any).selectables
+        delete (this as any)._tmpModels
     }
 }
 

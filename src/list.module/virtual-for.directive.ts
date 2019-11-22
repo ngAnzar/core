@@ -167,9 +167,10 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                 currentRange: current.range
             }
         }),
-        filter(result => result.changes.length > 0),
         tap(result => {
-            this._applyChanges(result.changes, result.renderedRange, result.currentRange)
+            if (result.changes.length > 0) {
+                this._applyChanges(result.changes, result.renderedRange, result.currentRange)
+            }
             this.visibleItems.onRender(result.renderedRange)
         }),
         shareReplay(1)

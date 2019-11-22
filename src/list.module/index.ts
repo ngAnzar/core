@@ -9,8 +9,8 @@ import { NzAnimationModule } from "../animation.module"
 import { NzLayerModule } from "../layer.module"
 import { NzLayoutModule } from "../layout.module"
 
-import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL } from "./autocomplete/autocomplete.component"
-export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL }
+import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY } from "./autocomplete/autocomplete.component"
+export { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY }
 
 import { ExlistComponent } from "./exlist/exlist.component"
 import { ExlistItemComponent } from "./exlist/exlist-item.component"
