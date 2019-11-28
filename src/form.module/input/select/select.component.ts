@@ -150,7 +150,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._detectChanges()
         }
     }
-    public get disabled(): boolean { return !this.source.storage || this.model.disabled }
+    public get disabled(): boolean { return !this.source || !this.source.storage || this.model.disabled }
 
     @Input()
     @HostBinding("attr.tabindex")
@@ -174,17 +174,15 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     private _hideTrigger: boolean = false
 
     @Input()
-    public set autoTrigger(val: AutoTrigger) {
-        if (!val || val.length === 0) {
-            val = "query"
-        }
+    public set autoTrigger(val: boolean) {
+        val = coerceBooleanProperty(val)
         if (this._autoTrigger !== val) {
             this._autoTrigger = val
             this._detectChanges()
         }
     }
-    public get autoTrigger(): AutoTrigger { return this._autoTrigger }
-    private _autoTrigger: AutoTrigger = null
+    public get autoTrigger(): boolean { return this._autoTrigger }
+    private _autoTrigger: boolean = false
 
     public set inputState(val: InputState) {
         if (this._inputState !== val) {
@@ -556,6 +554,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.model.focusMonitor.focusVia(this.input.nativeElement, focused)
             } else {
                 this.model.focusMonitor.focusVia(this.el.nativeElement, focused)
+            }
+
+            if (!this.opened && this.autoTrigger && this.input && !this.disabled) {
+                this._querySuggestions(this.input.nativeElement.value)
             }
         } else {
             this._resetTextInput()

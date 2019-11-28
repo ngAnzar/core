@@ -81,6 +81,16 @@ export class NavbarSearchComponent implements AfterViewInit {
     public get autoReset(): boolean { return this._autoReset }
     private _autoReset: boolean = false
 
+    @Input()
+    public set autoTrigger(val: boolean) {
+        if (this._autoTrigger !== val) {
+            this._autoTrigger = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get autoTrigger(): boolean { return this._autoTrigger }
+    private _autoTrigger: boolean = false
+
     public readonly AutocompleteComponent = AutocompleteComponent
     private _backWatcher: KeyWatcher
 

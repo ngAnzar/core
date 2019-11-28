@@ -12,7 +12,7 @@ div(#container, fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxL
       fxFlex="grow",
       editable,
       hideTrigger,
-      autoTrigger,
+      [autoTrigger]="autoTrigger",
       [dataSource]="source",
       [nzLayerFactory]="AutocompleteComponent",
       [nzTargetEl]="container.parentElement",
