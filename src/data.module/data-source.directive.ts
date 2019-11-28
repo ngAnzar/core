@@ -74,6 +74,10 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.isEmpty
     }
 
+    public get isBusy() {
+        return this.storage.isBusy
+    }
+
     private _storage: DataStorage<T>
     private _source: DataSource<T>
     private _disposeStroage: boolean
