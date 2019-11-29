@@ -116,7 +116,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected _opened: boolean = false
 
     @Output("opened") public readonly openedChanges: Observable<boolean> = new EventEmitter<boolean>()
-    @Output("select") public readonly selectionChanges: Observable<T[]> = new EventEmitter<T[]>()
+    @Output("selectionChange") public readonly selectionChanges: Observable<T[]> = new EventEmitter<T[]>()
 
     @Input()
     public set editable(val: boolean) {

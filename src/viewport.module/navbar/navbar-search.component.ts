@@ -94,7 +94,7 @@ export class NavbarSearchComponent implements AfterViewInit {
     public readonly AutocompleteComponent = AutocompleteComponent
     private _backWatcher: KeyWatcher
 
-    @Output("select") public readonly onSelect: Observable<any> = new EventEmitter()
+    @Output("selectionChange") public readonly onSelect: Observable<any> = new EventEmitter()
 
     public constructor(
         @Inject(ViewportService) protected readonly vps: ViewportService,

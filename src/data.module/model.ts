@@ -186,9 +186,7 @@ export function Field(name: string | FieldOptions = {}) {
         }
 
         converter = options.map || converter || customOrBuiltinFactory(type)
-        meta.save = options.save == null
-            ? typeList.length === typeList.filter(isPrimitiveType).length
-            : options.save !== false
+        meta.save = options.save !== false
         meta.load = options.load !== false
         meta.fields = typeList.map(t => Model.getFields(t)).filter(v => !!v)
 
