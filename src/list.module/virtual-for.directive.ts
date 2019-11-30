@@ -209,7 +209,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     }
 
     private _applyChanges(changes: Array<ListDiffItem<T>>, renderedRange: NzRange, currentRange: NzRange) {
-        console.log("_applyChanges", changes)
+        // console.log("_applyChanges", changes)
         let vcrOffset = Math.max(currentRange.begin - this._vcr.length, currentRange.begin)
         let delOffset = Math.max(renderedRange.begin - this._vcr.length, renderedRange.begin)
         let vcrIdx: number
