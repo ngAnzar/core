@@ -62,8 +62,13 @@ export class CombinedSource<T extends Model> extends DataSource<T> {
         }
     }
 
-    protected _get(id: PrimaryKey): Observable<T> {
-        return merge(...this.sources.map(src => src.get(id)))
-            .pipe(filter(val => !!val), take(1))
+    protected _get(id: PrimaryKey, m?: Meta<T>): Observable<T> {
+        return forkJoin(this.sources.map(src => src.get(id, m)))
+            .pipe(
+                map(res => {
+                    return res.filter(v => !!v)[0] || null
+                }),
+                take(1)
+            )
     }
 }

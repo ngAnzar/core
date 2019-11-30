@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject, Observer, merge } from "rxjs"
-import { map, startWith, debounceTime, tap, shareReplay, finalize, share } from "rxjs/operators"
+import { map, startWith, debounceTime, tap, shareReplay, finalize, share, take } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
 
@@ -143,6 +143,26 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
     public reload() {
         this.reset(false)
+    }
+
+    public reloadItem(entry: T): Observable<T | null> {
+        for (const k in this.cache) {
+            const item = this.cache[k]
+            if (item.pk === entry.pk) {
+                return this.source.get((item as any).id, this.meta.get())
+                    .pipe(
+                        take(1),
+                        tap(result => {
+                            if (result) {
+                                this.cache[k] = result;
+                                (this._itemsStream as EventEmitter<Items<T>>).emit(new Items([result], new NzRange(Number(k), Number(k))))
+                            }
+                        })
+                    )
+            }
+        }
+
+        return of(null)
     }
 
     public loadFields(loadFields: LoadFields<T>) {

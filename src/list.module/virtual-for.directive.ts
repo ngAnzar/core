@@ -49,23 +49,32 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     @Input()
     public set nzVirtualForOf(value: DataSourceDirective<T>) {
         this._nzVirtualForOf = value
-        if (this._srcSub) {
-            this._srcSub.unsubscribe()
+        if (this._srcSubInvalidate) {
+            this._srcSubInvalidate.unsubscribe()
+        }
+        if (this._srcSubItems) {
+            this._srcSubItems.unsubscribe()
         }
         if (value) {
-            this._srcSub = this.destruct
+            this._srcSubInvalidate = this.destruct
                 .subscription(value.storage.invalidated)
                 .pipe(startWith(null))
                 .subscribe(this._reset as any)
+
+            this._srcSubItems = this.destruct
+                .subscription(value.storage.items)
+                .subscribe(this._itemsChanged)
         } else {
-            delete this._srcSub
+            delete this._srcSubInvalidate
+            delete this._srcSubItems
         }
     }
     public get nzVirtualForOf(): DataSourceDirective<T> {
         return this._nzVirtualForOf
     }
     protected _nzVirtualForOf: DataSourceDirective<T>
-    private _srcSub: Subscription
+    private _srcSubInvalidate: Subscription
+    private _srcSubItems: Subscription
 
     @Input()
     public set itemsPerRequest(value: number) { this._itemsPerRequest = parseInt(value as any, 10) }
@@ -87,6 +96,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     protected reusable: EmbeddedView<T>[] = []
 
+    private _itemsChanged = new Subject()
 
     private _reset = new Subject()
     private reset$ = this.destruct.subscription(this._reset).pipe(
@@ -141,7 +151,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         shareReplay(1)
     )
 
-    private items$ = this.destruct.subscription(this.requestRange$).pipe(
+    private items$ = this.destruct.subscription(merge(this.requestRange$, this._itemsChanged)).pipe(
+        switchMap(_ => this.requestRange$),
         switchMap(r => {
             if (this._nzVirtualForOf) {
                 return this._nzVirtualForOf.getRange(r).pipe(
@@ -198,7 +209,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     }
 
     private _applyChanges(changes: Array<ListDiffItem<T>>, renderedRange: NzRange, currentRange: NzRange) {
-        // console.log("_applyChanges", changes)
+        console.log("_applyChanges", changes)
         let vcrOffset = Math.max(currentRange.begin - this._vcr.length, currentRange.begin)
         let delOffset = Math.max(renderedRange.begin - this._vcr.length, renderedRange.begin)
         let vcrIdx: number
