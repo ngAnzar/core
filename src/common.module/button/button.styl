@@ -3,6 +3,8 @@
 $nz-button-padding ?= 0 nz-local-grid-size(4)
 $nz-button-min-width ?= nz-local-grid-size(22)
 $nz-button-height ?= nz-local-grid-size(9)
+$nz-button-height-small ?= nz-local-grid-size(6)
+$nz-button-padding-small ?= 0 nz-local-grid-size(2)
 
 
 .nz-button
@@ -65,6 +67,12 @@ $nz-button-height ?= nz-local-grid-size(9)
 
     &[variant~="large"]
       nz-circle: (nz-local-grid-size(15) / 2)
+
+  &[variant~="small"]:not([variant~="icon"]):not([variant~="fab"])
+    nz-typo: $typo.overline
+    min-width: 0
+    nz-rounded-rect: auto, $nz-button-height-small, small
+    padding: $nz-button-padding-small
 
   &[variant~="fab"]
     &[position="BR"]
