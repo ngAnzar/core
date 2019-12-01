@@ -71,6 +71,9 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
     private _cache: Rect[] = []
     private _minHeight: number = 0
 
+    @Input()
+    public extraHeight: number = 0
+
     public constructor(
         @Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective,
         @Inject(ViewContainerRef) private readonly vcr: ViewContainerRef) {
@@ -99,7 +102,11 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
         if (idx !== -1) {
             let el = getViewEl(view)
             if (el) {
-                return this._cache[idx] = this.scrollable.getElementRect(el)
+                const rect = this.scrollable.getElementRect(el)
+                const marginBottom = parseInt(el.style.marginBottom, 10) || 0
+                const marginTop = parseInt(el.style.marginTop, 10) || 0
+                rect.height = rect.height + marginTop + marginBottom
+                return this._cache[idx] = rect
             } else {
                 this._cache[idx] = null
             }
@@ -111,7 +118,8 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
         const rendered = this._renderedSize()
         const topPadding = this._calcTopPadding(rendered.begin)
 
-        this._minHeight = Math.max(this._minHeight, rendered.size + topPadding)
+        // this._minHeight = Math.max(this._minHeight, rendered.size + topPadding)
+        this._minHeight = rendered.size + topPadding + this.extraHeight
 
         let containerEl = this.scrollable.el.nativeElement
         containerEl.style.paddingTop = `${topPadding}px`

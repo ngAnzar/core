@@ -199,7 +199,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     public ngOnInit() {
         this.destruct.subscription(this.render$).subscribe()
 
-        this.destruct.subscription(this._scroller.vpRender.scroll)
+        this.destruct.subscription(merge(this._scroller.vpRender.scroll, this._scroller.vpImmediate.change))
             .pipe(startWith(0))
             .subscribe(this._scroll)
     }
