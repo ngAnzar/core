@@ -116,3 +116,8 @@ export function parseMargin(val: Margin): MarginParsed {
         return m
     }
 }
+
+
+export function composeMargin(val: MarginParsed): string {
+    return `${val.top}px ${val.right}px ${val.bottom}px ${val.left}px`
+}
