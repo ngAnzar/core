@@ -1,7 +1,26 @@
 {
-    "extends": "../build/tsconfig.json",
     "compilerOptions": {
-        "rootDir": "src"
+        "rootDir": "src",
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "noEmitHelpers": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "importHelpers": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "stripInternal": true,
+        "lib": [
+            "es5",
+            "es6",
+            "dom"
+        ]
+    },
+    "angularCompilerOptions": {
+        "fullTemplateTypeCheck": true,
+        "strictInjectionParameters": true
     },
     "include": [
         "src/**/*.ts"
