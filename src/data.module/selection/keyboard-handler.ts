@@ -52,6 +52,11 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
         }
     }
 
+    public reset() {
+        this.selection.setFocused(null, null)
+        this._keyboardFocused = -1
+    }
+
     protected _handleKeyDown = (event: KeyboardEvent): boolean => {
         switch (event.keyCode) {
             case UP_ARROW:

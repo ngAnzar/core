@@ -541,6 +541,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 }
             })
         } else {
+            this.selection.keyboard.reset()
             delete this.selectedBeforeOpen
             this.layerFactory.hide()
         }
@@ -665,12 +666,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             case UP_ARROW:
             case DOWN_ARROW:
                 this.opened = true
-                return false
-
-            case ENTER:
-                if (this.selection.type === "single") {
-                    this.opened = false
-                }
                 return false
 
             case BACKSPACE:
