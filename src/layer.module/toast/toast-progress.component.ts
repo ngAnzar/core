@@ -11,7 +11,7 @@ import { ProgressEvent } from "../../animation.module"
 import { LayerRef } from "../layer/layer-ref"
 
 import { ToastBase } from "./toast-base"
-import { ToastProgressOptions, TOAST_AUTO_HIDE_MIN } from "./toast-options"
+import { ToastProgressOptions, TOAST_AUTO_HIDE_MIN, DetailsHandler } from "./toast-options"
 import { LAYER_OPTIONS } from "../_shared"
 
 
@@ -55,6 +55,19 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
 
     protected progress: Observable<ProgressEvent>
 
+    public set detailsFactory(val: DetailsHandler) {
+        if (this._detailsFactory !== val) {
+            this._detailsFactory = val
+            this.cdr.detectChanges()
+        }
+    }
+    public get detailsFactory(): DetailsHandler { return this._detailsFactory }
+    private _detailsFactory: DetailsHandler
+
+    public get detailsVisible(): boolean { return this._detailsRef && this._detailsRef.isVisible }
+
+    private _detailsRef: LayerRef
+
     public constructor(
         @Inject(LayerRef) protected readonly layerRef: LayerRef,
         @Inject(LAYER_OPTIONS) protected readonly options: ToastProgressOptions,
@@ -64,6 +77,8 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     }
 
     public ngOnInit() {
+        this.detailsFactory = this.options.details
+
         if (this.options.progress) {
             this.progress = this.options.progress.pipe(
                 tap(val => {
@@ -98,5 +113,10 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+
+    public showDetails() {
+        const ref = this._detailsFactory()
+        console.log("showDetails", ref)
     }
 }

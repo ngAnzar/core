@@ -4,7 +4,7 @@ import { throwError, of, NEVER, Observable, Subject } from "rxjs"
 import { catchError, tap, shareReplay } from "rxjs/operators"
 
 import { LayerService } from "../layer/layer.service"
-import { LayerRef } from "../layer/layer-ref"
+import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
 import { getProviders, LayerMessageComponent } from "../_shared"
 import { ProgressEvent } from "../../animation.module"
 import { FileDownloadEvent } from "../../common.module"
@@ -159,9 +159,9 @@ export class ToastService {
         })
     }
 
-    protected _show(provides: StaticProvider[], options: ToastOptions = {} as any, cmp?: ComponentType<any>): LayerRef {
+    protected _show<T>(provides: StaticProvider[], options: ToastOptions = {} as any, cmp?: ComponentType<T>): ComponentLayerRef<T> {
         let ref = this.layerService.createFromComponent(cmp, this._behavior(options), null, provides)
-        return this.queue.add(ref)
+        return this.queue.add(ref) as ComponentLayerRef<T>
     }
 
     protected _behavior(options: ToastOptions): ToastLayer {

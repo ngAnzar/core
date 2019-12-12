@@ -10,7 +10,7 @@
     text-overflow: ellipsis
     margin-right: 16px
 
-  .hidebutton
+  .hidebutton:last-child
     margin-right: 8px
 
   .status-icon
@@ -30,5 +30,8 @@ div.container(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLay
 
   div.text-container(fxFlex="grow", *ngIf="infoText") {{ infoText }}
 
-  button.nz-button.hidebutton(*ngIf="state === 'failure'", on-tap="layerRef.hide()", color="light-common", variant="icon", fxFlex="noshrink")
+  button.nz-button.hidebutton(*ngIf="_detailsFactory || detailsVisible", (tap)="showDetails()", color="light-info", variant="icon", fxFlex="noshrink")
+    i.nz-icon(class=icon("mdi/information-outline"))
+
+  button.nz-button.hidebutton(*ngIf="state === 'failure'", (tap)="layerRef.hide()", color="light-common", variant="icon", fxFlex="noshrink")
     i.nz-icon(class=icon("mdi/close"))

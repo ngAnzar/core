@@ -3,10 +3,12 @@ import { Observable } from "rxjs"
 import { ProgressEvent } from "../../animation.module"
 import { Align, AlignInput } from "../../layout.module"
 import { ButtonList } from "../_shared"
+import { LayerRef } from "../../layer.module"
 
 
 export const TOAST_AUTO_HIDE_MIN = 4000
 export const TOAST_DEFAULT_ALIGN: AlignInput = "top right"
+export type DetailsHandler = () => LayerRef
 
 
 export interface ToastOptions {
@@ -15,6 +17,7 @@ export interface ToastOptions {
     autohide?: number
     buttons?: ButtonList
     constraint?: HTMLElement | "viewport"
+    details?: DetailsHandler
 }
 
 
