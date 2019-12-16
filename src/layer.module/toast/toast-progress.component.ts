@@ -115,8 +115,16 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         this.destruct.run()
     }
 
-    public showDetails() {
-        const ref = this._detailsFactory()
-        console.log("showDetails", ref)
+    public toggleDetails() {
+        if (this._detailsRef && this._detailsRef.isVisible) {
+            this._detailsRef.hide()
+            delete this._detailsRef
+        } else {
+            const ref = this._detailsFactory()
+
+            if (this._detailsRef = ref) {
+                ref.show()
+            }
+        }
     }
 }

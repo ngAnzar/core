@@ -168,6 +168,7 @@ export class ToastService {
         options = defaultOptions(options)
         return new ToastLayer({
             elevation: 10,
+            alwaysOnTop: true,
             position: {
                 align: options.align,
                 constraint: {

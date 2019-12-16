@@ -34,12 +34,12 @@ export class LayerService {
     }
 
     public createFromTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, behavior: LayerBehavior, opener?: LayerRef, context?: T): TemplateLayerRef<T> {
-        let outlet = this.container.getNewOutlet()
+        let outlet = this.container.getNewOutlet(behavior.options.alwaysOnTop || false)
         return this._finalizeRef(new TemplateLayerRef(behavior, outlet, this.shortcutSvc, this.focusTrap, opener || this.layer, vcr, tpl, context), behavior, [])
     }
 
     public createFromComponent<T>(cmp: ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[], vcr?: ViewContainerRef): ComponentLayerRef<T> {
-        let outlet = this.container.getNewOutlet()
+        let outlet = this.container.getNewOutlet(behavior.options.alwaysOnTop || false)
         return this._finalizeRef(new ComponentLayerRef(behavior, outlet, this.shortcutSvc, this.focusTrap, opener || this.layer, vcr, cmp), behavior, provides)
     }
 
