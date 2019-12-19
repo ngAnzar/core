@@ -122,6 +122,14 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         } else {
             const ref = this._detailsFactory()
 
+            const s = ref.subscribe(event => {
+                if (event.type === "hiding") {
+                    s.unsubscribe()
+                    delete this._detailsRef
+                    this.cdr.detectChanges()
+                }
+            })
+
             if (this._detailsRef = ref) {
                 ref.show()
             }
