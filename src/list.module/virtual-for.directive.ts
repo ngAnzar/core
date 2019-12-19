@@ -112,8 +112,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private _scroll = new Subject()
     private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
-        // debounceTime(10),
-        map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpRender)),
+        debounceTime(10),
+        map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpImmediate)),
         map((vr: NzRange) => {
             if (vr.begin === -1) {
                 return new NzRange(0, this.itemsPerRequest)
@@ -182,7 +182,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (result.changes.length > 0) {
                 this._applyChanges(result.changes, result.renderedRange, result.currentRange)
             }
-            this.visibleItems.onRender(result.renderedRange)
+            this.visibleItems.onRender(result.currentRange)
         }),
         shareReplay(1)
     )
@@ -199,7 +199,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     public ngOnInit() {
         this.destruct.subscription(this.render$).subscribe()
 
-        this.destruct.subscription(merge(this._scroller.vpRender.scroll, this._scroller.vpImmediate.change))
+        this.destruct.subscription(merge(this._scroller.vpImmediate.scroll, this._scroller.vpImmediate.change))
+            // this.destruct.subscription(this._scroller.vpImmediate.scroll)
             .pipe(startWith(0))
             .subscribe(this._scroll)
     }

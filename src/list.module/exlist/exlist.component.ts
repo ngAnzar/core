@@ -1,10 +1,11 @@
-import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy, Optional } from "@angular/core"
-import { of } from "rxjs"
-import { take } from "rxjs/operators"
+import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy, Optional, ChangeDetectorRef, ChangeDetectionStrategy, OnInit } from "@angular/core"
+import { of, Subject } from "rxjs"
+import { take, startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective, Model, SelectionItems, ISelectable, SelectOrigin } from "../../data.module"
 import { Margin, MarginParsed, parseMargin } from "../../layout.module"
+import { ProgressEvent } from "../../animation.module"
 import { ExlistSwitchHandler } from "./exlist-switch-handler"
 
 
@@ -25,9 +26,10 @@ const DEFAULT_SWITCH_HANDLER = new DefaultSwitchHandler()
 
 @Component({
     selector: ".nz-exlist",
-    templateUrl: "./exlist.template.pug"
+    templateUrl: "./exlist.template.pug",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExlistComponent<T extends Model = Model> implements OnDestroy {
+export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnInit {
     public readonly destruct = new Destruct()
 
     @ContentChild("item", { read: TemplateRef, static: true }) public readonly tplItem: TemplateRef<RowTplContext<T>>
@@ -54,11 +56,32 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy {
     protected _rows: { [key: string]: ISelectable<T> } = {}
     public readonly opened = this.destruct.disposable(new SelectionItems(this._rows))
 
+    @Input()
+    public set isBusy(val: boolean) {
+        if (this._isBusy !== val) {
+            this._isBusy = val
+            this.cdr.detectChanges()
+        }
+    }
+    public get isBusy(): boolean { return this._isBusy }
+    private _isBusy: boolean = false
+
     public constructor(
         @Inject(DataSourceDirective) public readonly source: DataSourceDirective,
-        @Inject(ExlistSwitchHandler) @Optional() private readonly switchHandler: ExlistSwitchHandler<T>) {
+        @Inject(ExlistSwitchHandler) @Optional() private readonly switchHandler: ExlistSwitchHandler<T>,
+        @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef) {
         if (!this.switchHandler) {
             this.switchHandler = DEFAULT_SWITCH_HANDLER
+        }
+    }
+
+    public ngOnInit() {
+        if (this.source.async) {
+            this.destruct.subscription(this.source.storage.busy)
+                .pipe(startWith(this.source.isBusy))
+                .subscribe(value => {
+                    this.isBusy = value
+                })
         }
     }
 

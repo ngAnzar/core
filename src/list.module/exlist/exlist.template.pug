@@ -2,6 +2,19 @@
   .scroller
     display: block !important
 
+  .progress
+    position: absolute
+
+
+ng-template([ngIf]="_isBusy")
+  nz-progress.progress(
+      type="bar",
+      style="width:auto",
+      [style.top.px]="paddingTop",
+      [style.left.px]="paddingLeft",
+      [style.right.px]="paddingRight",
+      color="info")
+
 .nz-scroller.scroller(fxFlex="grow")
   div(scrollable)
     .nz-list(
@@ -11,5 +24,5 @@
       [style.padding-left.px]="paddingLeft",
       [style.padding-right.px]="paddingRight",
       [style.padding-bottom.px]="paddingBottom")
-      ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-index="index")
+      ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", [extraHeight]="paddingTop + paddingBottom")
         .nz-exlist-item([data]="virtual", [index]="index")

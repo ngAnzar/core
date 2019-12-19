@@ -1,4 +1,4 @@
-import { Directive, forwardRef, Inject, Input, ViewContainerRef, EmbeddedViewRef } from "@angular/core"
+import { Directive, forwardRef, Inject, Input, ViewContainerRef, EmbeddedViewRef, OnDestroy, NgZone } from "@angular/core"
 import { Subject } from "rxjs"
 
 import { ScrollerService, Viewport } from "./scroller/scroller.service"
@@ -64,10 +64,10 @@ export class VirtualForFixedItems extends VirtualForVisibleItems {
 @Directive({
     selector: "[nzVirtualFor]:not([fixedItemHeight])",
     providers: [
-        { provide: VirtualForVisibleItems, useExisting: forwardRef(() => VirtualForVaryingItems) }
+        { provide: VirtualForVisibleItems, useExisting: forwardRef(() => VirtualForVaryingItemsPlain) }
     ]
 })
-export class VirtualForVaryingItems extends VirtualForVisibleItems {
+class VirtualForVaryingItemsPlain extends VirtualForVisibleItems {
     private _cache: Rect[] = []
     private _minHeight: number = 0
 
@@ -118,8 +118,8 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
         const rendered = this._renderedSize()
         const topPadding = this._calcTopPadding(rendered.begin)
 
-        // this._minHeight = Math.max(this._minHeight, rendered.size + topPadding)
-        this._minHeight = rendered.size + topPadding + this.extraHeight
+        this._minHeight = Math.max(this._minHeight, rendered.size + topPadding + this.extraHeight)
+        // this._minHeight = rendered.size + topPadding + this.extraHeight
 
         let containerEl = this.scrollable.el.nativeElement
         containerEl.style.paddingTop = `${topPadding}px`
@@ -194,6 +194,137 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems {
 }
 
 
+const ResizeObserver: any = (window as any).ResizeObserver
+
+
+@Directive({
+    selector: "[nzVirtualFor]:not([fixedItemHeight])",
+    providers: [
+        { provide: VirtualForVisibleItems, useExisting: forwardRef(() => VirtualForVaryingItemsRO) }
+    ]
+})
+class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestroy {
+    @Input()
+    public extraHeight: number = 0
+
+    private rects: Rect[] = []
+    private els: Map<HTMLElement, number> = new Map()
+    private observer: any
+    private minVisibleIdx: number
+    private paddingTop: number = 0
+
+    public constructor(
+        @Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective,
+        @Inject(ViewContainerRef) private readonly vcr: ViewContainerRef,
+        @Inject(NgZone) zone: NgZone) {
+        super()
+
+        zone.runOutsideAngular(() => {
+            this.observer = new ResizeObserver(this._onDimChange.bind(this))
+        })
+    }
+
+    public getVisibleRange(viewport: Viewport): NzRange {
+        let begin = -1
+        let end = -1
+        // const visibleRect = viewport.visible.copy()
+        // visibleRect.top -= this.paddingTop
+        const visibleRect = viewport.visible
+
+        for (let i = 0, l = this.rects.length; i < l; i++) {
+            const rect = this.rects[i]
+            if (rect && visibleRect.isIntersect(rect)) {
+                if (begin === -1) {
+                    begin = end = i
+                } else {
+                    end = i
+                }
+            } else if (begin !== -1) {
+                return new NzRange(begin, end)
+            }
+        }
+
+        return new NzRange(begin, end)
+    }
+
+    public clearCache(): void {
+        this.rects.length = 0
+    }
+
+    public cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>) {
+    }
+
+    public onRender(range: NzRange): void {
+        let minVisibleIdx = -1
+        for (let i = 0, l = this.vcr.length; i < l; i++) {
+            const view = this.vcr.get(i) as EmbeddedViewRef<VirtualForContext<any>>
+            const idx = view.context ? view.context.index : -1
+            const el = getViewEl(view)
+            if (idx !== -1) {
+                if (minVisibleIdx === -1) {
+                    minVisibleIdx = idx
+                } else {
+                    minVisibleIdx = Math.min(minVisibleIdx, idx)
+                }
+                if (!this.els.has(el)) {
+                    this.els.set(el, idx)
+                    this.observer.observe(el)
+                } else {
+                    this.els.set(el, idx)
+                }
+            } else if (el) {
+                this.els.delete(el)
+            }
+        }
+
+        this.minVisibleIdx = minVisibleIdx
+    }
+
+    public ngOnDestroy() {
+        this.observer.disconnect()
+    }
+
+    private _onDimChange(entries: any) {
+        for (const entry of entries) {
+            const el = entry.target as HTMLElement
+            const width = entry.contentRect.width
+            const height = entry.contentRect.height
+            const idx = this.els.get(el)
+            if (idx >= 0 && width && height) {
+                const marginTop = parseInt(el.style.marginTop, 10) || 0
+                const marginBottom = parseInt(el.style.marginBottom, 10) || 0
+                this.rects[idx] = new Rect(0, 0, width, height + marginTop + marginBottom)
+            }
+        }
+
+        let top = 0
+        for (let i = 0, l = this.rects.length; i < l; i++) {
+            const rect = this.rects[i]
+            if (rect) {
+                rect.top = top
+                top += rect.height
+            }
+        }
+
+        this._updatePaddingTop()
+        const containerEl = this.scrollable.el.nativeElement
+        let minHeight = this.rects[this.rects.length - 1].bottom + this.extraHeight + this.paddingTop
+        containerEl.style.minHeight = `${minHeight}px`
+    }
+
+    private _updatePaddingTop() {
+        if (this.minVisibleIdx !== -1) {
+            let begin = this.rects[this.minVisibleIdx]
+            if (begin) {
+                const containerEl = this.scrollable.el.nativeElement
+                this.paddingTop = begin.top
+                containerEl.style.paddingTop = `${begin.top}px`
+            }
+        }
+    }
+}
+
+
 function getViewEl(view: EmbeddedViewRef<VirtualForContext<any>>): HTMLElement | null {
     for (const el of view.rootNodes) {
         // Node.ELEMENT_NODE
@@ -203,3 +334,7 @@ function getViewEl(view: EmbeddedViewRef<VirtualForContext<any>>): HTMLElement |
     }
     return null
 }
+
+
+
+export const VirtualForVaryingItems = ResizeObserver ? VirtualForVaryingItemsRO : VirtualForVaryingItemsPlain
