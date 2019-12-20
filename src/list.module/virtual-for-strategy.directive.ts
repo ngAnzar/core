@@ -3,9 +3,12 @@ import { Subject } from "rxjs"
 
 import { ScrollerService, Viewport } from "./scroller/scroller.service"
 import { ScrollableDirective } from "./scroller/scrollable.directive"
-import { NzRange } from "../util"
+import { NzRange, __zone_symbol__ } from "../util"
 import { Rect } from "../layout.module"
 import { VirtualForContext } from "./virtual-for.directive"
+
+
+const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
 
 
 export abstract class VirtualForVisibleItems {
@@ -306,10 +309,12 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
             }
         }
 
-        this._updatePaddingTop()
-        const containerEl = this.scrollable.el.nativeElement
-        let minHeight = this.rects[this.rects.length - 1].bottom + this.extraHeight + this.paddingTop
-        containerEl.style.minHeight = `${minHeight}px`
+        window[SET_TIMEOUT](() => {
+            this._updatePaddingTop()
+            const containerEl = this.scrollable.el.nativeElement
+            let minHeight = this.rects[this.rects.length - 1].bottom + this.extraHeight + this.paddingTop
+            containerEl.style.minHeight = `${minHeight}px`
+        }, 1)
     }
 
     private _updatePaddingTop() {
