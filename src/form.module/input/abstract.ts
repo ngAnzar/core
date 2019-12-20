@@ -205,7 +205,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     protected _inited = false
 
-    private _focus = this.destruct.subject(new Subject<FocusOrigin>())
+    protected _focus = this.destruct.subject(new Subject<FocusOrigin>())
 
     public constructor(@Inject(InputModel) protected readonly model: InputModel<T>) {
         this.destruct.subscription(model.renderValueChanges).subscribe((value: T) => {

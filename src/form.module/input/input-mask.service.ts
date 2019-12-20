@@ -12,6 +12,9 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
 
     public set options(val: T) {
         this._options = (val || {} as any)
+        if (this._pendingConnect) {
+            this.connect(this._pendingConnect)
+        }
         if (this._isValid) {
             this.imask.updateOptions(this._options)
         }
@@ -54,6 +57,7 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
     }
 
     private _pendingValue: any
+    private _pendingConnect: any
 
     private get _isValid(): boolean { return this.imask && this.imask.el && !this.destruct.done }
 
@@ -71,6 +75,12 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
         if (options) {
             this._options = options
         }
+
+        if (!this._options || !this._options.mask) {
+            this._pendingConnect = el
+            return
+        }
+        this._pendingConnect = null
 
         if (this.imask) {
             this.imask.destroy()

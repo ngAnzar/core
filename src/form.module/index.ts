@@ -67,6 +67,7 @@ export { SelectComponent }
 export { IAutocompleteModel, Match } from "./input/select/select.component"
 
 import { TextFieldComponent, TextareaComponent } from "./input/text/input.component"
+import { InputMaskDirective } from "./input/input-mask.directive"
 
 export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEvent } from "./input/abstract"
 
@@ -124,7 +125,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         SelectComponent,
 
         TextFieldComponent,
-        TextareaComponent
+        TextareaComponent,
+        InputMaskDirective
     ],
     exports: [
         ErrorComponent,
@@ -170,7 +172,8 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         SelectComponent,
 
         TextFieldComponent,
-        TextareaComponent
+        TextareaComponent,
+        InputMaskDirective
     ],
     providers: [
         DatePickerService,
