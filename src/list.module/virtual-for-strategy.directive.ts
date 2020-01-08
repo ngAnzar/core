@@ -312,7 +312,8 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
         window[SET_TIMEOUT](() => {
             this._updatePaddingTop()
             const containerEl = this.scrollable.el.nativeElement
-            let minHeight = this.rects[this.rects.length - 1].bottom + this.extraHeight + this.paddingTop
+            const lastRect = this.rects[this.rects.length - 1]
+            let minHeight = (lastRect ? lastRect.bottom : 0) + this.extraHeight + this.paddingTop
             containerEl.style.minHeight = `${minHeight}px`
         }, 1)
     }
