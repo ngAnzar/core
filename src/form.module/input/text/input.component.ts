@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, HostListener, Optional, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit } from "@angular/core"
+import { Component, ElementRef, Inject, HostListener, Optional, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, Self } from "@angular/core"
 import * as autosize from "autosize"
 
 import { InputComponent, InputModel, INPUT_MODEL } from "../abstract"
@@ -9,21 +9,24 @@ import { InputMask } from "../input-mask.service"
     selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input, input[type='number'].nz-input",
     template: "",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: INPUT_MODEL,
-    host: {
-        "[style.opacity]": "mask && mask.options.lazy === false ? (model.value || model.focused ? '1' : '0') : '1'"
-    }
+    providers: INPUT_MODEL
 })
 export class TextFieldComponent extends InputComponent<string> implements AfterViewInit {
     public constructor(
         @Inject(InputModel) model: InputModel<string>,
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLInputElement>,
-        @Inject(InputMask) @Optional() private readonly mask: InputMask,
+        @Inject(InputMask) @Optional() @Self() private readonly mask: InputMask,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef) {
         super(model)
 
         this.monitorFocus(el.nativeElement)
-        this.destruct.subscription(this._focus).subscribe(this.cdr.detectChanges.bind(this.cdr))
+        this.destruct.subscription(this._focus).subscribe(() => {
+            if (mask) {
+                if ((mask.options as any).lazy === false) {
+                    el.nativeElement.style.opacity = (model.value || model.focused ? '1' : '0')
+                }
+            }
+        })
     }
 
     public ngAfterViewInit() {
