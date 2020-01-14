@@ -7,6 +7,7 @@ import { Items } from "./collection"
 
 
 export type CustomFilter<T extends Model = Model> = (record: T, filterValue: any) => boolean
+export type CustomSorter<T extends Model = Model> = (a: T, b: T, dir: "asc" | "desc") => number
 
 
 export class StaticSource<T extends Model> extends DataSource<T> {
@@ -14,6 +15,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly data: Readonly<Array<Readonly<T>>>
 
     protected readonly _customFilter: { [key: string]: CustomFilter<T> } = {}
+    protected readonly _customSorter: { [key: string]: CustomSorter<T> } = {}
 
     public get total(): number {
         return this.data.length
@@ -32,6 +34,10 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
     public addCustomFilter(name: string, filter: CustomFilter<T>): void {
         this._customFilter[name] = filter
+    }
+
+    public addCustomSorter(name: string, sorter: CustomSorter<T>): void {
+        this._customSorter[name] = sorter
     }
 
     public getPosition(pk: PrimaryKey): Observable<number> {
@@ -63,18 +69,26 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
         if (sorter) {
             result = result.sort((a: any, b: any) => {
+                let idx = 0
                 for (let field in sorter) {
-                    if (typeof a[field] === "string") {
+                    const custom = this._customSorter[field]
+                    if (custom) {
+                        idx = custom(a, b, sorter[field])
+                    } else if (typeof a[field] === "string") {
                         let r = a[field].localeCompare(b[field])
                         if (r !== 0) {
-                            return r === -1 && sorter[field] === "asc" ? -1 : 1
+                            idx = r === -1 && sorter[field] === "asc" ? -1 : 1
                         }
                     } else {
                         if (a[field] < b[field]) {
-                            return sorter[field] === "asc" ? -1 : 1
+                            idx = sorter[field] === "asc" ? -1 : 1
                         } else if (a[field] > b[field]) {
-                            return sorter[field] === "asc" ? 1 : -1
+                            idx = sorter[field] === "asc" ? 1 : -1
                         }
+                    }
+
+                    if (idx !== 0) {
+                        return idx
                     }
                 }
                 return 0
