@@ -9,6 +9,11 @@ export type Watchers<T> = Map<HTMLElement, { rc: number, watcher: T }>
 export type Dimension = { width: number, height: number }
 export type Position = { x: number, y: number }
 
+import { __zone_symbol__ } from "../util/zone"
+
+const REQUEST_ANIMATION_FRAME: "requestAnimationFrame" = __zone_symbol__("requestAnimationFrame")
+const CANCEL_ANIMATION_FRAME: "cancelAnimationFrame" = __zone_symbol__("cancelAnimationFrame")
+
 
 @Injectable()
 export class RectMutationService {
@@ -142,13 +147,13 @@ export class RectMutationService {
                         rect = current
                         observer.next({ x: current.left, y: current.top })
                     }
-                    rafId = requestAnimationFrame(watcher)
+                    rafId = window[REQUEST_ANIMATION_FRAME](watcher)
                 }
 
-                rafId = requestAnimationFrame(watcher)
+                rafId = window[REQUEST_ANIMATION_FRAME](watcher)
 
                 return () => {
-                    cancelAnimationFrame(rafId)
+                    window[CANCEL_ANIMATION_FRAME](rafId)
                 }
             }).pipe(share())
         })

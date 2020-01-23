@@ -351,6 +351,6 @@ function getViewEl(view: EmbeddedViewRef<VirtualForContext<any>>): HTMLElement |
     return null
 }
 
-
+// TODO: try IntersectionObserver
 
 export const VirtualForVaryingItems = ResizeObserver ? VirtualForVaryingItemsRO : VirtualForVaryingItemsPlain
