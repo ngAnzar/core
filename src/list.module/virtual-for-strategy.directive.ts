@@ -215,6 +215,7 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
     private observer: any
     private minVisibleIdx: number
     private paddingTop: number = 0
+    private minHeight: number = 0
 
     public constructor(
         @Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective,
@@ -287,6 +288,7 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
         this.observer.disconnect()
     }
 
+    private _lastMinHeight: any
     private _onDimChange(entries: any) {
         for (const entry of entries) {
             const el = entry.target as HTMLElement
@@ -310,11 +312,17 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
         }
 
         window[SET_TIMEOUT](() => {
-            this._updatePaddingTop()
-            const containerEl = this.scrollable.el.nativeElement
             const lastRect = this.rects[this.rects.length - 1]
-            let minHeight = (lastRect ? lastRect.bottom : 0) + this.extraHeight + this.paddingTop
-            containerEl.style.minHeight = `${minHeight}px`
+            if (lastRect) {
+                this._updatePaddingTop()
+
+                let minHeight = (lastRect ? lastRect.bottom : 0) + this.extraHeight + this.paddingTop
+                if (this.minHeight !== minHeight) {
+                    const containerEl = this.scrollable.el.nativeElement
+                    this.minHeight = minHeight
+                    containerEl.style.minHeight = `${minHeight}px`
+                }
+            }
         }, 1)
     }
 
@@ -322,9 +330,11 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
         if (this.minVisibleIdx !== -1) {
             let begin = this.rects[this.minVisibleIdx]
             if (begin) {
-                const containerEl = this.scrollable.el.nativeElement
-                this.paddingTop = begin.top
-                containerEl.style.paddingTop = `${begin.top}px`
+                if (this.paddingTop !== begin.top) {
+                    const containerEl = this.scrollable.el.nativeElement
+                    this.paddingTop = begin.top
+                    containerEl.style.paddingTop = `${begin.top}px`
+                }
             }
         }
     }
