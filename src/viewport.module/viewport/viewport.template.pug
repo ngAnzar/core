@@ -52,6 +52,14 @@
     transition-duration: 400ms
     transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
 
+  .critical-message
+    background: $theme.critical.normal
+    color: $theme.critical.on.normal
+    nz-typo: $typo.body2
+    padding: 8px 16px
+    text-align: center
+    nz-elevation: 3
+
 
 div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .nz-navbar.navbar(fxFlex="none")
@@ -67,7 +75,7 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         on-transitionend="recalcContentPadding($event)")
 
     .nz-viewport-content.content(
-        fxFlex="grow",
+        fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch",
         [style.padding-right.px]="contentPadding",
         [style.transform]="contentTransform")
       ng-content
@@ -83,3 +91,8 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         [style.width.px]="vps.right.width",
         [style.transform]="rightTransform",
         on-transitionend="recalcContentPadding($event)")
+
+  .critical-message(*ngIf="vps.cmMessage | async as cmMessage")
+    div {{ cmMessage.message }}
+    ng-template([ngIf]="cmMessage.expire")
+      div.cm-time([nzDate]="cmMessage.expire", format="relative-from")

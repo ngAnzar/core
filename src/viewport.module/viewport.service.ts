@@ -2,7 +2,7 @@ import { Injectable, Inject, EventEmitter, TemplateRef, Injector, EmbeddedViewRe
 import { Router, NavigationEnd } from "@angular/router"
 import { Portal, ComponentType, ComponentPortal, TemplatePortal } from "@angular/cdk/portal"
 import { Observable, NEVER, of, Subject, Subscription, merge } from "rxjs"
-import { share, filter, map, startWith, switchMap, debounceTime } from "rxjs/operators"
+import { share, filter, map, startWith, switchMap, debounceTime, shareReplay } from "rxjs/operators"
 
 import { Destruct } from "../util"
 import { ShortcutService, MediaQueryService, Shortcuts } from "../common.module"
@@ -19,6 +19,13 @@ export interface VPItem {
 export const enum VPPanelStyle {
     SLIDE = 1,
     OVERLAY = 2
+}
+
+
+export interface VPCriticalMessage {
+    id: any
+    message: string
+    expire: Date
 }
 
 
@@ -74,9 +81,6 @@ export class ViewportService implements OnDestroy {
 
     private _backShortcut: Shortcuts
 
-
-    // public readonly menuChanges: Observable<any> = new EventEmitter()
-
     public set navbarCenterOverlap(val: boolean) {
         if (this._navbarCenterOverlap !== val) {
             this._navbarCenterOverlap = val
@@ -118,6 +122,23 @@ export class ViewportService implements OnDestroy {
                 switchMap(items => items.length ? of(items) : NEVER)
             )
     }
+
+    public set criticalMessage(val: VPCriticalMessage) {
+        if (!this._criticalMessage || !val || this._criticalMessage.id !== val.id) {
+            this._criticalMessage = val
+            this._cmMessage.next(val)
+        }
+    }
+    public get criticalMessage(): VPCriticalMessage { return this._criticalMessage }
+    private _criticalMessage: VPCriticalMessage
+
+    private readonly _cmMessage = new Subject<VPCriticalMessage>()
+
+    public readonly cmMessage = this._cmMessage.pipe(
+        startWith(null),
+        map(_ => this._criticalMessage),
+        shareReplay(1)
+    )
 
     public constructor(
         @Inject(Router) router: Router,

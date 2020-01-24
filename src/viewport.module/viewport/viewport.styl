@@ -12,10 +12,12 @@
 .nz-viewport-content
   position: relative
   background-color: $theme.base.light
+  overflow: hidden
 
   > *
-    max-height: 100% !important
-    max-width: 100% !important
+    overflow: hidden
+    // max-height: 100% !important
+    // max-width: 100% !important
 
   > router-outlet + ng-component
     width: 100%
