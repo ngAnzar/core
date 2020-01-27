@@ -53,6 +53,7 @@
     transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
 
   .critical-message
+    z-index: 10
     background: $theme.critical.normal
     color: $theme.critical.on.normal
     nz-typo: $typo.body2
@@ -95,4 +96,4 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .critical-message(*ngIf="vps.cmMessage | async as cmMessage")
     div {{ cmMessage.message }}
     ng-template([ngIf]="cmMessage.expire")
-      div.cm-time([nzDate]="cmMessage.expire", format="relative-from")
+      div.cm-time([nzDate]="cmMessage.expire", format="relative-to")

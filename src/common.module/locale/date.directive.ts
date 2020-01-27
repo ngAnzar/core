@@ -1,5 +1,5 @@
 import { Directive, Pipe, PipeTransform, Input, Inject, ElementRef, AfterContentInit } from "@angular/core"
-import { isEqual, format, differenceInSeconds } from "date-fns"
+import { isEqual, format, differenceInSeconds, formatDistance } from "date-fns"
 
 import { LocaleService, DateFormat } from "./locale.service"
 

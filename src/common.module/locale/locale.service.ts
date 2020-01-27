@@ -36,7 +36,7 @@ export class LocaleService {
     public formatDate(date: Date, dateFormat: DateFormat): string {
         try {
             switch (dateFormat) {
-                case "relative-to": return formatDistance(new Date(), date, { locale: this.dateLocale })
+                case "relative-to": return formatDistance(date, new Date(), { locale: this.dateLocale, addSuffix: true })
                 case "relative-from": return formatDistance(date, new Date(), { locale: this.dateLocale })
                 default: return format(date, FORMATS[dateFormat] || dateFormat, { locale: this.dateLocale })
             }

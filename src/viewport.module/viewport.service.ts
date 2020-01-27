@@ -126,6 +126,7 @@ export class ViewportService implements OnDestroy {
     public set criticalMessage(val: VPCriticalMessage) {
         if (!this._criticalMessage || !val || this._criticalMessage.id !== val.id) {
             this._criticalMessage = val
+            console.log(val)
             this._cmMessage.next(val)
         }
     }
