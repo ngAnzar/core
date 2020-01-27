@@ -27,6 +27,8 @@ import { SelectTemplateRef } from "../../form.module/input/select/select.compone
 export class NavbarSearchComponent implements AfterViewInit {
     public readonly destruct = new Destruct()
 
+    @Input() public label: string
+
     @ContentChild("selected", { read: TemplateRef, static: true }) public readonly selectedTpl: SelectTemplateRef<any>
     @ContentChild("item", { read: TemplateRef, static: true }) public readonly itemTpl: SelectTemplateRef<any>
     @ContentChildren(ListActionComponent) public readonly actions: QueryList<ListActionComponent>
