@@ -137,11 +137,13 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
                 minWidth: this.el.nativeElement.offsetWidth,
                 initialWidth: this.el.nativeElement.offsetWidth,
                 elevation: 10,
+                rounded: 3,
                 backdrop: {
                     type: "empty",
                     crop: event.currentTarget as HTMLElement,
                     hideOnClick: true
-                }
+                },
+                trapFocus: true
             })
             let ref = layerFilter.show(behavior, { $implicit: this.filter })
 
