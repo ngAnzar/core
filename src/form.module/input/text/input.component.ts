@@ -1,4 +1,6 @@
 import { Component, ElementRef, Inject, HostListener, Optional, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, Self } from "@angular/core"
+import { merge } from "rxjs"
+import { startWith } from "rxjs/operators"
 import * as autosize from "autosize"
 
 import { InputComponent, InputModel, INPUT_MODEL } from "../abstract"
@@ -20,19 +22,23 @@ export class TextFieldComponent extends InputComponent<string> implements AfterV
         super(model)
 
         this.monitorFocus(el.nativeElement)
-        this.destruct.subscription(this._focus).subscribe(() => {
-            if (mask) {
-                if ((mask.options as any).lazy === false) {
-                    el.nativeElement.style.opacity = (model.value || model.focused ? '1' : '0')
-                }
-            }
-        })
     }
 
     public ngAfterViewInit() {
-        if (this.mask) {
-            this.mask.connect(this.el.nativeElement)
+        const mask = this.mask
+        const el = this.el
+        if (mask) {
+            mask.connect(this.el.nativeElement)
         }
+        this.destruct.subscription(merge(this.model.focusChanges, this.model.valueChanges))
+            .pipe(startWith(null))
+            .subscribe(() => {
+                if (mask) {
+                    if ((mask.options as any).lazy === false) {
+                        el.nativeElement.style.opacity = (this.model.value != null || this.model.focused ? "1" : "0")
+                    }
+                }
+            })
     }
 
     protected _renderValue(value: string) {
