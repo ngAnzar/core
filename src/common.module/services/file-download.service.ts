@@ -19,6 +19,16 @@ export interface FileDownloadEvent extends ProgressEvent {
 }
 
 
+export class FileDownloadError extends Error {
+    public constructor(
+        public readonly message: string,
+        public readonly response: any,
+        public readonly original: any) {
+        super()
+    }
+}
+
+
 @Injectable()
 export class FileDownloadService {
     public constructor(
@@ -43,7 +53,18 @@ export class FileDownloadService {
             const subscription = this.http.request(request)
                 .pipe(
                     catchError((err: any) => {
-                        observer.error(err)
+                        if (err.headers.get("Content-Type") === "application/json"
+                            && err.error
+                            && err.error.type === "application/json") {
+                            const reader = new FileReader()
+                            reader.onload = (event) => {
+                                const content = JSON.parse(event.target.result as string)
+                                observer.error(new FileDownloadError(content.message, content, err))
+                            }
+                            reader.readAsText(err.error)
+                        } else {
+                            observer.error(err)
+                        }
                         return EMPTY
                     })
                 )
