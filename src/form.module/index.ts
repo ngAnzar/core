@@ -25,7 +25,7 @@ import { CheckboxGroupDirective } from "./input/checkbox/checkbox-group.directiv
 export { CheckboxComponent, CheckboxGroupDirective, CheckboxChangeEvent, CheckboxState }
 
 import { DateInputComponent } from "./input/date/date-input.component"
-import { DatePickerComponent } from "./input/date/date-picker.component"
+import { DatePickerComponent, DayData } from "./input/date/date-picker.component"
 import { DatePickerService } from "./input/date/date-picker.service"
 import { DatetimeInputComponent } from "./input/date/datetime-input.component"
 import { DatetimePickerComponent } from "./input/date/datetime-picker.component"
@@ -34,10 +34,11 @@ import { TimeInputComponent, TimeValidator } from "./input/date/time-input.compo
 import { TimePickerService } from "./input/date/time-picker.service"
 import { NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator } from "./input/date/number-scroll.component"
 import { TimePickerComponent } from "./input/date/time-picker.component"
+import { DatePickerDayDataProvider, ExternalDayData } from "./input/date/date-picker-day-data"
 export {
     DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent, TimeValidator, TimePickerService,
     NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator,
-    DatetimePickerService
+    DatetimePickerService, DatePickerDayDataProvider, DayData, ExternalDayData
 }
 
 import { RadioComponent } from "./input/radio/radio.component"

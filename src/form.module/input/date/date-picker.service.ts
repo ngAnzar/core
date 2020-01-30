@@ -1,4 +1,4 @@
-import { Inject } from "@angular/core"
+import { Inject, StaticProvider, Injector } from "@angular/core"
 import { take } from "rxjs/operators"
 
 import { LayerService, DropdownLayer, LevitateOptions, ComponentLayerRef } from "../../../layer.module"
@@ -19,10 +19,9 @@ export interface DatePickerOptions {
 export class DatePickerService {
     public constructor(
         @Inject(LayerService) protected readonly layerSvc: LayerService) {
-
     }
 
-    public show(options: DatePickerOptions): ComponentLayerRef<DatePickerComponent> {
+    public show(options: DatePickerOptions, provides?: StaticProvider[], injector?: Injector): ComponentLayerRef<DatePickerComponent> {
         const behavior = new DropdownLayer({
             position: options.position,
             backdrop: { type: "empty", hideOnClick: true },
@@ -34,7 +33,7 @@ export class DatePickerService {
             behavior.options.backdrop.crop = options.position.anchor.ref
         }
 
-        let layer = this.layerSvc.createFromComponent(DatePickerComponent, behavior)
+        let layer = this.layerSvc.createFromComponent(DatePickerComponent, behavior, null, provides, null, injector)
         layer.show()
 
         let cmp = layer.component.instance

@@ -6,13 +6,25 @@
   .dayname
     nz-typo: $typo.caption
     color: $theme.common.light
+    width: 36px
+    text-align: center
+
+  .dayname-x
     border-bottom: 1px solid $theme.common.light
 
-  .days
-    display: inline-grid
-    justify-items: center
-    align-items: center
-    justify-content: space-around
+  .today
+    stroke: $theme.base.dark
+    position: absolute
+    left: 0px
+    top: 0px
+
+  .data
+    nz-typo: $typo.overline
+    text-align: center
+
+  .day
+    width: 36px
+    overflow: hidden
 
 
 div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px", tabindex="0", (wheel)="onWheel($event)")
@@ -26,14 +38,27 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap
     .nz-button(fxFlex="noshrink", variant="tiny icon", color="dark-common")
       .nz-icon(class=icon("mdi/chevron-down"), (tap)="incMonth()", (mousedown)="$event.preventDefault()")
 
-  div.days(fxFlex="grow", [style.gridTemplate]="this.gridTemplate")
-    div.dayname(*ngFor="let name of dayNames") {{ name }}
-    div.day(*ngFor="let day of days")
-      .nz-button(
-        [color]="isSelected(day) ? 'accent' : isToday(day) ? 'dark-base' : isSameMonth(day) ? 'base' : 'dark-base'",
-        [variant]="(isSameMonth(day) ? 'filled ' : '' ) + 'icon'",
-        [disabled]="!isAllowed(day)",
-        (tap)="_emitValue(day)") {{ day.getDate() }}
+  div.days(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="4px")
+    div.daynames(fxFlex="none", fxLayout="row", fxLayoutAlign="start start", fxLayoutGap="2px")
+      div.dayname(*ngFor="let name of dayNames", fxFlex="none")
+        span.dayname-x {{ name }}
 
+    ng-container(*ngIf="render$ | async as render")
+      ng-template(ngFor, [ngForOf]="render.weeks", let-week, let-weekNumber="index")
+        div.week(fxFlex="none", fxLayout="row", fxLayoutAlign="start start", fxLayoutGap="2px")
+          ng-template(ngFor, [ngForOf]="week", let-day, let-dayNumber="index")
+            div.day(*ngIf="render.data[weekNumber][dayNumber] as daydData", fxFlex="noshrink", fxLayout="column", fxLayoutGap="2px", fxLayoutAlign="start center")
+              .nz-button(
+                [color]="daydData.color",
+                [variant]="daydData.variant",
+                [disabled]="daydData.disabled",
+                (tap)="_emitValue(day)")
+                  ng-template([ngIf]="daydData.today", [ngIfElse]="ifNotToday")
+                    span {{ day.getDate() }}
+                    svg.today(width="100%", height="100%")
+                      circle(stroke-width="2", fill="transparent", cx="18", cy="18", r="16")
 
+                  ng-template(#ifNotToday ) {{ day.getDate() }}
 
+              ng-template([ngIf]="daydData.data")
+                div.data {{ daydData.data }}

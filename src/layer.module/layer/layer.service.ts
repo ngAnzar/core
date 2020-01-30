@@ -38,14 +38,15 @@ export class LayerService {
         return this._finalizeRef(new TemplateLayerRef(behavior, outlet, this.shortcutSvc, this.focusTrap, opener || this.layer, vcr, tpl, context), behavior, [])
     }
 
-    public createFromComponent<T>(cmp: ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[], vcr?: ViewContainerRef): ComponentLayerRef<T> {
+    public createFromComponent<T>(cmp: ComponentType<T>, behavior: LayerBehavior, opener?: LayerRef, provides?: StaticProvider[], vcr?: ViewContainerRef, injector?: Injector): ComponentLayerRef<T> {
         let outlet = this.container.getNewOutlet(behavior.options.alwaysOnTop || false)
-        return this._finalizeRef(new ComponentLayerRef(behavior, outlet, this.shortcutSvc, this.focusTrap, opener || this.layer, vcr, cmp), behavior, provides)
+        return this._finalizeRef(new ComponentLayerRef(behavior, outlet, this.shortcutSvc, this.focusTrap, opener || this.layer, vcr, cmp), behavior, provides, injector)
     }
 
-    protected _finalizeRef<T extends LayerRef>(ref: T, behavior: LayerBehavior, provides: StaticProvider[]): T {
+    protected _finalizeRef<T extends LayerRef>(ref: T, behavior: LayerBehavior, provides: StaticProvider[], injector?: Injector): T {
         let levitate: LevitateRef = this._createLevitateRef(ref as any, behavior.options ? behavior.options.position : null)
         let backdrop: StaticProvider[] = []
+        const baseInjector = injector || this.injector
 
         if (behavior.options.backdrop) {
             let br = this._getBackdrop(behavior.options.backdrop)
@@ -55,19 +56,19 @@ export class LayerService {
             ]
         }
 
-        let injector = (ref as any).injector = Injector.create([
+        (ref as any).injector = Injector.create([
             { provide: LayerRef, useValue: ref },
             { provide: LevitateRef, useValue: levitate },
             {
                 provide: LayerService,
                 deps: [],
                 useFactory: () => {
-                    return new LayerService(this, this.container, this.injector, ref as any, this.animation, this.levitateSvc, this.maskSvc, this.shortcutSvc, this.focusTrap)
+                    return new LayerService(this, this.container, baseInjector, ref as any, this.animation, this.levitateSvc, this.maskSvc, this.shortcutSvc, this.focusTrap)
                 }
             },
             ...backdrop,
             ...provides
-        ], this.injector);
+        ], baseInjector);
 
         (behavior as any).animationBuilder = this.animation;
         (behavior as any).levitate = levitate;

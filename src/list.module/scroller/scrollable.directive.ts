@@ -7,7 +7,8 @@ import { ScrollerService } from "./scroller.service"
 @Directive({
     selector: "[scrollable]",
     host: {
-        "[style.position]": "'relative'"
+        "[style.position]": "'relative'",
+        // "[style.will-change]": "'transform'", // TODO: csak akkor kell hozzáadni, ha animálom
     }
 })
 export class ScrollableDirective {
@@ -23,6 +24,7 @@ export class ScrollableDirective {
         zone.runOutsideAngular(() => {
             service.destruct.subscription(service.vpRender.scroll).subscribe(event => {
                 const pos = event.position
+                // nativeEl.style.transform = `translate3d(-${pos.left}px, -${pos.top}px, 0)`
                 nativeEl.style.transform = `translate(-${pos.left}px, -${pos.top}px)`
             })
 
