@@ -40,10 +40,10 @@ export class ListFilterService implements OnDestroy {
             let changed = false
             for (const change of changes.diff) {
                 if ("path" in change) {
-                    const name = change.path[0]
+                    const name = change.path[0] as string
                     for (const editor of this.editors) {
                         if (editor.canHandleFilter(name)) {
-                            this._handleFilterChange(editor, name, change)
+                            editor.writeValue(name, (source.filter as any)[name])
                             changed = true
                         }
                     }
@@ -87,21 +87,21 @@ export class ListFilterService implements OnDestroy {
         }
     }
 
-    protected _handleFilterChange(editor: IListFilterEditor<any>, name: string, change: DiffKind) {
-        switch (change.kind) {
-            case "N":
-            case "E":
-                editor.writeValue(name, change.rhs)
-                break
+    // protected _handleFilterChange(editor: IListFilterEditor<any>, name: string, change: DiffKind) {
+    //     switch (change.kind) {
+    //         case "N":
+    //         case "E":
+    //             editor.writeValue(name, change.rhs)
+    //             break
 
-            case "D":
-                editor.writeValue(name, null)
-                break
+    //         case "D":
+    //             editor.writeValue(name, null)
+    //             break
 
-            default:
-                console.error("unhandled kind", change)
-        }
-    }
+    //         default:
+    //             console.error("unhandled kind", change)
+    //     }
+    // }
 
     public ngOnDestroy() {
         this.destruct.run()

@@ -7,7 +7,7 @@ import { textOperators } from "./operators"
 
 @Component({
     selector: "nz-list-filter[type='text']",
-    templateUrl: "./text.template.pug",
+    templateUrl: "./text.component.pug",
     providers: [
         { provide: ListFilter, useExisting: ListFilterText },
         { provide: ColumnFilter, useExisting: ListFilterText }
