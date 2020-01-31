@@ -125,11 +125,11 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
                 this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
             }
             this.emit(new LayerEvent("showing") as E)
-            this.behavior.levitate.suspend()
+            // this.behavior.levitate.suspend()
             return Promise.all([
                 // this.behavior.showBackdrop(this),
                 this.behavior.animateShow(this).then(() => {
-                    this.behavior.levitate.resume()
+                    // this.behavior.levitate.resume()
                     if (this.focusTrap) {
                         this.focusTrap.focusInitialElement() || this.focusTrap.focusFirstTabbableElement()
                     }
