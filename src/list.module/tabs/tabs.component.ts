@@ -1,18 +1,20 @@
 import {
     Component, Inject, ContentChildren, QueryList, AfterContentInit,
-    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, Output, ElementRef
+    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, Output, ElementRef, ViewChild, Input
 } from "@angular/core"
 import { Subject } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"
+import { StackComponent } from "../../layout.module/stack/stack.component"
 import { TabComponent } from "./tab.component"
 
 
 
 @Component({
     selector: ".nz-tabs",
+    exportAs: "nzTabs",
     templateUrl: "./tabs.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -22,22 +24,18 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     @ContentChildren(TabComponent) public readonly tabs: QueryList<TabComponent>
     public readonly tabContents: Readonly<Array<TemplateRef<any>>>
 
+    @ViewChild("stack", { static: true }) public readonly stack: StackComponent
+
+    @Input()
     public set selectedIndex(val: number) {
-        val = isNaN(val) ? 0 : this.tabs ? Math.max(0, Math.min(val, this.tabs.length)) : 0
-
-        // TODO: find optimal solution
-        if (this.tabs.toArray()[val].disabled) {
-            return
-        }
-
-        if (this._selectedIndex !== val) {
-            this._selectedIndex = val
-            this.changes.next(val)
-            this.cdr.markForCheck()
+        if (this.stack) {
+            this.stack.selectedIndex = val
+        } else {
+            this._pendingIndex = val
         }
     }
-    public get selectedIndex(): number { return this._selectedIndex }
-    private _selectedIndex: number = 0
+    public get selectedIndex(): number { return this.stack ? this.stack.selectedIndex : -1 }
+    private _pendingIndex: number = null
 
     @Output() public readonly changes = new Subject<number>()
 
@@ -56,6 +54,10 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
             .pipe(startWith(null))
             .subscribe(() => {
                 (this as any).tabContents = this.tabs.toArray().map(item => item.contentTpl)
+                if (this._pendingIndex != null) {
+                    this.stack.selectedIndex = this._pendingIndex
+                    delete this._pendingIndex
+                }
                 this.cdr.markForCheck()
             })
     }
@@ -69,5 +71,10 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
             return
         }
         this.selectedIndex = index
+    }
+
+    public onSelectedIndexChanged(index: number) {
+        this.changes.next(index)
+        this.cdr.detectChanges()
     }
 }

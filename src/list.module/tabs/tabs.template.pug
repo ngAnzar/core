@@ -13,13 +13,13 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .nz-scroller.label-scroller(fxFlex="none", hideScrollbar, *ngIf="tabs && tabs.length > 1", orient="horizontal")
     .nz-tab-labels(scrollable, fxLayout="row", fxLayoutAlign="start stretch")
       .nz-tab-label(
-        fxFlex="noshrink",
-        fxLayout="row",
-        fxLayoutAlign="center center",
-        [attr.selected]="selectedIndex==i ? '' : null",
-        *ngFor="let tab of tabs; let i=index",
-        on-tap="onLabelTap($event, i)",
-        [attr.disabled]="tab.disabled ? '' : null")
+          fxFlex="noshrink",
+          fxLayout="row",
+          fxLayoutAlign="center center",
+          *ngFor="let tab of tabs; let i=index",
+          [attr.selected]="selectedIndex === i ? '' : null",
+          [attr.disabled]="tab.disabled ? '' : null",
+          (tap)="onLabelTap($event, i)")
         div.nz-tab-label-content
           ng-template([ngTemplateOutlet]="tab.labelTpl")
         .nz-ripple
@@ -31,6 +31,7 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         [style.width.px]="underline.parentNode.children[selectedIndex]!.offsetWidth")
 
   .nz-stack(
+    #stack,
     fxFlex="grow",
-    [selectedIndex]="selectedIndex",
-    [children]="tabContents")
+    [children]="tabContents",
+    (changed)="onSelectedIndexChanged($event)")

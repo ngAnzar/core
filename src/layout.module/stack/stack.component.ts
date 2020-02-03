@@ -41,14 +41,14 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
     @Input()
     public set selectedIndex(val: number) {
+        if (this._viewReady === false || !this.children || this.children.length === 0) {
+            this._pendingIndex = val
+            return
+        }
+
         val = isNaN(val) ? 0 : this.children ? Math.max(0, Math.min(val, this.children.length)) : 0
 
         if (this._selectedIndex !== val) {
-            if (this._viewReady === false || !this.children || this.children.length === 0) {
-                this._pendingIndex = val
-                return
-            }
-
             const old = isNaN(this._selectedIndex) ? -1 : this._selectedIndex
             const dir = old > val ? "right" : "left"
             this.childSwitch[old] = `${dir}-out`
