@@ -50,9 +50,15 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
         if (this._selectedIndex !== val) {
             const old = isNaN(this._selectedIndex) ? -1 : this._selectedIndex
-            const dir = old > val ? "right" : "left"
-            this.childSwitch[old] = `${dir}-out`
-            this.childSwitch[val] = `${dir}-in`
+
+            if (old < 0) {
+                this.childSwitch[val] = `visible`
+            } else {
+                const dir = old > val ? "right" : "left"
+                this.childSwitch[old] = `${dir}-out`
+                this.childSwitch[val] = `${dir}-in`
+            }
+
             this._selectedIndex = val;
             (this.changed as EventEmitter<number>).emit(val)
             this.cdr.detectChanges()

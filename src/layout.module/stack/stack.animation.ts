@@ -9,27 +9,28 @@ export const ANIM_DURATION = "400ms cubic-bezier(0.215, 0.61, 0.355, 1)"
 
 export const AnimateSwitch: AnimationTriggerMetadata = trigger("childSwitch", [
     state(`void`, style({ visibility: "hidden" })),
-    state(`left-out`, style({ visibility: "hidden", transform: "translateX(-100%)" })),
-    state(`right-out`, style({ visibility: "hidden", transform: "translateX(100%)" })),
-    state(`left-in, right-in`, style({ visibility: "visible", transform: "translateX(0)" })),
+    state(`left-out`, style({ visibility: "hidden", transform: "translate3d(-100%, 0, 0)" })),
+    state(`right-out`, style({ visibility: "hidden", transform: "translate3d(100%, 0, 0)" })),
+    state(`left-in, right-in`, style({ visibility: "visible", transform: "translate3d(0, 0, 0)" })),
+    state(`visible`, style({ visibility: "visible", transform: "translate3d(0, 0, 0)" })),
 
     transition(`* => left-out`, [
         style({ visibility: "visible" }),
-        animate(ANIM_DURATION, style({ transform: "translateX(-100%)" }))
+        animate(ANIM_DURATION, style({ transform: "translate3d(-100%, 0, 0)" }))
     ]),
 
     transition(`* => left-in`, [
-        style({ transform: "translateX(100%)", visibility: "visible" }),
-        animate(ANIM_DURATION, style({ transform: "translateX(0)" }))
+        style({ transform: "translate3d(100%, 0, 0)", visibility: "visible" }),
+        animate(ANIM_DURATION, style({ transform: "translate3d(0, 0, 0)" }))
     ]),
 
     transition(`* => right-out`, [
         style({ visibility: "visible" }),
-        animate(ANIM_DURATION, style({ transform: "translateX(100%)" }))
+        animate(ANIM_DURATION, style({ transform: "translate3d(100%, 0, 0)" }))
     ]),
 
     transition(`* => right-in`, [
-        style({ transform: "translateX(-100%)", visibility: "visible" }),
-        animate(ANIM_DURATION, style({ transform: "translateX(0)" }))
+        style({ transform: "translate3d(-100%, 0, 0)", visibility: "visible" }),
+        animate(ANIM_DURATION, style({ transform: "translate3d(0, 0, 0)" }))
     ])
 ])
