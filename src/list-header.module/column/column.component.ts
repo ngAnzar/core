@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, Input, Inject, ElementRef, TemplateRef, OnDestroy,
-    HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding, Output, EventEmitter
+    HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding, Output, EventEmitter, Optional
 } from "@angular/core"
 import { Subscription } from "rxjs"
 import { startWith } from "rxjs/operators"
@@ -58,6 +58,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     @Input()
     @HostBinding("attr.sortable")
     public set sortable(val: string) {
+        val = this.dataSource ? val : null
         if (this._sortable !== val) {
             this._sortable = val
 
@@ -87,7 +88,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     public set sortDirection(val: "asc" | "desc") {
         if (this._sortDirection !== val) {
             this._sortDirection = val
-            if (this.sortable) {
+            if (this.sortable && this.dataSource) {
                 if (val) {
                     this.dataSource.sort = { [this.sortable]: val }
                 } else {
@@ -121,7 +122,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
         @Inject(LayerService) layerSvc: LayerService,
         @Inject(ViewContainerRef) vcr: ViewContainerRef,
-        @Inject(DataSourceDirective) protected readonly dataSource: DataSourceDirective) {
+        @Inject(DataSourceDirective) @Optional() protected readonly dataSource: DataSourceDirective) {
         this.layerFilter = LayerFactoryDirective.create("top left", "bottom left", layerSvc, vcr, el)
     }
 
