@@ -4,11 +4,7 @@ import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@
 
 @Component({
     selector: "nz-qtip",
-    host: {
-        "[style.display]": "inline-block",
-        "[style.pointer-events]": "none",
-    },
-    templateUrl: "./qtip.component.pug",
+    template: "{{ _text }}",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class QtipComponent {

@@ -5,6 +5,12 @@ import { qtipAnimation } from "./qtip.animation"
 
 
 export class QtipBehavior extends LayerBehavior {
+    public initShow(layer: LayerRef): void {
+        super.initShow(layer)
+        layer.container.style.pointerEvents = "none"
+        layer.container.style.userSelect = "none"
+    }
+
     public animateShow(layer: LayerRef): Promise<void> {
         let params = {
             origin: `${this.levitate.position.origin.vertical} ${this.levitate.position.origin.horizontal}`
