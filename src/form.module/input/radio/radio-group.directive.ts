@@ -6,7 +6,7 @@ import { RadioComponent } from "./radio.component"
 
 
 @Directive({
-    selector: ".nz-radio-group",
+    selector: ".nz-radio-group,[nzRadioGroup]",
     exportAs: "radioGroup",
     providers: INPUT_MODEL
 })
@@ -22,6 +22,10 @@ export class RadioGroupDirective<T = any> extends InputComponent<T> {
     }
     public get name(): string { return this._name }
     protected _name: string
+
+    @Input()
+    public set nzRadioGroup(val: string) { this.name = val }
+    public get nzRadioGroup(): string { return this.name }
 
     protected radios: RadioComponent<T>[] = []
 
