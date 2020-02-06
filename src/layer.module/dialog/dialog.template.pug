@@ -35,5 +35,5 @@ block buttons
         [color]="button.color",
         [variant]="button.variant",
         [attr.type]="button.type",
-        on-action="_handleButtonClick($event, button.role)") {{ button.label }}
+        (tap)="_handleButtonClick($event, button.role)") {{ button.label }}
       div.spacer(*ngIf="button.role === 'spacer'", fxFlex="grow")

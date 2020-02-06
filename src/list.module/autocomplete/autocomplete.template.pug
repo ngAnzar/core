@@ -61,7 +61,7 @@ div(fxFlex="grow", fxLayout="column inline", tabindex="0")
             ng-template([ngTemplateOutlet]="action.tpl")
 
 
-nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()")
+nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (tap)="itemFactory()")
   div(fxFlayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
     i.nz-icon(class=icon("mdi/plus-circle-outline"))
     span Új elem létrehozás

@@ -28,7 +28,7 @@ ng-template(#layer)
 
 
     div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px")
-      button.nz-button(*ngIf="begin.value", fxFlex="noshrink", (action)="clearValue()", color="base", variant="filled") Törlés
+      button.nz-button(*ngIf="begin.value", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés
       div(fxFlex="grow")
       button.nz-button(fxFlex="noshrink", color="confirm", type="submit") Szűrés
 

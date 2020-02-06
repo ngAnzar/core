@@ -5,6 +5,13 @@ user-select(value)
   -ms-user-select: value
   user-select: value
 
+pointer-events(value)
+  if value is none
+    pointer-events: none
+    touch-action: none
+  else
+    pointer-events: value
+
 placeholder()
   &::-webkit-input-placeholder  /* Chrome/Opera/Safari */
     {block}
