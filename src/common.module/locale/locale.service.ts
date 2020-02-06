@@ -37,7 +37,6 @@ export class LocaleService {
     // public readonly dateRangeFormat = "{[yyyy. ][MM. ][dd. ][HH:mm]}< — >[yyyy. ][MM. ][dd. ][HH:mm]"
 
     public constructor(@Inject(LOCALE_DATE) public readonly dateLocale: any) {
-        this.formatDateRange(new Date(), new Date())
     }
 
     public formatDate(date: Date, dateFormat: DateFormat): string {
@@ -56,9 +55,9 @@ export class LocaleService {
     public formatDateRange(begin: Date, end: Date, onlyDate: boolean = true): string {
         if (!end) {
             if (onlyDate) {
-                return this.formatDate(begin, "yyyy. MM. dd.")
+                return `${this.formatDate(begin, "yyyy. MM. dd.")} — ∞`
             } else {
-                return this.formatDate(begin, "yyyy. MM. dd. HH:mm")
+                return `${this.formatDate(begin, "yyyy. MM. dd. HH:mm")} — ∞`
             }
         }
 
