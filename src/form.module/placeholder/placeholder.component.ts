@@ -1,4 +1,4 @@
-import { Component, Inject, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, HostBinding, Input, ElementRef } from "@angular/core"
+import { Component, Inject, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, Input, ElementRef } from "@angular/core"
 import { merge, Subject } from "rxjs"
 import { startWith, debounceTime, takeUntil } from "rxjs/operators"
 
