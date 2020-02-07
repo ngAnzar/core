@@ -15,6 +15,5 @@ export class InputMaskDirective {
 
     public constructor(
         @Inject(InputMask) public readonly mask: InputMask) {
-        console.log({ mask })
     }
 }

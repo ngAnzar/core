@@ -29,13 +29,18 @@ export class TextFieldComponent extends InputComponent<string> implements AfterV
         const el = this.el
         if (mask) {
             mask.connect(this.el.nativeElement)
+            this.destruct.subscription(mask.accept).subscribe(mask => {
+                const value = mask.unmaskedValue
+                this.model.emitValue(value ? value : null)
+                this.cdr.markForCheck()
+            })
         }
         this.destruct.subscription(merge(this.model.focusChanges, this.model.valueChanges))
             .pipe(startWith(null))
             .subscribe(() => {
                 if (mask) {
                     if ((mask.options as any).lazy === false) {
-                        el.nativeElement.style.opacity = (this.model.value != null || this.model.focused ? "1" : "0")
+                        el.nativeElement.style.opacity = (!this.model.isEmpty || this.model.focused ? "1" : "0")
                     }
                 }
             })
@@ -52,14 +57,11 @@ export class TextFieldComponent extends InputComponent<string> implements AfterV
 
     @HostListener("input", ["$event"])
     protected _onInput(event: Event) {
-        let value = this.el.nativeElement.value
-        if (this.mask) {
-            this.mask.value = value
-            value = this.mask.unmaskedValue
+        if (!this.mask) {
+            let value = this.el.nativeElement.value
+            this.model.emitValue(value ? value : null)
+            this.cdr.markForCheck()
         }
-
-        this.model.emitValue(value ? value : null)
-        this.cdr.markForCheck()
     }
 }
 
