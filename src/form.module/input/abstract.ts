@@ -66,9 +66,16 @@ export class InputModel<T> extends AbstractControlDirective {
     public set value(value: T) { this.control.setValue(value) }
     public get value(): T { return this.control.value }
     public get isEmpty(): boolean {
+        if (this._isEmpty != null) {
+            return this._isEmpty
+        }
         const val = this.value as any
         return !val || val.length === 0 || (isPlainObject(val) && Object.keys(val).length === 0)
     }
+    public set isEmpty(val: boolean) {
+        this._isEmpty = val
+    }
+    private _isEmpty: boolean
 
     public set disabled(val: boolean) {
         if (this.control.disabled !== val) {

@@ -105,6 +105,8 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         this.destruct.subscription(mask.accept)
             .pipe(
                 map(mask => {
+                    model.isEmpty = Boolean(!mask.unmaskedValue || mask.unmaskedValue.length === 0)
+
                     const blockVals = mask.blockValues
 
                     this._year = toNumber(blockVals["yyyy"])
@@ -125,9 +127,9 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     this.model.emitValue(value = setTzToUTC(startOfDay(value)))
                     isValid = true
                 } else {
-                    this.model.emitValue(value = this._createPartialValue())
+                    this.model.emitValue(null)
                 }
-                this._updatePickerValue(value)
+                this._updatePickerValue(this._createPartialValue())
 
                 if (this.dtValidator.isValid !== isValid) {
                     this.dtValidator.isValid = isValid
