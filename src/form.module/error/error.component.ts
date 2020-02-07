@@ -61,7 +61,7 @@ export class ErrorComponent implements OnDestroy {
     public isEmpty: boolean = true
 
     public constructor(
-        @Inject(NgControl) @Optional() @Self() private readonly ngControl: NgControl,
+        @Inject(NgControl) @Optional() @Self() ngControl: NgControl,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
         @Inject(DEFAULT_ERROR_MESSAGES) private readonly defaultErrors: ErrorMessages) {
         if (ngControl) {
@@ -79,7 +79,7 @@ export class ErrorComponent implements OnDestroy {
 
     private _onStatusChanges = (status: any) => {
         this._computeErrorMessage()
-        this.cdr.detectChanges()
+        this.cdr.markForCheck()
     }
 
     private _computeErrorMessage() {
@@ -92,7 +92,7 @@ export class ErrorComponent implements OnDestroy {
 
         this.errorMessage = this.errorTpl = null
 
-        if (errors && this.inputModel.touched) {
+        if (errors && (this.inputModel.touched || this.inputModel.dirty)) {
             if (messages.length) {
                 for (const m of messages) {
                     if (errors[m.condition]) {
