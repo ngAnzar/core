@@ -20,6 +20,9 @@ export const DEFAULT_ERROR_MESSAGES = new InjectionToken<ErrorMessages>("DEFAULT
 @Component({
     selector: ".nz-error",
     exportAs: "nzError",
+    host: {
+        "[attr.no-message]": "(errorMessage && errorMessage.length) || errorTpl ? null : ''"
+    },
     templateUrl: "./error.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })

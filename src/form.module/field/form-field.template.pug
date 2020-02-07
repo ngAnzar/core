@@ -29,7 +29,7 @@
 .underline(#underline)
   .nz-form-field-ripple
 
-.caption
+.caption(fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="4px")
   .nz-error(#error="nzError", [inputModel]="_inputModel", [messages]="messages.toArray()")
 
   ng-template([ngIf]="error.isEmpty")
