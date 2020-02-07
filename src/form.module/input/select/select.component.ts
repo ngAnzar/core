@@ -387,7 +387,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         const { ids, request, models } = this.coerceValue(obj)
 
         if (request.length) {
-            this.getModels(request).pipe(take(1)).subscribe(result => {
+            this.destruct.subscription(this.getModels(request)).pipe(take(1)).subscribe(result => {
                 this.selection.items = models.concat(result)
             })
         } else {
