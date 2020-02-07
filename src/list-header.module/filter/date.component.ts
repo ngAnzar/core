@@ -68,7 +68,6 @@ export class ListFilterDate extends ColumnFilter {
     }
 
     protected _writeValue(value: any): void {
-        console.log(value)
         if (value instanceof Date || typeof value === "string") {
             this.isRange = false
             this.begin.setValue(asDate(value))
