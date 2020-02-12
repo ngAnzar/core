@@ -3,7 +3,7 @@ import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
 
 import { IDisposable, NzRange } from "../../util"
-import { Model, PrimaryKey } from "../model"
+import { Model, PrimaryKey, Field } from "../model"
 import { SelectionKeyboardHandler } from "./keyboard-handler"
 
 
@@ -64,6 +64,7 @@ export interface ISelectable<T extends Model = Model> {
 
 
 export class PlaceholderModel extends Model {
+    @Field({ primary: true }) public id: PrimaryKey
     $placeholder = true
 }
 
