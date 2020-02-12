@@ -56,6 +56,8 @@ import { ShortcutService } from "./shortcut/shortcut.service"
 export { ShortcutService }
 export { Shortcuts, ShortcutDef, ShortcutHandler, Shortcut } from "./shortcut/shortcuts"
 
+import { LocalStorageService, LocalStorageBucket } from "./services/local-storage.service"
+export { LocalStorageService, LocalStorageBucket }
 
 import { NzRouterLink, NzRouterLinkHref } from "./ngpatches/router-link"
 
@@ -107,6 +109,7 @@ const content = [
         MediaQueryService,
         ShortcutService,
         TOUCH_EVENT_PLUGIN,
+        LocalStorageService,
     ]
 })
 export class NzCommonModule { }
