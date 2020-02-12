@@ -25,7 +25,7 @@ export class ListFilterText extends ColumnFilter {
         return this.value.value
     }
 
-    public applyFilter() {
+    public applyValue() {
         this.valueText = this.value.value
 
         if (this.operator.value && this.value.value) {

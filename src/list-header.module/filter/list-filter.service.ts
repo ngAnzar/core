@@ -1,4 +1,4 @@
-import { Injectable, Inject, OnDestroy, TemplateRef, EventEmitter } from "@angular/core"
+import { Injectable, Inject, OnDestroy, TemplateRef, EventEmitter, OnInit } from "@angular/core"
 import { Observable, Subscription } from "rxjs"
 
 import { Destruct } from "../../util"
@@ -19,6 +19,7 @@ export interface IListFilterEditor<T> {
 
     canHandleFilter(name: string): boolean
     writeValue(name: string, value: T): void
+    applyValue(): void
     resetValue(): void
     clearValue(): void
 }
@@ -63,17 +64,17 @@ export class ListFilterService implements OnDestroy {
             this.subscriptions.get(editor).unsubscribe()
         }
 
-        this.subscriptions.set(editor, editor.valueChanges.subscribe(changes => {
-            let idx = this.filters.indexOf(editor)
-            if (editor.isEmpty) {
-                if (idx !== -1) {
-                    (this.filters as Array<IListFilterEditor<any>>).splice(idx, 1)
+        this.subscriptions.set(editor, editor.valueChanges.subscribe(this._handleEditorChange.bind(this, editor)))
+
+        const filters = this.source.filter
+        if (filters) {
+            for (const filterName in filters) {
+                if (editor.canHandleFilter(filterName)) {
+                    editor.writeValue(filterName, (filters as any)[filterName])
+                    editor.applyValue()
                 }
-            } else if (idx === -1) {
-                (this.filters as Array<IListFilterEditor<any>>).push(editor)
             }
-            (this.changes as EventEmitter<void>).emit()
-        }))
+        }
     }
 
     public removeEditor(editor: IListFilterEditor<any>) {
@@ -85,6 +86,18 @@ export class ListFilterService implements OnDestroy {
         if (this.subscriptions.has(editor)) {
             this.subscriptions.get(editor).unsubscribe()
         }
+    }
+
+    private _handleEditorChange(editor: IListFilterEditor<any>) {
+        let idx = this.filters.indexOf(editor)
+        if (editor.isEmpty) {
+            if (idx !== -1) {
+                (this.filters as Array<IListFilterEditor<any>>).splice(idx, 1)
+            }
+        } else if (idx === -1) {
+            (this.filters as Array<IListFilterEditor<any>>).push(editor)
+        }
+        (this.changes as EventEmitter<void>).emit()
     }
 
     // protected _handleFilterChange(editor: IListFilterEditor<any>, name: string, change: DiffKind) {

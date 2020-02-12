@@ -3,7 +3,7 @@
     padding: 0 8px
 
 ng-template(#layer)
-  form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch" style="min-width:300px", on-submit="applyFilter();$event.preventDefault()", ngNoForm)
+  form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch" style="min-width:300px", on-submit="applyValue();$event.preventDefault()", ngNoForm)
     .input-row(fxFlex="grow")
       .nz-form-field(fxFlex="grow")
         label {{ title }} tartalmazza

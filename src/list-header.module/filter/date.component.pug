@@ -6,7 +6,7 @@
     width: 140px
 
 ng-template(#layer)
-  form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch", (submit)="applyFilter();$event.preventDefault()", ngNoForm)
+  form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch", (submit)="applyValue();$event.preventDefault()", ngNoForm)
     .input-row(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
       .nz-form-field(fxFlex="none")
         label {{ isRange ? "Ettől" : "Dátum" }}

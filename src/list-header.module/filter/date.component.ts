@@ -43,7 +43,7 @@ export class ListFilterDate extends ColumnFilter {
         super(listFilterService)
     }
 
-    public applyFilter() {
+    public applyValue() {
         const isRange = !!(this.isRange && this.begin.value && this.end.value)
         this.isRange = isRange
 

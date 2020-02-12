@@ -15,7 +15,7 @@ export interface ListFilterLayerContext {
 }
 
 
-export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDestroy {
+export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDestroy, OnInit {
     @ViewChild("layer", { read: TemplateRef, static: true }) public readonly layer: TemplateRef<ListFilterLayerContext>
     @ViewChild("chip", { read: TemplateRef, static: true }) public readonly chip: TemplateRef<ListFilterLayerContext>
     public layerFilter: LayerFactoryDirective
@@ -33,10 +33,14 @@ export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDes
     public readonly valueChanges: Observable<T> = this.destruct.subject(new EventEmitter())
 
     public constructor(@Inject(ListFilterService) protected readonly service: ListFilterService) {
-        service.registerEditor(this)
+    }
+
+    public ngOnInit() {
+        this.service.registerEditor(this)
     }
 
     public abstract writeValue(name: string, value: T): void
+    public abstract applyValue(): void
     public abstract canHandleFilter(name: string): boolean
     public abstract resetValue(): void
     public abstract clearValue(): void
@@ -88,13 +92,9 @@ export abstract class ColumnFilter extends ListFilter {
     protected abstract _writeValue(value: any): void
 
     protected _publishValue(value: any): void {
-        const changes = DeepDiff.diff(this.originalValue, value) as Diff
         this.originalValue = value;
-        (this as any).isEmpty = value == null
-
-        if (changes && changes.length) {
-            (this.valueChanges as EventEmitter<any>).emit(value)
-        }
+        (this as any).isEmpty = value == null;
+        (this.valueChanges as EventEmitter<any>).emit(value)
 
         let filter = this.service.source.filter || {} as any
         if (this.isEmpty) {
