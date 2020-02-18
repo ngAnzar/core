@@ -119,7 +119,7 @@ export class ViewportService implements OnDestroy {
                     return items
                         .filter(item => item.area === area)
                 }),
-                switchMap(items => items.length ? of(items) : NEVER)
+                switchMap(items => items.length ? of(items) : of([]))
             )
     }
 

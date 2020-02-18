@@ -359,7 +359,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public ngOnInit() {
         super.ngOnInit()
         this.destruct.subscription(this.model.statusChanges).subscribe(_ => {
-            console.log("status Changes")
             this._updateDropDown()
             this._detectChanges()
         })
