@@ -1,7 +1,8 @@
 import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, HostBinding, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
-    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter
+    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter,
+    OnInit
 } from "@angular/core"
 
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -70,7 +71,7 @@ export type AutoTrigger = "all" | "query" | null;
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: INPUT_MODEL
 })
-export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy {
+export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy, OnInit {
     @ContentChild("selected", { read: TemplateRef, static: true }) @Input() public readonly selectedTpl: SelectTemplateRef<T>
     @ContentChild("item", { read: TemplateRef, static: true }) @Input() public readonly itemTpl: SelectTemplateRef<T>
     @ContentChildren(ListActionComponent) @Input() public readonly actions: QueryList<ListActionComponent>
@@ -143,12 +144,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @Input("disableInput")
     public set disabled(val: boolean) {
-        val = coerceBooleanProperty(val)
-        if (this.model.disabled !== val) {
-            this.model.disabled = val
-            this._updateDropDown()
-            this._detectChanges()
-        }
+        this.model.disabled = coerceBooleanProperty(val)
     }
     public get disabled(): boolean { return !this.source || !this.source.storage || this.model.disabled }
 
@@ -358,6 +354,15 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         this.destruct.subscription(this.query$).subscribe(this._querySuggestions.bind(this))
         this.destruct.subscription(this.focusItem$).subscribe(this._focusItemByInput.bind(this))
+    }
+
+    public ngOnInit() {
+        super.ngOnInit()
+        this.destruct.subscription(this.model.statusChanges).subscribe(_ => {
+            console.log("status Changes")
+            this._updateDropDown()
+            this._detectChanges()
+        })
     }
 
     public reset() {

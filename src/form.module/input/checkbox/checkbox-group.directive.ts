@@ -1,4 +1,4 @@
-import { Directive, Input, AfterContentInit } from "@angular/core"
+import { Directive, Input } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { InputComponent, INPUT_MODEL } from "../abstract"
@@ -6,7 +6,7 @@ import { CheckboxComponent } from "./checkbox.component"
 
 
 @Directive({
-    selector: ".nz-checkbox-group",
+    selector: ".nz-checkbox-group,[nzCheckboxGroup]",
     exportAs: "checkboxGroup",
     providers: INPUT_MODEL
 })
@@ -20,6 +20,11 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     }
     public get name(): string { return this._name }
     protected _name: string
+
+    @Input()
+    public set nzCheckboxGroup(val: string) {
+        this.name = val
+    }
 
     @Input()
     public set disabled(val: boolean) {

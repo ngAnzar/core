@@ -14,8 +14,8 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
     .nz-checkbox-label
       flex-direction: row-reverse
 
-    .nz-checkbox-input
-      margin-left: nz-local-grid-size(2)
+    .nz-checkbox-input + .nz-checkbox-content:not(:empty)
+      margin-right: nz-local-grid-size(2)
 
   &.nz-checkbox-checked
     .nz-checkbox-indicator
@@ -66,7 +66,9 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
   max-width: 100%
 
 .nz-checkbox-input
-  margin-right: nz-local-grid-size(2)
+  & + .nz-checkbox-content:not(:empty)
+    margin-left: nz-local-grid-size(2)
+
   pointer-events: none
 
 
