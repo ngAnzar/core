@@ -55,6 +55,7 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
     protected _lastEvent: ScrollEvent
 
     public set scrollPercent(val: ScrollPosition) {
+        // console.log("scrollPercent", val)
         const old = this._scrollPercent
 
         const oldLeft = old ? old.left : 0
@@ -87,6 +88,8 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
         const maxLeft = Math.max(0, this.scrollWidth - this.width)
         const top = Math.min(val ? Math.round(val.top) || 0 : 0, maxTop)
         const left = Math.min(val ? Math.round(val.left) || 0 : 0, maxLeft)
+
+        // console.log({ maxTop, top })
 
         this.scrollPercent = {
             top: (top / (this.scrollHeight - this.height)) || 0,

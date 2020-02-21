@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common"
 import { FlexLayoutModule, LAYOUT_CONFIG } from "@angular/flex-layout"
 
 
-export { Rect, getBoundingClientRect } from "./geometry/rect"
+export { Rect, RectProps, getBoundingClientRect } from "./geometry/rect"
 export { Point } from "./geometry/point"
 export { Align, AlignInput, VAlign, HAlign, parseAlign, Margin, MarginParsed, parseMargin, composeMargin, OPPOSITE_ALIGN } from "./geometry/align"
 

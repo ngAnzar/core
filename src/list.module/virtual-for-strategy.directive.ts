@@ -4,11 +4,12 @@ import { Subject } from "rxjs"
 import { ScrollerService, Viewport } from "./scroller/scroller.service"
 import { ScrollableDirective } from "./scroller/scrollable.directive"
 import { NzRange, __zone_symbol__ } from "../util"
-import { Rect } from "../layout.module"
+import { Rect, RectProps } from "../layout.module"
 import { VirtualForContext } from "./virtual-for.directive"
 
 
 const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
+const RAF: "requestAnimationFrame" = __zone_symbol__("requestAnimationFrame")
 
 
 export abstract class VirtualForVisibleItems {
@@ -16,7 +17,11 @@ export abstract class VirtualForVisibleItems {
 
     public abstract getVisibleRange(viewport: Viewport): NzRange
     public abstract clearCache(): void
-    public abstract cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void
+
+    // public abstract cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void
+
+    public abstract onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void
+    public abstract onItemRemove(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void
     public abstract onRender(range: NzRange): void
 }
 
@@ -53,7 +58,15 @@ export class VirtualForFixedItems extends VirtualForVisibleItems {
 
     }
 
-    public cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void {
+    // public cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void {
+
+    // }
+
+    public onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
+
+    }
+
+    public onItemRemove(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
 
     }
 
@@ -115,6 +128,16 @@ class VirtualForVaryingItemsPlain extends VirtualForVisibleItems {
             }
         }
         return null
+    }
+
+
+
+    public onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
+        this.cacheItemRect(view)
+    }
+
+    public onItemRemove(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
+        this.cacheItemRect(view)
     }
 
     public onRender(range: NzRange): void {
@@ -199,7 +222,6 @@ class VirtualForVaryingItemsPlain extends VirtualForVisibleItems {
 
 const ResizeObserver: any = (window as any).ResizeObserver
 
-
 @Directive({
     selector: "[nzVirtualFor]:not([fixedItemHeight])",
     providers: [
@@ -210,10 +232,10 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
     @Input()
     public extraHeight: number = 0
 
-    private rects: Rect[] = []
+    private rects: RectProps[] = []
     private els: Map<HTMLElement, number> = new Map()
     private observer: any
-    private minVisibleIdx: number
+    private minVisibleIdx: number = 0
     private paddingTop: number = 0
     private minHeight: number = 0
 
@@ -253,35 +275,82 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
 
     public clearCache(): void {
         this.rects.length = 0
+        this._setPaddingTop(0)
     }
 
-    public cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>) {
+    public onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
+        const el = getViewEl(view)
+        this._watch(el, index)
+    }
+
+    public onItemRemove(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
+        const el = getViewEl(view)
+        this._unwatch(el, index)
     }
 
     public onRender(range: NzRange): void {
-        let minVisibleIdx = -1
-        for (let i = 0, l = this.vcr.length; i < l; i++) {
-            const view = this.vcr.get(i) as EmbeddedViewRef<VirtualForContext<any>>
-            const idx = view.context ? view.context.index : -1
-            const el = getViewEl(view)
-            if (idx !== -1) {
-                if (minVisibleIdx === -1) {
-                    minVisibleIdx = idx
-                } else {
-                    minVisibleIdx = Math.min(minVisibleIdx, idx)
-                }
-                if (!this.els.has(el)) {
-                    this.els.set(el, idx)
-                    this.observer.observe(el)
-                } else {
-                    this.els.set(el, idx)
-                }
-            } else if (el) {
-                this.els.delete(el)
+        let minIndex = -1
+        for (const index of this.els.values()) {
+            if (minIndex === -1) {
+                minIndex = index
+            } else {
+                minIndex = Math.min(minIndex, index)
             }
         }
+        this.minVisibleIdx = minIndex
+        this._updateContainer()
+    }
 
-        this.minVisibleIdx = minVisibleIdx
+    private _watch(el: HTMLElement, index: number) {
+        if (el) {
+            if (!this.els.has(el)) {
+                this.els.set(el, index)
+                this.observer.observe(el)
+            } else {
+                this.els.set(el, index)
+            }
+            // this._cacheRect(el, index)
+        }
+    }
+
+    private _unwatch(el: HTMLElement, index: number) {
+        if (this.els.has(el)) {
+            this.els.delete(el)
+            this.observer.unobserve(el)
+            this._cacheRect(el, index)
+        }
+    }
+
+    private _cacheRect(el: HTMLElement, index: number, contentRect: ClientRect = null): RectProps {
+        if (!contentRect) {
+            contentRect = el.getBoundingClientRect()
+        } else {
+        }
+
+        const width = contentRect.width
+        const height = contentRect.height
+        const prev = this.rects[index - 1]
+        const top = prev ? prev.bottom : 0
+        if (width && height) {
+            const marginTop = parseInt(el.style.marginTop, 10) || 0
+            const marginBottom = parseInt(el.style.marginBottom, 10) || 0
+            return this.rects[index] = this._rectLike(0, top, width, height + marginTop + marginBottom)
+        } else {
+            return this.rects[index] = this._rectLike(0, top, 0, 0)
+        }
+    }
+
+    private _rectLike(x: number, y: number, w: number, h: number): RectProps {
+        return {
+            width: w,
+            height: h,
+            x: x,
+            y: y,
+            left: x,
+            top: y,
+            right: x + w,
+            bottom: y + h,
+        }
     }
 
     public ngOnDestroy() {
@@ -290,52 +359,50 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
 
     private _lastMinHeight: any
     private _onDimChange(entries: any) {
+        let minIndex = this.rects.length
         for (const entry of entries) {
-            const el = entry.target as HTMLElement
-            const width = entry.contentRect.width
-            const height = entry.contentRect.height
+            const el = entry.target
             const idx = this.els.get(el)
-            if (idx >= 0 && width && height) {
-                const marginTop = parseInt(el.style.marginTop, 10) || 0
-                const marginBottom = parseInt(el.style.marginBottom, 10) || 0
-                this.rects[idx] = new Rect(0, 0, width, height + marginTop + marginBottom)
+            if (idx >= 0) {
+                minIndex = Math.max(minIndex, idx)
+                this._cacheRect(entry.target, idx, entry.contentRect)
             }
         }
 
-        let top = 0
-        for (let i = 0, l = this.rects.length; i < l; i++) {
-            const rect = this.rects[i]
+        let rect = this.rects[minIndex - 1]
+        let top = rect ? rect.bottom : 0
+        for (let idx = minIndex; idx < this.rects.length; idx++) {
+            let rect = this.rects[idx]
             if (rect) {
                 rect.top = top
-                top += rect.height
             }
+            top = rect.bottom
         }
 
-        window[SET_TIMEOUT](() => {
-            const lastRect = this.rects[this.rects.length - 1]
-            if (lastRect) {
-                this._updatePaddingTop()
-
-                let minHeight = (lastRect ? lastRect.bottom : 0) + this.extraHeight + this.paddingTop
-                if (this.minHeight !== minHeight) {
-                    const containerEl = this.scrollable.el.nativeElement
-                    this.minHeight = minHeight
-                    containerEl.style.minHeight = `${minHeight}px`
-                }
-            }
-        }, 1)
+        window[RAF](this._updateContainer)
     }
 
-    private _updatePaddingTop() {
+    private _updateContainer = () => {
         if (this.minVisibleIdx !== -1) {
-            let begin = this.rects[this.minVisibleIdx]
-            if (begin) {
-                if (this.paddingTop !== begin.top) {
-                    const containerEl = this.scrollable.el.nativeElement
-                    this.paddingTop = begin.top
-                    containerEl.style.paddingTop = `${begin.top}px`
-                }
+            const firstRect = this.rects[this.minVisibleIdx]
+            if (firstRect) {
+                this._setPaddingTop(firstRect.top)
             }
+        }
+    }
+
+    private _setPaddingTop(val: number) {
+        if (this.paddingTop !== val) {
+            this.paddingTop = val
+            this.scrollable.el.nativeElement.style.paddingTop = `${val}px`
+        }
+    }
+
+    private _setMinHeight(val: number) {
+        val = Math.max(val, this.minHeight)
+        if (this.minHeight !== val) {
+            this.minHeight = val
+            this.scrollable.el.nativeElement.style.minHeight = `${val}px`
         }
     }
 }

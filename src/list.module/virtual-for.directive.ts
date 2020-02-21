@@ -3,7 +3,7 @@ import {
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter
 } from "@angular/core"
 import { merge, Observable, Subject, Subscription, EMPTY, of } from "rxjs"
-import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share } from "rxjs/operators"
+import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share, mapTo } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items } from "../data.module"
 import { Destruct, NzRange, ListDiffKind, ListDiffItem } from "../util"
@@ -49,6 +49,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     @Input()
     public set nzVirtualForOf(value: DataSourceDirective<T>) {
         this._nzVirtualForOf = value
+
         if (this._srcSubInvalidate) {
             this._srcSubInvalidate.unsubscribe()
         }
@@ -56,6 +57,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             this._srcSubItems.unsubscribe()
         }
         if (value) {
+
+
             this._srcSubInvalidate = this.destruct
                 .subscription(value.storage.invalidated)
                 .pipe(startWith(null))
@@ -73,8 +76,10 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         return this._nzVirtualForOf
     }
     protected _nzVirtualForOf: DataSourceDirective<T>
+
     private _srcSubInvalidate: Subscription
     private _srcSubItems: Subscription
+    // private _srcSub: Subscription
 
     @Input()
     public set itemsPerRequest(value: number) { this._itemsPerRequest = parseInt(value as any, 10) }
@@ -112,9 +117,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private _scroll = new Subject()
     private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
-        debounceTime(10),
         map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpImmediate)),
         map((vr: NzRange) => {
+            // console.log("visible range", vr)
             if (vr.begin === -1) {
                 return new NzRange(0, this.itemsPerRequest)
             } else {
@@ -151,25 +156,28 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         shareReplay(1)
     )
 
-    private items$ = this.destruct.subscription(merge(this.requestRange$, this._itemsChanged)).pipe(
-        switchMap(_ => this.requestRange$),
-        switchMap(r => {
-            if (this._nzVirtualForOf) {
-                return this._nzVirtualForOf.getRange(r).pipe(
-                    take(1),
-                    map(items => items.getRange(r))
-                )
-            } else {
-                return of(EMPTY_ITEMS)
-            }
-        }),
-        shareReplay(1)
-    )
+    private items$ = this.destruct.subscription(
+        merge(
+            this.requestRange$.pipe(
+                tap(r => {
+                    this._nzVirtualForOf.loadRange(r)
+                })
+            ),
+            this._itemsChanged
+        ))
 
     @Output("rendered")
     public readonly render$ = this.destruct.subscription(this.items$).pipe(
-        withPrevious(),
-        // withPrevious(this.reset$),
+        switchMap(_ => {
+            return this.requestRange$.pipe(map(rr => {
+                return this.nzVirtualForOf.getRange(rr)
+            }))
+            // return this.renderRange$.pipe(map(rr => {
+            //     return this.nzVirtualForOf.getRange(rr)
+            // }))
+        }),
+        // withPrevious(),
+        withPrevious(this.reset$),
         map(vals => {
             const [prev, current] = vals
             return {
@@ -199,7 +207,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     public ngOnInit() {
         this.destruct.subscription(this.render$).subscribe()
 
-        this.destruct.subscription(merge(this._scroller.vpImmediate.scroll, this._scroller.vpImmediate.change))
+        this.destruct.subscription(merge(this._scroller.vpRender.scroll, this._scroller.vpImmediate.change))
             // this.destruct.subscription(this._scroller.vpImmediate.scroll)
             .pipe(startWith(0))
             .subscribe(this._scroll)
@@ -224,6 +232,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                 // console.log("CREATE", change.index, vcrIdx, change.item, this._vcr)
                 view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
                 view.detectChanges()
+                this.visibleItems.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.UPDATE) {
                 // console.log("UPDATE", change.index, vcrIdx)
                 view = this._vcr.get(vcrIdx) as EmbeddedView<T>
@@ -233,12 +242,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                     view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
                 }
                 view.detectChanges()
+                this.visibleItems.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.DELETE) {
                 vcrIdx = change.index - delOffset
                 // console.log("DELETE", change.index, vcrIdx, delOffset)
                 view = this._vcr.get(vcrIdx) as EmbeddedView<T>
                 if (view) {
-                    this.visibleItems.cacheItemRect(view)
+                    this.visibleItems.onItemRemove(change.index, view)
                     view.context.index = -1
                     this._vcr.detach(vcrIdx)
                     this.reusable.push(view)

@@ -25,7 +25,9 @@ export class ScrollableDirective {
         zone.runOutsideAngular(() => {
             service.destruct.subscription(service.vpRender.scroll).subscribe(event => {
                 const pos = event.position
+                nativeEl.style.willChange = "transform"
                 nativeEl.style.transform = `translate3d(-${pos.left}px, -${pos.top}px, 0)`
+                nativeEl.style.willChange = null
             })
 
             // service.destruct.subscription(service.vpImmediate.scroll).subscribe(event => {
@@ -45,7 +47,6 @@ export class ScrollableDirective {
     public getElementRect(el: Node) {
         let selfRect = getBoundingClientRect(this.el.nativeElement)
         let elRect = getBoundingClientRect(el)
-
         return new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
     }
 }

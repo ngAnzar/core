@@ -1,18 +1,24 @@
 import { Injectable, ElementRef, NgZone, Inject } from "@angular/core"
 import { Observable, Observer, animationFrameScheduler, merge, fromEvent } from "rxjs"
-import { debounceTime, finalize, share } from "rxjs/operators"
+import { debounceTime, finalize, share, distinctUntilChanged } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
+import { __zone_symbol__ } from "../util/zone"
 import { Rect } from "./geometry/rect"
 
 export type Watchers<T> = Map<HTMLElement, { rc: number, watcher: T }>
 export type Dimension = { width: number, height: number }
 export type Position = { x: number, y: number }
 
-import { __zone_symbol__ } from "../util/zone"
 
-const REQUEST_ANIMATION_FRAME: "requestAnimationFrame" = __zone_symbol__("requestAnimationFrame")
-const CANCEL_ANIMATION_FRAME: "cancelAnimationFrame" = __zone_symbol__("cancelAnimationFrame")
+const REQUEST_ANIMATION_FRAME = __zone_symbol__("requestAnimationFrame")
+const CANCEL_ANIMATION_FRAME = __zone_symbol__("cancelAnimationFrame")
+const MUTATION_OBSERVER = __zone_symbol__("MutationObserver")
+const RESIZE_OBSERVER = __zone_symbol__("ResizeObserver")
+const MUTATION_CONFIG: MutationObserverInit = {
+    attributes: true,
+    attributeFilter: ["style", "class"]
+}
 
 
 @Injectable()
@@ -88,21 +94,56 @@ export class RectMutationService {
     protected createResizeWatcher(element: HTMLElement): Observable<Dimension> {
         return this.zone.runOutsideAngular(() => {
             return Observable.create((observer: Observer<Dimension>) => {
-                const resizeObserver = (window as any).ResizeObserver as any
+                const resizeObserver = (window as any)[RESIZE_OBSERVER] as any
+                const mutationObserver = (window as any)[MUTATION_OBSERVER] as any
                 if (resizeObserver) {
                     const ro = new resizeObserver((entries: any) => {
                         for (const entry of entries) {
                             observer.next({
-                                width: entry.contentRect.left + entry.contentRect.right,
-                                height: entry.contentRect.top + entry.contentRect.bottom
+                                width: entry.contentRect.right,
+                                height: entry.contentRect.bottom
                             })
                         }
 
                     })
                     ro.observe(element)
 
+                    let lastPadding: string = ""
+                    let lastClass = element.getAttribute("class")
+                    const mo = new mutationObserver((mutations: MutationRecord[]) => {
+                        let changed = false
+
+                        for (const mutation of mutations) {
+                            if (mutation.attributeName === "style") {
+                                let re = /(padding(?:-(?:top|right|bottom|left))?):[^;]+;?\s*/gi
+                                let currentPadding = ""
+                                let style = element.getAttribute("style")
+                                let match: any = null
+                                while (match = re.exec(style)) {
+                                    currentPadding += match[0]
+                                }
+
+                                changed = currentPadding !== lastPadding
+                                lastPadding = currentPadding
+                            } else if (mutation.attributeName === "class") {
+                                let currClass = element.getAttribute("class")
+                                if (lastClass !== currClass) {
+                                    changed = true
+                                    lastClass = currClass
+                                }
+                            }
+
+                            if (changed) {
+                                observer.next({ width: element.offsetWidth, height: element.offsetHeight })
+                                break
+                            }
+                        }
+                    })
+                    mo.observe(element, MUTATION_CONFIG)
+
                     return () => {
                         ro.disconnect()
+                        mo.disconnect()
                     }
                 } else {
                     const detector = resizeDetector({ strategy: "scroll" })
@@ -115,7 +156,12 @@ export class RectMutationService {
                         detector.uninstall(element)
                     }
                 }
-            }).pipe(debounceTime(0, animationFrameScheduler), share())
+            }).pipe(
+                distinctUntilChanged((a: any, b: any) => {
+                    return a && b && a.width === b.width && a.height === b.height
+                }),
+                debounceTime(0, animationFrameScheduler), share()
+            )
         })
     }
 

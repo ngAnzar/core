@@ -123,12 +123,21 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.source.async
     }
 
-    public getRange(r: NzRange): Observable<Items<T>> {
+    public getRange(r: NzRange): Items<T> {
         if (this._dsd) {
             return this._dsd.getRange(r)
         } else {
             this._updateFilter()
             return this.storage.getRange(r)
+        }
+    }
+
+    public loadRange(r: NzRange): void {
+        if (this._dsd) {
+            return this._dsd.loadRange(r)
+        } else {
+            this._updateFilter()
+            return this.storage.loadRange(r)
         }
     }
 

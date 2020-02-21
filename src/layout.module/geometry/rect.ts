@@ -22,7 +22,19 @@ export function getBoundingClientRect(node: Node) {
 }
 
 
-export class Rect {
+export interface RectProps {
+    top: number
+    left: number
+    right: number
+    bottom: number
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+
+export class Rect implements RectProps {
     [key: string]: number | any
 
     public static fromElement(el: HTMLElement) {
@@ -67,17 +79,17 @@ export class Rect {
         this.setOrigin(origin, x, y)
     }
 
-    public contains(other: Rect): boolean {
+    public contains(other: RectProps): boolean {
         return this.left <= other.left && this.top <= other.top
             && this.right >= other.right && this.bottom >= other.bottom
     }
 
-    public isIntersect(other: Rect): boolean {
+    public isIntersect(other: RectProps): boolean {
         return !(this.left > other.right || other.left > this.right
             || this.top > other.bottom || other.top > this.bottom)
     }
 
-    public intersection(other: Rect): Rect | null {
+    public intersection(other: RectProps): Rect | null {
         if (this.isIntersect(other)) {
             let res = new Rect(
                 Math.max(this.x, other.x),

@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject, Observer, merge } from "rxjs"
-import { map, startWith, debounceTime, tap, shareReplay, finalize, share, take } from "rxjs/operators"
+import { map, startWith, debounceTime, tap, shareReplay, finalize, share, take, takeUntil } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
 
@@ -8,7 +8,6 @@ import { Destruct, IDisposable, NzRange, NzRangeList } from "../util"
 import { DataSource, Filter, Sorter, Meta, LoadFields } from "./data-source"
 import { Model, PrimaryKey } from "./model"
 import { Collection, Items } from "./collection"
-import { StaticSource } from '..';
 
 
 export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> implements IDisposable {
@@ -101,40 +100,83 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         })
     }
 
-    public getRange(r: NzRange): Observable<Items<T>> {
+    // public getRange(r: NzRange): Observable<Items<T>> {
+    //     if (this.total) {
+    //         r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
+    //     }
+
+    //     if (!this.cachedRanges.contains(r) && !this.endReached) {
+    //         let rrange = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
+
+    //         let pending = this._getPending(rrange)
+    //         if (pending) {
+    //             return pending
+    //         }
+
+    //         return this._setPending(
+    //             rrange,
+    //             this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta.get())
+    //                 // .pipe(take(1))
+    //                 .pipe(map(items => {
+    //                     (this as any).range = items.range || r
+    //                     if (items.total != null) {
+    //                         (this as any).lastIndex = items.total;
+    //                         (this as any).endReached = items.total <= this.range.end
+    //                         this.total = items.total
+    //                     } else {
+    //                         (this as any).endReached = rrange.length !== items.length
+    //                     }
+    //                     this._cacheItems(items, this.range)
+    //                     return this._collectRange(r)
+    //                 }))
+    //         )
+    //     } else {
+    //         (this as any).range = r
+    //         return of(this._collectRange(r))
+    //     }
+    // }
+
+    public getRange(r: NzRange) {
+        return this._collectRange(r)
+    }
+
+    private _abortLoad: Subject<any>
+    public loadRange(r: NzRange) {
         if (this.total) {
             r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
 
-        if (!this.cachedRanges.contains(r) && !this.endReached) {
-            let rrange = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
-
-            let pending = this._getPending(rrange)
-            if (pending) {
-                return pending
-            }
-
-            return this._setPending(
-                rrange,
-                this.source.search(this.filter.get(), this.sorter.get(), rrange, this.meta.get())
-                    // .pipe(take(1))
-                    .pipe(map(items => {
-                        (this as any).range = items.range || r
-                        if (items.total != null) {
-                            (this as any).lastIndex = items.total;
-                            (this as any).endReached = items.total <= this.range.end
-                            this.total = items.total
-                        } else {
-                            (this as any).endReached = rrange.length !== items.length
-                        }
-                        this._cacheItems(items, this.range)
-                        return this._collectRange(r)
-                    }))
-            )
-        } else {
-            (this as any).range = r
-            return of(this._collectRange(r))
+        if (this.cachedRanges.contains(r) || this.endReached) {
+            return
         }
+
+        const request = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
+        const pending = this._getPending(request)
+        if (pending) {
+            return
+        }
+
+        if (this._abortLoad) {
+            this._abortLoad.complete()
+        }
+        this._abortLoad = new Subject()
+
+        const src = this.source
+            .search(this.filter.get(), this.sorter.get(), request, this.meta.get())
+            .pipe(takeUntil(this._abortLoad))
+
+        this._setPending(request, src)
+            .subscribe(items => {
+                (this as any).range = items.range || r
+                if (items.total != null) {
+                    (this as any).lastIndex = items.total;
+                    (this as any).endReached = items.total <= this.range.end
+                    this.total = items.total
+                } else {
+                    (this as any).endReached = request.length !== items.length
+                }
+                this._cacheItems(items, this.range)
+            })
     }
 
     public getPosition(id: PrimaryKey): Observable<number> {
@@ -207,9 +249,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected _collectRange(r: NzRange): Items<T> {
         let items: Items<T> = new Items([], r, this.total)
         for (let i = r.begin; i < r.end; i++) {
-            if (this.cache[i]) {
-                items.push(this.cache[i])
-            }
+            items.push(this.cache[i])
         }
         return items
     }
@@ -233,7 +273,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             }
         }), finalize(() => {
             this.isBusy = false
-        }), shareReplay())
+        }), shareReplay(1))
 
         this.pendingRanges.push([r, s])
         return s

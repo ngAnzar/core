@@ -67,13 +67,16 @@ export abstract class Collection<T extends Model> {
     // public readonly itemsChanged: Observable<ItemsWithChanges<T>> = new EventEmitter()
 
     public getRangeById(id: PrimaryKey, before: number, after: number): Observable<Items<T>> {
-        return this.getPosition(id)
-            .pipe(switchMap(pos => this.getRange(
-                new NzRange(Math.max(0, pos - before), pos + after)
-            )))
+        return null
+        // return this.getPosition(id)
+        //     .pipe(switchMap(pos => this.getRange(
+        //         new NzRange(Math.max(0, pos - before), pos + after)
+        //     )))
     }
 
-    public abstract getRange(r: NzRange): Observable<Items<T>>
+    public abstract loadRange(r: NzRange): void
+
+    public abstract getRange(r: NzRange): Items<T>
 
     public abstract getPosition(id: PrimaryKey): Observable<number>
 
