@@ -379,7 +379,7 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
             top = rect.bottom
         }
 
-        window[RAF](this._updateContainer)
+        window[SET_TIMEOUT](this._updateContainer, 1)
     }
 
     private _updateContainer = () => {

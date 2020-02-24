@@ -62,10 +62,12 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             this._srcSubInvalidate = this.destruct
                 .subscription(value.storage.invalidated)
                 .pipe(startWith(null))
+                .pipe(tap(_ => console.log("invalidated")))
                 .subscribe(this._reset as any)
 
             this._srcSubItems = this.destruct
                 .subscription(value.storage.items)
+                .pipe(tap(_ => console.log("items changed")))
                 .subscribe(this._itemsChanged)
         } else {
             delete this._srcSubInvalidate
@@ -176,8 +178,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             //     return this.nzVirtualForOf.getRange(rr)
             // }))
         }),
-        // withPrevious(),
-        withPrevious(this.reset$),
+        withPrevious(),
+        // withPrevious(this.reset$),
         map(vals => {
             const [prev, current] = vals
             return {
