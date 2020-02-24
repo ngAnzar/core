@@ -12,6 +12,8 @@ import { DragService } from "./drag/drag.service"
 import { DragHandleDirective } from "./drag/drag-handle.directive"
 export { DragEventService, DragEvent, DragService, DragHandleDirective }
 
+import { LinkDirective } from "./link/link.directive"
+export { LinkDirective }
 
 import { LocaleService, DateFormat, LOCALE_DATE } from "./locale/locale.service"
 import { DateDirective } from "./locale/date.directive"
@@ -88,7 +90,9 @@ const content = [
     DragHandleDirective,
 
     NzRouterLink,
-    NzRouterLinkHref
+    NzRouterLinkHref,
+
+    LinkDirective
 ]
 
 

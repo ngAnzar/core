@@ -1,0 +1,16 @@
+.nz-link
+  cursor: pointer
+  outline: none
+  border: none
+  user-select: none
+  -webkit-tap-highlight-color: transparent
+  font-weight: 500
+
+  &::-moz-focus-inner
+    border: 0
+    padding: 0
+
+  nz-theme-component-states($default-color: "accent", $include:"base" "hover" "disabled")
+
+  &:hover
+    text-decoration: underline
