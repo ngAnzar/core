@@ -290,12 +290,13 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
 
     public onRender(range: NzRange): void {
         let minIndex = -1
-        for (const index of this.els.values()) {
+        for (const [el, index] of this.els.entries()) {
             if (minIndex === -1) {
                 minIndex = index
             } else {
                 minIndex = Math.min(minIndex, index)
             }
+            this._cacheRect(el, index)
         }
         this.minVisibleIdx = minIndex
         this._updateContainer()
