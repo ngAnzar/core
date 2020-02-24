@@ -45,8 +45,29 @@ export class ScrollableDirective {
     }
 
     public getElementRect(el: Node) {
-        let selfRect = getBoundingClientRect(this.el.nativeElement)
-        let elRect = getBoundingClientRect(el)
-        return new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
+        if (el.nodeType === 1) {
+            return this._getRect(el as HTMLElement)
+        } else {
+            let selfRect = getBoundingClientRect(this.el.nativeElement)
+            let elRect = getBoundingClientRect(el)
+            return new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
+        }
+    }
+
+    private _getRect(el: HTMLElement) {
+        let w = el.offsetWidth
+        let h = el.offsetHeight
+        let x = 0
+        let y = 0
+        let node = el
+        let root = this.el.nativeElement
+
+        while (node && node !== root) {
+            x += node.offsetLeft
+            y += node.offsetTop
+            node = node.offsetParent as HTMLElement
+        }
+
+        return new Rect(x, y, w, h)
     }
 }
