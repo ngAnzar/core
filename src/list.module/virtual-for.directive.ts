@@ -160,7 +160,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         merge(
             this.requestRange$.pipe(
                 tap(r => {
-                    this._nzVirtualForOf.loadRange(r)
+                    this._nzVirtualForOf && this._nzVirtualForOf.loadRange(r)
                 })
             ),
             this._itemsChanged
@@ -170,7 +170,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     public readonly render$ = this.destruct.subscription(this.items$).pipe(
         switchMap(_ => {
             return this.requestRange$.pipe(map(rr => {
-                return this.nzVirtualForOf.getRange(rr)
+                return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             }))
             // return this.renderRange$.pipe(map(rr => {
             //     return this.nzVirtualForOf.getRange(rr)
