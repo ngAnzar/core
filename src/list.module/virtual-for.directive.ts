@@ -181,7 +181,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             //     return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             // }))
             return this.renderRange$.pipe(map(rr => {
-                return this.nzVirtualForOf.getRange(rr)
+                return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             }))
         }),
         // withPrevious(),
