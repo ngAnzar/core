@@ -76,6 +76,10 @@ export abstract class DataSource<T extends Model> {
         return this._remove(model instanceof Model ? model.pk : model, m)
     }
 
+    public invalidate() {
+        (this.changed as Subject<any>).next()
+    }
+
     public abstract getPosition(id: PrimaryKey): Observable<number>
 
     protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<any[]>

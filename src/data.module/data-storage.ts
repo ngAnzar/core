@@ -163,7 +163,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
         const src = this.source
             .search(this.filter.get(), this.sorter.get(), request, this.meta.get())
-            .pipe(takeUntil(this._abortLoad))
+            .pipe(takeUntil(merge(this._abortLoad, this.invalidated)))
 
         this._setPending(request, src)
             .subscribe(items => {

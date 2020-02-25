@@ -175,7 +175,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
     public replace(data: T[]) {
         (this as any).data = data;
-        (this.changed as Subject<void>).next()
+        this.invalidate()
     }
 
     public add(model: T, index?: number) {
@@ -184,7 +184,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         } else {
             (this.data as any).push(model)
         }
-        (this.changed as Subject<void>).next()
+        this.invalidate()
     }
 
     public del(model: T) {
@@ -197,7 +197,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     public removeAt(idx: number) {
         const removed = (this.data as any).splice(idx, 1)
         if (removed && removed.length > 0) {
-            (this.changed as Subject<void>).next()
+            this.invalidate()
         }
     }
 }
