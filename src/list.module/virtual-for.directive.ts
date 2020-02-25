@@ -108,6 +108,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         // tap(this._clear.bind(this)),
         tap(this.visibleItems.clearCache.bind(this.visibleItems)),
         tap(() => {
+            // this.reusable.length = 0
+
+            // for (let i = 0, l = this._vcr.length; i < l; i++) {
+            //     const view = this._vcr.get(i) as EmbeddedView<T>
+            //     view.detach()
+            //     this.reusable.push(view)
+            // }
+
             let sp = this._scroller.scrollPercent
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
@@ -169,15 +177,37 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     @Output("rendered")
     public readonly render$ = this.destruct.subscription(this.items$).pipe(
         switchMap(_ => {
-            return this.requestRange$.pipe(map(rr => {
-                return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
-            }))
-            // return this.renderRange$.pipe(map(rr => {
-            //     return this.nzVirtualForOf.getRange(rr)
+            // return this.requestRange$.pipe(map(rr => {
+            //     return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             // }))
+            return this.renderRange$.pipe(map(rr => {
+                return this.nzVirtualForOf.getRange(rr)
+            }))
         }),
-        withPrevious(),
+        // withPrevious(),
         // withPrevious(this.reset$),
+        map(current => {
+            let prev = new Items([], null)
+            let minIdx = -1
+            let maxIdx = -1
+            for (let i = 0, l = this._vcr.length; i < l; i++) {
+                const view = this._vcr.get(i) as EmbeddedView<T>
+                const ctx = view.context
+                if (ctx.index !== -1) {
+                    prev.push(ctx.$implicit)
+                    if (minIdx === -1) {
+                        minIdx = maxIdx = ctx.index
+                    } else {
+                        maxIdx = ctx.index
+                    }
+                }
+            }
+
+            (prev as { range: NzRange }).range = new NzRange(minIdx === -1 ? 0 : minIdx, maxIdx === -1 ? 0 : maxIdx);
+            (prev as { total: number }).total = prev.length
+
+            return [prev, current]
+        }),
         map(vals => {
             const [prev, current] = vals
             return {
@@ -225,7 +255,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         let view: EmbeddedView<T>
 
 
-        for (let change of changes) {
+        for (const change of changes) {
             vcrIdx = change.index - vcrOffset
 
             if (change.kind === ListDiffKind.CREATE) {
@@ -303,4 +333,9 @@ function withPrevious<T>(reset?: Observable<any>): (src: Observable<T>) => Obser
         }),
         finalize<[T, T]>(resetSub ? resetSub.unsubscribe.bind(resetSub) : () => null)
     )
+}
+
+
+function removeNode(node: Node) {
+    node.parentNode && node.parentNode.removeChild(node)
 }

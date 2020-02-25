@@ -275,7 +275,9 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
 
     public clearCache(): void {
         this.rects.length = 0
+        this.minHeight = 0
         this._setPaddingTop(0)
+        this._setMinHeight(0)
     }
 
     public onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
@@ -388,6 +390,11 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
             const firstRect = this.rects[this.minVisibleIdx]
             if (firstRect) {
                 this._setPaddingTop(firstRect.top)
+            }
+
+            const lastRect = this.rects[this.rects.length - 1]
+            if (lastRect) {
+                this._setMinHeight(lastRect.bottom + this.extraHeight)
             }
         }
     }
