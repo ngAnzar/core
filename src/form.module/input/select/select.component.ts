@@ -127,7 +127,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._detectChanges()
         }
     }
-    public get editable(): boolean { return this._editable }
+    public get editable(): boolean { return this._editable && !this.readonly }
     protected _editable: boolean = false
     protected _iss: Subscription
 
@@ -166,7 +166,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._detectChanges()
         }
     }
-    public get hideTrigger(): boolean { return this._hideTrigger }
+    public get hideTrigger(): boolean { return this.readonly || this._hideTrigger }
     private _hideTrigger: boolean = false
 
     @Input()
@@ -177,7 +177,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._detectChanges()
         }
     }
-    public get autoTrigger(): boolean { return this._autoTrigger }
+    public get autoTrigger(): boolean { return !this.readonly || this._autoTrigger }
     private _autoTrigger: boolean = false
 
     public set inputState(val: InputState) {
@@ -197,7 +197,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get clearable(): boolean { return this._clearable }
+    public get clearable(): boolean { return this._clearable && !this.readonly }
     private _clearable: boolean = false
 
     @Input("min-length") public minLength: number = 2
@@ -561,7 +561,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.model.focusMonitor.focusVia(this.el.nativeElement, focused)
             }
 
-            if (!this.opened && this.autoTrigger && this.input && !this.disabled) {
+            if (!this.opened && this.autoTrigger && this.input && !this.disabled && !this.readonly) {
                 this._querySuggestions(this.input.nativeElement.value)
             }
         } else {
@@ -571,18 +571,30 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected _onInput(event: Event): void {
+        if (this.readonly) {
+            return
+        }
+
         const value = this.input.nativeElement.value;
         (this.input$ as Subject<string>).next(value)
         this.inputState = "typing"
     }
 
     protected _querySuggestions(text: string): void {
+        if (this.readonly) {
+            return
+        }
+
         this.inputState = "querying"
         this._updateFilter(text)
         this.opened = true
     }
 
     protected _focusItemByInput(value: [string, T, number]): void {
+        if (this.readonly) {
+            return
+        }
+
         this.opened = true
         if (value) {
             this.selection.setFocused(value[1].pk, "keyboard")
@@ -591,6 +603,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @HostListener("keydown", ["$event"])
     protected _onKeydown(event: KeyboardEvent) {
+        if (this.readonly) {
+            return
+        }
+
         if (this._processKeypress(event.keyCode, event.shiftKey, event.ctrlKey, event.altKey)) {
             event.preventDefault()
             event.stopImmediatePropagation()
@@ -601,6 +617,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @HostListener("keyup", ["$event"])
     protected _onKeyup(event: KeyboardEvent) {
+        if (this.readonly) {
+            return
+        }
+
         this.lastKeyup = event.keyCode
     }
 
@@ -610,6 +630,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             return
         }
         event.preventDefault()
+
+        if (this.readonly) {
+            return
+        }
 
         if (this.opened) {
             this.opened = false
@@ -629,6 +653,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             return
         }
         event.preventDefault()
+
+        if (this.readonly) {
+            return
+        }
+
         this.value = null
     }
 

@@ -1,6 +1,7 @@
-import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy, InjectionToken, OnInit } from "@angular/core"
+import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter } from "@angular/core"
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, Subject } from "rxjs"
 import { map, filter, debounceTime, shareReplay } from "rxjs/operators"
 
@@ -87,6 +88,15 @@ export class InputModel<T> extends AbstractControlDirective {
         }
     }
     public get disabled(): boolean { return this.control.disabled }
+
+    public set readonly(val: boolean) {
+        if (this._readonly !== val) {
+            this._readonly = val;
+            (this.control.statusChanges as EventEmitter<string>).next("readonly")
+        }
+    }
+    public get readonly(): boolean { return this._readonly }
+    private _readonly: boolean
 
     public set focused(val: FocusOrigin | null) {
         if (this._focused !== val) {
@@ -206,6 +216,13 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     public get id(): string { return this._id || (this._uid ? this._uid : (this._uid = `nz-input-${++UID_COUNTER}`)) }
     private _id: string
     private _uid: string
+
+    @Input()
+    public set readonly(val: boolean) { this.model.readonly = coerceBooleanProperty(val) }
+    public get readonly(): boolean { return this.model.disabled || this.model.readonly }
+
+    @HostBinding("attr.readonly")
+    public get readonlyAttr(): string { return this.model.readonly ? "" : null }
 
     @Output() public readonly changes = this.model.valueChanges
     @Output() public readonly focused = this.model.focusChanges
