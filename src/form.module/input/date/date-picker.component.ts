@@ -68,7 +68,7 @@ export class DatePickerComponent extends Destructible implements OnInit {
 
     @Input()
     public set max(val: Date) {
-        if (this._setDateField("_min", val, isSameDay)) {
+        if (this._setDateField("_max", val, isSameDay)) {
             this._maxChanged.next(this._max)
         }
     }

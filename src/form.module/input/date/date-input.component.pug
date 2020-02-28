@@ -12,7 +12,9 @@ div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="4p
     type="text",
     #input,
     [tabindex]="tabIndex",
-    [style.opacity]="(!model.isEmpty || model.focused) ? '1' : '0'")
+    [style.opacity]="(!model.isEmpty || model.focused) ? '1' : '0'",
+    [readonly]="readonly")
 
-  .nz-button.picker-btn(fxFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
-    i.nz-icon(class=icon("mdi/calendar-today", 18))
+  ng-template([ngIf]="!readonly && !disabled")
+    .nz-button.picker-btn(fxFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
+      i.nz-icon(class=icon("mdi/calendar-today", 18))

@@ -1,8 +1,8 @@
-import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, HostBinding } from "@angular/core"
-import { NG_VALIDATORS } from "@angular/forms"
+import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, HostBinding, Directive } from "@angular/core"
+import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { take, map } from "rxjs/operators"
-import { parse, isDate, format, startOfDay, getDaysInMonth } from "date-fns"
+import { parse, isDate, format, startOfDay, getDaysInMonth, parseISO, isSameDay, isValid, differenceInDays } from "date-fns"
 
 
 import { setTzToUTC } from "../../../util"
@@ -14,6 +14,74 @@ import { DatePickerService } from "./date-picker.service"
 import { DatePickerComponent } from "./date-picker.component"
 import { MASK_BLOCKS } from "./mask-blocks"
 import { InvalidDateValidator } from "./invalid-date.validator"
+
+
+@Directive({
+    selector: ".nz-date-input[min],.nz-date-input[max]",
+    providers: [
+        { provide: NG_VALIDATORS, useExisting: DateMinMaxValidator, multi: true }
+    ]
+})
+export class DateMinMaxValidator implements Validator {
+    @Input()
+    public set min(val: string | Date) {
+        val = this._corceDate(val)
+        if (!this._min || !val || !isSameDay(this._min, val)) {
+            this._min = val
+            if (this._onChange) {
+                this._onChange()
+            }
+        }
+    }
+    public get min(): string | Date { return this._min }
+    private _min: Date
+
+    @Input()
+    public set max(val: string | Date) {
+        val = this._corceDate(val)
+        if (!this._max || !val || !isSameDay(this._max, val)) {
+            this._max = val
+            if (this._onChange) {
+                this._onChange()
+            }
+        }
+    }
+    public get max(): string | Date { return this._max }
+    private _max: Date
+
+    private _onChange: () => void
+
+    public validate(ctrl: AbstractControl): ValidationErrors | null {
+        let value = ctrl.value as Date
+        if (!value || !isValid(value)) {
+            return null
+        }
+
+        if (this._min && isValid(this._min)) {
+            if (differenceInDays(startOfDay(value), this._min) < 0) {
+                return { dateMin: true }
+            }
+        }
+
+        if (this._max && isValid(this._max)) {
+            if (differenceInDays(startOfDay(value), this._max) > 0) {
+                return { dateMax: true }
+            }
+        }
+
+        return null
+    }
+
+    public registerOnValidatorChange(fn: () => void) {
+        this._onChange = fn
+    }
+
+    private _corceDate(val: string | Date): Date {
+        return val instanceof Date
+            ? startOfDay(val)
+            : startOfDay(parseISO(val))
+    }
+}
 
 
 @Component({

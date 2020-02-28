@@ -24,7 +24,7 @@ import { CheckboxComponent, CheckboxChangeEvent, CheckboxState } from "./input/c
 import { CheckboxGroupDirective } from "./input/checkbox/checkbox-group.directive"
 export { CheckboxComponent, CheckboxGroupDirective, CheckboxChangeEvent, CheckboxState }
 
-import { DateInputComponent } from "./input/date/date-input.component"
+import { DateInputComponent, DateMinMaxValidator } from "./input/date/date-input.component"
 import { DatePickerComponent, DayData } from "./input/date/date-picker.component"
 import { DatePickerService } from "./input/date/date-picker.service"
 import { DatetimeInputComponent } from "./input/date/datetime-input.component"
@@ -95,6 +95,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         CheckboxGroupDirective,
 
         DateInputComponent,
+        DateMinMaxValidator,
         DatePickerComponent,
 
         DatetimeInputComponent,
@@ -142,6 +143,7 @@ export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEv
         CheckboxGroupDirective,
 
         DateInputComponent,
+        DateMinMaxValidator,
         DatePickerComponent,
 
         DatetimeInputComponent,
