@@ -61,7 +61,7 @@ export class ToastService {
 
     public error(message: string) {
         let options: ToastProgressOptions = {
-            align: "top right",
+            align: "bottom center",
             progress: throwError(new Error(message))
         }
         return this.progress(options)
