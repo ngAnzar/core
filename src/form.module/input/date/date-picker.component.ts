@@ -1,7 +1,7 @@
 import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, Input, Output, Optional } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 import { Observable, Subject, merge, of, zip } from "rxjs"
-import { shareReplay, takeUntil, map, switchMap, take, startWith } from "rxjs/operators"
+import { shareReplay, takeUntil, map, switchMap, take, startWith, tap } from "rxjs/operators"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, addDays, isToday, isSameDay, isSameMonth, addMonths, subMonths, startOfDay, compareAsc } from "date-fns"
 
 import { setTzToUTC, Destructible } from "../../../util"
@@ -84,8 +84,10 @@ export class DatePickerComponent extends Destructible implements OnInit {
         map(day => {
             const monthStart = startOfMonth(day)
             const monthEnd = endOfMonth(day)
-            let start = setTzToUTC(startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn as any }))
-            let end = setTzToUTC(endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn as any }))
+
+            let start = startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn as any })
+            let end = endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn as any })
+
             let current = start
 
             let weeks: Array<Array<Date>> = []
@@ -97,10 +99,10 @@ export class DatePickerComponent extends Destructible implements OnInit {
                 const day = idx % 7
 
                 if (!weeks[week]) {
-                    weeks[week] = [current]
+                    weeks[week] = [setTzToUTC(current)]
                     data[week] = [OTHER_MONTH_DATA]
                 } else {
-                    weeks[week][day] = current
+                    weeks[week][day] = setTzToUTC(current)
                     data[week][day] = OTHER_MONTH_DATA
                 }
 
@@ -115,16 +117,16 @@ export class DatePickerComponent extends Destructible implements OnInit {
 
     public readonly render$ = this.daysToRender$.pipe(
         switchMap(render => {
+            let data: { [key: number]: DayData }, value: Date
+
             let data$: Observable<{ [key: number]: DayData }> = this.dayDataProvider
                 ? this.dayDataProvider.extraData(render.monthStart, render.monthEnd).pipe(startWith(null))
                 : of(null)
 
-            data$ = data$.pipe(shareReplay(1))
-            let value$ = this._renderValue.pipe(startWith(this._value), shareReplay(1))
+            data$ = data$.pipe(tap(v => data = v))
+            let value$ = this._renderValue.pipe(startWith(this._value), tap(v => value = v))
 
-            return merge(data$, value$).pipe(
-                switchMap(_ => zip(of(render), data$, value$).pipe(take(1)))
-            )
+            return merge(data$, value$).pipe(map(_ => [render, data, value] as [typeof render, typeof data, typeof value]))
         }),
         map(([render, externalData, value]) => {
             const today = new Date()
