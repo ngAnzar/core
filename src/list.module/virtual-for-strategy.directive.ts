@@ -407,7 +407,7 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
     }
 
     private _setMinHeight(val: number) {
-        val = Math.max(val, this.minHeight)
+        // val = Math.max(val, this.minHeight)
         if (this.minHeight !== val) {
             this.minHeight = val
             this.scrollable.el.nativeElement.style.minHeight = `${val}px`

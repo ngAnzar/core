@@ -23,7 +23,7 @@ export class QtipDirective implements OnDestroy {
             this._text = val
             if (this._layerRef) {
                 if (val && val.length) {
-                    this._layerRef.component.instance.text = this.text
+                    this._layerRef.component.instance.text = val
                 } else {
                     this.hide()
                 }
