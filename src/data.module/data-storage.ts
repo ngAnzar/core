@@ -232,6 +232,10 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     protected _cacheItems(items: T[], r: NzRange): Items<T> {
+        if (!this.cache) {
+            return
+        }
+
         for (let k = 0, l = items.length; k < l; k++) {
             this.cache[r.begin + k] = items[k]
         }

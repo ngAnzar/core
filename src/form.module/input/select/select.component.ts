@@ -101,7 +101,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @Input()
     public set opened(val: boolean) {
-        console.trace("set opened", val)
         val = coerceBooleanProperty(val)
         if (this._opened !== val) {
             this._opened = val
