@@ -48,6 +48,7 @@
           let-first="first",
           let-last="last",
           [fixedItemHeight]="48",
+          [itemsPerRequest]="42",
           (rendered)="onItemsRendered($event)")
         .nz-list-item.item([style.gridRow]="offset(index)", [selectable]="virtual", [selectionIndex]="offset(index)")
           ng-template(

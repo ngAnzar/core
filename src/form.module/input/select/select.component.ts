@@ -6,7 +6,7 @@ import {
 } from "@angular/core"
 
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { FocusMonitor } from "@angular/cdk/a11y"
+import { FocusOrigin } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
 import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY, merge } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError } from "rxjs/operators"
@@ -101,6 +101,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     @Input()
     public set opened(val: boolean) {
+        console.trace("set opened", val)
         val = coerceBooleanProperty(val)
         if (this._opened !== val) {
             this._opened = val
@@ -328,7 +329,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         })
 
         this.destruct.subscription(this.model.focusChanges)
-            .pipe(debounceTime(100))
+            .pipe(
+                debounceTime(100),
+                map(v => [v.current !== null, v.current]),
+                distinctUntilChanged((a, b) => a[0] === b[0])
+            )
             .subscribe(this._handleFocus.bind(this))
 
         this.displayField = displayField || "label"
@@ -360,7 +365,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         const openDD = merge(this.openedChanges, this.model.statusChanges).pipe(
             map(_ => this.opened && !this.readonly && !this.disabled),
-            debounceTime(10),
             distinctUntilChanged(),
             switchMap(value => {
                 if (value) {
@@ -370,7 +374,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                             observer.next(value)
                             observer.complete()
                         })
-                        this.source.loadRange(new NzRange(0, 100))
+                        this.source.loadRange(new NzRange(0, AutocompleteComponent.PRELOAD_COUNT))
                         return () => {
                             s.unsubscribe()
                         }
@@ -381,7 +385,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             })
         )
         this.destruct.subscription(openDD).subscribe(opened => {
-            console.log("openDD", opened)
             if (opened) {
                 this._showDropDown()
             } else {
@@ -582,14 +585,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.layerFactory.hide()
     }
 
-    protected _handleFocus(event: FocusChangeEvent) {
-        const focused = event.current
+    protected _handleFocus(param: [boolean, FocusOrigin]) {
+        const [focused, origin] = param
 
         if (focused) {
             if (this.input) {
-                this.model.focusMonitor.focusVia(this.input.nativeElement, focused)
+                this.model.focusMonitor.focusVia(this.input.nativeElement, origin)
             } else {
-                this.model.focusMonitor.focusVia(this.el.nativeElement, focused)
+                this.model.focusMonitor.focusVia(this.el.nativeElement, origin)
             }
 
             if (!this.opened && this.autoTrigger && this.input && !this.disabled && !this.readonly) {
@@ -597,7 +600,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         } else {
             this._resetTextInput()
-            // this.opened = false
+            this.opened = false
         }
     }
 

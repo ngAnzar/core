@@ -39,6 +39,8 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
     @ViewChild("scroller", { read: ScrollerComponent, static: false }) protected readonly scroller: ScrollerComponent
     @ViewChild("createNewAction", { read: ListActionComponent, static: false }) protected readonly createNewAction: ListActionComponent
 
+    public static readonly PRELOAD_COUNT = 42
+
     public readonly gridTemplateRows: SafeStyle
     public readonly hasCreateNew: boolean = false
 
