@@ -28,9 +28,9 @@ export class DDContext<T> {
 
 @Component({
     selector: "nz-autocomplete",
-    host: {
-        "[style.visibility]": "firstRender ? 'hidden' : 'visible'"
-    },
+    // host: {
+    //     "[style.visibility]": "firstRender ? 'hidden' : 'visible'"
+    // },
     templateUrl: "./autocomplete.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -88,10 +88,10 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
     }
 
     public onItemsRendered(event: RenderedEvent<any>) {
-        if (this.firstRender) {
-            this.firstRender = false
-            this.layerRef.behavior.levitate.reset()
-        }
+        // if (this.firstRender) {
+        //     this.firstRender = false
+        this.layerRef.behavior.levitate.reset()
+        // }
     }
 
     protected offset(index: number): number {

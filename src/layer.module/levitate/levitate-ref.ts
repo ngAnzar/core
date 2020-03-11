@@ -52,7 +52,11 @@ export class LevitateRef {
         const style = this.levitate.ref.style
         style.maxWidth = "none"
         style.maxHeight = "none"
-        this.resume()
+
+        // force recalc style
+        if (this.levitate.ref.offsetHeight) {
+            this.resume()
+        }
     }
 
     protected update = (rects: Rects) => {

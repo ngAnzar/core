@@ -23,9 +23,9 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     })
 
 
-    public get items(): Observable<Items<T>> {
-        return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
-    }
+    // public get items(): Observable<Items<T>> {
+    //     return this._itemsStream.pipe(startWith(this._collectRange(this.range)))
+    // }
 
     public set isBusy(val: boolean) {
         if (this._isBusy !== val) {
@@ -84,6 +84,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected total: number
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
 
+    public readonly items = this._itemsStream.pipe(shareReplay(1))
 
     public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
@@ -217,14 +218,14 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
     protected reset(skipEvent?: boolean) {
         this.cache = {}
-        this.cachedRanges = new NzRangeList();
+        this.cachedRanges = new NzRangeList()
         this.pendingRanges = []
 
         this.total = 0;
         (this as any).lastIndex = 0;
         (this as any).endReached = false;
         (this as any).isBusy = this.source.async;
-        (this as any).isEmpty = true;
+        (this as any).isEmpty = true
         if (skipEvent !== true) {
             (this.reseted as EventEmitter<void>).emit()
         }
@@ -238,7 +239,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.cachedRanges = this.cachedRanges.merge(r);
         (this as any).range = this.cachedRanges.span();
         (this as any).isEmpty = this.range.length === 0;
-        (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length);
+        (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length)
         // (this as any).endReached = this.endReached || items.length === 0 || items.length !== r.length
         let newItems = this._collectRange(r);
         (this._itemsStream as EventEmitter<Items<T>>).emit(newItems)

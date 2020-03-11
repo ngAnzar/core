@@ -102,7 +102,7 @@ export class LayerFactoryDirective implements OnDestroy {
     @Output() public readonly layerShow = new EventEmitter<LayerRef>()
     @Output() public readonly layerHide = new EventEmitter<LayerRef>()
 
-    public get isVisible(): boolean { return !!this.visibleRef }
+    public get isVisible(): boolean { return !!this.visibleRef && this.visibleRef.isVisible }
 
     public get targetEl(): ElementRef<HTMLElement> {
         return this.targetAnchor ? this.targetAnchor.targetEl || this.el : this.el
@@ -128,7 +128,7 @@ export class LayerFactoryDirective implements OnDestroy {
     }
 
     public show(behavior: LayerBehavior, context?: any, provides?: StaticProvider[], constraint?: Constraint): LayerRef {
-        if (this.visibleRef) {
+        if (this.isVisible) {
             return this.visibleRef
         }
 

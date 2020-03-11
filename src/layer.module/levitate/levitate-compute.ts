@@ -169,6 +169,8 @@ for (let a1 of aligns) {
 
 
 function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, constraint: Rect, connect: Rect): LevitatePosition {
+    // drawRect(pA.rect, "yellow")
+    // drawRect(pV.rect, "yellow")
     // drawRect(levitate, "red")
 
     let rect = levitate.copy()

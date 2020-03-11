@@ -8,7 +8,7 @@ import {
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { FocusMonitor } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
-import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY } from "rxjs"
+import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY, merge } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError } from "rxjs/operators"
 
 import { NzRange, __zone_symbol__ } from "../../../util"
@@ -19,7 +19,7 @@ import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
-import { parseMargin } from "../../../layout.module"
+import { parseMargin, Rect } from "../../../layout.module"
 
 
 const CLEAR_TIMEOUT: "clearTimeout" = __zone_symbol__("clearTimeout")
@@ -56,9 +56,9 @@ export class ProvisionalModel extends Model {
 }
 
 
-export type InputState = "typing" | "querying";
-export type SelectValue<T> = T | PrimaryKey | T[] | PrimaryKey[];
-export type AutoTrigger = "all" | "query" | null;
+export type InputState = "typing" | "querying"
+export type SelectValue<T> = T | PrimaryKey | T[] | PrimaryKey[]
+export type AutoTrigger = "all" | "query" | null
 
 @Component({
     selector: ".nz-select",
@@ -108,7 +108,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             if (val && this.input && this.input.nativeElement) {
                 this.model.focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
             }
-            this._updateDropDown()
             this._detectChanges();
             (this.openedChanges as EventEmitter<boolean>).emit(val)
         }
@@ -358,8 +357,36 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public ngOnInit() {
         super.ngOnInit()
-        this.destruct.subscription(this.model.statusChanges).subscribe(_ => {
-            this._updateDropDown()
+
+        const openDD = merge(this.openedChanges, this.model.statusChanges).pipe(
+            map(_ => this.opened && !this.readonly && !this.disabled),
+            debounceTime(10),
+            distinctUntilChanged(),
+            switchMap(value => {
+                if (value) {
+                    // preload items
+                    return Observable.create((observer: Observer<boolean>) => {
+                        const s = this.source.storage.items.subscribe(_ => {
+                            observer.next(value)
+                            observer.complete()
+                        })
+                        this.source.loadRange(new NzRange(0, 100))
+                        return () => {
+                            s.unsubscribe()
+                        }
+                    })
+                } else {
+                    return of(value)
+                }
+            })
+        )
+        this.destruct.subscription(openDD).subscribe(opened => {
+            console.log("openDD", opened)
+            if (opened) {
+                this._showDropDown()
+            } else {
+                this._hideDropDown()
+            }
             this._detectChanges()
         })
     }
@@ -473,82 +500,86 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this._detectChanges()
     }
 
-    protected _updateDropDown() {
-        if (this.opened) {
-            this.selectedBeforeOpen = this.selected.slice(0)
-            let targetAnchor = this.layerFactory.targetAnchor
+    protected _showDropDown() {
+        if (this.layerFactory.isVisible) {
+            return
+        }
 
-            if (!targetAnchor.targetEl) {
-                targetAnchor.targetEl = this.el
-                if (this.editable) {
-                    if (!targetAnchor.nzTargetAnchor) {
-                        targetAnchor.nzTargetAnchor = "left bottom"
-                    }
+        this.selectedBeforeOpen = this.selected.slice(0)
+        let targetAnchor = this.layerFactory.targetAnchor
 
-                    if (!targetAnchor.margin) {
-                        if (this.ffc) {
-                            targetAnchor.margin = { top: 4, bottom: 6, left: 12, right: 12 }
-                        } else {
-                            targetAnchor.margin = { top: 4, bottom: 4, left: 12, right: 12 }
-                        }
+        if (!targetAnchor.targetEl) {
+            targetAnchor.targetEl = this.el
+            if (this.editable) {
+                if (!targetAnchor.nzTargetAnchor) {
+                    targetAnchor.nzTargetAnchor = "left bottom"
+                }
+
+                if (!targetAnchor.margin) {
+                    if (this.ffc) {
+                        targetAnchor.margin = { top: 4, bottom: 6, left: 12, right: 12 }
+                    } else {
+                        targetAnchor.margin = { top: 4, bottom: 4, left: 12, right: 12 }
                     }
-                } else {
-                    if (!targetAnchor.nzTargetAnchor) {
-                        targetAnchor.nzTargetAnchor = "left top"
-                    }
-                    if (!targetAnchor.margin) {
-                        targetAnchor.margin = { left: 12, right: 12, top: 16 }
-                    }
+                }
+            } else {
+                if (!targetAnchor.nzTargetAnchor) {
+                    targetAnchor.nzTargetAnchor = "left top"
+                }
+                if (!targetAnchor.margin) {
+                    targetAnchor.margin = { left: 12, right: 12, top: 16 }
                 }
             }
-
-            const targetEl = targetAnchor.targetEl.nativeElement
-            const margin = parseMargin(targetAnchor.margin)
-            let layerRef = this.layerFactory.show(
-                new DropdownLayer({
-                    backdrop: {
-                        type: "empty",
-                        crop: targetEl,
-                        hideOnClick: true
-                    },
-                    minWidth: targetEl.offsetWidth + margin.left + margin.right,
-                    minHeight: this.editable ? 0 : targetEl.offsetHeight,
-                    initialWidth: targetEl.offsetWidth + margin.left + margin.right,
-                    initialHeight: this.editable ? 0 : targetEl.offsetHeight,
-                    elevation: 6
-                }),
-                {
-                    $implicit: this
-                },
-                [
-                    { provide: SelectionModel, useValue: this.selection },
-                    { provide: DataSourceDirective, useValue: this.source },
-                    { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
-                    { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
-                    {
-                        provide: AUTOCOMPLETE_ITEM_FACTORY,
-                        useValue: this.freeSelect ? this._createNewValue.bind(this) : null
-                    },
-                ]
-            ) as ComponentLayerRef<AutocompleteComponent<T>>
-
-            const outletEl = layerRef.outlet.nativeElement
-            this.monitorFocus(outletEl, true)
-            this._closeShortcuts.watch(outletEl)
-
-            let s = layerRef.subscribe((event) => {
-                if (event.type === "hiding") {
-                    this.model.focusMonitor.stopMonitoring(outletEl)
-                    this._closeShortcuts.unwatch(outletEl)
-                    this.opened = false
-                    s.unsubscribe()
-                }
-            })
-        } else {
-            this.selection.keyboard.reset()
-            delete this.selectedBeforeOpen
-            this.layerFactory.hide()
         }
+
+        const targetEl = targetAnchor.targetEl.nativeElement
+        const margin = parseMargin(targetAnchor.margin)
+        let layerRef = this.layerFactory.show(
+            new DropdownLayer({
+                backdrop: {
+                    type: "empty",
+                    crop: targetEl,
+                    hideOnClick: true
+                },
+                minWidth: targetEl.offsetWidth + margin.left + margin.right,
+                minHeight: this.editable ? 0 : targetEl.offsetHeight,
+                initialWidth: targetEl.offsetWidth + margin.left + margin.right,
+                initialHeight: this.editable ? 0 : targetEl.offsetHeight,
+                elevation: 6
+            }),
+            {
+                $implicit: this
+            },
+            [
+                { provide: SelectionModel, useValue: this.selection },
+                { provide: DataSourceDirective, useValue: this.source },
+                { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
+                { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
+                {
+                    provide: AUTOCOMPLETE_ITEM_FACTORY,
+                    useValue: this.freeSelect ? this._createNewValue.bind(this) : null
+                },
+            ]
+        ) as ComponentLayerRef<AutocompleteComponent<T>>
+
+        const outletEl = layerRef.outlet.nativeElement
+        this.monitorFocus(outletEl, true)
+        this._closeShortcuts.watch(outletEl)
+
+        let s = layerRef.subscribe((event) => {
+            if (event.type === "hiding") {
+                this.model.focusMonitor.stopMonitoring(outletEl)
+                this._closeShortcuts.unwatch(outletEl)
+                this.opened = false
+                s.unsubscribe()
+            }
+        })
+    }
+
+    protected _hideDropDown() {
+        this.selection.keyboard.reset()
+        delete this.selectedBeforeOpen
+        this.layerFactory.hide()
     }
 
     protected _handleFocus(event: FocusChangeEvent) {
@@ -566,7 +597,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         } else {
             this._resetTextInput()
-            this.opened = false
+            // this.opened = false
         }
     }
 

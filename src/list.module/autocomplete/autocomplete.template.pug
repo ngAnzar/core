@@ -1,6 +1,9 @@
 :stylus
   @require "../list/list"
 
+  .container
+    overflow: hidden
+
   .list
     display: inline-grid
     grid-template-columns: 1fr
@@ -21,7 +24,7 @@
     padding: 0 12px !important
 
 
-div(fxFlex="grow", fxLayout="column inline", tabindex="0")
+.container(fxFlex="grow", fxLayout="column inline", tabindex="0")
 
   .nz-list-empty.notfound(*ngIf="!hasCreateNew && isNotFound", fxFlex="none") Nem található
 
