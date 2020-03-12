@@ -1,6 +1,6 @@
 
 import { Observable, Observer, of, Subscription } from "rxjs"
-import { map } from "rxjs/operators"
+import { map, startWith, debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { Rect, RectMutationService, parseAlign } from "../../layout.module"
@@ -44,6 +44,11 @@ export class LevitateRef {
     }
 
     public begin() {
+        if (this.rects) {
+            this.rects.unsubscribe()
+            delete this.rects
+        }
+        this.suspended = 0
         this.resume()
     }
 
@@ -52,11 +57,7 @@ export class LevitateRef {
         const style = this.levitate.ref.style
         style.maxWidth = "none"
         style.maxHeight = "none"
-
-        // force recalc style
-        if (this.levitate.ref.offsetHeight) {
-            this.resume()
-        }
+        this.resume()
     }
 
     protected update = (rects: Rects) => {
@@ -80,9 +81,9 @@ export class LevitateRef {
         let observable: Observable<Rect>
 
         if (opts.ref === "viewport") {
-            observable = this.rectMutation.watchViewport()
+            observable = this.rectMutation.watchViewport().pipe(startWith(Rect.viewport()))
         } else if (opts.ref instanceof HTMLElement) {
-            observable = this.rectMutation.watch(opts.ref)
+            observable = this.rectMutation.watch(opts.ref).pipe(startWith(Rect.fromElement(opts.ref)))
         } else if (opts.ref instanceof Rect) {
             observable = of(opts.ref)
         }

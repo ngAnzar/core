@@ -4,11 +4,14 @@ import { FocusTrap, FocusTrapFactory } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
-import { Destruct, IDisposable } from "../../util"
+import { Destruct, IDisposable, __zone_symbol__ } from "../../util"
 import { PreventableEvent } from "../../util"
 import { ShortcutService, Shortcuts } from "../../common.module"
 import { LayerOutletRef } from "./layer-container"
 import { LayerBehavior } from "./layer-behavior"
+
+
+const setTimeout = __zone_symbol__("setTimeout")
 
 
 export class LayerEvent<D> extends PreventableEvent {
@@ -124,17 +127,15 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
                 this.focusTrap = this.focusTrapSvc.create(this.outlet.nativeElement, false)
                 this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
             }
+
             this.emit(new LayerEvent("showing") as E)
-            // this.behavior.levitate.suspend()
-            return Promise.all([
-                // this.behavior.showBackdrop(this),
-                this.behavior.animateShow(this).then(() => {
-                    // this.behavior.levitate.resume()
-                    if (this.focusTrap) {
-                        this.focusTrap.focusInitialElement() || this.focusTrap.focusFirstTabbableElement()
-                    }
-                })
-            ])
+
+            return this.behavior.animateShow(this).then(() => {
+                // this.behavior.levitate.resume()
+                if (this.focusTrap) {
+                    this.focusTrap.focusInitialElement() || this.focusTrap.focusFirstTabbableElement()
+                }
+            })
         }
     }
 

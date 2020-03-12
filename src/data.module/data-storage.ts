@@ -84,7 +84,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected total: number
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
 
-    public readonly items = this._itemsStream.pipe(shareReplay(1))
+    public readonly items = this._itemsStream.pipe(share())
 
     public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
@@ -164,7 +164,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
         const src = this.source
             .search(this.filter.get(), this.sorter.get(), request, this.meta.get())
-            .pipe(takeUntil(merge(this._abortLoad, this.invalidated)))
+            .pipe(takeUntil(this._abortLoad))
 
         this._setPending(request, src)
             .subscribe(items => {
@@ -231,7 +231,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         }
     }
 
-    protected _cacheItems(items: T[], r: NzRange): Items<T> {
+    protected _cacheItems(items: T[], r: NzRange) {
         if (!this.cache) {
             return
         }
@@ -243,12 +243,8 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.cachedRanges = this.cachedRanges.merge(r);
         (this as any).range = this.cachedRanges.span();
         (this as any).isEmpty = this.range.length === 0;
-        (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length)
-        // (this as any).endReached = this.endReached || items.length === 0 || items.length !== r.length
-        let newItems = this._collectRange(r);
-        (this._itemsStream as EventEmitter<Items<T>>).emit(newItems)
-
-        return newItems
+        (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length);
+        (this._itemsStream as EventEmitter<Items<T>>).emit(this._collectRange(r))
     }
 
     protected _collectRange(r: NzRange): Items<T> {
@@ -268,20 +264,22 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     protected _setPending(r: NzRange, s: Observable<Items<T>>): Observable<Items<T>> {
-        s = s.pipe(tap(() => {
-            if (this.source.async) {
-                this.isBusy = true
-            }
-            let idx = this.pendingRanges.findIndex((v) => v[0] === r)
-            if (idx !== -1) {
-                this.pendingRanges.splice(idx, 1)
-            }
-        }), finalize(() => {
-            this.isBusy = false
-        }), shareReplay(1))
-
         this.pendingRanges.push([r, s])
-        return s
+        return s.pipe(
+            tap(() => {
+                if (this.source.async) {
+                    this.isBusy = true
+                }
+                let idx = this.pendingRanges.findIndex((v) => v[0] === r)
+                if (idx !== -1) {
+                    this.pendingRanges.splice(idx, 1)
+                }
+            }),
+            finalize(() => {
+                this.isBusy = false
+            }),
+            shareReplay(1)
+        )
     }
 
     public dispose() {

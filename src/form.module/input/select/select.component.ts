@@ -199,6 +199,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public get clearable(): boolean { return this._clearable && !this.readonly }
     private _clearable: boolean = false
 
+    @Input()
+    public set pinList(val: boolean) { this._pinList = coerceBooleanProperty(val) }
+    public get pinList(): boolean { return this._pinList }
+    private _pinList: boolean = false
+
     @Input("min-length") public minLength: number = 2
 
     public get selected(): T[] {
@@ -211,7 +216,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected input$ = this.destruct.subject(new Subject<string>())
 
     protected query$ = this.input$.pipe(
-        filter(() => this.editable && !this.disabled),
+        filter((v) => this.editable && !this.disabled),
         distinctUntilChanged(),
         tap(value => {
             if (this.selection.type === "single" && (!value || !value.length)) {
@@ -307,6 +312,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.destruct.subscription(this.selection.changes).subscribe(selected => {
             if (this.selection.type === "single" && selected[0]) {
                 this.opened = false
+            } else if (this.selection.type === "multi") {
+                if (!this.pinList && selected[0]) {
+                    this.opened = false
+                }
             }
 
             let vals = this.valueField
@@ -367,17 +376,22 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             distinctUntilChanged(),
             switchMap(value => {
                 if (value) {
-                    // preload items
-                    return Observable.create((observer: Observer<boolean>) => {
-                        const s = this.source.storage.items.subscribe(_ => {
-                            observer.next(value)
-                            observer.complete()
+                    const range = new NzRange(0, AutocompleteComponent.PRELOAD_COUNT)
+                    if (this.source.getRange(range).length > 0) {
+                        return of(true)
+                    } else {
+                        // preload items
+                        return Observable.create((observer: Observer<boolean>) => {
+                            const s = this.source.storage.items.subscribe(_ => {
+                                observer.next(value)
+                                observer.complete()
+                            })
+                            this.source.loadRange(range)
+                            return () => {
+                                s.unsubscribe()
+                            }
                         })
-                        this.source.loadRange(new NzRange(0, AutocompleteComponent.PRELOAD_COUNT))
-                        return () => {
-                            s.unsubscribe()
-                        }
-                    })
+                    }
                 } else {
                     return of(value)
                 }
@@ -618,9 +632,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             return
         }
 
-        this.inputState = "querying"
-        this._updateFilter(text)
-        this.opened = true
+        if (text && text.length > 0) {
+            this.inputState = "querying"
+            this._updateFilter(text)
+            this.opened = true
+        } else {
+            this._updateFilter(null)
+            this.opened = false
+        }
     }
 
     protected _focusItemByInput(value: [string, T, number]): void {

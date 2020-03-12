@@ -10,11 +10,11 @@ import { DataSourceDirective, Model, SelectionModel } from "../../data.module"
 import { ListDirective } from "../list/list.directive"
 import { ListActionComponent } from "../list/list-action.component"
 import { RenderedEvent } from "../virtual-for.directive"
-import { Destructible } from "../../util"
+import { Destructible, __zone_symbol__ } from "../../util"
 import { ScrollerComponent } from "../scroller/scroller.component"
 import { LayerRef } from "../../layer.module"
 
-
+const RAF = __zone_symbol__("requestAnimationFrame")
 
 export const AUTOCOMPLETE_ITEM_TPL = new InjectionToken<TemplateRef<any>>("autocomplete.itemTpl")
 export const AUTOCOMPLETE_ACTIONS = new InjectionToken<QueryList<ListActionComponent>>("autocomplete.actions")
@@ -49,7 +49,6 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
     }
 
     protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}
-    private firstRender: boolean = true
 
     public constructor(
         @Inject(DataSourceDirective) public readonly source: DataSourceDirective<T>,
@@ -92,8 +91,11 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
     public onItemsRendered(event: RenderedEvent<any>) {
         // if (this.firstRender) {
         //     this.firstRender = false
-        this.layerRef.behavior.levitate.reset()
+        // const levitate = this.layerRef.behavior.levitate
+
+        // window[RAF](levitate.reset.bind(levitate))
         // }
+        this.layerRef.behavior.levitate.reset()
     }
 
     protected offset(index: number): number {
