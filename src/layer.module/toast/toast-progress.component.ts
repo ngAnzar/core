@@ -15,7 +15,7 @@ import { ToastProgressOptions, TOAST_AUTO_HIDE_MIN, DetailsHandler } from "./toa
 import { LAYER_OPTIONS } from "../_shared"
 
 
-export type TPState = "progress" | "success" | "failure";
+export type TPState = "progress" | "success" | "failure"
 
 
 @Component({
@@ -34,6 +34,15 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     }
     public get infoText(): string { return this._infoText }
     private _infoText: string
+
+    public set percent(val: number) {
+        if (this._percent !== val) {
+            this._percent = val
+            this.cdr.detectChanges()
+        }
+    }
+    public get percent(): number { return this._percent }
+    private _percent: number
 
     public set state(val: TPState) {
         if (this._state !== val) {
@@ -83,6 +92,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
             this.progress = this.options.progress.pipe(
                 tap(val => {
                     this.state = val.percent >= 1 ? "success" : "progress"
+                    this.percent = val.current && val.total ? Math.round(val.percent * 100) : null
                 }),
                 catchError(err => {
                     this.state = "failure"

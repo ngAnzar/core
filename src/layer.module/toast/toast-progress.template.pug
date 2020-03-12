@@ -20,6 +20,16 @@
     transition: opacity 200ms
     opacity: 0
 
+  .percent
+    position: absolute
+    left: 0
+    right: 0
+    top: 8px
+    text-align: center
+    nz-typo: $typo.body1
+    color: $theme.common.normal
+    font-weight: 500
+    line-height: 40px
 
 
 div.container(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
@@ -27,6 +37,7 @@ div.container(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLay
     nz-progress(type="circle", radius="20", [source]="progress", [color]="spinnerColor")
     i.nz-icon.status-icon([style.opacity]="state==='success' ? 1 : 0", [color]="spinnerColor" class=icon("mdi/check-outline", 20) style="margin: -10px 0 0 -10px")
     i.nz-icon.status-icon([style.opacity]="state==='failure' ? 1 : 0", [color]="spinnerColor" class=icon("mdi/close-outline", 20) style="margin: -11px 0 0 -10px")
+    span.percent(*ngIf="state==='progress' && percent !== null") {{ percent }}
 
   div.text-container(fxFlex="grow", *ngIf="infoText") {{ infoText }}
 
