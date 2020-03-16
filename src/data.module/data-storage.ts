@@ -250,7 +250,9 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected _collectRange(r: NzRange): Items<T> {
         let items: Items<T> = new Items([], r, this.total)
         for (let i = r.begin; i < r.end; i++) {
-            items.push(this.cache[i])
+            if (this.cache.hasOwnProperty(i)) {
+                items.push(this.cache[i])
+            }
         }
         return items
     }

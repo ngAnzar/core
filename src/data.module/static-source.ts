@@ -113,7 +113,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
                 if (!this._customFilter[k](value as T, filter[k])) {
                     return false
                 }
-            } else if (!this._testFilter(filter[k], value[k])) {
+            } else if (!this._testFilter(filter[k], getPath(value, k))) {
                 return false
             }
         }
@@ -174,7 +174,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     }
 
     public replace(data: T[]) {
-        (this as any).data = data;
+        (this as any).data = data
         this.invalidate()
     }
 
@@ -200,4 +200,18 @@ export class StaticSource<T extends Model> extends DataSource<T> {
             this.invalidate()
         }
     }
+}
+
+
+function getPath(obj: { [key: string]: any }, path: string): any {
+    let parts = path.split(/\./g)
+    let result = obj
+    for (const part of parts) {
+        if (result) {
+            result = result[part]
+        } else {
+            break
+        }
+    }
+    return result
 }

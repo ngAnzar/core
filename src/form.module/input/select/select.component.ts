@@ -411,8 +411,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.selection.items = []
         if (this.input) {
             this.input.nativeElement.value = ""
-            this.opened = false
-            this._updateFilter(null)
+            if (!this.opened) {
+                this._updateFilter(null)
+            } else {
+                this.opened = false
+            }
         }
     }
 
@@ -586,7 +589,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             if (event.type === "hiding") {
                 this.model.focusMonitor.stopMonitoring(outletEl)
                 this._closeShortcuts.unwatch(outletEl)
-                this.opened = false
+                if (!this.opened) {
+                    this._updateFilter(null)
+                } else {
+                    this.opened = false
+                }
                 s.unsubscribe()
             }
         })
@@ -632,12 +639,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             return
         }
 
-        if (text && text.length > 0) {
+        if ((text && text.length > 0) || this.autoTrigger) {
             this.inputState = "querying"
             this._updateFilter(text)
             this.opened = true
         } else {
-            this._updateFilter(null)
             this.opened = false
         }
     }
@@ -695,8 +701,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
 
             this.inputState = "querying"
-            this.opened = true
             this._updateFilter(null)
+            this.opened = true
         }
     }
 
