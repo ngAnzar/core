@@ -187,6 +187,17 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         this.invalidate()
     }
 
+    public move(model: T, index: number) {
+        let oldIndex = (this.data as T[]).indexOf(model)
+        if (oldIndex === -1) {
+            this.add(model, index)
+        } else if (oldIndex !== index) {
+            (this.data as T[]).splice(oldIndex, 1);
+            (this.data as T[]).splice(index, 0, model)
+            this.invalidate()
+        }
+    }
+
     public del(model: T) {
         let idx = this.data.indexOf(model)
         if (idx !== -1) {
