@@ -18,6 +18,8 @@ export abstract class VirtualForVisibleItems {
     public abstract getVisibleRange(viewport: Viewport): NzRange
     public abstract clearCache(): void
 
+    public abstract getItemRect(index: number): RectProps
+
     // public abstract cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void
 
     public abstract onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void
@@ -44,7 +46,7 @@ export class VirtualForFixedItems extends VirtualForVisibleItems {
     public get fixedItemHeight(): number { return this._fixedItemHeight }
     private _fixedItemHeight: number
 
-    public constructor() {
+    public constructor(@Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective, ) {
         super()
     }
 
@@ -56,6 +58,10 @@ export class VirtualForFixedItems extends VirtualForVisibleItems {
 
     public clearCache(): void {
 
+    }
+
+    public getItemRect(index: number) {
+        return new Rect(0, this._fixedItemHeight * index, this.scrollable.el.nativeElement.offsetWidth, this._fixedItemHeight)
     }
 
     // public cacheItemRect(view: EmbeddedViewRef<VirtualForContext<any>>): void {
@@ -130,7 +136,9 @@ class VirtualForVaryingItemsPlain extends VirtualForVisibleItems {
         return null
     }
 
-
+    public getItemRect(index: number) {
+        return this._cache[index]
+    }
 
     public onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
         this.cacheItemRect(view)
@@ -271,6 +279,10 @@ class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestr
         }
 
         return new NzRange(begin, end)
+    }
+
+    public getItemRect(index: number) {
+        return this.rects[index]
     }
 
     public clearCache(): void {

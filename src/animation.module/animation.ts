@@ -84,6 +84,8 @@ export abstract class Animation<T> {
             for (const cb of this.doneListeners) {
                 cb()
             }
+
+            this.doneListeners.length = 0
         }
     }
 

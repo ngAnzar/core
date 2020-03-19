@@ -1,16 +1,20 @@
 import {
     Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef,
-    EventEmitter, OnDestroy, NgZone, ViewChild, HostBinding, HostListener
+    EventEmitter, OnDestroy, NgZone, ViewChild, HostBinding
 } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
+import { AnimationBuilder, AnimationPlayer } from "@angular/animations"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
 import { startWith } from "rxjs/operators"
 
+import { __zone_symbol__ } from "../../util"
 import { ISelectable, Model, SelectOrigin } from "../../data.module"
 import { ScrollerService } from "../scroller/scroller.service"
 import { ExlistComponent, RowTplContext } from "./exlist.component"
 
+
+const REQUEST_ANIMATION_FRAME = __zone_symbol__("requestAnimationFrame")
 
 
 @Component({
@@ -96,6 +100,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public get isAccessible(): boolean { return true }
 
     private _scroll: Subscription
+    private _currentAnimation: AnimationPlayer
     // private _rebindAfterCheck: boolean = false
 
     public constructor(
@@ -104,7 +109,8 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         @Inject(ExlistComponent) protected readonly list: ExlistComponent,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(ScrollerService) protected readonly scroller: ScrollerService,
-        @Inject(EventManager) protected readonly eventManager: EventManager) {
+        @Inject(EventManager) protected readonly eventManager: EventManager,
+        @Inject(AnimationBuilder) protected readonly animationBuilder: AnimationBuilder) {
     }
 
     public onHeaderTap(event: Event) {
@@ -123,15 +129,18 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         }
 
         if (newValue) {
+            this.onAnimation(finished => {
+                this.scroller.scrollIntoViewport(this.el.nativeElement)
+                finished && this._updateByScroll()
+            })
+
             this._scroll = this.zone.runOutsideAngular(() => this.scroller.vpRender.scroll
                 .pipe(startWith(null))
                 .subscribe(this._updateByScroll))
-            setTimeout(this._updateByScroll, 210)
         }
 
-        (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue);
+        (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue)
         this.cdr.markForCheck()
-        // this._rebindAfterCheck = true
     }
 
     public _canChangeSelected(newValue: SelectOrigin): boolean {
@@ -171,5 +180,23 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
             this._scroll.unsubscribe()
             delete this._scroll
         }
+    }
+
+    protected onAnimation(callback: (finished: boolean) => void) {
+        let startTime: number
+        const _tick = (time: number) => {
+            if (!startTime) {
+                startTime = time
+            }
+
+            callback && callback(false)
+
+            if (time - startTime < 200) {
+                window[REQUEST_ANIMATION_FRAME](_tick)
+            } else if (callback) {
+                callback(true)
+            }
+        }
+        window[REQUEST_ANIMATION_FRAME](_tick)
     }
 }

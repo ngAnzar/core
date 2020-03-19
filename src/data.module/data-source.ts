@@ -80,7 +80,7 @@ export abstract class DataSource<T extends Model> {
         (this.changed as Subject<any>).next()
     }
 
-    public abstract getPosition(id: PrimaryKey): Observable<number>
+    public abstract getPosition(id: PrimaryKey, f?: Filter<T>, s?: Sorter<T>): Observable<number>
 
     protected abstract _search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<any[]>
 

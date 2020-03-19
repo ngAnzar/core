@@ -551,6 +551,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         }
 
+        console.log(targetAnchor.targetEl, targetAnchor.margin)
+
         const targetEl = targetAnchor.targetEl.nativeElement
         const margin = parseMargin(targetAnchor.margin)
         let layerRef = this.layerFactory.show(

@@ -3,7 +3,7 @@ import { Observable, Subject, Subscription, merge } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
-import { Rect } from "../../layout.module"
+import { Rect, RectProps } from "../../layout.module"
 import { Animation, Transition, easeOutCubic } from "../../animation.module"
 import { ScrollableDirective } from "./scrollable.directive"
 
@@ -12,8 +12,8 @@ export type ScrollOrient = "horizontal" | "vertical"
 
 
 export interface ScrollPosition {
-    readonly top: number;
-    readonly left: number;
+    readonly top: number
+    readonly left: number
 }
 
 
@@ -147,7 +147,7 @@ export class ImmediateViewport extends Viewport {
             this.visible.width = this.width
             this.visible.height = this.height
             // recalc min scroll position
-            this.scrollPosition = this.scrollPosition;
+            this.scrollPosition = this.scrollPosition
             this._recalcPosition();
             (this.change as Subject<Viewport>).next(this)
         }
@@ -285,9 +285,17 @@ export class ScrollerService implements OnDestroy {
         }
     }
 
-    public scrollIntoViewport(el: Node): void {
+    public scrollBy(pos: Partial<ScrollPosition>, options: ScrollOption) {
+        const curr = this.vpImmediate.scrollPosition
+        this.scrollTo({
+            top: curr.top + (pos.top || 0),
+            left: curr.left + (pos.left || 0),
+        }, options)
+    }
+
+    public scrollIntoViewport(el: Node | RectProps): void {
         const visibleRect = this.vpImmediate.visible
-        const elRect = this.getElementImmediateRect(el)
+        const elRect: RectProps = el instanceof Node ? this.getElementImmediateRect(el) : el
         let pos = { ...this.scrollPosition }
 
         let topSpace = elRect.top - visibleRect.top

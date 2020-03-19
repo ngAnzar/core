@@ -1,4 +1,5 @@
 import { Observable, of, Subject } from "rxjs"
+import { map } from "rxjs/operators"
 
 import { NzRange } from "../util"
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
@@ -40,14 +41,12 @@ export class StaticSource<T extends Model> extends DataSource<T> {
         this._customSorter[name] = sorter
     }
 
-    public getPosition(pk: PrimaryKey): Observable<number> {
-        let pos = -1
-        for (let i = 0, l = this.data.length; i < l; i++) {
-            if (this.data[i].pk === pk) {
-                return of(i)
-            }
-        }
-        return of(pos)
+    public getPosition(pk: PrimaryKey, filter?: Filter<T>, sorter?: Sorter<T>): Observable<number> {
+        return this._search(filter, sorter).pipe(
+            map(items => {
+                return items.findIndex(item => item.pk === pk)
+            })
+        )
     }
 
     protected _save(model: T): Observable<T> {

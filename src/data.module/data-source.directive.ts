@@ -123,6 +123,10 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.source.async
     }
 
+    public getPosition(id: PrimaryKey) {
+        return this.storage.getPosition(id)
+    }
+
     public getRange(r: NzRange): Items<T> {
         if (this._dsd) {
             return this._dsd.getRange(r)

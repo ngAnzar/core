@@ -24,5 +24,5 @@ ng-template([ngIf]="_isBusy")
       [style.padding-left.px]="paddingLeft",
       [style.padding-right.px]="paddingRight",
       [style.padding-bottom.px]="paddingBottom")
-      ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", [extraHeight]="paddingTop + paddingBottom")
+      ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", [extraHeight]="paddingTop + paddingBottom", #virtualList="nzVirtualFor")
         .nz-exlist-item([data]="virtual", [index]="index")

@@ -2,14 +2,22 @@ import {
     Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter
 } from "@angular/core"
-import { merge, Observable, Subject, Subscription, EMPTY, of } from "rxjs"
+import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber } from "rxjs"
 import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share, mapTo } from "rxjs/operators"
 
-import { DataSourceDirective, Model, Items } from "../data.module"
-import { Destruct, NzRange, ListDiffKind, ListDiffItem } from "../util"
+import { DataSourceDirective, Model, Items, PrimaryKey } from "../data.module"
+import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__ } from "../util"
 import { ScrollerService } from "./scroller/scroller.service"
 import { ScrollableDirective } from "./scroller/scrollable.directive"
 import { VirtualForVisibleItems } from "./virtual-for-strategy.directive"
+import { RectProps } from "../layout.module"
+import { Observer } from "deep-diff"
+
+
+const SET_TIMEOUT = __zone_symbol__("setTimeout")
+const CLEAR_TIMEOUT = __zone_symbol__("clearTimeout")
+const requestAnimationFrame = __zone_symbol__("requestAnimationFrame")
+const cancelAnimationFrame = __zone_symbol__("cancelAnimationFrame")
 
 
 export const enum ScrollingDirection {
@@ -35,7 +43,7 @@ export interface RenderedEvent<T> {
 }
 
 
-export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>;
+export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 
 
 const EMPTY_ITEMS = new Items([], new NzRange(0, 0), 0)
@@ -57,8 +65,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             this._srcSubItems.unsubscribe()
         }
         if (value) {
-
-
             this._srcSubInvalidate = this.destruct
                 .subscription(value.storage.invalidated)
                 .pipe(startWith(null))
@@ -245,6 +251,53 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+
+    public scrollIntoViewport(item: T | PrimaryKey) {
+        this._getItemRect(typeof item === "string" || typeof item === "number" ? item : item.pk)
+            .pipe(take(1))
+            .subscribe(rect => {
+                this._scroller.scrollIntoViewport(rect)
+            })
+    }
+
+    private _itemRectCache: any = {}
+    private _getItemRect(pk: PrimaryKey): Observable<RectProps> {
+        if (this._itemRectCache[pk]) {
+            return this._itemRectCache[pk]
+        } else {
+            return this._itemRectCache[pk] = this._nzVirtualForOf.getPosition(pk).pipe(
+                switchMap(position => {
+                    return new Observable<RectProps>((subscriber: Subscriber<RectProps>) => {
+                        let rafId: any = null
+                        const emitRect = () => {
+                            const rect = this.visibleItems.getItemRect(position)
+                            if (rect) {
+                                subscriber.next(rect)
+                                subscriber.complete()
+                            } else {
+                                this._scroller.scrollBy(
+                                    { top: this._scroller.vpImmediate.height },
+                                    {
+                                        smooth: true, velocity: 0.5, done: () => {
+                                            rafId = window[requestAnimationFrame](emitRect)
+                                        }
+                                    })
+                            }
+                        }
+
+                        emitRect()
+                        return () => {
+                            rafId && window[cancelAnimationFrame](rafId)
+                        }
+                    })
+                }),
+                tap(_ => {
+                    delete this._itemRectCache[pk]
+                }),
+                shareReplay(1)
+            )
+        }
     }
 
     private _applyChanges(changes: Array<ListDiffItem<T>>, renderedRange: NzRange, currentRange: NzRange) {

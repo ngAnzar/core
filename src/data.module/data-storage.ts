@@ -181,7 +181,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     public getPosition(id: PrimaryKey): Observable<number> {
-        return this.source.getPosition(id)
+        return this.source.getPosition(id, this.filter.get(), this.sorter.get())
     }
 
     public reload() {

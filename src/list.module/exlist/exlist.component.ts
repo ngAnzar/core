@@ -1,12 +1,12 @@
-import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy, Optional, ChangeDetectorRef, ChangeDetectionStrategy, OnInit } from "@angular/core"
+import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy, Optional, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ViewChild } from "@angular/core"
 import { of, Subject } from "rxjs"
 import { take, startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective, Model, SelectionItems, ISelectable, SelectOrigin } from "../../data.module"
 import { Margin, MarginParsed, parseMargin } from "../../layout.module"
-import { ProgressEvent } from "../../animation.module"
 import { ExlistSwitchHandler } from "./exlist-switch-handler"
+import { VirtualForDirective } from "../virtual-for.directive"
 
 
 export interface RowTplContext<T> {
@@ -36,6 +36,8 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
     @ContentChild("exHeader", { read: TemplateRef, static: true }) public readonly tplExHeader: TemplateRef<RowTplContext<T>>
     @ContentChild("exContent", { read: TemplateRef, static: true }) public readonly tplExContent: TemplateRef<RowTplContext<T>>
     @ContentChild("exFooter", { read: TemplateRef, static: true }) public readonly tplExFooter: TemplateRef<RowTplContext<T>>
+
+    @ViewChild("virtualList", { read: VirtualForDirective, static: true }) public readonly virtualList: VirtualForDirective<T>
 
     @Input()
     public set padding(val: Margin) {
@@ -83,6 +85,14 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
                     this.isBusy = value
                 })
         }
+
+        this.destruct.subscription(this.opened.changes)
+            .subscribe(changes => {
+                const opened = changes.length && changes[0] ? changes[0] : null
+                if (opened) {
+                    this.virtualList.scrollIntoViewport(opened)
+                }
+            })
     }
 
     public setOpened(model: any, origin: SelectOrigin) {
