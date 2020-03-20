@@ -73,7 +73,6 @@ export class RectMutationService {
 
     protected getWatcher(element: HTMLElement): Observable<Rect> {
         return Observable.create((observer: Observer<Rect>) => {
-
             let lastEmit = Rect.fromElement(element)
             observer.next(lastEmit)
 
@@ -99,14 +98,21 @@ export class RectMutationService {
                 if (resizeObserver) {
                     const ro = new resizeObserver((entries: any) => {
                         for (const entry of entries) {
-                            observer.next({
-                                width: entry.contentRect.right,
-                                height: entry.contentRect.bottom
-                            })
+                            if (entry.borderBoxSize) {
+                                observer.next({
+                                    width: entry.borderBoxSize.inlineSize,
+                                    height: entry.borderBoxSize.blockSize
+                                })
+                            } else {
+                                observer.next({
+                                    width: element.offsetWidth,
+                                    height: element.offsetHeight
+                                })
+                            }
                         }
 
                     })
-                    ro.observe(element)
+                    ro.observe(element, { box: "border-box" })
 
                     let lastPadding: string = ""
                     let lastClass = element.getAttribute("class")
@@ -160,7 +166,7 @@ export class RectMutationService {
                 distinctUntilChanged((a: any, b: any) => {
                     return a && b && a.width === b.width && a.height === b.height
                 }),
-                debounceTime(0, animationFrameScheduler), share()
+                share()
             )
         })
     }

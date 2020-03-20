@@ -54,9 +54,11 @@ export class LevitateRef {
 
     public reset() {
         this.suspend()
+
         const style = this.levitate.ref.style
         style.maxWidth = "none"
         style.maxHeight = "none"
+
         this.resume()
     }
 
@@ -81,9 +83,9 @@ export class LevitateRef {
         let observable: Observable<Rect>
 
         if (opts.ref === "viewport") {
-            observable = this.rectMutation.watchViewport().pipe(startWith(Rect.viewport()))
+            observable = this.rectMutation.watchViewport()
         } else if (opts.ref instanceof HTMLElement) {
-            observable = this.rectMutation.watch(opts.ref).pipe(startWith(Rect.fromElement(opts.ref)))
+            observable = this.rectMutation.watch(opts.ref)
         } else if (opts.ref instanceof Rect) {
             observable = of(opts.ref)
         }
