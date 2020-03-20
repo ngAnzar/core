@@ -64,6 +64,9 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         if (this._srcSubItems) {
             this._srcSubItems.unsubscribe()
         }
+        if (this._srcSubChange) {
+            this._srcSubChange.unsubscribe()
+        }
         if (value) {
             this._srcSubInvalidate = this.destruct
                 .subscription(value.storage.invalidated)
@@ -73,9 +76,14 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             this._srcSubItems = this.destruct
                 .subscription(value.storage.items)
                 .subscribe(this._itemsChanged)
+
+            this._srcSubChange = this.destruct
+                .subscription(value.storage.source.changed)
+                .subscribe(this._refresh)
         } else {
             delete this._srcSubInvalidate
             delete this._srcSubItems
+            delete this._srcSubChange
         }
     }
     public get nzVirtualForOf(): DataSourceDirective<T> {
@@ -85,6 +93,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private _srcSubInvalidate: Subscription
     private _srcSubItems: Subscription
+    private _srcSubChange: Subscription
     // private _srcSub: Subscription
 
     @Input()
@@ -108,6 +117,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     protected reusable: EmbeddedView<T>[] = []
 
     private _itemsChanged = new Subject()
+
+    private _refresh = new Subject()
 
     private _reset = new Subject()
     private reset$ = this.destruct.subscription(this._reset).pipe(
@@ -172,11 +183,11 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private items$ = this.destruct.subscription(
         merge(
-            this.requestRange$.pipe(
-                tap(r => {
-                    this._nzVirtualForOf && this._nzVirtualForOf.loadRange(r)
-                })
-            ),
+            merge(this.requestRange$, this._refresh)
+                .pipe(
+                    switchMap(_ => this.requestRange$.pipe(take(1))),
+                    tap(r => this._nzVirtualForOf && this._nzVirtualForOf.loadRange(r))
+                ),
             this._itemsChanged
         ))
 

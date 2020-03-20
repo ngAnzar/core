@@ -54,7 +54,6 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.sorter.changed,
         this.meta.changed,
         this.reseted,
-        this.source.changed
     ).pipe(debounceTime(10), share())
 
     // public get invalidated(): Observable<void> {
@@ -96,7 +95,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             this.sorter.set(sorter)
         }
 
-        this.destruct.subscription(this.invalidated).subscribe(x => {
+        this.destruct.subscription(merge(this.invalidated, source.changed)).subscribe(x => {
             this.reset(true)
         })
     }
