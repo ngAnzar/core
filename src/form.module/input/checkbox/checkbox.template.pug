@@ -16,6 +16,9 @@
     nz-rounded-rect: $nz-checkbox-size, $nz-checkbox-size, small
     border: 2px solid $theme.base.on.light
 
+  .border-disabled
+    border-color: $theme.common.light
+
   .label
     display: inline-block
     flex-grow: 1
@@ -23,6 +26,9 @@
     top: 2px
     overflow: hidden
     max-width: 100%
+
+  .label-disabled
+    opacity: 0.3 !important
 
 
 label.nz-checkbox-label(for="{{id}}-chk")
@@ -39,8 +45,8 @@ label.nz-checkbox-label(for="{{id}}-chk")
       on-focus="_handleFocus(true)"
       on-blur="_handleFocus(false)"
       on-change="_changeHandler($event)")
-    .border
+    .border([ngClass]=`{"${style('border-disabled')}": disabled}`)
     .nz-checkbox-indicator
       .nz-checkbox-checkmark
-  span.label.nz-checkbox-content
+  span.label.nz-checkbox-content([ngClass]=`{"${style('label-disabled')}": disabled}`)
     ng-content
