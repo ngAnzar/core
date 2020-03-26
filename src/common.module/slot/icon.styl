@@ -6,9 +6,6 @@ $nz-icon-margin ?= nz-local-grid-size(2)
   display: inline-block
   overflow: hidden
 
-  &:before
-    overflow: hidden
-
   for $color, value in nz-theme-colors($theme)
     for $variant in "normal" "light" "dark"
       &{nz-theme-color-selector($color, $variant)}
