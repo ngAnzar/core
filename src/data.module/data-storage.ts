@@ -74,9 +74,9 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     //     }).pipe(debounceTime(10))
     // }
 
-    public get data(): Readonly<{ [key: number]: T }> { return this.cache }
+    public get data(): Readonly<T[]> { return this.cache }
 
-    protected cache: { [key: number]: T } = {}
+    protected cache: T[] = []
     protected cachedRanges: NzRangeList = new NzRangeList()
     protected cancel = new Subject()
     protected readonly _itemsStream: Observable<Items<T>> = new EventEmitter()
@@ -180,6 +180,13 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     public getPosition(id: PrimaryKey): Observable<number> {
+        let cache = this.cache
+        for (let i = 0, l = cache.length; i < l; i++) {
+            if (cache[i] && cache[i].pk === id) {
+                return of(i)
+            }
+        }
+
         return this.source.getPosition(id, this.filter.get(), this.sorter.get())
     }
 
@@ -216,7 +223,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     protected reset(skipEvent?: boolean) {
-        this.cache = {}
+        this.cache = []
         this.cachedRanges = new NzRangeList()
         this.pendingRanges = []
 

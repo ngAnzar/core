@@ -45,8 +45,13 @@ export class ScrollableDirective {
     }
 
     public getElementRect(el: Node) {
+        if (!document.contains(el)) {
+            return null
+        }
+
         if (el.nodeType === 1) {
             return this._getRect(el as HTMLElement)
+            // return this._getRect(el as HTMLElement)
         } else {
             let selfRect = getBoundingClientRect(this.el.nativeElement)
             let elRect = getBoundingClientRect(el)

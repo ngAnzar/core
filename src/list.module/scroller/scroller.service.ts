@@ -298,6 +298,10 @@ export class ScrollerService implements OnDestroy {
         const elRect: RectProps = el instanceof Node ? this.getElementImmediateRect(el) : el
         let pos = { ...this.scrollPosition }
 
+        if (!elRect) {
+            return
+        }
+
         let topSpace = elRect.top - visibleRect.top
         if (topSpace < 0) {
             pos.top -= Math.abs(topSpace)

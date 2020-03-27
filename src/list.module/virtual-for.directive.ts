@@ -3,7 +3,7 @@ import {
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter
 } from "@angular/core"
 import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber } from "rxjs"
-import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share, mapTo } from "rxjs/operators"
+import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items, PrimaryKey } from "../data.module"
 import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__ } from "../util"
@@ -266,7 +266,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     public scrollIntoViewport(item: T | PrimaryKey) {
         this._getItemRect(typeof item === "string" || typeof item === "number" ? item : item.pk)
-            .pipe(take(1))
+            .pipe(takeUntil(this.destruct.on), take(1))
             .subscribe(rect => {
                 this._scroller.scrollIntoViewport(rect)
             })
@@ -279,6 +279,10 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         } else {
             return this._itemRectCache[pk] = this._nzVirtualForOf.getPosition(pk).pipe(
                 switchMap(position => {
+                    if (position === null || position < 0) {
+                        return EMPTY
+                    }
+
                     return new Observable<RectProps>((subscriber: Subscriber<RectProps>) => {
                         let rafId: any = null
                         const emitRect = () => {
