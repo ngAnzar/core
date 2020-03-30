@@ -136,7 +136,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         }
     }
 
-    public loadRange(r: NzRange): void {
+    public loadRange(r: NzRange): boolean {
         if (this._dsd) {
             return this._dsd.loadRange(r)
         } else {

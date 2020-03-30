@@ -75,6 +75,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
             this._srcSubItems = this.destruct
                 .subscription(value.storage.items)
+                .pipe(startWith(null))
                 .subscribe(this._itemsChanged)
 
             this._srcSubChange = this.destruct
@@ -122,17 +123,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private _reset = new Subject()
     private reset$ = this.destruct.subscription(this._reset).pipe(
-        // tap(this._clear.bind(this)),
         tap(this.visibleItems.clearCache.bind(this.visibleItems)),
         tap(() => {
-            // this.reusable.length = 0
-
-            // for (let i = 0, l = this._vcr.length; i < l; i++) {
-            //     const view = this._vcr.get(i) as EmbeddedView<T>
-            //     view.detach()
-            //     this.reusable.push(view)
-            // }
-
             let sp = this._scroller.scrollPercent
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
@@ -181,28 +173,29 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         shareReplay(1)
     )
 
-    private items$ = this.destruct.subscription(
+    private items$: Observable<Items<T>> = this.destruct.subscription(
         merge(
             merge(this.requestRange$, this._refresh)
                 .pipe(
                     switchMap(_ => this.requestRange$.pipe(take(1))),
-                    tap(r => this._nzVirtualForOf && this._nzVirtualForOf.loadRange(r))
+                    switchMap(rr => {
+                        if (this._nzVirtualForOf && this._nzVirtualForOf.loadRange(rr)) {
+                            return EMPTY
+                        }
+                        return of(null)
+                    })
                 ),
             this._itemsChanged
         ))
+        .pipe(
+            switchMap(_ => this.renderRange$),
+            map(rr => {
+                return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
+            })
+        )
 
     @Output("rendered")
     public readonly render$ = this.destruct.subscription(this.items$).pipe(
-        switchMap(_ => {
-            // return this.requestRange$.pipe(map(rr => {
-            //     return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
-            // }))
-            return this.renderRange$.pipe(map(rr => {
-                return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
-            }))
-        }),
-        // withPrevious(),
-        // withPrevious(this.reset$),
         map(current => {
             let prev = new Items([], null)
             let minIdx = -1

@@ -83,7 +83,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected total: number
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
 
-    public readonly items = this._itemsStream.pipe(share())
+    public readonly items = this._itemsStream
 
     public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
         super()
@@ -141,19 +141,21 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     private _abortLoad: Subject<any>
+
+    // true-val tér vissza, ha várható változás az items-ben
     public loadRange(r: NzRange) {
         if (this.total) {
             r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
 
         if (this.cachedRanges.contains(r) || this.endReached) {
-            return
+            return false
         }
 
         const request = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
         const pending = this._getPending(request)
         if (pending) {
-            return
+            return true
         }
 
         if (this._abortLoad) {
@@ -163,7 +165,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
         const src = this.source
             .search(this.filter.get(), this.sorter.get(), request, this.meta.get())
-            .pipe(takeUntil(this._abortLoad))
+            .pipe(takeUntil(this._abortLoad), take(1))
 
         this._setPending(request, src)
             .subscribe(items => {
@@ -177,6 +179,8 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
                 }
                 this._cacheItems(items, this.range)
             })
+
+        return true
     }
 
     public getPosition(id: PrimaryKey): Observable<number> {
@@ -278,15 +282,14 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
                 if (this.source.async) {
                     this.isBusy = true
                 }
-                let idx = this.pendingRanges.findIndex((v) => v[0] === r)
+                let idx = this.pendingRanges.findIndex((v) => v[0].isEq(r))
                 if (idx !== -1) {
                     this.pendingRanges.splice(idx, 1)
                 }
             }),
             finalize(() => {
                 this.isBusy = false
-            }),
-            shareReplay(1)
+            })
         )
     }
 

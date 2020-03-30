@@ -9,7 +9,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
 import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY, merge } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError, startWith, takeUntil } from "rxjs/operators"
 
 import { NzRange, __zone_symbol__ } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
@@ -375,20 +375,31 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             map(_ => this.opened && !this.readonly && !this.disabled),
             distinctUntilChanged(),
             switchMap(value => {
+                // console.log("openDD", value)
                 if (value) {
                     const range = new NzRange(0, AutocompleteComponent.PRELOAD_COUNT)
                     if (this.source.getRange(range).length > 0) {
+                        // console.log("RANGE IS LOADED")
                         return of(true)
                     } else {
+                        // console.log("RANGE PRELOADING")
                         // preload items
                         return Observable.create((observer: Observer<boolean>) => {
                             const s = this.source.storage.items.subscribe(_ => {
+                                // console.log("preload", _)
                                 observer.next(value)
                                 observer.complete()
                             })
-                            this.source.loadRange(range)
+                            const s2 = this.source.storage.invalidated
+                                .pipe(startWith(null))
+                                .subscribe(_ => {
+                                    // console.log("select.loadRange", range)
+                                    this.source.loadRange(range)
+                                })
                             return () => {
+                                // console.log("UNSUBSCRIBE")
                                 s.unsubscribe()
+                                s2.unsubscribe()
                             }
                         })
                     }
@@ -536,7 +547,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
                 if (!targetAnchor.margin) {
                     if (this.ffc) {
-                        targetAnchor.margin = { top: 4, bottom: 6, left: 12, right: 12 }
+                        targetAnchor.targetEl = this.ffc.el
+                        targetAnchor.margin = { top: 0, bottom: -19, left: 12, right: 12 }
                     } else {
                         targetAnchor.margin = { top: 4, bottom: 4, left: 12, right: 12 }
                     }
