@@ -7,6 +7,8 @@ import { DataSourceDirective, Model, SelectionItems, ISelectable, SelectOrigin }
 import { Margin, MarginParsed, parseMargin } from "../../layout.module"
 import { ExlistSwitchHandler } from "./exlist-switch-handler"
 import { VirtualForDirective } from "../virtual-for.directive"
+import { ScrollerComponent } from "../scroller/scroller.component"
+import { ExlistItemComponent } from "./exlist-item.component"
 
 
 export interface RowTplContext<T> {
@@ -38,6 +40,7 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
     @ContentChild("exFooter", { read: TemplateRef, static: true }) public readonly tplExFooter: TemplateRef<RowTplContext<T>>
 
     @ViewChild("virtualList", { read: VirtualForDirective, static: true }) public readonly virtualList: VirtualForDirective<T>
+    @ViewChild("scroller", { read: ScrollerComponent, static: true }) public readonly scroller: ScrollerComponent
 
     @Input()
     public set padding(val: Margin) {
@@ -90,9 +93,14 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
             .subscribe(changes => {
                 const opened = changes.length && changes[0] ? changes[0] : null
                 if (opened) {
+                    this._updateOpenedRowByScroll()
                     this.virtualList.scrollIntoViewport(opened)
                 }
             })
+
+        this.destruct.subscription(this.scroller.service.vpRender.scroll).subscribe(() => {
+            this._updateOpenedRowByScroll()
+        })
     }
 
     public setOpened(model: any, origin: SelectOrigin) {
@@ -123,9 +131,21 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
         if (newModel) {
             this._rows[newModel.pk] = cmp
         }
+
+        this._updateOpenedRowByScroll()
     }
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+
+    private _getOpenedRow(): ExlistItemComponent<T> {
+        let opened = this.opened.get()
+        return opened && opened.length > 0 ? this._rows[opened[0].pk] as any : null
+    }
+
+    private _updateOpenedRowByScroll() {
+        let openedRow = this._getOpenedRow()
+        openedRow && openedRow._updateByScroll()
     }
 }

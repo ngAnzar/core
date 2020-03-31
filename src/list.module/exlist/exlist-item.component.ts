@@ -16,7 +16,6 @@ import { ExlistComponent, RowTplContext } from "./exlist.component"
 
 const REQUEST_ANIMATION_FRAME = __zone_symbol__("requestAnimationFrame")
 
-
 @Component({
     selector: ".nz-exlist-item",
     templateUrl: "./exlist-item.template.pug",
@@ -133,10 +132,6 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
                 this.scroller.scrollIntoViewport(this.el.nativeElement)
                 finished && this._updateByScroll()
             })
-
-            this._scroll = this.zone.runOutsideAngular(() => this.scroller.vpRender.scroll
-                .pipe(startWith(null))
-                .subscribe(this._updateByScroll))
         }
 
         (this.selectedChange as EventEmitter<SelectOrigin>).emit(newValue)
@@ -147,9 +142,13 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         return !!this.list.tplExContent
     }
 
-    private _updateByScroll = () => {
+    public _updateByScroll(): void {
         let visible = this.scroller.vpRender.visible
         let elRect = this.scroller.getElementRenderedRect(this.el.nativeElement)
+
+        if (!elRect) {
+            return
+        }
 
         if (this._elHeader) {
             let top = elRect.top - visible.top
