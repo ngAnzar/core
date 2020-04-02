@@ -23,8 +23,8 @@ const REQUEST_ANIMATION_FRAME = __zone_symbol__("requestAnimationFrame")
     host: {
         "[style.margin-left.px]": "_selected ? -(list.paddingLeft / 2) : 0",
         "[style.margin-right.px]": "_selected ? -(list.paddingLeft / 2) : 0",
-        "[style.margin-top.px]": "_selected && selectionIndex !== 0 ? 48 : 0",
-        "[style.margin-bottom.px]": "_selected ? 48 : 0",
+        "[style.margin-top.px]": "_selected && selectionIndex !== 0 ? 24 : 0",
+        "[style.margin-bottom.px]": "_selected ? 24 : 0",
         "[style.height.px]": "_selected ? null : 48",
     }
 })
