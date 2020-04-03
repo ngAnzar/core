@@ -14,7 +14,8 @@ export { Dimension, Position } from "./rect-mutation.service"
 
 
 import { StackComponent } from "./stack/stack.component"
-import { StackItemDirective } from "./stack/stack-item.directive"
+import { StackItemDirective, StackItemRef } from "./stack/stack-item.directive"
+export { StackItemDirective, StackItemRef }
 
 
 @NgModule({
@@ -24,7 +25,7 @@ import { StackItemDirective } from "./stack/stack-item.directive"
     ],
     declarations: [
         StackComponent,
-        StackItemDirective
+        StackItemDirective,
     ],
     exports: [
         StackComponent,

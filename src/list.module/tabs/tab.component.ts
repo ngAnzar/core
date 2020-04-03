@@ -1,15 +1,22 @@
-import { Component, ContentChild, ViewChild, TemplateRef, Input, HostBinding, Output, EventEmitter } from "@angular/core"
+import { Component, ContentChild, ViewChild, TemplateRef, Input, forwardRef, Output, EventEmitter, Inject } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
+
+import { StackItemDirective, StackItemRef } from "../../layout.module"
 
 
 @Component({
     selector: "nz-tab",
-    templateUrl: "./tab.template.pug"
+    templateUrl: "./tab.template.pug",
+    providers: [
+        StackItemRef,
+        { provide: StackItemDirective, useExisting: forwardRef(() => TabComponent) }
+    ]
 })
-export class TabComponent {
+export class TabComponent extends StackItemDirective {
     @Input() public label: string
 
+    @ContentChild("content", { read: TemplateRef, static: true }) public readonly tpl: TemplateRef<any>
     @ContentChild("label", { read: TemplateRef, static: true }) protected readonly cLabelTpl: TemplateRef<any>
     @ViewChild("vLabelTpl", { read: TemplateRef, static: true }) protected readonly vLabelTpl: TemplateRef<any>
 
@@ -43,5 +50,7 @@ export class TabComponent {
         return this.cLabelTpl || this.vLabelTpl
     }
 
-    @ContentChild("content", { read: TemplateRef, static: true }) public readonly contentTpl: TemplateRef<any>
+    public constructor(@Inject(StackItemRef) itemRef: StackItemRef) {
+        super(itemRef, null)
+    }
 }

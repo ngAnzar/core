@@ -33,5 +33,5 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .nz-stack(
     #stack,
     fxFlex="grow",
-    [children]="tabContents",
+    [children]="_tabsAsArray",
     (changed)="onSelectedIndexChanged($event)")

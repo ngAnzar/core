@@ -1,10 +1,11 @@
 import {
-    Component, ContentChildren, TemplateRef, QueryList, Inject, Input,
+    Component, ContentChildren, QueryList, Inject, Input,
     AfterViewInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, AfterContentInit,
     EventEmitter, Output
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
+import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { AnimateSwitch } from "./stack.animation"
@@ -21,11 +22,13 @@ import { StackItemDirective } from "./stack-item.directive"
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StackComponent implements AfterViewInit, OnDestroy, AfterContentInit {
-    @ContentChildren(StackItemDirective, { read: TemplateRef }) protected readonly contentChildren: QueryList<TemplateRef<any>>
-    @Input("children") protected readonly vChildren: Array<TemplateRef<any>>
+    @ContentChildren(StackItemDirective, { read: StackItemDirective }) protected readonly contentChildren: QueryList<StackItemDirective>
+    private _contentChildren: StackItemDirective[]
+
+    @Input("children") public inputChildren: StackItemDirective[]
 
     public get children() {
-        return this.vChildren ? this.vChildren : this.contentChildren
+        return this.inputChildren ? this.inputChildren : this._contentChildren
     }
 
     @Input()
@@ -41,22 +44,28 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
     @Input()
     public set selectedIndex(val: number) {
-        if (this._viewReady === false || !this.children || this.children.length === 0) {
+        const children = this.children
+
+        if (this._viewReady === false || !children || children.length === 0) {
             this._pendingIndex = val
             return
         }
 
-        val = isNaN(val) ? 0 : this.children ? Math.max(0, Math.min(val, this.children.length)) : 0
+        val = isNaN(val) ? 0 : children ? Math.max(0, Math.min(val, children.length - 1)) : 0
 
         if (this._selectedIndex !== val) {
             const old = isNaN(this._selectedIndex) ? -1 : this._selectedIndex
 
             if (old < 0) {
                 this.childSwitch[val] = `visible`
+                children[val].itemRef.visible = true
             } else {
                 const dir = old > val ? "right" : "left"
                 this.childSwitch[old] = `${dir}-out`
                 this.childSwitch[val] = `${dir}-in`
+
+                children[old].itemRef.visible = false
+                children[val].itemRef.visible = true
             }
 
             this._selectedIndex = val;
@@ -90,23 +99,27 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
     }
 
     public ngAfterContentInit() {
-        this.destruct.subscription(this.contentChildren.changes).subscribe(content => {
-            const length = this.contentChildren.length
-            if (this.selectedIndex >= this.contentChildren.length) {
-                this.selectedIndex = this.contentChildren.length - 1
-            }
-
-
-            for (const k in this.childSwitch) {
-                if (parseInt(k, 10) >= this.contentChildren.length) {
-                    delete this.childSwitch[k]
+        this.destruct.subscription(this.contentChildren.changes)
+            .pipe(startWith(this.contentChildren))
+            .subscribe(content => {
+                this._contentChildren = content.toArray()
+                const children = this.children
+                const length = children.length
+                if (this.selectedIndex >= children.length) {
+                    this.selectedIndex = children.length - 1
                 }
-            }
 
-            if (length && this._viewReady) {
-                this.ngAfterViewInit()
-            }
-        })
+
+                for (const k in this.childSwitch) {
+                    if (parseInt(k, 10) >= children.length) {
+                        delete this.childSwitch[k]
+                    }
+                }
+
+                if (length && this._viewReady) {
+                    this.ngAfterViewInit()
+                }
+            })
     }
 
     public ngOnDestroy() {

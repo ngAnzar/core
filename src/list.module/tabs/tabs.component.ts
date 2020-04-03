@@ -22,7 +22,7 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     public readonly destruct = new Destruct()
 
     @ContentChildren(TabComponent) public readonly tabs: QueryList<TabComponent>
-    public readonly tabContents: Readonly<Array<TemplateRef<any>>>
+    public readonly _tabsAsArray: TabComponent[]
 
     @ViewChild("stack", { static: true }) public readonly stack: StackComponent
 
@@ -53,7 +53,7 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
         this.destruct.subscription(this.tabs.changes)
             .pipe(startWith(null))
             .subscribe(() => {
-                (this as any).tabContents = this.tabs.toArray().map(item => item.contentTpl)
+                (this as any)._tabsAsArray = this.tabs.toArray()
                 if (this._pendingIndex != null) {
                     this.stack.selectedIndex = this._pendingIndex
                     delete this._pendingIndex
