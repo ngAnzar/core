@@ -1,6 +1,6 @@
 import { OnDestroy, NgZone, Inject } from "@angular/core"
 import { Observable, Subject, Subscription, merge } from "rxjs"
-import { startWith } from "rxjs/operators"
+import { startWith, debounceTime } from "rxjs/operators"
 
 import { Destruct, IDisposable } from "../../util"
 import { Rect, RectProps } from "../../layout.module"
@@ -234,6 +234,12 @@ export class ScrollerService implements OnDestroy {
             })
             this.destruct.disposable(this.animation)
         })
+
+        this.destruct.subscription(this.vpImmediate.change)
+            .pipe(debounceTime(100))
+            .subscribe(_ => {
+                this.scrollTo(this.vpImmediate.scrollPosition, { smooth: false })
+            })
     }
 
     public lockMethod(method: ScrollingMethod): boolean {

@@ -5,6 +5,6 @@
 
 ng-template(#layer let-trigger)
   .nz-scroller.scroller.nz-popup-menu-content
-    div(scrollable, fxLayout="column", fxLayoutAlign="start stretch")
-      ng-template(ngFor [ngForOf]="menuItems" let-menuItem)
+    div.nz-popupmenu-body(scrollable)
+      ng-template(ngFor, [ngForOf]="menuItems", let-menuItem)
         ng-template([ngTemplateOutlet]="menuItem.tpl")

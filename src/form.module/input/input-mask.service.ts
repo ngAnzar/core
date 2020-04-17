@@ -43,7 +43,7 @@ export class InputMask<T extends IMask.AnyMaskedOptions = IMask.AnyMaskedOptions
         let result = {} as any
 
         if (this._isValid) {
-            let inputBlocks = this.imask.masked.state._blocks.filter((block: any) => block._isRawInput !== false)
+            let inputBlocks = this.imask.masked.state._blocks.filter((block: any) => block._isRawInput !== true)
             let maskedBlocks = (this.imask.masked as any)._maskedBlocks as { [key: string]: any }
             let i = 0
 

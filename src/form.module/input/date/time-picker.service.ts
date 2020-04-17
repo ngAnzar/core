@@ -1,15 +1,23 @@
-import { Inject } from "@angular/core"
+import { Inject, StaticProvider, Injector } from "@angular/core"
+
+import { Time } from "../../../util"
 import { ComponentLayerRef, DropdownLayer, LevitateOptions, LayerService } from "../../../layer.module"
 import { TimePickerComponent } from "./time-picker.component"
+import { AbstractPickerService } from "./abstract"
 
 
 export interface TimePickerOptions {
     position: LevitateOptions
 }
 
+export class TimePickerService extends AbstractPickerService<TimePickerComponent, string | Date | Time> {
+    protected _create(position: LevitateOptions, provides?: StaticProvider[], injector?: Injector): ComponentLayerRef<TimePickerComponent> {
+        return this.layerSvc.createFromComponent(TimePickerComponent, this._createBehavior(position), null, provides, null, injector)
+    }
+}
 
 
-export class TimePickerService {
+export class _TimePickerService {
     public constructor(
         @Inject(LayerService) protected readonly layerSvc: LayerService) {
     }

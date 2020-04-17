@@ -19,3 +19,18 @@
   min-width: 28px
   max-height: (36 * 3)px
   min-height: (36 * 3)px
+
+
+__nz-date-input-color-theme($color)
+  .nz-ripple-effect
+    background-color: $color.bg.ripple
+
+  &:hover .nz-ripple
+    background-color: $color.bg.hover
+
+
+.nz-date-input[variant="button"], .nz-time-input[variant="button"], .nz-datetime-input[variant="button"]
+  &:not([disabled])
+    cursor: pointer !important
+
+    __nz-date-input-color-theme: nz-theme-component-state-colors($theme.base, "normal", false)

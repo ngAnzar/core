@@ -1,6 +1,7 @@
-import { Inject } from "@angular/core"
+import { Inject, StaticProvider, Injector } from "@angular/core"
 import { ComponentLayerRef, DropdownLayer, LevitateOptions, LayerService } from "../../../layer.module"
 import { DatetimePickerComponent } from "./datetime-picker.component"
+import { AbstractPickerService } from "./abstract"
 
 
 export interface DatetimePickerOptions {
@@ -10,7 +11,13 @@ export interface DatetimePickerOptions {
 
 
 
-export class DatetimePickerService {
+export class DatetimePickerService extends AbstractPickerService<DatetimePickerComponent, Date> {
+    protected _create(position: LevitateOptions, provides?: StaticProvider[], injector?: Injector): ComponentLayerRef<DatetimePickerComponent> {
+        return this.layerSvc.createFromComponent(DatetimePickerComponent, this._createBehavior(position), null, provides, null, injector)
+    }
+}
+
+export class _DatetimePickerService {
     public constructor(
         @Inject(LayerService) protected readonly layerSvc: LayerService) {
     }

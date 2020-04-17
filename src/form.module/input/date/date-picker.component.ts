@@ -1,30 +1,14 @@
 import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, Input, Output, Optional } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 import { Observable, Subject, merge, of, zip } from "rxjs"
-import { shareReplay, takeUntil, map, switchMap, take, startWith, tap } from "rxjs/operators"
+import { shareReplay, map, switchMap, take, startWith, tap } from "rxjs/operators"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, addDays, isToday, isSameDay, isSameMonth, addMonths, subMonths, startOfDay, compareAsc } from "date-fns"
 
 import { setTzToUTC, Destructible } from "../../../util"
 import { LocaleService } from "../../../common.module"
-import { DatePickerDayDataProvider } from "./date-picker-day-data"
+import { DatePickerDayDataProvider, DayData, PickerPopup } from "./abstract"
+import { LayerRef } from "../../../layer.module"
 
-
-export interface DayData {
-    // this data displayed under the day number
-    data?: string | number
-
-    // button color attribute, only apply, when the date is not selected, and not disabled
-    color?: string
-
-    // button variant attribute, only apply, when the date is not selected, and not disabled
-    variant?: string
-
-    // disabled button
-    disabled?: boolean
-
-    // is today
-    today?: boolean
-}
 
 
 const OTHER_MONTH_DATA: DayData = { color: "dark-base", variant: "icon" }
@@ -37,10 +21,20 @@ const SELECTED_DATA: DayData = { color: "accent", variant: "filled icon" }
     templateUrl: "./date-picker.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DatePickerComponent extends Destructible implements OnInit {
+export class DatePickerComponent extends Destructible implements OnInit, PickerPopup<Date> {
     // 0 - sunday, 1 - monday
     public weekStartsOn: number = 1
     public dayNames: string[] = []
+
+    @Input()
+    public set showButtons(val: boolean) {
+        if (this._showButtons !== val) {
+            this._showButtons = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get showButtons(): boolean { return this._showButtons }
+    private _showButtons: boolean = false
 
     public get value() { return this._value }
     private _value: Date
@@ -78,7 +72,6 @@ export class DatePickerComponent extends Destructible implements OnInit {
 
     @Output("value") public valueChange: Observable<Date> = this.destruct.subject(new Subject())
     private _renderValue = this.destruct.subject(new Subject<Date>())
-
 
     public readonly daysToRender$ = merge(this.displayed$, this._minChanged, this._maxChanged).pipe(
         map(day => {
@@ -175,6 +168,7 @@ export class DatePickerComponent extends Destructible implements OnInit {
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(LocaleService) protected readonly locale: LocaleService,
+        @Inject(LayerRef) private readonly layerRef: LayerRef,
         @Inject(DatePickerDayDataProvider) @Optional() private readonly dayDataProvider: DatePickerDayDataProvider) {
         super()
 
@@ -198,6 +192,22 @@ export class DatePickerComponent extends Destructible implements OnInit {
     public _emitValue(date: Date) {
         this.writeValue(date);
         (this.valueChange as Subject<Date>).next(this._value)
+    }
+
+    public onDayClick(date: Date) {
+        if (this.showButtons) {
+            this.writeValue(date)
+        } else {
+            this._emitValue(date)
+        }
+    }
+
+    public onCommitValue() {
+        (this.valueChange as Subject<Date>).next(this._value)
+    }
+
+    public cancel() {
+        this.layerRef.hide()
     }
 
     public isAllowed(d: Date): boolean {

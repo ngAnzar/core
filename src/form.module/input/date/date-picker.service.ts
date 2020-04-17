@@ -3,6 +3,7 @@ import { take } from "rxjs/operators"
 
 import { LayerService, DropdownLayer, LevitateOptions, ComponentLayerRef } from "../../../layer.module"
 import { DatePickerComponent } from "./date-picker.component"
+import { AbstractPickerService } from "./abstract"
 
 
 export interface DatePickerOptions {
@@ -16,7 +17,14 @@ export interface DatePickerOptions {
 }
 
 
-export class DatePickerService {
+export class DatePickerService extends AbstractPickerService<DatePickerComponent, Date> {
+    protected _create(position: LevitateOptions, provides?: StaticProvider[], injector?: Injector): ComponentLayerRef<DatePickerComponent> {
+        return this.layerSvc.createFromComponent(DatePickerComponent, this._createBehavior(position), null, provides, null, injector)
+    }
+}
+
+/*
+export class _DatePickerService {
     public constructor(
         @Inject(LayerService) protected readonly layerSvc: LayerService) {
     }
@@ -63,3 +71,4 @@ export class DatePickerService {
         return layer
     }
 }
+*/

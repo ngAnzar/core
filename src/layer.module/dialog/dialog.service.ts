@@ -122,6 +122,19 @@ export class DialogService {
         if (!("elevation" in options)) {
             options.elevation = 10
         }
+
+        if (!("rounded" in options)) {
+            options.rounded = 3
+        }
+
+        if (!options.position) {
+            options.position = {}
+        }
+
+        if (!options.position.constraint) {
+            options.position.constraint = { ref: "viewport", inset: 16 }
+        }
+
         let ref = this.layerService.createFromComponent(DialogComponent, new ModalLayer(options), null, provides) as DialogRef
         ref.show()
         return ref

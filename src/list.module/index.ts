@@ -48,6 +48,7 @@ export {
 
 import { TabsComponent } from "./tabs/tabs.component"
 import { TabComponent } from "./tabs/tab.component"
+import { TabLabelsDirective } from "./tabs/tab-labels.directive"
 export { TabsComponent, TabComponent }
 
 import { VirtualForDirective } from "./virtual-for.directive"
@@ -90,6 +91,7 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
 
         TabsComponent,
         TabComponent,
+        TabLabelsDirective,
 
         VirtualForDirective,
         VirtualForFixedItems,

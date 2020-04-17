@@ -22,7 +22,7 @@ export const TOUCH_RECOGNIZERS = new InjectionToken<Recognizer[]>("TOUCH_RECOGNI
 
 export type PointerEvent =
     (MouseEvent & { type: "mousedown" | "mouseup" | "mousemove" }) |
-    (TouchEvent & { type: "touchstart" | "touchend" | "touchcancel" | "touchmove" });
+    (TouchEvent & { type: "touchstart" | "touchend" | "touchcancel" | "touchmove" })
 
 
 export type PointerType = "mouse" | "touch"
@@ -361,7 +361,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
         let listeners = (element as any)[LISTENERS] as Listeners
 
         if (!listeners) {
-            (element as any)[LISTENERS] = listeners = new Listeners();
+            (element as any)[LISTENERS] = listeners = new Listeners()
             this.install(element)
         }
 
@@ -409,7 +409,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
             state.startEvent = state.lastEvent = event
 
             if (event.type === "touchstart") {
-                event.preventDefault() // stop firing mouse events
+                event.cancelable && event.preventDefault() // stop firing mouse events
                 state.pointerType = "touch"
                 this._extendTouchPath(listeners, event)
             } else if (event.type === "mousedown") {
@@ -454,10 +454,9 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
     private _checkPeriodically = () => {
         if (this._activeElement) {
-            const el = this._activeElement as HTMLElement
-            const listeners = (el as any)[LISTENERS] as Listeners
-            const state = listeners.state
+            const listeners = (this._activeElement as any)[LISTENERS] as Listeners
             if (listeners) {
+                const state = listeners.state
                 if (listeners.activeRecognizer) {
                     this._uninstallPeriodic()
                     return
@@ -470,7 +469,11 @@ export class TouchEventService extends ɵDomEventsPlugin {
                         this._end(listeners.state.startEvent, listeners)
                     }
                 }
+            } else {
+                this._uninstallPeriodic()
             }
+        } else {
+            this._uninstallPeriodic()
         }
     }
 

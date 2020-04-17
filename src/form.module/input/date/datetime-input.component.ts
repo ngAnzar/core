@@ -2,7 +2,7 @@ import { Component, HostBinding, Inject, ElementRef, Input, ViewChild, ChangeDet
 import { NG_VALIDATORS } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { parse, format, getDaysInMonth } from "date-fns"
-import { map } from "rxjs/operators"
+import { map, takeUntil } from "rxjs/operators"
 
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
@@ -49,27 +49,20 @@ export class DatetimeInputComponent extends InputComponent<Date> {
     public valueFormat: string = "yyyy-MM-dd HH:mm:ss"
 
     public set opened(val: boolean) {
-        if (this._opened !== val) {
-            this._opened = val
+        if (this.picker.isVisible !== val) {
 
             if (val) {
                 this.input.nativeElement.focus()
             }
 
             if (val && !this._withoutPicker) {
-                if (!this.pickerRef) {
-                    this.pickerRef = this._showPicker()
-                    this._updatePickerValue(this.model.value)
-                }
-            } else if (this.pickerRef) {
-                this.pickerRef.hide()
-                delete this.pickerRef
+                this._showPicker()
+            } else {
+                this.picker.hide()
             }
         }
     }
-    public get opened(): boolean { return this._opened }
-    private _opened: boolean
-    private pickerRef: ComponentLayerRef<DatetimePickerComponent>
+    public get opened(): boolean { return this.picker.isVisible }
 
     private _year: number
     private _month: number
@@ -89,7 +82,7 @@ export class DatetimeInputComponent extends InputComponent<Date> {
 
         this.monitorFocus(el.nativeElement, true)
 
-        this.destruct.subscription(this.focused).subscribe(event => {
+        this.destruct.subscription(model.focusChanges).subscribe(event => {
             if (!event.current) {
                 this.opened = false
             }
@@ -159,7 +152,8 @@ export class DatetimeInputComponent extends InputComponent<Date> {
         })
     }
 
-    private _showPicker(): ComponentLayerRef<DatetimePickerComponent> {
+    private _showPicker() {
+        /*
         const ref = this.picker.show({
             position: {
                 anchor: {
@@ -193,11 +187,30 @@ export class DatetimeInputComponent extends InputComponent<Date> {
         })
 
         return ref
+        */
+
+        const sub = this.picker
+            .toggle({ anchor: { ref: this.el.nativeElement, align: "bottom left", margin: "6 0" }, align: "top left" }, this.value)
+            .pipe(takeUntil(this.destruct.on))
+            .subscribe(event => {
+                if (event.type === "create") {
+                    this.monitorFocus(event.layerRef.container, true)
+                } else if (event.type === "value") {
+                    this._renderValue(event.value)
+                    this.model.emitValue(event.value)
+                    this.stopFocusMonitor(event.layerRef.container)
+                    sub.unsubscribe()
+                } else if (event.type === "hide") {
+                    this.stopFocusMonitor(event.layerRef.container)
+                }
+            })
+
+
     }
 
     private _updatePickerValue(value: Date) {
-        if (this.pickerRef && value && !isNaN(value.getTime())) {
-            this.pickerRef.component.instance.writeValue(value)
+        if (this.picker.instance && value && !isNaN(value.getTime())) {
+            this.picker.instance.writeValue(value)
         }
     }
 

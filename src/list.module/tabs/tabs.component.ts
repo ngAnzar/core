@@ -11,7 +11,6 @@ import { StackComponent } from "../../layout.module/stack/stack.component"
 import { TabComponent } from "./tab.component"
 
 
-
 @Component({
     selector: ".nz-tabs",
     exportAs: "nzTabs",
@@ -37,6 +36,15 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     public get selectedIndex(): number { return this.stack ? this.stack.selectedIndex : -1 }
     private _pendingIndex: number = null
 
+    public set tableMinWidth(val: string) {
+        if (this._tableMinWidth !== val) {
+            this._tableMinWidth = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get tableMinWidth(): string { return this._tableMinWidth }
+    private _tableMinWidth: string
+
     @Output() public readonly changes = new Subject<number>()
 
     public constructor(
@@ -44,8 +52,8 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(RectMutationService) mutation: RectMutationService) {
 
-        this.destruct.subscription(mutation.watchDimension(el)).subscribe(_ => {
-            cdr.detectChanges()
+        this.destruct.subscription(mutation.watchDimension(el)).subscribe(size => {
+            this.tableMinWidth = `${size.width}px`
         })
     }
 

@@ -18,7 +18,7 @@ export class LayerEvent<D> extends PreventableEvent {
     public readonly layer: LayerRef<this>
 
     public constructor(
-        public readonly type: "showing" | "hiding" | "destroy" | "button" | string,
+        public readonly type: "showing" | "shown" | "hiding" | "destroy" | "button" | string,
         public data?: D) {
         super()
     }
@@ -123,18 +123,20 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
             this.attach()
             this.behavior.initShow(this)
             this.behavior.levitate.begin()
-            if (this.behavior.options.trapFocus && !this.focusTrap) {
-                this.focusTrap = this.focusTrapSvc.create(this.outlet.nativeElement, false)
-                this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
-            }
+
 
             this.emit(new LayerEvent("showing") as E)
 
             return this.behavior.animateShow(this).then(() => {
                 // this.behavior.levitate.resume()
+                if (this.behavior.options.trapFocus && !this.focusTrap) {
+                    this.focusTrap = this.focusTrapSvc.create(this.outlet.nativeElement, false)
+                    this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
+                }
                 if (this.focusTrap) {
                     this.focusTrap.focusInitialElement() || this.focusTrap.focusFirstTabbableElement()
                 }
+                this.emit(new LayerEvent("shown") as E)
             })
         }
     }

@@ -257,6 +257,10 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
         this.destruct.any(() => this.model.focusMonitor.stopMonitoring(el))
     }
 
+    protected stopFocusMonitor(el: HTMLElement) {
+        this.model.focusMonitor.stopMonitoring(el)
+    }
+
     public ngOnDestroy() {
         this.destruct.run()
     }

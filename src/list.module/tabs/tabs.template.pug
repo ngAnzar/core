@@ -8,27 +8,45 @@
     height: $nz-tab-label-height
 
 
-
 div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
   .nz-scroller.label-scroller(fxFlex="none", hideScrollbar, *ngIf="tabs && tabs.length > 1", orient="horizontal")
-    .nz-tab-labels(scrollable, fxLayout="row", fxLayoutAlign="start stretch")
-      .nz-tab-label(
-          fxFlex="noshrink",
-          fxLayout="row",
-          fxLayoutAlign="center center",
-          *ngFor="let tab of tabs; let i=index",
-          [attr.selected]="selectedIndex === i ? '' : null",
-          [attr.disabled]="tab.disabled ? '' : null",
-          (tap)="onLabelTap($event, i)")
-        div.nz-tab-label-content
-          ng-template([ngTemplateOutlet]="tab.labelTpl")
-        .nz-ripple
+
+    //- .nz-tab-labels(scrollable, fxLayout="row", fxLayoutAlign="start stretch")
+    //-   .nz-tab-label(
+    //-       fxFlex="noshrink",
+    //-       fxLayout="row",
+    //-       fxLayoutAlign="center center",
+    //-       *ngFor="let tab of tabs; let i=index",
+    //-       [attr.selected]="selectedIndex === i ? '' : null",
+    //-       [attr.disabled]="tab.disabled ? '' : null",
+    //-       (tap)="onLabelTap($event, i)")
+    //-     div.nz-tab-label-content
+    //-       ng-template([ngTemplateOutlet]="tab.labelTpl")
+    //-     .nz-ripple
+
+    //-   .nz-tab-underline(
+    //-     #underline,
+    //-     *ngIf="selectedIndex >= 0",
+    //-     [style.left.px]="underline.parentNode.children[selectedIndex]!.offsetLeft",
+    //-     [style.width.px]="underline.parentNode.children[selectedIndex]!.offsetWidth")
+
+    .nz-tab-labels(scrollable)
+      table([style.min-width]="tableMinWidth")
+        tr(#labelContainer )
+          ng-template(ngFor, [ngForOf]="tabs", let-tab, let-i="index")
+            td.nz-tab-label(
+                [attr.selected]="selectedIndex === i ? '' : null",
+                [attr.disabled]="tab.disabled ? '' : null",
+                (tap)="onLabelTap($event, i)")
+              div.nz-tab-label-content
+                ng-template([ngTemplateOutlet]="tab.labelTpl")
+              .nz-ripple
 
       .nz-tab-underline(
         #underline,
         *ngIf="selectedIndex >= 0",
-        [style.left.px]="underline.parentNode.children[selectedIndex]!.offsetLeft",
-        [style.width.px]="underline.parentNode.children[selectedIndex]!.offsetWidth")
+        [style.left.px]="labelContainer.children[selectedIndex]!.offsetLeft",
+        [style.width.px]="labelContainer.children[selectedIndex]!.offsetWidth")
 
   .nz-stack(
     #stack,

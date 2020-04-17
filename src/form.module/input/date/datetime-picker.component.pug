@@ -2,6 +2,19 @@
   nz-datetime-picker
     background: $theme.base.normal
 
+  .date-picker
+    padding-bottom: 8px !important
+
+  .time-picker
+    padding-top: 0px !important
+
+  .buttons
+    padding-bottom: 16px
+
 .container(fxFlex="grow", fxLayout="column", fxLayoutAlign="start center", tabindex="0")
-  nz-date-picker(#dayPicker, [displayed]="displayDate", (value)="date=$event")
-  nz-time-picker(#timePicker, (value)="time=$event")
+  nz-date-picker.date-picker(#dayPicker, fxFlex="none", [showButtons]="false", [displayed]="displayDate", (value)="date=$event")
+  nz-time-picker.time-picker(#timePicker, fxFlex="none", [showButtons]="false", (value)="time=$event")
+
+  div.buttons(*ngIf="showButtons", fxFlex="none", fxLayout="row", fxLayoutAlign="center", fxLayoutGap="8px")
+    button.nz-button(color="base", variant="filled", (tap)="cancel()") MÉGSE
+    button.nz-button(color="confirm", (tap)="onCommitValue()") KÉSZ

@@ -56,11 +56,13 @@ export class PopupMenuDirective extends LayerFactoryDirective {
             this.hide()
         } else {
             let behavior = new MenuLayer({
+                closeable: true,
                 backdrop: {
                     type: "empty",
                     hideOnClick: true,
                     crop: this.targetEl.nativeElement
                 },
+                trapFocus: true,
                 elevation: 10,
                 minWidth: this.targetEl.nativeElement.offsetWidth,
                 menuLike: this.menuLikeAnimation

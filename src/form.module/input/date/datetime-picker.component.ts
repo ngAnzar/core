@@ -2,8 +2,10 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetect
 import { differenceInSeconds, startOfDay, isSameDay, setYear, setMonth, setDate, setHours, setMinutes, setSeconds } from "date-fns"
 
 import { Time, setTzToUTC } from "../../../util"
+import { LayerRef } from "../../../layer.module"
 import { DatePickerComponent } from "./date-picker.component"
 import { TimePickerComponent } from "./time-picker.component"
+import { PickerPopup } from "./abstract"
 
 
 @Component({
@@ -11,22 +13,20 @@ import { TimePickerComponent } from "./time-picker.component"
     templateUrl: "./datetime-picker.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DatetimePickerComponent {
+export class DatetimePickerComponent implements PickerPopup<Date> {
     @ViewChild("dayPicker", { static: true, read: DatePickerComponent }) public readonly dayPicker: DatePickerComponent
     @ViewChild("timePicker", { static: true, read: TimePickerComponent }) public readonly timePicker: TimePickerComponent
 
-    // @Input()
-    // public set value(val: Date) {
-    //     if (!this._value || !val || differenceInSeconds(this._value, val) !== 0) {
-    //         this._value = val
-    //         this.date = val
-    //         this.time = val
-    //         this.valueChange.next(val)
-    //         this.cdr.detectChanges()
-    //     }
-    // }
-    // public get value(): Date { return this._value }
-    // private _value: Date
+    @Input()
+    public set showButtons(val: boolean) {
+        if (this._showButtons !== val) {
+            this._showButtons = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get showButtons(): boolean { return this._showButtons }
+    private _showButtons: boolean = false
+
     public get value(): Date { return this._value }
     private _value: Date
 
@@ -59,7 +59,8 @@ export class DatetimePickerComponent {
     private _today = new Date()
 
     public constructor(
-        @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef) {
+        @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
+        @Inject(LayerRef) private readonly layerRef: LayerRef) {
     }
 
     public writeValue(date: Date) {
@@ -85,7 +86,18 @@ export class DatetimePickerComponent {
         }
 
         if (!this._value || differenceInSeconds(this._value, value) !== 0) {
-            this.valueChange.next(this._value = value)
+            this._value = value
+            if (!this.showButtons) {
+                this.valueChange.next(this._value)
+            }
         }
+    }
+
+    public onCommitValue() {
+        this.valueChange.next(this._value)
+    }
+
+    public cancel() {
+        this.layerRef.hide()
     }
 }

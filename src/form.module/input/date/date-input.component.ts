@@ -1,7 +1,7 @@
 import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, HostBinding, Directive } from "@angular/core"
 import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { take, map } from "rxjs/operators"
+import { take, map, takeUntil, takeWhile } from "rxjs/operators"
 import { parse, isDate, format, startOfDay, getDaysInMonth, parseISO, isSameDay, isValid, differenceInDays } from "date-fns"
 
 
@@ -88,6 +88,9 @@ export class DateMinMaxValidator implements Validator {
     selector: ".nz-date-input",
     templateUrl: "./date-input.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        "[attr.variant]": "isButtonVariant ? 'button' : null"
+    },
     providers: [
         ...INPUT_MODEL,
         InputMask,
@@ -96,7 +99,7 @@ export class DateMinMaxValidator implements Validator {
     ]
 })
 export class DateInputComponent extends InputComponent<Date> implements AfterViewInit {
-    @ViewChild("input", { read: ElementRef, static: true }) public readonly input: ElementRef<HTMLInputElement>
+    @ViewChild("input", { read: ElementRef, static: false }) public readonly input: ElementRef<HTMLInputElement>
 
     @Input() public min: Date
     @Input() public max: Date
@@ -114,31 +117,28 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     public get withoutPicker(): boolean { return this._withoutPicker }
     private _withoutPicker: boolean = false
 
+    public get isButtonVariant(): boolean { return this.datePicker.isDialogMode }
+
     @HostBinding("attr.tabindex")
     public readonly tabIndexAttr = -1
 
-    protected dpRef: ComponentLayerRef<DatePickerComponent>
+    // protected dpRef: ComponentLayerRef<DatePickerComponent>
 
     public set opened(val: boolean) {
-        if (this._opened !== val) {
-            this._opened = val
+        if (this.datePicker.isVisible !== val) {
 
             if (val && this.input) {
                 this.input.nativeElement.focus()
             }
 
             if (val && !this._withoutPicker) {
-                if (!this.dpRef) {
-                    this.dpRef = this._showPicker()
-                }
-            } else if (this.dpRef) {
-                this.dpRef.hide()
-                delete this.dpRef
+                this._showPicker()
+            } else {
+                this.datePicker.hide()
             }
         }
     }
-    public get opened(): boolean { return this._opened }
-    private _opened: boolean
+    public get opened(): boolean { return this.datePicker.isVisible }
 
     public displayFormat: string = this.locale.getDateFormat("short")
     public valueFormat: string = "yyyy-MM-dd"
@@ -150,7 +150,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     public constructor(
         @Inject(InputModel) model: InputModel<Date>,
         @Inject(InputMask) private readonly mask: InputMask,
-        @Inject(ElementRef) protected readonly el: ElementRef,
+        @Inject(ElementRef) protected readonly el: ElementRef<HTMLElement>,
         @Inject(LocaleService) protected readonly locale: LocaleService,
         @Inject(DatePickerService) protected readonly datePicker: DatePickerService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
@@ -193,11 +193,12 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                 let isValid = value === null
                 if (value instanceof Date && !isNaN(value.getTime())) {
                     this.model.emitValue(value = setTzToUTC(startOfDay(value)))
+                    this._updatePickerValue(value)
                     isValid = true
                 } else {
                     this.model.emitValue(null)
+                    this._updatePickerValue(this._createPartialValue())
                 }
-                this._updatePickerValue(this._createPartialValue())
 
                 if (this.dtValidator.isValid !== isValid) {
                     this.dtValidator.isValid = isValid
@@ -244,47 +245,41 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         return null
     }
 
-    private _showPicker(): ComponentLayerRef<DatePickerComponent> {
+    private _showPicker() {
         let date: Date = this.value ? isDate(this.value) ? this.value as any : this.parseString(this.value as any) : null
-        const ref = this.datePicker.show({
-            position: {
-                anchor: {
-                    ref: this.el.nativeElement,
-                    align: "bottom left",
-                    margin: "6 0 6 0"
-                },
-                align: "top left"
-            },
-            type: "date",
-            initial: date,
-            value: date,
-            min: this.min,
-            max: this.max
-        })
-        ref.show()
-        const cmp = ref.component.instance
 
-        this.destruct.subscription(cmp.valueChange).pipe(take(1)).subscribe(value => {
-            if (value) {
-                value = setTzToUTC(startOfDay(value))
-                this._renderValue(value)
-                this.model.emitValue(value)
-            }
-        })
+        const sub = this.datePicker
+            .toggle({ anchor: { ref: this.el.nativeElement, align: "bottom left", margin: "6 0" }, align: "top left" }, date)
+            .pipe(takeUntil(this.destruct.on))
+            .subscribe(event => {
+                if (event.type === "create") {
+                    if (!date) {
+                        event.instance.displayed = new Date()
+                    }
 
-        let s = ref.subscribe((event) => {
-            if (event.type === "hiding") {
-                this.opened = false
-                s.unsubscribe()
-            }
-        })
+                    if (this.min) {
+                        event.instance.min = this.min
+                    }
 
-        return ref
+                    if (this.max) {
+                        event.instance.max = this.max
+                    }
+                    this.monitorFocus(event.layerRef.container, true)
+                } else if (event.type === "value") {
+                    const value = setTzToUTC(startOfDay(event.value))
+                    this._renderValue(value)
+                    this.model.emitValue(value)
+                    this.stopFocusMonitor(event.layerRef.container)
+                    sub.unsubscribe()
+                } else if (event.type === "hide") {
+                    this.stopFocusMonitor(event.layerRef.container)
+                }
+            })
     }
 
     private _updatePickerValue(value: Date) {
-        if (this.dpRef && value && !isNaN(value.getTime())) {
-            this.dpRef.component.instance.writeValue(value)
+        if (this.datePicker.instance && value && !isNaN(value.getTime())) {
+            this.datePicker.instance.writeValue(value)
         }
     }
 

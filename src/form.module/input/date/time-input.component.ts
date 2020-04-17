@@ -1,7 +1,7 @@
 import { Component, Input, Inject, ElementRef, Directive, ViewChild, HostBinding, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
 import { Validator, AbstractControl, ValidationErrors, NG_VALIDATORS } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { map } from "rxjs/operators"
+import { map, takeUntil } from "rxjs/operators"
 import { debounceTime } from "rxjs/operators"
 import { setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
 
@@ -126,26 +126,19 @@ export class TimeInputComponent extends InputComponent<Time> {
     public imaskOptions: any
 
     public set opened(val: boolean) {
-        if (this._opened !== val) {
-            this._opened = val
-
+        if (this.timePicker.isVisible !== val) {
             if (val && this.input) {
                 this.input.nativeElement.focus()
             }
 
             if (val && !this._withoutPicker) {
-                if (!this.tpRef) {
-                    this.tpRef = this._showPicker()
-                    this._updatePickerValue(this.model.value)
-                }
-            } else if (this.tpRef) {
-                this.tpRef.hide()
-                delete this.tpRef
+                this._showPicker()
+            } else {
+                this.timePicker.hide()
             }
         }
     }
-    public get opened(): boolean { return this._opened }
-    private _opened: boolean
+    public get opened(): boolean { return this.timePicker.isVisible }
     private tpRef: ComponentLayerRef<TimePickerComponent>
 
     private _hour: number
@@ -233,6 +226,7 @@ export class TimeInputComponent extends InputComponent<Time> {
     }
 
     private _showPicker() {
+        /*
         const ref = this.timePicker.show({
             position: {
                 anchor: {
@@ -256,6 +250,24 @@ export class TimeInputComponent extends InputComponent<Time> {
             })
 
         return ref
+        */
+
+        this.timePicker
+            .toggle({ anchor: { ref: this.el.nativeElement, align: "bottom left", margin: "6 0" }, align: "top left" }, this.value)
+            .pipe(takeUntil(this.destruct.on))
+            .subscribe(event => {
+                if (event.type === "create") {
+                    this.monitorFocus(event.layerRef.container, true)
+                } else if (event.type === "value") {
+                    const time = event.value as Time
+                    if (time.isValid) {
+                        this.model.emitValue(time)
+                        this._renderValue(time)
+                    }
+                } else if (event.type === "hide") {
+                    this.stopFocusMonitor(event.layerRef.container)
+                }
+            })
     }
 
     private _updatePickerValue(time: Time) {
