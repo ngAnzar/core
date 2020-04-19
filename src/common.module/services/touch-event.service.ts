@@ -337,11 +337,11 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
     public constructor(
         @Inject(DOCUMENT) private doc: HTMLDocument,
-        @Inject(NgZone) zone: NgZone,
-        @Inject(PLATFORM_ID) @Optional() platformId: {} | null,
+        @Inject(NgZone) private readonly zone: NgZone,
+        // @Inject(PLATFORM_ID) @Optional() platformId: {} | null,
         @Inject(TOUCH_RECOGNIZERS) @Optional() recognizers: Recognizer[],
         @Inject(TOUCH_EVENTS) @Optional() eventFactories: TouchEventFactories) {
-        super(doc, zone, platformId)
+        super(doc)
 
         this.recognizers = recognizers || DEFAULT_RECOGNIZERS
         this.eventFactories = eventFactories || DEFAULT_EVENT_FACTORIES
@@ -428,7 +428,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
     private _end = (event: PointerEvent, listeners: Listeners) => {
         listeners.state.lastEvent = event
-        const zone = (this as any).ngZone as NgZone
+        const zone = this.zone
         this._uninstallPeriodic()
         zone.run(() => {
             this._fireEvent(event, listeners, true)
