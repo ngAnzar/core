@@ -21,7 +21,9 @@ export { StackItemDirective, StackItemRef }
 @NgModule({
     imports: [
         CommonModule,
-        FlexLayoutModule
+        FlexLayoutModule.withConfig({
+            disableVendorPrefixes: true
+        })
     ],
     declarations: [
         StackComponent,

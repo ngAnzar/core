@@ -22,7 +22,11 @@
         "fullTemplateTypeCheck": true,
         "strictInjectionParameters": true
     },
+    "files": [
+        "src/**/*.ts",
+        "index.ts"
+    ],
     "include": [
-        "src/**/*.ts"
+        "build-const.d.ts"
     ]
 }

@@ -1,4 +1,7 @@
-@require "../../util"
+$nz-form-field-anim-duration ?= 200ms
+$nz-form-field-input-padding ?= 4px
+$nz-form-field-top-caption-height ?= 16px
+$nz-form-field-bottom-caption-height ?= 20px
 
 // variant=underlined
 // variant=filled
@@ -27,7 +30,7 @@
     transform-origin: 50%
     transform: scaleX(.5)
 
-    transition: transform $nz-form-anim-duration, opacity $nz-form-anim-duration
+    transition: transform $nz-form-field-anim-duration, opacity $nz-form-field-anim-duration
 
   &.ng-invalid
     .underline
