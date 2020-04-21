@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Inject, ChangeDetectorRef } from "@angular/core"
+import { Component, ChangeDetectionStrategy, Inject, ChangeDetectorRef, Injectable } from "@angular/core"
 
 import { Destructible } from "../../../util"
 import { ComponentLayerRef, DropdownLayer, LayerService } from "../../../layer.module"
@@ -9,6 +9,7 @@ import { ComponentManager } from "./core/component-manager"
 import { ContentEditable } from "./core/content-editable"
 
 
+@Injectable()
 export class AutocompletePopup extends Destructible {
     public readonly selection = new SingleSelection<RichtextAcItem>()
 

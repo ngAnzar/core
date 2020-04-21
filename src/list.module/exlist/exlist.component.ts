@@ -69,7 +69,7 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
         }
     }
     public get isBusy(): boolean { return this._isBusy }
-    private _isBusy: boolean = false
+    public _isBusy: boolean = false
 
     public constructor(
         @Inject(DataSourceDirective) public readonly source: DataSourceDirective,

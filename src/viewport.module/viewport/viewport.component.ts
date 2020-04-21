@@ -24,7 +24,7 @@ export class ViewportComponent implements AfterViewInit, OnInit {
     public overlayDisplay = "none"
 
     public constructor(
-        @Inject(ViewportService) protected readonly vps: ViewportService,
+        @Inject(ViewportService) public readonly vps: ViewportService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected readonly sanitizer: DomSanitizer) {
     }
@@ -76,7 +76,7 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         this.cdr.detectChanges()
     }
 
-    protected recalcContentPadding() {
+    public _recalcContentPadding() {
         let padding = 0
 
         if (this.vps.menu.opened && this.vps.menu.style === VPPanelStyle.SLIDE) {
@@ -93,7 +93,7 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         }
     }
 
-    protected updateOverlayVisibility(event: Event) {
+    public _updateOverlayVisibility() {
         let display = this.overlayOpacity === 0 ? "none" : "block"
 
         if (this.overlayDisplay !== display) {

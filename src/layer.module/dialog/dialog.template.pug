@@ -24,8 +24,8 @@ block title
   h6.title(bind-innerHTML="title" "*ngIf"="title && title.length" nzDragHandle)
 
 block content
-  .content(*ngIf="content" bind-ngClass=`{"${style('message-content')}": options.isPlainText}`)
-    ng-template(bind-cdkPortalOutlet="content")
+  .content(*ngIf="_content" bind-ngClass=`{"${style('message-content')}": options.isPlainText}`)
+    ng-template([cdkPortalOutlet]="_content")
 
 block buttons
   .buttons(*ngIf="buttons && buttons.length", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")

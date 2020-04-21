@@ -15,5 +15,5 @@ export interface MenuPanelContext {
 })
 export class MenuComponent {
     @ViewChild("layer", { read: TemplateRef, static: true }) public readonly layer: TemplateRef<any>
-    @ContentChildren(MenuItemDirective) protected menuItems: QueryList<MenuItemDirective>
+    @ContentChildren(MenuItemDirective) public readonly menuItems: QueryList<MenuItemDirective>
 }

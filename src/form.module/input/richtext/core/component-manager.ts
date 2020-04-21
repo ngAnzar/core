@@ -1,4 +1,4 @@
-import { InjectionToken, Inject, Optional, Injector, ComponentFactoryResolver, ApplicationRef, ViewContainerRef, ElementRef } from "@angular/core"
+import { InjectionToken, Inject, Optional, Injector, ComponentFactoryResolver, ApplicationRef, ViewContainerRef, ElementRef, Injectable } from "@angular/core"
 import { ComponentType, DomPortalOutlet, ComponentPortal } from "@angular/cdk/portal"
 import { Subject, Observable, of } from "rxjs"
 import { map, filter, tap } from "rxjs/operators"
@@ -21,6 +21,7 @@ export const RICHTEXT_COMPONENT = new InjectionToken<RichtextComponentProvider>(
 export const RICHTEXT_CMP_PORTAL_EL = new RichtextElement("nz-richtext-portal")
 
 
+@Injectable()
 export class ComponentManager implements IDisposable {
     private _instances: { [key: string]: RichtextComponentRef<RichtextComponent> } = {}
 
@@ -120,7 +121,12 @@ export class ComponentManager implements IDisposable {
             params = null
         }
 
-        const ref = new RichtextComponentRef(portalEl, params, this.onParamsChanged, this.onRefDispose) as { -readonly [K in keyof RichtextComponentRef]: RichtextComponentRef[K] }
+        const ref = new RichtextComponentRef() as { -readonly [K in keyof RichtextComponentRef]: RichtextComponentRef[K] };
+        (ref as { el: HTMLElement }).el = portalEl;
+        (ref as { params: RichtextComponentParams }).params = params;
+        (ref as any).onParamsChanged = this.onParamsChanged;
+        (ref as any).onDispose = this.onRefDispose
+
         const injector = Injector.create([
             { provide: RichtextComponentRef, useValue: ref }
         ], this.injector)

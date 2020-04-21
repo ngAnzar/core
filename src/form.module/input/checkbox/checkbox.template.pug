@@ -38,13 +38,9 @@ label.nz-checkbox-label(for="{{id}}-chk")
       id="{{id}}-chk",
       type="checkbox",
       tabindex="-1",
-      [attr.name]="name"
-      [disabled]="disabled"
-      [checked]="checked"
-      [indeterminate]="indeterminate"
-      on-focus="_handleFocus(true)"
-      on-blur="_handleFocus(false)"
-      on-change="_changeHandler($event)")
+      [disabled]="disabled",
+      [checked]="checked",
+      [indeterminate]="indeterminate")
     .border([ngClass]=`{"${style('border-disabled')}": disabled}`)
     .nz-checkbox-indicator
       .nz-checkbox-checkmark

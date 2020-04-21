@@ -16,9 +16,9 @@
     margin: 0 0 0 $nz-dialog-padding-side
 
 .content(fxFlex="grow")
-  ng-template(bind-cdkPortalOutlet="content")
+  ng-template([cdkPortalOutlet]="_content")
 
-.buttons(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start start", *ngIf="buttons && buttons.length")
+.buttons(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start start", *ngIf="_buttons && _buttons.length")
   ng-template(ngFor bind-ngForOf="buttons" let-button)
     button.nz-button(*ngIf="button.role != 'spacer'",
       fxFlex="noshrink",

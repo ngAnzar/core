@@ -23,19 +23,19 @@ export class ProgressCircleComponent extends ProgressComponent implements AfterV
             this.strokeWidth = strokeWidthCalc(this._radius)
         }
         this._radiusMinusStroke = this._radius - this.strokeWidth / 2
-        this.dashArray = Math.PI * this._radiusMinusStroke * 2
-        this._currentOffset = this.dashArray
+        this._dashArray = Math.PI * this._radiusMinusStroke * 2
+        this._currentOffset = this._dashArray
     }
     public get radius(): number { return this._radius }
-    protected _radius: number
-    protected _radiusMinusStroke: number
+    public _radius: number
+    public _radiusMinusStroke: number
 
     @HostBinding("style.width") public get width(): string { return `${this.radius * 2}px` }
     @HostBinding("style.height") public get height(): string { return `${this.radius * 2}px` }
 
     @Input() public strokeWidth: number
 
-    protected dashArray: number
+    public _dashArray: number
 
     @ViewChild("circle", { static: true }) protected readonly circle: ElementRef<SVGCircleElement>
 
@@ -72,13 +72,13 @@ export class ProgressCircleComponent extends ProgressComponent implements AfterV
         if (indeterminate) {
             this.animation.update({
                 indeterminate,
-                totalOffset: this.dashArray
+                totalOffset: this._dashArray
             })
         } else {
             this.animation.update({
                 indeterminate,
                 fromOffset: this._currentOffset,
-                toOffset: this.dashArray - this.dashArray * this.percent,
+                toOffset: this._dashArray - this._dashArray * this.percent,
                 fromRotation: this._currentRotation,
                 toRotation: 0
             })

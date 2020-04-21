@@ -1,3 +1,4 @@
+import { Injectable } from "@angular/core"
 import { Observable, Observer, fromEvent, Subject, merge } from "rxjs"
 import { filter, map, mapTo, share } from "rxjs/operators"
 
@@ -18,6 +19,7 @@ export interface LocalStoreChangeEvent {
 // export type StoreableValue = null | string | number | boolean | Date | Array<StoreableValue> | { [key: string]: StoreableValue }
 
 
+@Injectable()
 export class LocalStorageService extends Destructible {
     private _event$: Observable<LocalStoreChangeEvent> = fromEvent<StorageEvent>(window, "storage").pipe(
         filter(event => event.storageArea === localStorage),

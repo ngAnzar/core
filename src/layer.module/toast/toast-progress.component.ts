@@ -62,7 +62,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
                 : "critical"
     }
 
-    protected progress: Observable<ProgressEvent>
+    public _progress: Observable<ProgressEvent>
 
     public set detailsFactory(val: DetailsHandler) {
         if (this._detailsFactory !== val) {
@@ -71,7 +71,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         }
     }
     public get detailsFactory(): DetailsHandler { return this._detailsFactory }
-    private _detailsFactory: DetailsHandler
+    public _detailsFactory: DetailsHandler
 
     public get detailsVisible(): boolean { return this._detailsRef && this._detailsRef.isVisible }
 
@@ -89,7 +89,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         this.detailsFactory = this.options.details
 
         if (this.options.progress) {
-            this.progress = this.options.progress.pipe(
+            this._progress = this.options.progress.pipe(
                 tap(val => {
                     this.state = val.percent >= 1 ? "success" : "progress"
                     this.percent = val.current && val.total ? Math.round(val.percent * 100) : null
@@ -106,7 +106,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
                 share()
             )
 
-            this.destruct.subscription(this.progress).subscribe(event => {
+            this.destruct.subscription(this._progress).subscribe(event => {
                 this.lengthenHide()
                 this.infoText = event.message
             })

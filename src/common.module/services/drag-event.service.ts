@@ -1,4 +1,4 @@
-import { Inject, NgZone } from "@angular/core"
+import { Inject, NgZone, Injectable } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 import { Observable, Observer } from "rxjs"
 
@@ -14,6 +14,7 @@ export class DragEvent extends PreventableEvent {
 }
 
 
+@Injectable()
 export class DragEventService {
     public constructor(
         @Inject(DOCUMENT) protected readonly doc: Document,

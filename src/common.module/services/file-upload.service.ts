@@ -1,4 +1,4 @@
-import { Inject } from "@angular/core"
+import { Inject, Injectable } from "@angular/core"
 import { Observable, Observer, EMPTY } from "rxjs"
 import { share, catchError } from "rxjs/operators"
 
@@ -24,6 +24,7 @@ export class FileUploadError extends Error {
 }
 
 
+@Injectable()
 export class FileUploadService {
     public constructor(@Inject(HttpClient) private readonly http: HttpClient) {
 

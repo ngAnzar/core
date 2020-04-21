@@ -10,10 +10,10 @@ svg(
   focusable="false")
   circle(
     #circle,
-    [attr.cx]="radius",
-    [attr.cy]="radius",
+    [attr.cx]="_radius",
+    [attr.cy]="_radius",
     [attr.r]="_radiusMinusStroke",
     [attr.stroke-width]="strokeWidth",
-    [attr.stroke-dasharray]="dashArray",
+    [attr.stroke-dasharray]="_dashArray",
     fill="none",
     stroke-linecap="round")

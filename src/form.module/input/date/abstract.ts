@@ -64,7 +64,7 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
     }
 
     public get isDialogMode(): boolean {
-        return true || __PLATFORM__ !== "browser"
+        return __PLATFORM__ !== "browser"
     }
 
     public constructor(@Inject(LayerService) protected readonly layerSvc: LayerService) {

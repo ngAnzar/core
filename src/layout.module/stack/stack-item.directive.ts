@@ -1,8 +1,9 @@
-import { Directive, Inject, Optional, SkipSelf, Input, OnChanges, SimpleChanges, TemplateRef } from "@angular/core"
+import { Directive, Inject, Optional, SkipSelf, TemplateRef, Injectable } from "@angular/core"
 import { Observable, Subject, merge } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
 
+@Injectable()
 export class StackItemRef {
     public readonly visibleChanges = new Subject<boolean>()
     public readonly activate: Observable<StackItemRef>

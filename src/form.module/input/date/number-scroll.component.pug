@@ -34,7 +34,7 @@
 
   .numbers(fxFlex="grow", on-wheel="onWheel($event)", on-pan="onPan($event)")
     .strip(#strip)
-      ng-template(ngFor, [ngForOf]="numbers", [ngForTrackBy]="trackNumber", let-number, let-index="index")
+      ng-template(ngFor, [ngForOf]="numbers", [ngForTrackBy]="_trackNumber", let-number, let-index="index")
         .number([ngClass]=`{"${style('active-number')}": centerIndex === index}`) {{ number.label }}
 
   //- .button-container(fxFlex="none")

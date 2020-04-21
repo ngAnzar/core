@@ -14,9 +14,9 @@ import { ToastOptions } from "./toast-options"
 export class ToastComponent extends ToastBase {
     public constructor(
         @Inject(LayerRef) protected readonly layerRef: LayerRef,
-        @Inject(LAYER_BUTTONS) @Optional() protected readonly buttons: ButtonList,
-        @Inject(LAYER_CONTENT) protected readonly content: Portal<any>,
-        @Inject(LAYER_OPTIONS) protected readonly options: ToastOptions) {
+        @Inject(LAYER_BUTTONS) @Optional() public readonly _buttons: ButtonList,
+        @Inject(LAYER_CONTENT) public readonly _content: Portal<any>,
+        @Inject(LAYER_OPTIONS) options: ToastOptions) {
         super()
 
         if (options.autohide) {

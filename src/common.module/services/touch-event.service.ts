@@ -1,4 +1,4 @@
-import { Provider, InjectionToken, Inject, Optional, NgZone, PLATFORM_ID } from "@angular/core"
+import { Provider, InjectionToken, Inject, Optional, NgZone, PLATFORM_ID, Injectable } from "@angular/core"
 import { ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS } from "@angular/platform-browser"
 import { DOCUMENT } from "@angular/common"
 
@@ -324,6 +324,7 @@ const CUSTOM_EVENT_OPTIONS = {
 }
 
 
+@Injectable()
 export class TouchEventService extends ɵDomEventsPlugin {
     public readonly longtapInterval = 300
     public readonly moveDistance = 10

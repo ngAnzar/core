@@ -15,7 +15,7 @@ export class QtipComponent {
         }
     }
     public get text(): string { return this._text }
-    private _text: string
+    public _text: string
 
     public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
 

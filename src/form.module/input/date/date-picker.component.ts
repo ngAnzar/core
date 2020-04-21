@@ -167,7 +167,7 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
     public constructor(
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(LocaleService) protected readonly locale: LocaleService,
+        @Inject(LocaleService) public readonly locale: LocaleService,
         @Inject(LayerRef) private readonly layerRef: LayerRef,
         @Inject(DatePickerDayDataProvider) @Optional() private readonly dayDataProvider: DatePickerDayDataProvider) {
         super()

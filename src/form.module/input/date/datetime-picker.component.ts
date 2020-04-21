@@ -52,7 +52,7 @@ export class DatetimePickerComponent implements PickerPopup<Date> {
     public get time(): Time | Date | string { return this._time }
     private _time: Time
 
-    protected get displayDate() {
+    public get displayDate() {
         return (this._date && !isNaN(this._date.getTime()) ? this._date : null) || this._today
     }
 

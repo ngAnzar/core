@@ -75,7 +75,7 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         [attr.tabindex]="vps.menu.opened ? '0' : '-1'",
         [style.width.px]="vps.menu.width",
         [style.transform]="menuTransform",
-        on-transitionend="recalcContentPadding($event)")
+        (transitionend)="_recalcContentPadding()")
 
     .nz-viewport-content.content(
         fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch",
@@ -86,14 +86,14 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
     .overlay(
         [style.display]="overlayDisplay",
         [style.opacity]="overlayOpacity",
-        on-transitionend="updateOverlayVisibility($event)")
+        (transitionend)="_updateOverlayVisibility()")
 
     .nz-vp-rightpanel.rightpanel(
         fxFlex="noshrink",
         [attr.tabindex]="vps.right.opened ? '0' : '-1'",
         [style.width.px]="vps.right.width",
         [style.transform]="rightTransform",
-        on-transitionend="recalcContentPadding($event)")
+        (transitionend)="_recalcContentPadding()")
 
   .critical-message(*ngIf="vps.cmMessage | async as cmMessage")
     div {{ cmMessage.message }}

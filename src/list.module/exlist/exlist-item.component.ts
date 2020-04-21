@@ -83,7 +83,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
         }
     }
     public get selected(): SelectOrigin { return this._selected }
-    private _selected: SelectOrigin = null
+    public _selected: SelectOrigin = null
     public readonly selectedChange: Observable<SelectOrigin> = new EventEmitter<SelectOrigin>();
 
     @HostBinding("attr.focused")

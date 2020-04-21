@@ -188,7 +188,7 @@ export class NumberScrollComponent implements AfterViewInit {
         }
     }
 
-    protected trackNumber(index: number, item: any): any {
+    public _trackNumber(index: number, item: any): any {
         return item.value
     }
 }

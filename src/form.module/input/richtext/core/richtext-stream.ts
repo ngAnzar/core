@@ -1,10 +1,8 @@
-import { Inject, ElementRef } from "@angular/core"
-import { EventManager } from "@angular/platform-browser"
+import { Inject, ElementRef, Injectable } from "@angular/core"
 import { Observable, Subject } from "rxjs"
 
 import { Destructible } from "../../../../util"
 
-import { getParentsUntil } from "../util"
 import { SelectionService, RangeFactory } from "./selection"
 import { RichtextElement, StateQuery, RichtextState } from "./richtext-el"
 
@@ -12,6 +10,7 @@ import { RichtextElement, StateQuery, RichtextState } from "./richtext-el"
 export type CleanupElementFn = (el: HTMLElement) => void
 
 
+@Injectable()
 export class RichtextStream extends Destructible {
     public readonly el: HTMLElement
     public readonly changes: Observable<RichtextStream> = this.destruct.subject(new Subject<RichtextStream>())

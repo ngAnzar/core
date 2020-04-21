@@ -1,4 +1,4 @@
-import { Input, Output, HostBinding, EventEmitter, OnDestroy } from "@angular/core"
+import { Input, Output, HostBinding, EventEmitter, OnDestroy, Component } from "@angular/core"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"

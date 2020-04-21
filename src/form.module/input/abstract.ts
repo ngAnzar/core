@@ -1,4 +1,4 @@
-import { Inject, Optional, Self, SkipSelf, Input, Output, HostBinding, Host, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter } from "@angular/core"
+import { Inject, Optional, Self, Input, Output, HostBinding, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter, Injectable, Component } from "@angular/core"
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -38,6 +38,7 @@ export interface FocusChangeEvent {
 }
 
 
+@Injectable()
 export class InputModel<T> extends AbstractControlDirective {
     public readonly inputChanges = new Subject<T>()
     public readonly renderValueChanges = new Subject<T>()
@@ -137,6 +138,7 @@ export class InputModel<T> extends AbstractControlDirective {
 }
 
 
+@Injectable()
 export class InputModelVA<T> implements ControlValueAccessor {
     constructor(@Inject(Injector) private _injector: Injector) { }
     private _model?: InputModel<T>
@@ -183,6 +185,7 @@ export const INPUT_MODEL: Provider[] = [
 
 
 let UID_COUNTER = 0
+
 
 export abstract class InputComponent<T> implements OnDestroy, OnInit {
     public readonly destruct = new Destruct()
@@ -231,7 +234,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     protected _focus = this.destruct.subject(new Subject<FocusOrigin>())
 
-    public constructor(@Inject(InputModel) protected readonly model: InputModel<T>) {
+    public constructor(@Inject(InputModel) public readonly model: InputModel<T>) {
         this.destruct.subscription(model.renderValueChanges).subscribe((value: T) => {
             if (this._inited) {
                 this._renderValue(value)

@@ -1,4 +1,4 @@
-import { Inject } from "@angular/core"
+import { Inject, Injectable } from "@angular/core"
 import { BreakPointRegistry, ɵMatchMedia as MatchMedia, MediaChange } from "@angular/flex-layout"
 import { Observable, of } from "rxjs"
 import { filter, distinctUntilChanged, switchMap, startWith } from "rxjs/operators"
@@ -9,6 +9,7 @@ export type MQWatch = "xs" | "sm" | "md" | "lg" | "xl"
     | "gt-xs" | "gt-sm" | "gt-md" | "gt-lg" | string
 
 
+@Injectable()
 export class MediaQueryService {
     public constructor(
         @Inject(MatchMedia) protected readonly match: MatchMedia,

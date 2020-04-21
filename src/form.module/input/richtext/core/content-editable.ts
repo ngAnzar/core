@@ -1,4 +1,4 @@
-import { Inject, ElementRef } from "@angular/core"
+import { Inject, ElementRef, Injectable } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 
 import { matchTagName, removeNode } from "../util"
@@ -14,6 +14,7 @@ export class Command {
 }
 
 
+@Injectable()
 export class ContentEditable {
     private readonly el: HTMLElement
     public readonly defaultParagraph: string = "div"
@@ -32,8 +33,8 @@ export class ContentEditable {
         doc.execCommand("defaultParagraphSeparator", false, this.defaultParagraph)
     }
 
-    public exec(command: Command): void;
-    public exec(command: string, arg?: string): void;
+    public exec(command: Command): void
+    public exec(command: string, arg?: string): void
 
     public exec(name: string | Command, arg: string = null): void {
         if (name instanceof Command) {

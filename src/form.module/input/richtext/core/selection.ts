@@ -1,9 +1,10 @@
-import { Inject, ElementRef } from "@angular/core"
+import { Inject, ElementRef, Injectable } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 
-import { getDeepestNode, getParentsUntil, matchTagName, getSiblingInside, findUpwards } from "../util"
+import { getDeepestNode, getSiblingInside, findUpwards } from "../util"
 
 
+@Injectable()
 export class SelectionService {
     private readonly root: HTMLElement
     public constructor(

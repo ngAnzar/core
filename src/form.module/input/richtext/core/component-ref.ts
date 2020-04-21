@@ -1,4 +1,4 @@
-import { ComponentRef } from "@angular/core"
+import { ComponentRef, Injectable } from "@angular/core"
 import { DomPortalOutlet, ComponentPortal } from "@angular/cdk/portal"
 import { Subject } from "rxjs"
 
@@ -15,19 +15,17 @@ export abstract class RichtextComponent {
 }
 
 
+@Injectable()
 export class RichtextComponentRef<T = RichtextComponent> implements IDisposable {
     public readonly component: ComponentRef<T>
     public readonly outlet: DomPortalOutlet
     public readonly portal: ComponentPortal<T>
     public readonly paramsChange = new Subject<RichtextComponentParams>()
 
-
-    public constructor(
-        public readonly el: HTMLElement,
-        public readonly params: RichtextComponentParams,
-        private readonly onParamsChanged: () => void,
-        private readonly onDispose: (ref: RichtextComponentRef<T>) => void) {
-    }
+    public readonly el: HTMLElement
+    public readonly params: RichtextComponentParams
+    private readonly onParamsChanged: () => void
+    private readonly onDispose: (ref: RichtextComponentRef<T>) => void
 
     public updateParams(params: RichtextComponentParams) {
         if (this.paramsChange && !this.paramsChange.closed) {

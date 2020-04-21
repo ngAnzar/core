@@ -34,7 +34,7 @@
 
 div.container(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
   div.spinner(fxFlex="noshrink")
-    nz-progress(type="circle", radius="20", [source]="progress", [color]="spinnerColor")
+    nz-progress(type="circle", radius="20", [source]="_progress", [color]="spinnerColor")
     i.nz-icon.status-icon([style.opacity]="state==='success' ? 1 : 0", [color]="spinnerColor" class=icon("mdi/check-outline", 20) style="margin: -10px 0 0 -10px")
     i.nz-icon.status-icon([style.opacity]="state==='failure' ? 1 : 0", [color]="spinnerColor" class=icon("mdi/close-outline", 20) style="margin: -11px 0 0 -10px")
     span.percent(*ngIf="state==='progress' && percent !== null") {{ percent }}

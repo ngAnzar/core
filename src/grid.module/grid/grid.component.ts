@@ -34,7 +34,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     public readonly destruct = new Destruct(() => {
         this.cdr.detach()
     })
-    protected _rowHeight: number = 52
+    public _rowHeight: number = 52
 
     public get displayEmptyText(): boolean {
         return this._canDisplayEmptyText && this.source.storage.lastIndex === 0

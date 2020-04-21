@@ -72,9 +72,24 @@ export type AutoTrigger = "all" | "query" | null
     providers: INPUT_MODEL
 })
 export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy, OnInit {
-    @ContentChild("selected", { read: TemplateRef, static: true }) @Input() public readonly selectedTpl: SelectTemplateRef<T>
-    @ContentChild("item", { read: TemplateRef, static: true }) @Input() public readonly itemTpl: SelectTemplateRef<T>
-    @ContentChildren(ListActionComponent) @Input() public readonly actions: QueryList<ListActionComponent>
+    @ContentChild("selected", { read: TemplateRef, static: true }) public _selectedTpl: SelectTemplateRef<T>
+    @ContentChild("item", { read: TemplateRef, static: true }) public _itemTpl: SelectTemplateRef<T>
+    @ContentChildren(ListActionComponent) public _actions: QueryList<ListActionComponent>
+
+    @Input()
+    public set selectedTpl(val: SelectTemplateRef<T>) {
+        this._selectedTpl = val
+    }
+
+    @Input()
+    public set itemTpl(val: SelectTemplateRef<T>) {
+        this._itemTpl = val
+    }
+
+    @Input()
+    public set actions(val: QueryList<ListActionComponent>) {
+        this._actions = val
+    }
 
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: ElementRef, static: false })
@@ -585,7 +600,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 { provide: SelectionModel, useValue: this.selection },
                 { provide: DataSourceDirective, useValue: this.source },
                 { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
-                { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions },
+                { provide: AUTOCOMPLETE_ACTIONS, useValue: this._actions },
                 {
                     provide: AUTOCOMPLETE_ITEM_FACTORY,
                     useValue: this.freeSelect ? this._createNewValue.bind(this) : null

@@ -1,4 +1,4 @@
-import { Component, Inject, InjectionToken, Optional } from "@angular/core"
+import { Component, Inject, InjectionToken, Optional, Injectable } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { Observable, Subject, forkJoin, EMPTY, merge, zip, of } from "rxjs"
 import { take, map, debounceTime, distinctUntilChanged, shareReplay, switchMap, filter, tap, mapTo, switchMapTo, pairwise, startWith, share, catchError } from "rxjs/operators"
@@ -79,6 +79,7 @@ interface AcTrigger {
 }
 
 
+@Injectable()
 export class AutocompleteManager extends Destructible {
     private readonly _trigger$: Subject<AcTrigger> = this.destruct.subject(new Subject())
 

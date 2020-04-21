@@ -1,4 +1,4 @@
-import { Directive, forwardRef, Inject, Input, ViewContainerRef, EmbeddedViewRef, OnDestroy, NgZone } from "@angular/core"
+import { Directive, forwardRef, Inject, Input, ViewContainerRef, EmbeddedViewRef, OnDestroy, NgZone, Injectable } from "@angular/core"
 import { Subject } from "rxjs"
 
 import { ScrollerService, Viewport } from "./scroller/scroller.service"
@@ -233,10 +233,10 @@ const ResizeObserver: any = (window as any).ResizeObserver
 @Directive({
     selector: "[nzVirtualFor]:not([fixedItemHeight])",
     providers: [
-        { provide: VirtualForVisibleItems, useExisting: forwardRef(() => VirtualForVaryingItemsRO) }
+        { provide: VirtualForVisibleItems, useExisting: forwardRef(() => VirtualForVaryingItems) }
     ]
 })
-class VirtualForVaryingItemsRO extends VirtualForVisibleItems implements OnDestroy {
+export class VirtualForVaryingItems extends VirtualForVisibleItems implements OnDestroy {
     @Input()
     public extraHeight: number = 0
 
@@ -440,4 +440,7 @@ function getViewEl(view: EmbeddedViewRef<VirtualForContext<any>>): HTMLElement |
 
 // TODO: try IntersectionObserver
 
-export const VirtualForVaryingItems = ResizeObserver ? VirtualForVaryingItemsRO : VirtualForVaryingItemsPlain
+// export const VirtualForVaryingItems = ResizeObserver ? VirtualForVaryingItemsRO : VirtualForVaryingItemsPlain
+
+// TODO: refactor, AOT is not happy with above syntaxt
+// export const VirtualForVaryingItems = VirtualForVaryingItemsRO

@@ -1,4 +1,4 @@
-import { NgZone, Inject } from "@angular/core"
+import { NgZone, Inject, Injectable } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 import { ESCAPE } from "@angular/cdk/keycodes"
 
@@ -34,6 +34,7 @@ export type KeyWatch = {
 export type KeyWatchDef = KeyWatch | KeyWatch[] | Key | Key[]
 
 
+@Injectable()
 export class KeyEventService {
     public constructor(
         @Inject(NgZone) protected readonly zone: NgZone,
@@ -41,8 +42,8 @@ export class KeyEventService {
 
     }
 
-    public newWatcher(el: Node, def: KeyWatchDef, cb: (event: KeyboardEvent) => boolean): KeyWatcher<KeyboardEvent>;
-    public newWatcher(def: KeyWatchDef, cb: (event: KeyboardEvent) => boolean): KeyWatcher<KeyboardEvent>;
+    public newWatcher(el: Node, def: KeyWatchDef, cb: (event: KeyboardEvent) => boolean): KeyWatcher<KeyboardEvent>
+    public newWatcher(def: KeyWatchDef, cb: (event: KeyboardEvent) => boolean): KeyWatcher<KeyboardEvent>
 
     public newWatcher(arg1: any, arg2: any, arg3?: any): any {
         const cb = typeof arg3 === "function" ? arg3 : arg2

@@ -28,7 +28,7 @@ export class DialogComponent implements AfterViewChecked {
         @Inject(DragService) protected drag: DragService,
         @Inject(LAYER_TITLE) @Optional() public title: string,
         @Inject(LAYER_BUTTONS) @Optional() public buttons: ButtonList,
-        @Inject(LAYER_CONTENT) @Optional() protected content: Portal<any>,
+        @Inject(LAYER_CONTENT) @Optional() public _content: Portal<any>,
         @Inject(LAYER_OPTIONS) @Optional() protected options: DialogOptions) {
         this.options = this.options || {}
         this.drag.draggable = layerRef.container
@@ -41,7 +41,7 @@ export class DialogComponent implements AfterViewChecked {
     }
 
     public close() {
-        (this.content as ComponentPortal<DialogComponent>).component
+        (this._content as ComponentPortal<DialogComponent>).component
         return this.layerRef.close()
     }
 

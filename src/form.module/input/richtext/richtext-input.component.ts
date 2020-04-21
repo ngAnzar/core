@@ -34,7 +34,7 @@ export class RichtextInputComponent extends InputComponent<string> {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
-        this.destruct.subscription(model.focusChanges).subscribe(this._handleFocus.bind(this))
+        this.destruct.subscription(model.focusChanges).subscribe(this.handleFocus.bind(this))
 
         // XXX: Atom heck, content editable, always try to scroll scroller element, when overflow...
         zone.runOutsideAngular(() => {
@@ -58,7 +58,7 @@ export class RichtextInputComponent extends InputComponent<string> {
         this.input.value = normalizedValue
     }
 
-    protected _handleInput(stream: RichtextStream) {
+    public _handleInput(stream: RichtextStream) {
         let value = stream.contentTpl
         if (!value || value.length === 0) {
             value = null
@@ -66,7 +66,7 @@ export class RichtextInputComponent extends InputComponent<string> {
         this.model.emitValue(value)
     }
 
-    protected _handleFocus(event: FocusChangeEvent) {
+    protected handleFocus(event: FocusChangeEvent) {
         const focused = event.current
 
         if (focused) {
@@ -79,7 +79,7 @@ export class RichtextInputComponent extends InputComponent<string> {
         }
     }
 
-    protected _onCursorMove() {
+    public _onCursorMove() {
         if (this.selection.current.type === "Range" || this.menu.canShowByState()) {
             if (!this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
                 this.menu.show()

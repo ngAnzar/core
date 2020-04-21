@@ -30,7 +30,7 @@ export class FormFieldComponent implements AfterContentInit, OnDestroy {
     public readonly destruct = new Destruct()
     public readonly showUnderline: boolean
 
-    @ContentChild(InputModel, { static: true }) protected _inputModel: InputModel<any>
+    @ContentChild(InputModel, { static: true }) public _inputModel: InputModel<any>
     @ContentChildren(ErrorMessageDirective) public messages: QueryList<ErrorMessageDirective>
 
     public constructor(
