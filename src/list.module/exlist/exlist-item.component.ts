@@ -105,7 +105,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
     public constructor(
         @Inject(NgZone) protected readonly zone: NgZone,
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
-        @Inject(ExlistComponent) protected readonly list: ExlistComponent,
+        @Inject(ExlistComponent) public readonly list: ExlistComponent,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(ScrollerService) protected readonly scroller: ScrollerService,
         @Inject(EventManager) protected readonly eventManager: EventManager,

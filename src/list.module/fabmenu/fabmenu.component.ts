@@ -9,8 +9,8 @@ import { LayerService, LayerRef, DropdownLayer } from "../../layer.module"
     templateUrl: "./fabmenu.component.pug"
 })
 export class FabmenuComponent implements OnDestroy {
-    @ContentChildren(MenuItemDirective) protected buttons: QueryList<MenuItemDirective>
-    @ViewChild("layer", { read: TemplateRef, static: true }) protected readonly layerTpl: TemplateRef<any>
+    @ContentChildren(MenuItemDirective) public readonly buttons: QueryList<MenuItemDirective>
+    @ViewChild("layer", { read: TemplateRef, static: true }) public readonly layerTpl: TemplateRef<any>
 
     protected layerRef: LayerRef
 
@@ -41,7 +41,7 @@ export class FabmenuComponent implements OnDestroy {
         }
     }
 
-    protected hide() {
+    public hide() {
         if (this.layerRef && this.layerRef.isVisible) {
             this.layerRef.hide()
             delete this.layerRef

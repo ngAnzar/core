@@ -99,7 +99,7 @@ export class NavbarSearchComponent implements AfterViewInit {
     @Output("selectionChange") public readonly onSelect: Observable<any> = new EventEmitter()
 
     public constructor(
-        @Inject(ViewportService) protected readonly vps: ViewportService,
+        @Inject(ViewportService) public readonly vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<any>,
         // @Inject(PointerEventService) pointerEvents: PointerEventService,

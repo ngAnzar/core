@@ -651,7 +651,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    protected _onInput(event: Event): void {
+    public _onInput(event: Event): void {
         if (this.readonly) {
             return
         }
@@ -710,7 +710,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     @HostListener("tap", ["$event"])
-    protected _onTriggerClick(event: MouseEvent) {
+    public _onTriggerClick(event: MouseEvent) {
         if (event.defaultPrevented) {
             return
         }
@@ -733,7 +733,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    protected _clearValue(event: Event) {
+    public _clearValue(event: Event) {
         if (event.defaultPrevented) {
             return
         }

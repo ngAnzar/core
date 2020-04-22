@@ -29,7 +29,7 @@ export class DialogComponent implements AfterViewChecked {
         @Inject(LAYER_TITLE) @Optional() public title: string,
         @Inject(LAYER_BUTTONS) @Optional() public buttons: ButtonList,
         @Inject(LAYER_CONTENT) @Optional() public _content: Portal<any>,
-        @Inject(LAYER_OPTIONS) @Optional() protected options: DialogOptions) {
+        @Inject(LAYER_OPTIONS) @Optional() public readonly options: DialogOptions) {
         this.options = this.options || {}
         this.drag.draggable = layerRef.container
 

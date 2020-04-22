@@ -145,4 +145,8 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
             }
         }
     }
+
+    public hide() {
+        this.layerRef.hide()
+    }
 }

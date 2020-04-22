@@ -22,7 +22,7 @@ export class Destruct {
         return o.pipe(takeUntil(this.on))
     }
 
-    public subject<T>(s: Subject<T>): Subject<T> {
+    public subject<T extends Subject<any>>(s: T): T {
         this.on.subscribe(s.complete.bind(s))
         return s
     }

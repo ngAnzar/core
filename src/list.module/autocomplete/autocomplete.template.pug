@@ -50,7 +50,7 @@
           [fixedItemHeight]="48",
           [itemsPerRequest]="42",
           (rendered)="onItemsRendered($event)")
-        .nz-list-item.item([style.gridRow]="offset(index)", [selectable]="virtual", [selectionIndex]="offset(index)")
+        .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)")
           ng-template(
             [ngTemplateOutlet]="itemTpl",
             [ngTemplateOutletContext]="{$implicit:virtual}")
@@ -58,9 +58,9 @@
       ng-template([ngIf]="actionsByPosition.last")
         ng-template(ngFor, [ngForOf]="actionsByPosition.last", let-action, let-index="index")
           .nz-list-item.item.action(
-              [style.gridRow]="offset(index) + source.storage.lastIndex",
+              [style.gridRow]="_offset(index) + source.storage.lastIndex",
               [selectableAction]="action.model",
-              [selectionIndex]="offset(index) + source.storage.lastIndex",
+              [selectionIndex]="_offset(index) + source.storage.lastIndex",
               color="light-accent")
             ng-template([ngTemplateOutlet]="action.tpl")
 

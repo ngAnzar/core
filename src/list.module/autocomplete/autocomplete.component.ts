@@ -48,7 +48,7 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
         return this.source.storage && this.source.storage.isEmpty && !this.source.storage.isBusy
     }
 
-    protected actionsByPosition: { [key: string]: ListActionComponent[] } = {}
+    public actionsByPosition: { [key: string]: ListActionComponent[] } = {}
 
     public constructor(
         @Inject(DataSourceDirective) public readonly source: DataSourceDirective<T>,
@@ -98,7 +98,7 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
         this.layerRef.behavior.levitate.reset()
     }
 
-    protected offset(index: number): number {
+    public _offset(index: number): number {
         return index + 1
             + (this.actionsByPosition.first ? this.actionsByPosition.first.length : 0)
     }

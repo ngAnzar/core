@@ -49,5 +49,5 @@ div.container(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLay
       fxFlex="noshrink")
     i.nz-icon(class=icon("mdi/information-outline"))
 
-  button.nz-button.hidebutton(*ngIf="state === 'failure'", (tap)="layerRef.hide()", color="light-common", variant="icon", fxFlex="noshrink")
+  button.nz-button.hidebutton(*ngIf="state === 'failure'", (tap)="hide()", color="light-common", variant="icon", fxFlex="noshrink")
     i.nz-icon(class=icon("mdi/close"))

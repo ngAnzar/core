@@ -126,7 +126,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
         this.destruct.run()
     }
 
-    protected _startChildAnim(event: any, idx: number) {
+    public _startChildAnim(event: any, idx: number) {
         this._pendingIndex = -1
         this._viewReady = false
 
@@ -145,7 +145,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
         }
     }
 
-    protected _doneChildAnim(event: any, idx: number) {
+    public _doneChildAnim(event: any, idx: number) {
         if (this._dynamicHeight) {
             const el = event.element as HTMLElement
 

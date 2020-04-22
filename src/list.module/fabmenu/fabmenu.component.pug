@@ -1,6 +1,6 @@
 ng-content(select="[nzFabmenuTrigger]")
 
 ng-template(#layer)
-  div.nz-fab-popup(fxLayout="column inline", fxLayoutAlign="start center", fxLayoutGap="16px", on-tap="hide()")
+  div.nz-fab-popup(fxLayout="column inline", fxLayoutAlign="start center", fxLayoutGap="16px", (tap)="hide()")
     ng-template(ngFor, [ngForOf]="buttons", let-btn, let-i="index")
       ng-template([ngTemplateOutlet]="btn.tpl")

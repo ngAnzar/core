@@ -1,5 +1,3 @@
-/// <reference path="./custom-typings.d.ts" />
-
 import { ApplicationRef, enableProdMode, ViewEncapsulation } from "@angular/core"
 import { enableDebugTools, platformBrowser } from "@angular/platform-browser"
 import { platformBrowserDynamic } from "@angular/platform-browser-dynamic"
