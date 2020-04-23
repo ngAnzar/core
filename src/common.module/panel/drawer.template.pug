@@ -12,15 +12,15 @@
     visibility: hidden
     transition: opacity 250ms
 
-    &.visible
-      opacity: 0.5
-      visibility: visible
-      display: block
+  .visible
+    opacity: 0.5
+    visibility: visible
+    display: block
 
 
 //- .drawer-content(#content)
 ng-content(select=".nz-content")
 
-.drawer-overlay(*ngIf="overlayed" bind-ngClass="{visible:hasOpenedPanel}" on-tap="hideOpenedPanel()")
+.drawer-overlay(*ngIf="overlayed", [ngClass]=`{"${style('visible')}": hasOpenedPanel}`, (tap)="hideOpenedPanel()")
 
 ng-content(select=".nz-panel")

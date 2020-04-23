@@ -1,3 +1,4 @@
+import { Destruct, Rect } from "@anzar/core"
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FlexLayoutModule, LAYOUT_CONFIG } from "@angular/flex-layout"

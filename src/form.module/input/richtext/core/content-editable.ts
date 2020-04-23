@@ -88,7 +88,7 @@ export class ContentEditable {
 }
 
 
-export interface ContentEditable {
+export declare interface ContentEditable {
     bold(): void
     italic(): void
     underline(): void
@@ -102,7 +102,19 @@ export interface ContentEditable {
     formatBlock(text: string): void
 }
 
-const COMMANDS = ["bold", "italic", "underline", "strikeThrough", "delete", "removeFormat", "backColor", "hiliteColor", "insertHTML", "insertText", "formatBlock"]
+const COMMANDS = [
+    "bold",
+    "italic",
+    "underline",
+    "strikeThrough",
+    "delete",
+    "removeFormat",
+    "backColor",
+    "hiliteColor",
+    "insertHTML",
+    "insertText",
+    "formatBlock"
+]
 
 for (let cmd of COMMANDS) {
     (ContentEditable.prototype as any)[cmd] = function (arg: any) {
