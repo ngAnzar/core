@@ -1,4 +1,4 @@
-import { Inject, InjectFlags, Optional, Injector, StaticProvider, TemplateRef, ViewContainerRef, Injectable } from "@angular/core"
+import { Inject, InjectFlags, Optional, SkipSelf, Injector, StaticProvider, TemplateRef, ViewContainerRef, Injectable } from "@angular/core"
 import { AnimationBuilder } from "@angular/animations"
 import { ComponentType } from "@angular/cdk/portal"
 import { FocusTrapFactory } from "@angular/cdk/a11y"
@@ -21,10 +21,10 @@ import type { LevitateOptions, BackdropOptions } from "./layer-options"
 @Injectable()
 export class LayerService {
     protected backdrops: { [key: string]: LayerBackdropRef } = {}
-    public readonly parent: LayerService
+    // public readonly parent: LayerService
 
     public constructor(
-        // @Inject(LayerService) @SkipSelf() @Optional() ,
+        @Inject(LayerService) @SkipSelf() @Optional() public readonly parent: LayerService,
         @Inject(LayerContainer) public readonly container: LayerContainer,
         @Inject(Injector) protected readonly injector: Injector,
         @Inject(LayerRef) @Optional() protected readonly layer: LayerRef,
@@ -33,7 +33,7 @@ export class LayerService {
         @Inject(MaskService) protected readonly maskSvc: MaskService,
         @Inject(ShortcutService) protected readonly shortcutSvc: ShortcutService,
         @Inject(FocusTrapFactory) protected readonly focusTrap: FocusTrapFactory) {
-        this.parent = injector.get(LayerService, null, InjectFlags.Optional | InjectFlags.SkipSelf)
+        // this.parent = injector.get(LayerService, null, InjectFlags.Optional | InjectFlags.SkipSelf)
     }
 
     public createFromTemplate<T>(tpl: TemplateRef<T>, vcr: ViewContainerRef, behavior: LayerBehavior, opener?: LayerRef, context?: T): TemplateLayerRef<T> {
@@ -66,13 +66,11 @@ export class LayerService {
                 provide: LayerService,
                 deps: [],
                 useFactory: () => {
-                    const layerSvc = new LayerService(this.container, baseInjector, ref as any, this.animation, this.levitateSvc, this.maskSvc, this.shortcutSvc, this.focusTrap);
-                    (layerSvc as any).parent = this
-                    return layerSvc
+                    return new LayerService(this, this.container, baseInjector, ref as any, this.animation, this.levitateSvc, this.maskSvc, this.shortcutSvc, this.focusTrap)
                 }
             },
             ...backdrop,
-            ...provides
+            ...(provides || [])
         ], baseInjector);
 
         (behavior as any).animationBuilder = this.animation;
@@ -119,6 +117,3 @@ export class LayerService {
         return backdrop
     }
 }
-
-
-console.log({ LayerService })

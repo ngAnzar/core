@@ -92,8 +92,10 @@ export class InputModel<T> extends AbstractControlDirective {
 
     public set readonly(val: boolean) {
         if (this._readonly !== val) {
-            this._readonly = val;
-            (this.control.statusChanges as EventEmitter<string>).next("readonly")
+            this._readonly = val
+            if (this.control) {
+                (this.control.statusChanges as EventEmitter<string>).next("readonly")
+            }
         }
     }
     public get readonly(): boolean { return this._readonly }
@@ -207,7 +209,13 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     public tabIndex: number = 0
 
     @Input("disableInput")
-    public set disabled(val: boolean) { this.model.disabled = val }
+    public set disabled(val: boolean) {
+        if (this._inited) {
+            this.model.disabled = val
+        } else {
+            this._pendingDisabled = val
+        }
+    }
     public get disabled(): boolean { return this.model.disabled }
 
     @HostBinding("attr.disabled")
@@ -221,7 +229,14 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     private _uid: string
 
     @Input()
-    public set readonly(val: boolean) { this.model.readonly = coerceBooleanProperty(val) }
+    public set readonly(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._inited) {
+            this.model.readonly = val
+        } else {
+            this._pendingReadonly = val
+        }
+    }
     public get readonly(): boolean { return this.model.disabled || this.model.readonly }
 
     @HostBinding("attr.readonly")
@@ -233,6 +248,8 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     protected _inited = false
 
     protected _focus = this.destruct.subject(new Subject<FocusOrigin>())
+    private _pendingDisabled: boolean
+    private _pendingReadonly: boolean
 
     public constructor(@Inject(InputModel) public readonly model: InputModel<T>) {
         this.destruct.subscription(model.renderValueChanges).subscribe((value: T) => {
@@ -250,6 +267,15 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     public ngOnInit() {
         this._inited = true
+
+        if (this._pendingDisabled != null) {
+            this.disabled = this._pendingDisabled
+        }
+
+        if (this._pendingReadonly != null) {
+            this.readonly = this._pendingReadonly
+        }
+
         this._renderValue(this.model.value)
     }
 

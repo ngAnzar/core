@@ -1,4 +1,4 @@
-import { OnDestroy, EventEmitter, Input, Output, ContentChildren, QueryList, AfterContentInit, InjectionToken, ElementRef } from "@angular/core"
+import { OnDestroy, EventEmitter, Input, Output, InjectionToken, ElementRef, Injectable } from "@angular/core"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable, Subject } from "rxjs"
 
@@ -205,6 +205,7 @@ export interface FocusingEvent<T extends Model> {
 }
 
 
+@Injectable()
 export abstract class SelectionModel<T extends Model = Model> implements OnDestroy, ISelectionModel {
     public abstract readonly type: string
 

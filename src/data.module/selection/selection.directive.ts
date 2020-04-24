@@ -71,19 +71,18 @@ const SELECTION = Symbol("selection")
 
 
 @Directive({
-    selector: "[selection]:not([selection=single]):not([selection=multi]):not([selection=none])",
+    selector: "[selectionModel]",
     exportAs: "selection",
     providers: [
         { provide: SelectionModel, useExisting: PropagateSelection }
     ]
 })
 export class PropagateSelection<T extends Model = Model> implements ISelectionModel<T> {
-    @Input("selection")
+    @Input("selectionModel")
     public set selection(val: ISelectionModel<T>) {
         this[SELECTION] = val
     }
     private [SELECTION]: ISelectionModel<T>
-
 
     public get items(): T[] { return this[SELECTION].items }
     public set items(val: T[]) { this[SELECTION].items = val }

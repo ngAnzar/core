@@ -19,7 +19,7 @@
   ng-content(select=".nz-columns", ngProjectAs=".nz-columns")
 
 div.nz-scroller.body
-  .nz-list.rows(bind-style.gridTemplate="gtRows", scrollable, style="padding:24px")
+  .nz-list.rows([style.gridTemplate]="gtRows", scrollable, style="padding:24px")
     ng-template(nzVirtualFor, [nzVirtualForOf]="source" let-virtual let-row="index" bind-fixedItemHeight="_rowHeight")
       .nz-data-grid-row(
         [style.gridTemplate]="gtRow",
