@@ -41,7 +41,6 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     }
     protected _canDisplayEmptyText: boolean
 
-    // @Inject(DataSource) @Host() public readonly source: DataSource<any>
     public constructor(
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
@@ -79,10 +78,6 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         this.destruct.subscription(this.columns.layoutChanged).subscribe(this._update)
         this.updateGridTemplate()
     }
-
-    // public ngDoCheck() {
-    //     this.updateGridTemplate()
-    // }
 
     protected updateGridTemplate() {
         if (!this.columns) {

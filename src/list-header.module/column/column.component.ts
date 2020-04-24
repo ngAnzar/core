@@ -1,11 +1,12 @@
 import {
     Component, ContentChild, Input, Inject, ElementRef, TemplateRef, OnDestroy,
-    HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding, Output, EventEmitter, Optional
+    HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ViewContainerRef, AfterContentInit, HostBinding, Output, EventEmitter, Optional,
+    OnInit
 } from "@angular/core"
 import { Subscription } from "rxjs"
-import { startWith } from "rxjs/operators"
+import { startWith, map } from "rxjs/operators"
 
-import { Destruct } from "../../util"
+import { Destruct, getPath } from "../../util"
 import { LabelDirective } from "../../common.module"
 import { Model, DataSourceDirective } from "../../data.module"
 import { LayerFactoryDirective, DropdownLayer, LayerService } from "../../layer.module"
@@ -37,7 +38,7 @@ function parseNumber(val: any): NumberWithUnit {
     templateUrl: "./column.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ColumnComponent<T extends Model = Model> implements AfterContentInit, OnDestroy {
+export class ColumnComponent<T extends Model = Model> implements OnInit, AfterContentInit, OnDestroy {
     @ContentChild(LabelDirective, { read: ElementRef, static: true }) public readonly label: ElementRef<HTMLElement>
     @ContentChild(ColumnFilter, { static: true }) public readonly filter: ColumnFilter
     @ContentChild("content", { static: true }) public readonly content: TemplateRef<any>
@@ -58,19 +59,23 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     @Input()
     @HostBinding("attr.sortable")
     public set sortable(val: string) {
-        val = this.dataSource ? val : null
+        if (!this.dataSource || !this.dataSource.storage) {
+            this._pendingSortable = val
+            return
+        }
+
         if (this._sortable !== val) {
             this._sortable = val
 
             if (val) {
                 if (!this._sorterChangeSub) {
                     this._sorterChangeSub = this.dataSource.sorterChanges
-                        .pipe(startWith({ value: this.dataSource.sort }))
-                        .subscribe(changes => {
-                            let sorter = changes.value as any
-                            if (sorter && sorter[this.sortable] != null) {
-                                this.sortDirection = sorter[this.sortable]
-                            }
+                        .pipe(
+                            startWith({ value: this.dataSource.sort }),
+                            map(v => this.dataSource.sort)
+                        )
+                        .subscribe(sort => {
+                            this.sortDirection = sort ? getPath(sort, this._sortable) : null
                         })
                 }
             } else if (this._sorterChangeSub) {
@@ -84,6 +89,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
     public get sortable(): string { return this._sortable }
     private _sortable: string
     private _sorterChangeSub: Subscription
+    private _pendingSortable: string
 
     public set sortDirection(val: "asc" | "desc") {
         if (this._sortDirection !== val) {
@@ -97,7 +103,7 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
                     this.dataSource.sort = sort
                 }
             }
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get sortDirection(): "asc" | "desc" { return this._sortDirection }
@@ -124,6 +130,13 @@ export class ColumnComponent<T extends Model = Model> implements AfterContentIni
         @Inject(ViewContainerRef) vcr: ViewContainerRef,
         @Inject(DataSourceDirective) @Optional() protected readonly dataSource: DataSourceDirective) {
         this.layerFilter = LayerFactoryDirective.create("top left", "bottom left", layerSvc, vcr, el)
+    }
+
+    public ngOnInit() {
+        if (this._pendingSortable) {
+            this.sortable = this._pendingSortable
+            delete this._pendingSortable
+        }
     }
 
     public showFilter(event: Event) {

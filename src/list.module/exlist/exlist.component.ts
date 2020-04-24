@@ -65,7 +65,7 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
     public set isBusy(val: boolean) {
         if (this._isBusy !== val) {
             this._isBusy = val
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get isBusy(): boolean { return this._isBusy }

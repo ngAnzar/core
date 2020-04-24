@@ -9,4 +9,4 @@ ng-content(select=".nz-columns")
 
 div.filter(*ngIf="filterSvc && filterSvc.filters.length", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
   ng-template(ngFor, [ngForOf]="filterSvc.filters", let-editor)
-    ng-template([ngTemplateOutlet]="editor.chip", [ngTemplateOutletContext]="{$implicit:editor}")
+    ng-container([ngTemplateOutlet]="editor.chip", [ngTemplateOutletContext]="{$implicit:editor}")

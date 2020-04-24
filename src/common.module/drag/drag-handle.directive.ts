@@ -25,8 +25,11 @@ export class DragHandleDirective implements OnDestroy {
         service.handle = el.nativeElement
 
         this.destruct.subscription(service.dragging).subscribe(event => {
-            (this as any).isDragging = event.type === "drag"
-            cdr.detectChanges()
+            const isDragging = event.type === "drag"
+            if (this.isDragging !== isDragging) {
+                (this as any).isDragging = isDragging
+                cdr.detectChanges()
+            }
         })
     }
 

@@ -70,7 +70,7 @@ export { IAutocompleteModel, Match } from "./input/select/select.component"
 import { TextFieldComponent, TextareaComponent } from "./input/text/input.component"
 import { InputMaskDirective } from "./input/input-mask.directive"
 
-export { InputComponent, INPUT_MODEL, InputModel, InputGroupModel, FocusChangeEvent } from "./input/abstract"
+export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGroupModel, FocusChangeEvent, inputValueComparator } from "./input/abstract"
 
 
 @NgModule({

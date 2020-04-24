@@ -65,9 +65,9 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
   ng-template([ngIf]="!editable || selection.type !== 'single'")
     ng-template(ngFor, [ngForOf]="selection.items" let-item let-first="first" let-last="last")
       ng-template([ngIf]="item.isListAction", [ngIfElse]="normalModel")
-        ng-template([ngTemplateOutlet]="item.action.tpl")
+        ng-container([ngTemplateOutlet]="item.action.tpl")
       ng-template(#normalModel)
-        ng-template([ngTemplateOutlet]="selectedTpl", [ngTemplateOutletContext]="{$implicit:item,first:first,last:last}")
+        ng-container([ngTemplateOutlet]="selectedTpl", [ngTemplateOutletContext]="{$implicit:item,first:first,last:last}")
   input.text-input(
     *ngIf="editable",
     #input,
@@ -91,7 +91,7 @@ ng-template(#default_selected_single let-item)
 
 ng-template(#default_selected_multi let-item)
   span.nz-chip.chip-item([selectable]="item", [selection]="selection", [removable]="!readonly")
-    ng-template([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit: item, chip: true}")
+    ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit: item, chip: true}")
 
 ng-template(#default_item let-item)
   span.noselect {{ getDisplayValue(item) }}

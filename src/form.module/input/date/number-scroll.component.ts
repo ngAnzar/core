@@ -131,7 +131,7 @@ export class NumberScrollComponent implements AfterViewInit {
 
             this.numbers = this.generator.generate(val)
             this.centerIndex = this.numbers.findIndex(f => f.value === val)
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
             const el = this.strip.nativeElement
             el.style.transform = `translateY(-${(this.centerIndex - 1) * 36}px)`
         }

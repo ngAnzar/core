@@ -1,7 +1,7 @@
-import { Observable, of, Subject } from "rxjs"
+import { Observable, of } from "rxjs"
 import { map } from "rxjs/operators"
 
-import { NzRange } from "../util"
+import { NzRange, getPath } from "../util"
 import { DataSource, Filter, FilterValue, Filter_Exp, Sorter } from "./data-source"
 import { Model, PrimaryKey, ModelClass, RawData } from "./model"
 import { Items } from "./collection"
@@ -210,18 +210,4 @@ export class StaticSource<T extends Model> extends DataSource<T> {
             this.invalidate()
         }
     }
-}
-
-
-function getPath(obj: { [key: string]: any }, path: string): any {
-    let parts = path.split(/\./g)
-    let result = obj
-    for (const part of parts) {
-        if (result) {
-            result = result[part]
-        } else {
-            break
-        }
-    }
-    return result
 }

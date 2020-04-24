@@ -6,4 +6,4 @@ ng-template(ngFor, [ngForOf]="children", let-child, let-i="index")
       [@childSwitch]="childSwitch[i]",
       (@childSwitch.start)="_startChildAnim($event, i)",
       (@childSwitch.done)="_doneChildAnim($event, i)")
-      ng-template([ngTemplateOutlet]="child.tpl")
+      ng-container([ngTemplateOutlet]="child.tpl")

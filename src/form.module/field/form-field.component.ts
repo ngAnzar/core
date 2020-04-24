@@ -15,13 +15,7 @@ import { ErrorMessageDirective } from "../error/error-message.directive"
     templateUrl: "./form-field.template.pug",
     host: {
         "[class.nz-focused]": "_inputModel.focused",
-        // "[class.ng-untouched]": "_input.untouched",
-        // "[class.ng-touched]": "_input.touched",
-        // "[class.ng-pristine]": "_input.pristine",
-        // "[class.ng-dirty]": "_input.dirty",
-        // "[class.ng-valid]": "_input.valid",
         "[class.ng-invalid]": "_inputModel.invalid",
-        // "[class.ng-pending]": "_input.pending"
         "[attr.disabled]": "_inputModel.disabled ? '' : null"
     },
     changeDetection: ChangeDetectionStrategy.OnPush

@@ -11,7 +11,7 @@ import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/key
 import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY, merge } from "rxjs"
 import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError, startWith, takeUntil } from "rxjs/operators"
 
-import { NzRange, __zone_symbol__ } from "../../../util"
+import { NzRange, __zone_symbol__, getPath, setPath } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
 import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
 import { LayerService, DropdownLayer, LayerFactoryDirective, ComponentLayerRef } from "../../../layer.module"
@@ -76,20 +76,32 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ContentChild("item", { read: TemplateRef, static: true }) public _itemTpl: SelectTemplateRef<T>
     @ContentChildren(ListActionComponent) public _actions: QueryList<ListActionComponent>
 
+    @ViewChild("default_selected_single", { read: TemplateRef, static: true }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
+    @ViewChild("default_selected_multi", { read: TemplateRef, static: true }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
+    @ViewChild("default_item", { read: TemplateRef, static: true }) protected readonly defaultItemTpl: SelectTemplateRef<T>
+    @ViewChild("dropdown", { read: TemplateRef, static: true }) protected readonly dropdownTpl: SelectTemplateRef<T>
+
     @Input()
     public set selectedTpl(val: SelectTemplateRef<T>) {
         this._selectedTpl = val
+    }
+    public get selectedTpl() {
+        if (this._selectedTpl) {
+            return this._selectedTpl
+        } else if (this.selection.type === "multi") {
+            return this.defaultSelectedMultiTpl
+        } else {
+            return this.defaultSelectedSingleTpl
+        }
     }
 
     @Input()
     public set itemTpl(val: SelectTemplateRef<T>) {
         this._itemTpl = val
     }
+    public get itemTpl() { return this._itemTpl || this.defaultItemTpl }
 
-    @Input()
-    public set actions(val: QueryList<ListActionComponent>) {
-        this._actions = val
-    }
+    @Input() public actions: QueryList<ListActionComponent>
 
     // @ViewChild("input", { read: ElementRef }) protected readonly input: ElementRef<HTMLInputElement>
     @ViewChild("input", { read: ElementRef, static: false })
@@ -106,10 +118,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
     protected _input: ElementRef<HTMLInputElement>
 
-    @ViewChild("default_selected_single", { read: TemplateRef, static: true }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
-    @ViewChild("default_selected_multi", { read: TemplateRef, static: true }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
-    @ViewChild("default_item", { read: TemplateRef, static: true }) protected readonly defaultItemTpl: SelectTemplateRef<T>
-    @ViewChild("dropdown", { read: TemplateRef, static: true }) protected readonly dropdownTpl: SelectTemplateRef<T>
+
 
     public displayField: string
     public queryField: string
@@ -123,7 +132,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             if (val && this.input && this.input.nativeElement) {
                 this.model.focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
             }
-            this._detectChanges();
+            this.cdr.markForCheck();
             (this.openedChanges as EventEmitter<boolean>).emit(val)
         }
     }
@@ -138,7 +147,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._editable !== val) {
             this._editable = val
-            this._detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get editable(): boolean { return this._editable && !this.readonly }
@@ -150,7 +159,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._freeSelect !== val) {
             this._freeSelect = val
-            this._detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get freeSelect(): boolean { return !this.disabled && this._freeSelect }
@@ -177,7 +186,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._hideTrigger !== val) {
             this._hideTrigger = val
-            this._detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get hideTrigger(): boolean { return this.readonly || this._hideTrigger }
@@ -188,7 +197,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         val = coerceBooleanProperty(val)
         if (this._autoTrigger !== val) {
             this._autoTrigger = val
-            this._detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get autoTrigger(): boolean { return !this.readonly || this._autoTrigger }
@@ -197,7 +206,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public set inputState(val: InputState) {
         if (this._inputState !== val) {
             this._inputState = val
-            this._detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get inputState() { return this._inputState }
@@ -333,7 +342,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 }
             }
 
-            let vals = this.valueField
+            let vals: any = this.valueField
                 ? selected.map(s => getPath(s, this.valueField))
                 : selected
 
@@ -345,7 +354,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
             this._resetTextInput()
             if (!this.input && this.cdr) {
-                this.cdr.detectChanges()
+                this._detectChanges()
             }
 
             (this.selectionChanges as EventEmitter<T[]>).next(selected)
@@ -447,7 +456,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     public toggle() {
         this.opened = !this.opened
-        this._detectChanges()
     }
 
     public getDisplayValue(model: T): string {
@@ -529,20 +537,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     public ngAfterViewInit() {
-        if (!this.selectedTpl) {
-            if (this.selection.type === "multi") {
-                (this as any).selectedTpl = this.defaultSelectedMultiTpl
-            } else {
-                (this as any).selectedTpl = this.defaultSelectedSingleTpl
-            }
-        }
-
-        if (!this.itemTpl) {
-            (this as any).itemTpl = this.defaultItemTpl
-        }
-
         this.applyPendingValue()
-        this._detectChanges()
     }
 
     protected _showDropDown() {
@@ -600,7 +595,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 { provide: SelectionModel, useValue: this.selection },
                 { provide: DataSourceDirective, useValue: this.source },
                 { provide: AUTOCOMPLETE_ITEM_TPL, useValue: this.itemTpl },
-                { provide: AUTOCOMPLETE_ACTIONS, useValue: this._actions },
+                { provide: AUTOCOMPLETE_ACTIONS, useValue: this.actions || this._actions },
                 {
                     provide: AUTOCOMPLETE_ITEM_FACTORY,
                     useValue: this.freeSelect ? this._createNewValue.bind(this) : null
@@ -804,7 +799,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     private _x: string = Math.random().toString(36)
     protected _detectChanges() {
-        this.cdr && this.cdr.detectChanges()
+        !this.destruct.done && this.cdr.detectChanges()
     }
 
     public ngOnDestroy() {
@@ -820,31 +815,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
         this.source.filter = filter
     }
-}
-
-
-function getPath(obj: any, path: string): any {
-    let parts = path.split(".")
-
-    for (const p of parts) {
-        obj = obj ? obj[p] : null
-    }
-
-    return obj || null
-}
-
-function setPath(obj: any, path: string, value: any) {
-    let parts = path.split(".")
-    let last = parts.pop()
-
-    for (const p of parts) {
-        if (obj[p] === undefined) {
-            obj[p] = {}
-        }
-        obj = obj[p]
-    }
-
-    obj[last] = value
 }
 
 

@@ -6,7 +6,7 @@ import { Model } from "../../data.module"
 
 @Component({
     selector: ".nz-data-grid-cell",
-    template: `<ng-template [ngTemplateOutlet]="this.column.content" [ngTemplateOutletContext]="this"></ng-template>`,
+    template: `<ng-container [ngTemplateOutlet]="this.column.content" [ngTemplateOutletContext]="this"></ng-container>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GridCellDirective<T extends Model = Model> {

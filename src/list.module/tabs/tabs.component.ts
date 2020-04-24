@@ -83,6 +83,6 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
     public onSelectedIndexChanged(index: number) {
         this.changes.next(index)
-        this.cdr.detectChanges()
+        this.cdr.markForCheck()
     }
 }

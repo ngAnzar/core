@@ -1,5 +1,4 @@
-import { Directive, Attribute, Inject, OnDestroy, ChangeDetectorRef, TemplateRef, ViewContainerRef } from "@angular/core"
-import { partition } from "rxjs/operators"
+import { Directive, Attribute, Inject, OnDestroy, ChangeDetectorRef, ViewContainerRef } from "@angular/core"
 
 import { Destruct } from "../../util"
 import { ViewportService, VPItem } from "../viewport.service"
@@ -20,6 +19,7 @@ export class ViewportAreaDirective implements OnDestroy {
         @Inject(ViewContainerRef) vcr: ViewContainerRef) {
 
         this.destruct.subscription(vps.query(area)).subscribe(items => {
+            this.rendered = this.rendered.filter(v => v.viewRef && !v.viewRef.destroyed)
             let pos = 0
             for (const item of items) {
                 if (this.rendered.indexOf(item) === -1) {
@@ -28,7 +28,7 @@ export class ViewportAreaDirective implements OnDestroy {
                 } else {
                     vcr.insert(item.viewRef, pos)
                 }
-                pos++;
+                pos++
             }
             cdr.markForCheck()
         })

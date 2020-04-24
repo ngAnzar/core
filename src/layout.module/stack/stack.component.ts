@@ -70,7 +70,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
             this._selectedIndex = val;
             (this.changed as EventEmitter<number>).emit(val)
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get selectedIndex(): number { return this._selectedIndex }

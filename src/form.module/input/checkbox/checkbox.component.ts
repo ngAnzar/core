@@ -1,11 +1,11 @@
 import {
     Component, ViewChild, ElementRef, Inject, Input,
-    Optional, ChangeDetectionStrategy, ChangeDetectorRef, SkipSelf, OnDestroy
+    Optional, ChangeDetectionStrategy, ChangeDetectorRef, SkipSelf, OnDestroy, OnInit
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
 import { Subject, merge } from "rxjs"
-import { debounceTime, map, takeUntil } from "rxjs/operators"
+import { debounceTime, map, takeUntil, startWith } from "rxjs/operators"
 
 import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"
 import { CheckboxGroupDirective } from "./checkbox-group.directive"
@@ -38,7 +38,7 @@ export interface CheckboxChangeEvent<T> extends CheckboxState {
     providers: INPUT_MODEL,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CheckboxComponent<T = boolean> extends InputComponent<T> implements OnDestroy {
+export class CheckboxComponent<T = boolean> extends InputComponent<T> implements OnDestroy, OnInit {
     @ViewChild("input", { static: true }) protected readonly input: ElementRef<HTMLInputElement>
     @Input()
     public set noninteractive(val: boolean) {
@@ -54,9 +54,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public set trueValue(val: T) {
         if (this._trueValue !== val) {
             this._trueValue = val
-            if (this.group) {
-                this.group.addCheckbox(this)
-            }
             this._values$.next()
         }
     }
@@ -119,9 +116,12 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
+    }
 
+    public ngOnInit() {
         merge(this._checked$, this._indeterminate$, this._values$)
             .pipe(
+                startWith(null),
                 map(_ => {
                     const val = this._getValue()
                     this.model.emitValue(val)
@@ -137,6 +137,10 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
                 this._renderValue(val)
                 this.cdr.detectChanges()
             })
+
+        if (this.group) {
+            this.group.addCheckbox(this)
+        }
     }
 
     protected _renderValue(obj: any): void {

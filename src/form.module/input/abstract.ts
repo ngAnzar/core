@@ -270,7 +270,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 }
 
 
-
+@Injectable()
 export class InputGroupModel<T> extends InputModel<T> {
     public get control(): AbstractControl {
         return this.cc.control

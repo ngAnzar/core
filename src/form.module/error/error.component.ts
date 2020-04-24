@@ -36,7 +36,7 @@ export class ErrorComponent implements OnDestroy {
         if (this._messages !== val) {
             this._messages = val
             this._computeErrorMessage()
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get messages(): ErrorMessageDirective[] { return this._messages }
@@ -51,7 +51,7 @@ export class ErrorComponent implements OnDestroy {
             }
 
             if (val) {
-                this._inputModelS = val.statusChanges.subscribe(this._onStatusChanges)
+                this._inputModelS = this.destruct.subscription(val.statusChanges).subscribe(this._onStatusChanges)
             }
         }
     }

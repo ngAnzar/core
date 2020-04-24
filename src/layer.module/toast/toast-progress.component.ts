@@ -29,7 +29,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     public set infoText(val: string) {
         if (this._infoText !== val) {
             this._infoText = val
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get infoText(): string { return this._infoText }
@@ -38,7 +38,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     public set percent(val: number) {
         if (this._percent !== val) {
             this._percent = val
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get percent(): number { return this._percent }
@@ -48,7 +48,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         if (this._state !== val) {
             this._state = val
             this.autohide = val === "success" ? TOAST_AUTO_HIDE_MIN : 0
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get state(): TPState { return this._state }
@@ -67,7 +67,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
     public set detailsFactory(val: DetailsHandler) {
         if (this._detailsFactory !== val) {
             this._detailsFactory = val
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get detailsFactory(): DetailsHandler { return this._detailsFactory }
@@ -136,7 +136,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
                 if (event.type === "hiding") {
                     s.unsubscribe()
                     delete this._detailsRef
-                    this.cdr.detectChanges()
+                    this.cdr.markForCheck()
                 }
             })
 

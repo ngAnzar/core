@@ -39,7 +39,7 @@ div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
                 [attr.disabled]="tab.disabled ? '' : null",
                 (tap)="onLabelTap($event, i)")
               div.nz-tab-label-content
-                ng-template([ngTemplateOutlet]="tab.labelTpl")
+                ng-container([ngTemplateOutlet]="tab.labelTpl")
               .nz-ripple
 
       .nz-tab-underline(

@@ -66,7 +66,7 @@ export class NavbarSearchComponent implements AfterViewInit {
     public set icon(val: string) {
         if (this._icon !== val) {
             this._icon = val
-            this.cdr.detectChanges()
+            this.cdr.markForCheck()
         }
     }
     public get icon(): string { return this._icon }

@@ -39,7 +39,7 @@
               [selectableAction]="action.model",
               [selectionIndex]="index + 1",
               color="light-accent")
-            ng-template([ngTemplateOutlet]="action.tpl")
+            ng-container([ngTemplateOutlet]="action.tpl")
 
       ng-template(nzVirtualFor,
           [nzVirtualForOf]="source",
@@ -51,9 +51,7 @@
           [itemsPerRequest]="42",
           (rendered)="onItemsRendered($event)")
         .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)")
-          ng-template(
-            [ngTemplateOutlet]="itemTpl",
-            [ngTemplateOutletContext]="{$implicit:virtual}")
+          ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit:virtual}")
 
       ng-template([ngIf]="actionsByPosition.last")
         ng-template(ngFor, [ngForOf]="actionsByPosition.last", let-action, let-index="index")
@@ -62,7 +60,7 @@
               [selectableAction]="action.model",
               [selectionIndex]="_offset(index) + source.storage.lastIndex",
               color="light-accent")
-            ng-template([ngTemplateOutlet]="action.tpl")
+            ng-container([ngTemplateOutlet]="action.tpl")
 
 
 nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()")

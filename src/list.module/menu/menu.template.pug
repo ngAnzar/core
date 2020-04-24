@@ -1,4 +1,4 @@
 .nz-scroller(fxFlex="grow")
   div(scrollable, fxLayout="column", fxLayoutAlign="start stretch")
     ng-template(ngFor, [ngForOf]="menuItems", let-menuItem)
-      ng-template([ngTemplateOutlet]="menuItem.tpl")
+      ng-container([ngTemplateOutlet]="menuItem.tpl")
