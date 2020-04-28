@@ -60,8 +60,6 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
         @Inject(SelectionModel) protected selection: SelectionModel,
         @Inject(LayerRef) private readonly layerRef: LayerRef) {
         super()
-
-        console.log({ itemTpl })
     }
 
     public ngOnInit() {

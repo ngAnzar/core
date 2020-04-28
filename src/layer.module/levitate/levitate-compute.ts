@@ -1,4 +1,4 @@
-import { Rect, HAlign, VAlign } from "../../layout.module"
+import { Rect, HAlign, VAlign } from "../../util"
 
 import { LevitateRef } from "./levitate-ref"
 import { LevitatePosition } from "./levitate-position"

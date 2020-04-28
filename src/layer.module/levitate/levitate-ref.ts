@@ -1,9 +1,9 @@
 
 import { Observable, Observer, of, Subscription } from "rxjs"
-import { map, startWith, debounceTime } from "rxjs/operators"
+import { map } from "rxjs/operators"
 
-import { Destruct } from "../../util"
-import { Rect, RectMutationService, parseAlign } from "../../layout.module"
+import { Rect, parseAlign } from "../../util"
+import { RectMutationService } from "../../layout.module"
 
 import { MagicCarpet, Rects } from "./levitate-compute"
 import { LevitatePosition } from "./levitate-position"

@@ -1,6 +1,6 @@
 import { Directive, Input } from "@angular/core"
 
-import { Align, AlignInput, parseAlign, OPPOSITE_ALIGN } from "../../layout.module"
+import { Align, AlignInput, parseAlign, OPPOSITE_ALIGN } from "../../util"
 
 
 @Directive({

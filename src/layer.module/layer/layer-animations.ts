@@ -87,3 +87,32 @@ export const ddAnimation: AnimationSet = {
     ]
 }
 
+
+export const fsAnimation: AnimationSet = {
+    show: [
+        style({
+            "transform": "scale(0.8, 0.8) translate(0, 50%)",
+            "opacity": "0.5",
+            "transform-origin": "center center",
+            "visibility": "visible"
+        }),
+        animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
+            "opacity": "0.7",
+            "transform": "scale(0.8, 0.8) translate(0px, 0px)"
+        })),
+        animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
+            "opacity": "1",
+            "transform": "scale(1, 1)"
+        }))
+    ],
+    hide: [
+        animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
+            "opacity": "0.7",
+            "transform": "scale(0.8, 0.8) translate(0px, 0px)"
+        })),
+        animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
+            "transform": "scale(0.8, 0.8) translate(0, 50%)",
+            "opacity": "0.5",
+        }))
+    ]
+}

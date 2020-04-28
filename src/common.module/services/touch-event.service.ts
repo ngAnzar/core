@@ -1,4 +1,4 @@
-import { Provider, InjectionToken, Inject, Optional, NgZone, PLATFORM_ID, Injectable } from "@angular/core"
+import { Provider, InjectionToken, Inject, Optional, NgZone, Injectable } from "@angular/core"
 import { ɵDomEventsPlugin, EVENT_MANAGER_PLUGINS } from "@angular/platform-browser"
 import { DOCUMENT } from "@angular/common"
 
@@ -358,7 +358,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
         return eventName in this.eventFactories
     }
 
-    public addEventListener(element: HTMLElement, eventName: string, handler: TouchEventHandler): Function {
+    public addEventListener(element: HTMLElement, eventName: string, handler: TouchEventHandler, useCapture?: boolean): () => void {
         let listeners = (element as any)[LISTENERS] as Listeners
 
         if (!listeners) {
@@ -369,16 +369,16 @@ export class TouchEventService extends ɵDomEventsPlugin {
         const [listenFor, factory] = this.eventFactories[eventName]
         const newHandler = factory(handler)
         listeners.add(eventName, handler, newHandler)
-        element[ADD_EVENT_LISTENER](listenFor as any, newHandler as any)
+        element[ADD_EVENT_LISTENER](listenFor as any, newHandler as any, useCapture)
 
-        return this.removeEventListener.bind(this, element, eventName, handler)
+        return this.removeEventListener.bind(this, element, eventName, handler, useCapture)
     }
 
-    public removeEventListener(element: HTMLElement, eventName: string, handler: TouchEventHandler): void {
+    public removeEventListener(element: HTMLElement, eventName: string, handler: TouchEventHandler, useCapture?: boolean): void {
         let listeners = (element as any)[LISTENERS] as Listeners
         if (listeners) {
             const remaining = listeners.del(eventName, handler, (listener) => {
-                element[REMOVE_EVENT_LISTENER](eventName, listener as any)
+                element[REMOVE_EVENT_LISTENER](eventName, listener as any, useCapture)
             })
             if (remaining === 0) {
                 this.uninstall(element)
@@ -410,10 +410,12 @@ export class TouchEventService extends ɵDomEventsPlugin {
             state.startEvent = state.lastEvent = event
 
             if (event.type === "touchstart") {
-                event.cancelable && event.preventDefault() // stop firing mouse events
                 state.pointerType = "touch"
                 this._extendTouchPath(listeners, event)
             } else if (event.type === "mousedown") {
+                if (state.pointerType === "touch") {
+                    return
+                }
                 // handle only primary button click
                 if (event.button !== 0) {
                     return
@@ -428,14 +430,17 @@ export class TouchEventService extends ɵDomEventsPlugin {
     }
 
     private _end = (event: PointerEvent, listeners: Listeners) => {
+        if (listeners.state.pointerType === "touch" && event.type === "mouseup") {
+            return
+        }
         listeners.state.lastEvent = event
-        const zone = this.zone
+
         this._uninstallPeriodic()
-        zone.run(() => {
+        this.zone.run(() => {
             this._fireEvent(event, listeners, true)
 
             delete listeners.activeRecognizer;
-            (listeners as { state: any }).state = {}
+            (listeners as { state: any }).state = { pointerType: listeners.state.pointerType }
 
             delete this._activeElement
         })
@@ -599,6 +604,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
 export const TOUCH_EVENT_PLUGIN: Provider = {
     provide: EVENT_MANAGER_PLUGINS,
-    useClass: TouchEventService,
+    // useClass: TouchEventService,
+    useExisting: TouchEventService,
     multi: true
 }

@@ -1,10 +1,9 @@
 import { Directive, forwardRef, Inject, Input, ViewContainerRef, EmbeddedViewRef, OnDestroy, NgZone, Injectable } from "@angular/core"
 import { Subject } from "rxjs"
 
-import { ScrollerService, Viewport } from "./scroller/scroller.service"
+import { Viewport } from "./scroller/scroller.service"
 import { ScrollableDirective } from "./scroller/scrollable.directive"
-import { NzRange, __zone_symbol__ } from "../util"
-import { Rect, RectProps } from "../layout.module"
+import { NzRange, __zone_symbol__, Rect, RectProps } from "../util"
 import { VirtualForContext } from "./virtual-for.directive"
 
 

@@ -1,5 +1,5 @@
-import { Rect, RectMutationService } from "../../layout.module"
-import { Destruct, IDisposable } from "../../util"
+import { RectMutationService } from "../../layout.module"
+import { Rect, Destruct, IDisposable } from "../../util"
 import { LayerContainerRef } from "../layer/layer-container"
 
 

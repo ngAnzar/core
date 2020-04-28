@@ -1,5 +1,5 @@
 import { Observable } from "rxjs"
-import { Margin, Rect, Align, AlignInput } from "../../layout.module"
+import { Margin, Rect, Align, AlignInput } from "../../util"
 import { Anchor, Constraint } from "../levitate/levitate-options"
 import { LayerRef } from "./layer-ref"
 

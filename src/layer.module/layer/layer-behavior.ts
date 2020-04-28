@@ -1,11 +1,11 @@
 import { AnimationBuilder, AnimationOptions, AnimationPlayer, AnimationMetadata } from "@angular/animations"
 import { take } from "rxjs/operators"
 
-import { IDisposable } from "../../util"
+import { IDisposable, Rect } from "../../util"
 import { LevitateRef } from "../levitate/levitate-ref"
 import { LayerOptions, DropdownLayerOptions, ClosingGuarded } from "./layer-options"
 import { LayerRef, ComponentLayerRef } from "./layer-ref"
-import { fallAnimation, ddAnimation } from "./layer-animations"
+import { fallAnimation, ddAnimation, fsAnimation } from "./layer-animations"
 
 
 export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> implements IDisposable {
@@ -170,3 +170,33 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
 }
 
 
+export class FullscreenLayer extends LayerBehavior<DropdownLayerOptions> {
+    public constructor(options: LayerOptions = {} as any) {
+        super(options)
+        delete options.backdrop
+        delete options.elevation
+        delete options.rounded
+        delete options.position
+        delete options.minWidth
+        delete options.minHeight
+        options.closeable = true
+        options.trapFocus = true
+    }
+
+    public initShow(layer: LayerRef): void {
+        const vpRect = Rect.viewport()
+        layer.container.style.width = `${vpRect.width}px`
+        layer.container.style.height = `${vpRect.height}px`
+        super.initShow(layer)
+    }
+
+    public animateShow(layer: LayerRef): Promise<void> {
+        return this.playAnimation(layer, fsAnimation.show)
+            .then(() => super.animateShow(layer))
+    }
+
+    public animateHide(layer: LayerRef): Promise<void> {
+        return this.playAnimation(layer, fsAnimation.hide)
+            .then(() => super.animateHide(layer))
+    }
+}

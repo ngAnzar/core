@@ -6,12 +6,10 @@ import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber 
 import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items, PrimaryKey } from "../data.module"
-import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__ } from "../util"
+import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__, RectProps } from "../util"
 import { ScrollerService } from "./scroller/scroller.service"
 import { ScrollableDirective } from "./scroller/scrollable.directive"
 import { VirtualForVisibleItems } from "./virtual-for-strategy.directive"
-import { RectProps } from "../layout.module"
-import { Observer } from "deep-diff"
 
 
 const SET_TIMEOUT = __zone_symbol__("setTimeout")

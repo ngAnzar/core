@@ -2,8 +2,7 @@ import { Directive, Input, Inject, ChangeDetectorRef, ElementRef, OnDestroy, Opt
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
-import { Destruct } from "../../util"
-import { Align } from "../../layout.module"
+import { Destruct, Align } from "../../util"
 
 import { QtipComponent } from "./qtip.component"
 import { QtipBehavior } from "./qtip.behavior"

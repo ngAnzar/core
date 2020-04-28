@@ -1,13 +1,8 @@
-import { Destruct, Rect } from "@anzar/core"
 import { NgModule } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FlexLayoutModule, LAYOUT_CONFIG } from "@angular/flex-layout"
 
-
-export { Rect, RectProps, getBoundingClientRect } from "./geometry/rect"
-export { Point } from "./geometry/point"
-export { Align, AlignInput, VAlign, HAlign, parseAlign, Margin, MarginParsed, parseMargin, composeMargin, OPPOSITE_ALIGN } from "./geometry/align"
-
+import { NzCommonModule } from "../common.module"
 
 import { RectMutationService } from "./rect-mutation.service"
 export { RectMutationService }
@@ -19,9 +14,16 @@ import { StackItemDirective, StackItemRef } from "./stack/stack-item.directive"
 export { StackItemDirective, StackItemRef }
 
 
+import { ExheaderComponent } from "./exheader/exheader.component"
+import { Exheader_HeaderDirective, Exheader_ContentDirective } from "./exheader/exheader.directive"
+export { ExheaderComponent, Exheader_HeaderDirective, Exheader_ContentDirective }
+
+
+
 @NgModule({
     imports: [
         CommonModule,
+        NzCommonModule,
         FlexLayoutModule.withConfig({
             disableVendorPrefixes: true
         })
@@ -29,11 +31,17 @@ export { StackItemDirective, StackItemRef }
     declarations: [
         StackComponent,
         StackItemDirective,
+        ExheaderComponent,
+        Exheader_HeaderDirective,
+        Exheader_ContentDirective
     ],
     exports: [
         StackComponent,
         StackItemDirective,
-        FlexLayoutModule
+        FlexLayoutModule,
+        ExheaderComponent,
+        Exheader_HeaderDirective,
+        Exheader_ContentDirective
     ],
     providers: [
         RectMutationService,

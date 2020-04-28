@@ -1,4 +1,4 @@
-import { Rect, Align, MarginParsed } from "../../layout.module"
+import { Rect, Align, MarginParsed } from "../../util"
 import { ConcretePosition } from "./levitate-options"
 
 

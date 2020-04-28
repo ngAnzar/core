@@ -13,7 +13,7 @@ import { LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective }
 export { LayerService, LayerContainer, LayerContainerRef, LayerOutletRef, LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective }
 export { LayerRef, ComponentLayerRef, TemplateLayerRef, LayerEvent } from "./layer/layer-ref"
 export { LayerOptions, DropdownLayerOptions, LevitateOptions, BackdropOptions, ClosingGuarded } from "./layer/layer-options"
-export { LayerBehavior, DropdownLayer, ModalLayer, TooltipLayer } from "./layer/layer-behavior"
+export { LayerBehavior, DropdownLayer, ModalLayer, TooltipLayer, FullscreenLayer } from "./layer/layer-behavior"
 export { LayerBackdropRef } from "./layer/layer-backdrop"
 
 

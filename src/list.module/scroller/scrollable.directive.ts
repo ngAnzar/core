@@ -1,6 +1,7 @@
 import { Directive, Inject, ElementRef, NgZone } from "@angular/core"
 
-import { RectMutationService, Rect, getBoundingClientRect } from "../../layout.module"
+import { Rect, getBoundingClientRect } from "../../util"
+import { RectMutationService } from "../../layout.module"
 import { ScrollerService } from "./scroller.service"
 
 

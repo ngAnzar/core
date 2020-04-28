@@ -1,10 +1,9 @@
 import { Injectable, ElementRef, NgZone, Inject } from "@angular/core"
-import { Observable, Observer, animationFrameScheduler, merge, fromEvent } from "rxjs"
-import { debounceTime, finalize, share, distinctUntilChanged } from "rxjs/operators"
+import { Observable, Observer, merge, fromEvent } from "rxjs"
+import { finalize, share, distinctUntilChanged } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
-import { __zone_symbol__ } from "../util/zone"
-import { Rect } from "./geometry/rect"
+import { __zone_symbol__, Rect } from "../util"
 
 export type Watchers<T> = Map<HTMLElement, { rc: number, watcher: T }>
 export type Dimension = { width: number, height: number }

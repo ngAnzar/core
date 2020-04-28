@@ -1,10 +1,9 @@
 import { Component, ContentChild, TemplateRef, Inject, Input, OnDestroy, Optional, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ViewChild } from "@angular/core"
-import { of, Subject } from "rxjs"
+import { of } from "rxjs"
 import { take, startWith } from "rxjs/operators"
 
-import { Destruct } from "../../util"
+import { Destruct, Margin, MarginParsed, parseMargin } from "../../util"
 import { DataSourceDirective, Model, SelectionItems, ISelectable, SelectOrigin } from "../../data.module"
-import { Margin, MarginParsed, parseMargin } from "../../layout.module"
 import { ExlistSwitchHandler } from "./exlist-switch-handler"
 import { VirtualForDirective } from "../virtual-for.directive"
 import { ScrollerComponent } from "../scroller/scroller.component"

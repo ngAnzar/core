@@ -112,6 +112,7 @@ const content = [
         KeyEventService,
         MediaQueryService,
         ShortcutService,
+        TouchEventService,
         TOUCH_EVENT_PLUGIN,
         LocalStorageService,
     ]

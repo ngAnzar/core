@@ -1,9 +1,8 @@
 import { OnDestroy, NgZone, Inject } from "@angular/core"
-import { Observable, Subject, Subscription, merge } from "rxjs"
+import { Observable, Subject, Subscription } from "rxjs"
 import { startWith, debounceTime } from "rxjs/operators"
 
-import { Destruct, IDisposable } from "../../util"
-import { Rect, RectProps } from "../../layout.module"
+import { Destruct, IDisposable, Rect, RectProps } from "../../util"
 import { Animation, Transition, easeOutCubic } from "../../animation.module"
 import { ScrollableDirective } from "./scrollable.directive"
 

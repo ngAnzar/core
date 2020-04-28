@@ -2,8 +2,7 @@ import { Inject, NgZone, Injectable } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 import { Observable, Observer } from "rxjs"
 
-import { Point } from "../../layout.module"
-import { PreventableEvent } from "../../util"
+import { PreventableEvent, Point } from "../../util"
 
 export type DragEventType = "begin" | "end" | "drag"
 

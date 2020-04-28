@@ -1,7 +1,7 @@
 import { Observable } from "rxjs"
 
 import { ProgressEvent } from "../../animation.module"
-import { Align, AlignInput } from "../../layout.module"
+import { Align, AlignInput } from "../../util"
 import { ButtonList } from "../_shared"
 import { LayerRef } from "../../layer.module"
 

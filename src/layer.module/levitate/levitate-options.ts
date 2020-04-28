@@ -1,4 +1,4 @@
-import { Rect, Margin, Align, AlignInput } from "../../layout.module"
+import { Rect, Margin, Align, AlignInput } from "../../util"
 
 
 export interface Anchor {

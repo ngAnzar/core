@@ -1,11 +1,11 @@
 import {
-    Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, Self, StaticProvider,
+    Directive, Inject, TemplateRef, ViewContainerRef, Input, Optional, StaticProvider,
     ElementRef, OnDestroy, Attribute, Host, Output, EventEmitter
 } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
 
 
-import { Align, AlignInput, Margin, parseAlign } from "../../layout.module"
+import { Align, AlignInput, Margin, parseAlign } from "../../util"
 import { LayerRef } from "./layer-ref"
 import { LayerService } from "./layer.service"
 import { LayerBehavior } from "./layer-behavior"

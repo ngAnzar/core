@@ -19,7 +19,7 @@ import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
-import { parseMargin, Rect } from "../../../layout.module"
+import { parseMargin } from "../../../util"
 
 
 const CLEAR_TIMEOUT: "clearTimeout" = __zone_symbol__("clearTimeout")

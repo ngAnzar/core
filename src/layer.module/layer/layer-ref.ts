@@ -134,7 +134,12 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
                     this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
                 }
                 if (this.focusTrap) {
-                    this.focusTrap.focusInitialElement() || this.focusTrap.focusFirstTabbableElement()
+                    const initialFocus = this.container.querySelector("[cdkFocusInitial]") as HTMLElement
+                    if (initialFocus) {
+                        initialFocus.focus()
+                    } else {
+                        this.container.focus()
+                    }
                 }
                 this.emit(new LayerEvent("shown") as E)
             })

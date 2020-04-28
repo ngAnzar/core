@@ -1,7 +1,7 @@
-import { Component, Inject, ElementRef, HostListener, Input, ContentChild, OnInit, HostBinding } from "@angular/core"
+import { Component, Inject, ElementRef, HostListener, Input, ContentChild, OnInit, HostBinding, Optional } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
-import { RectMutationService } from "../../layout.module"
+import { RectMutationService, ExheaderComponent } from "../../layout.module"
 import { NzTouchEvent } from "../../common.module"
 import { ScrollerService, ScrollPosition, ScrollOrient } from "./scroller.service"
 import { ScrollableDirective } from "./scrollable.directive"
@@ -34,7 +34,8 @@ export class ScrollerComponent implements OnInit {
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ScrollerService) public readonly service: ScrollerService,
-        @Inject(RectMutationService) rectMutation: RectMutationService) {
+        @Inject(RectMutationService) rectMutation: RectMutationService,
+        @Inject(ExheaderComponent) @Optional() private readonly exheader: ExheaderComponent) {
 
         this.service.destruct.subscription(rectMutation.watchDimension(this.el)).subscribe(dim => {
             this.service.vpImmediate.update(dim)
@@ -108,6 +109,10 @@ export class ScrollerComponent implements OnInit {
             this._panStartPos = this.service.scrollPosition
         }
         event.preventDefault()
+
+        if (this.exheader) {
+            this.exheader.disablePan = this.service.scrollPercent.top !== 0
+        }
 
         if (event.isFinal) {
             delete this._panStartPos
