@@ -106,12 +106,12 @@ export class ScrollerComponent implements OnInit {
             return
         }
         if (!this._panStartPos) {
-            this._panStartPos = this.service.scrollPosition
+            this._panStartPos = this.service.vpRender.scrollPosition
         }
         event.preventDefault()
 
         if (this.exheader) {
-            this.exheader.disablePan = this.service.scrollPercent.top !== 0
+            this.exheader.disablePan = this.service.vpRender.scrollPercent.top !== 0
         }
 
         if (event.isFinal) {
@@ -121,15 +121,17 @@ export class ScrollerComponent implements OnInit {
                 this.service.releaseMethod("pan")
             }
 
+            const scrollPosition = this.service.vpRender.scrollPosition
+
             if (event.orient === "horizontal" && event.velocityX >= 0.7) {
                 let left = event.direction === "left"
-                    ? this.service.scrollPosition.left + this.service.vpImmediate.width * event.velocityX
-                    : this.service.scrollPosition.left - this.service.vpImmediate.width * event.velocityX
+                    ? scrollPosition.left + this.service.vpImmediate.width * event.velocityX
+                    : scrollPosition.left - this.service.vpImmediate.width * event.velocityX
                 this.service.scrollTo({ left }, { smooth: true, velocity: event.velocityX, done })
             } else if (event.orient === "vertical" && event.velocityY >= 0.7) {
                 let top = event.direction === "top"
-                    ? this.service.scrollPosition.top + this.service.vpImmediate.height * event.velocityY
-                    : this.service.scrollPosition.top - this.service.vpImmediate.height * event.velocityY
+                    ? scrollPosition.top + this.service.vpImmediate.height * event.velocityY
+                    : scrollPosition.top - this.service.vpImmediate.height * event.velocityY
                 this.service.scrollTo({ top }, { smooth: true, velocity: event.velocityY, done })
             } else {
                 done()
@@ -146,12 +148,10 @@ export class ScrollerComponent implements OnInit {
     }
 
     // TODO: stop scroll when tap
-    private _stopSwipeScroll = (event: Event) => {
-        // if (this.service.methodIsLocked("pan")) {
-        //     event.preventDefault()
-        //     event.stopImmediatePropagation()
-        //     this.service.vpImmediate.scrollPosition = this.service.vpRender.scrollPosition
-        //     this.service.scrollTo(this.service.vpRender.scrollPosition, { smooth: false })
-        // }
-    }
+    // private _stopSwipeScroll = (event: Event) => {
+    //     if (this.service.methodIsLocked("pan")) {
+    //         this.service.vpImmediate.scrollPosition = this.service.vpRender.scrollPosition
+    //         this.service.scrollTo(this.service.vpRender.scrollPosition, { smooth: false })
+    //     }
+    // }
 }
