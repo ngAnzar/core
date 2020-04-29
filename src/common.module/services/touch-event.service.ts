@@ -430,9 +430,14 @@ export class TouchEventService extends ɵDomEventsPlugin {
     }
 
     private _end = (event: PointerEvent, listeners: Listeners) => {
-        if (listeners.state.pointerType === "touch" && event.type === "mouseup") {
-            return
+        if (event.type === "mouseup") {
+            if (listeners.state.pointerType === "touch") {
+                return
+            }
+        } else if (!this._hasInput(event.target as any)) {
+            event.cancelable && event.preventDefault() // disable upcomin mouse events after touch
         }
+
         listeners.state.lastEvent = event
 
         this._uninstallPeriodic()
@@ -444,6 +449,26 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
             delete this._activeElement
         })
+    }
+
+    private _hasInput(begin: HTMLElement) {
+        const until = this._activeElement
+        while (begin && begin !== until) {
+            if (this._isInput(begin)) {
+                return true
+            }
+            begin = begin.parentNode as any
+        }
+
+        return this._isInput(until)
+    }
+
+    private _isInput(el: HTMLElement) {
+        const tagname = el.tagName.toLowerCase()
+        return tagname === "input"
+            || tagname === "textarea"
+            || tagname === "select"
+            || el.hasAttribute("contenteditable")
     }
 
     private _installPeriodic() {

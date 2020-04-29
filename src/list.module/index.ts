@@ -46,6 +46,10 @@ export {
 }
 
 
+import { SlideableComponent } from "./slideable/slideable.component"
+import { SlideableBackDirective } from "./slideable/slideable.directive"
+export { SlideableComponent, SlideableBackDirective }
+
 import { TabsComponent } from "./tabs/tabs.component"
 import { TabComponent } from "./tabs/tab.component"
 import { TabLabelsDirective } from "./tabs/tab-labels.directive"
@@ -89,6 +93,9 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
         ScrollerComponent,
         ScrollableDirective,
 
+        SlideableComponent,
+        SlideableBackDirective,
+
         TabsComponent,
         TabComponent,
         TabLabelsDirective,
@@ -117,6 +124,9 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
         ScrollbarComponent,
         ScrollerComponent,
         ScrollableDirective,
+
+        SlideableComponent,
+        SlideableBackDirective,
 
         TabsComponent,
         TabComponent,
