@@ -3,13 +3,18 @@
     opacity: 1
     transition: opacity 300ms
 
+  .hide-overflow
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
 
-div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="8px", fxLayoutGap.xs="0px")
 
-  div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+.hide-overflow(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="8px", fxLayoutGap.xs="0px")
+  .hide-overflow(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
     ng-template(nzViewportArea="topLeft")
 
-  div.center-area(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px", ngStyle.xs="opacity:0",
+  .hide-overflow.center-area(fxFlex="grow", fxLayout="row", fxLayoutAlign="center center", fxLayoutGap="8px",
+      [fxHide.xs]="!vps.navbarCenterOverlap",
       [ngStyle.xs]=`{
         'pointer-events': vps.navbarCenterOverlap ? 'auto' : 'none',
         'background-color': '#FFF',
@@ -17,7 +22,7 @@ div(fxFlex="grow", fxLayout="row", fxLayoutAlign="center stretch", fxLayoutGap="
         'opacity': vps.navbarCenterOverlap ? 1 : 0}`)
     ng-template(nzViewportArea="topCenter")
 
-  div(fxFlex="grow", fxLayout="row", fxLayoutAlign="end center", fxLayoutGap="8px")
+  .hide-overflow(fxFlex="grow", fxLayout="row", fxLayoutAlign="end center", fxLayoutGap="8px")
     ng-template(nzViewportArea="topRight")
 
 ng-template(nzViewportItem="topLeft:10")
