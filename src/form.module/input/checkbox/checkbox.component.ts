@@ -121,7 +121,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     public ngOnInit() {
         merge(this._checked$, this._indeterminate$, this._values$)
             .pipe(
-                startWith(null),
                 map(_ => {
                     const val = this._getValue()
                     this.model.emitValue(val)
@@ -135,12 +134,14 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             )
             .subscribe(val => {
                 this._renderValue(val)
-                this.cdr.detectChanges()
+                this.cdr.markForCheck()
             })
 
         if (this.group) {
             this.group.addCheckbox(this)
         }
+
+        this._renderValue(this.model.value)
     }
 
     protected _renderValue(obj: any): void {
