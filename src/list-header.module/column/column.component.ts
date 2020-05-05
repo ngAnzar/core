@@ -99,8 +99,10 @@ export class ColumnComponent<T extends Model = Model> implements OnInit, AfterCo
                     this.dataSource.sort = { [this.sortable]: val }
                 } else {
                     let sort = this.dataSource.sort as any
-                    delete sort[this.sortable]
-                    this.dataSource.sort = sort
+                    if (sort) {
+                        delete sort[this.sortable]
+                        this.dataSource.sort = sort
+                    }
                 }
             }
             this.cdr.markForCheck()

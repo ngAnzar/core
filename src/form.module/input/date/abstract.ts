@@ -1,4 +1,4 @@
-import { Inject, StaticProvider, Injector } from "@angular/core"
+import { Inject, StaticProvider, Injector, Injectable } from "@angular/core"
 import { Observable, Observer, Subscription } from "rxjs"
 import { share } from "rxjs/operators"
 
@@ -51,6 +51,7 @@ export interface DatePickerEvent {
 */
 
 
+@Injectable()
 export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALUE> {
     protected visibleRef: ComponentLayerRef<CMP>
     protected visibleObservable: Observable<DatePickerEvent<CMP, VALUE>>

@@ -1,4 +1,4 @@
-import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, ChangeDetectorRef, HostListener, HostBinding, ElementRef } from "@angular/core"
+import { Directive, Input, Output, EventEmitter, Inject, OnDestroy, ChangeDetectorRef, HostListener, HostBinding, ElementRef, OnInit } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable } from "rxjs"
@@ -10,9 +10,14 @@ import { SelectionModel, ISelectable, SelectOrigin } from "./abstract"
 @Directive({
     selector: "[selectable]"
 })
-export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy {
+export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy, OnInit {
     @Input("selectable")
     public set model(val: T) {
+        if (!this._inited) {
+            this._pendingModel = val
+            return
+        }
+
         if (this._model !== val) {
             let old = this._model
             this._model = val
@@ -50,6 +55,10 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     @Input()
     @HostBinding("attr.selected")
     public set selected(value: SelectOrigin) {
+        if (!this._inited) {
+            this._pendingSelected = value
+            return
+        }
         // value = coerceBooleanProperty(value)
         if (this._selected !== value) {
             this.selection.setSelected(this.model.pk, value)
@@ -62,11 +71,25 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     @Output("selected")
     public readonly selectedChange: Observable<SelectOrigin> = new EventEmitter()
 
+    private _inited = false
+    private _pendingSelected: SelectOrigin
+    private _pendingModel: T
+
     public constructor(
         @Inject(SelectionModel) public readonly selection: SelectionModel<T>,
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DOCUMENT) protected doc: Document) {
+    }
+
+    public ngOnInit() {
+        this._inited = true
+        if (this._pendingModel != null) {
+            this.model = this._pendingModel
+        }
+        if (this._pendingSelected != null) {
+            this.selected = this._pendingSelected
+        }
     }
 
     public ngOnDestroy() {
