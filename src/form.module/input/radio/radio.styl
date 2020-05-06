@@ -30,20 +30,7 @@ $nz-radio-padding ?= 0 nz-local-grid-size(4)
       color: $theme.critical.normal
       // text-decoration: underline
 
-      border-bottom: 2px dotted $theme.critical.normal
-      position: relative
-      padding-bottom: 1px
-
-      &:after
-        content: ""
-        position: absolute
-        left: 2px
-        width: 100%
-        bottom: -3px
-        display: block
-        height: 0px
-
-        border-bottom: 2px dotted $theme.critical.normal
+      nz-squiggly-underline: $theme.critical.normal
 
 
 .nz-radio-label

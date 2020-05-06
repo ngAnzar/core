@@ -141,7 +141,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this.group.addCheckbox(this)
         }
 
-        this._renderValue(this.model.value)
+        super.ngOnInit()
     }
 
     protected _renderValue(obj: any): void {

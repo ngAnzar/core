@@ -17,3 +17,20 @@ nz-circle(radius)
   height: radius * 2
   border-radius: 50%
   overflow: hidden
+
+
+nz-squiggly-underline($color)
+  border-bottom: 2px dotted $color
+  position: relative
+  padding-bottom: 1px
+
+  &:after
+    content: ""
+    position: absolute
+    left: 2px
+    width: 100%
+    bottom: -3px
+    display: block
+    height: 0px
+
+    border-bottom: 2px dotted $color
