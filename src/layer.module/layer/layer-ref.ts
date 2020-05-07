@@ -124,7 +124,6 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
             this.behavior.initShow(this)
             this.behavior.levitate.begin()
 
-
             this.emit(new LayerEvent("showing") as E)
 
             return this.behavior.animateShow(this).then(() => {

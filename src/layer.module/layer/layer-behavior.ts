@@ -63,10 +63,14 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
         return Promise.resolve(true)
     }
 
-    protected playAnimation(layer: LayerRef, animation: AnimationMetadata[], options?: AnimationOptions): Promise<void> {
+    protected playAnimation(layer: LayerRef, animation: AnimationMetadata[], options?: AnimationOptions, willChange?: string): Promise<void> {
         if (this.currentAnimation) {
             this.currentAnimation.finish()
             this.currentAnimation = null
+        }
+
+        if (willChange) {
+            layer.container.style.willChange = willChange
         }
 
         return new Promise((resolve, reject) => {
@@ -79,6 +83,7 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
             })
 
             player.onDone(() => {
+                layer.container.style.willChange = null
                 player.destroy()
                 this.currentAnimation = null
                 resolve()
@@ -113,12 +118,12 @@ export class ModalLayer extends LayerBehavior {
     }
 
     public animateShow(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, fallAnimation.show)
+        return this.playAnimation(layer, fallAnimation.show, null, "opacity, transform")
             .then(() => super.animateShow(layer))
     }
 
     public animateHide(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, fallAnimation.hide)
+        return this.playAnimation(layer, fallAnimation.hide, null, "opacity, transform")
             .then(() => super.animateHide(layer))
     }
 }
@@ -159,12 +164,12 @@ export class DropdownLayer extends LayerBehavior<DropdownLayerOptions> {
             // params.translateY = "-40px"
         }
 
-        return this.playAnimation(layer, ddAnimation.show, { params })
+        return this.playAnimation(layer, ddAnimation.show, { params }, "opacity, transform")
             .then(() => super.animateShow(layer))
     }
 
     public animateHide(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, ddAnimation.hide)
+        return this.playAnimation(layer, ddAnimation.hide, null, "opacity, transform")
             .then(() => super.animateHide(layer))
     }
 }
@@ -191,12 +196,12 @@ export class FullscreenLayer extends LayerBehavior<DropdownLayerOptions> {
     }
 
     public animateShow(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, fsAnimation.show)
+        return this.playAnimation(layer, fsAnimation.show, null, "opacity, transform")
             .then(() => super.animateShow(layer))
     }
 
     public animateHide(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, fsAnimation.hide)
+        return this.playAnimation(layer, fsAnimation.hide, null, "opacity, transform")
             .then(() => super.animateHide(layer))
     }
 }
