@@ -186,13 +186,12 @@ export class FullscreenLayer extends LayerBehavior<DropdownLayerOptions> {
         delete options.minHeight
         options.closeable = true
         options.trapFocus = true
-    }
-
-    public initShow(layer: LayerRef): void {
-        const vpRect = Rect.viewport()
-        layer.container.style.width = `${vpRect.width}px`
-        layer.container.style.height = `${vpRect.height}px`
-        super.initShow(layer)
+        options.position = {
+            anchor: {
+                ref: "viewport",
+                align: "stretch"
+            }
+        }
     }
 
     public animateShow(layer: LayerRef): Promise<void> {

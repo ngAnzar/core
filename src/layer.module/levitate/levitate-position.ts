@@ -9,8 +9,10 @@ export class LevitatePosition {
     public constructor(
         public readonly rect: Rect,
         public readonly constraint: Rect,
-        public readonly maxWidth: number,
-        public readonly maxHeight: number) { }
+        public readonly maxWidth?: number,
+        public readonly maxHeight?: number,
+        public readonly width?: number,
+        public readonly height?: number) { }
 
     public get transformOrigin(): string {
         return `${this.rect.origin.horizontal} ${this.rect.origin.vertical}`
@@ -24,10 +26,6 @@ export class LevitatePosition {
         const style = el.style
         const origin = this.rect.origin
         const opRect = Rect.fromElement(el.offsetParent as HTMLElement)
-        // const crect = this._localConstraint(opRect)
-
-        // console.log(this.rect, opRect, crect)
-        // let offsetParentRect: Rect
 
         // TODO: get offsetParent, and make constraint bounds relative to it
 
@@ -51,8 +49,18 @@ export class LevitatePosition {
             }
         }
 
-        style.maxWidth = `${this.maxWidth}px`
-        style.maxHeight = `${this.maxHeight}px`
+        if (this.maxWidth != null) {
+            style.maxWidth = `${this.maxWidth}px`
+        }
+        if (this.maxHeight != null) {
+            style.maxHeight = `${this.maxHeight}px`
+        }
+        if (this.width != null) {
+            style.width = `${this.width}px`
+        }
+        if (this.height != null) {
+            style.height = `${this.height}px`
+        }
     }
 
     private _localConstraint(opRect: Rect): Rect {

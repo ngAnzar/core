@@ -130,7 +130,15 @@ function placementCalculator(levitateAlign: HAlign | VAlign, targetAlign: HAlign
     return function (levitate: Readonly<Rect>, target: Readonly<Rect>, constraint: Readonly<Rect>): Placement {
         let placement = constraint.copy()
 
-        if (levitateAlign === "center" && targetAlign === "center") {
+        if (targetAlign === "stretch") {
+            if (orient === "H") {
+                placement.left = target.left
+                placement.width = target.width
+            } else if (orient === "V") {
+                placement.top = target.top
+                placement.height = target.height
+            }
+        } else if (levitateAlign === "center" && targetAlign === "center") {
             placement[levitateAlign] = target[targetAlign]
         } else if (levitateAlign === "center" || targetAlign === "center") {
             throw new Error("Not implemented...")
@@ -151,13 +159,14 @@ function placementCalculator(levitateAlign: HAlign | VAlign, targetAlign: HAlign
 // levitateAlign-targetAlign
 const calcPlacementH: Calculators = {}
 const calcPlacementV: Calculators = {}
-const aligns: Array<HAlign | VAlign> = ["top", "right", "bottom", "left", "center"]
+const aligns: Array<HAlign | VAlign> = ["top", "right", "bottom", "left", "center", "stretch"]
 const opposite: { [key: string]: HAlign | VAlign } = {
     top: "bottom",
     right: "left",
     bottom: "top",
     left: "right",
-    center: "center"
+    center: "center",
+    stretch: "stretch",
 }
 
 for (let a1 of aligns) {
@@ -176,20 +185,48 @@ function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, const
     let rect = levitate.copy()
     rect.setOrigin({ horizontal: pA.levitate as HAlign, vertical: pV.levitate as VAlign })
 
-    let x = pA.target === "center" ? connect.centerHorizontal : connect[pA.target]
-    let y = pV.target === "center" ? connect.centerVertical : connect[pV.target]
+    let fixWidth: number = null
+    let fixHeight: number = null
+    let rectPropH: string = pA.levitate
+    let rectPropV: string = pV.levitate
+    let connectPropH: string = pA.target
+    let connectPropV: string = pV.target
 
-    if (pA.levitate === "center") {
-        rect.centerHorizontal = x
-    } else {
-        rect[pA.levitate] = x
+    if (pA.target === "center") {
+        rectPropH = "centerHorizontal"
+        connectPropH = "centerHorizontal"
+    } else if (pA.target === "stretch") {
+        rectPropH = "left"
+        connectPropH = "left"
+        fixWidth = connect.width
     }
 
-    if (pV.levitate === "center") {
-        rect.centerVertical = y
-    } else {
-        rect[pV.levitate] = y
+    if (pV.target === "center") {
+        rectPropV = "centerVertical"
+        connectPropV = "centerVertical"
+    } else if (pV.target === "stretch") {
+        rectPropV = "top"
+        connectPropV = "top"
+        fixHeight = connect.height
     }
+
+    rect[rectPropH] = connect[connectPropH]
+    rect[rectPropV] = connect[connectPropV]
+
+    // let x = pA.target === "center" ? connect.centerHorizontal : connect[pA.target]
+    // let y = pV.target === "center" ? connect.centerVertical : connect[pV.target]
+
+    // if (pA.levitate === "center") {
+    //     rect.centerHorizontal = x
+    // } else {
+    //     rect[pA.levitate] = x
+    // }
+
+    // if (pV.levitate === "center") {
+    //     rect.centerVertical = y
+    // } else {
+    //     rect[pV.levitate] = y
+    // }
 
     rect = constraint.constraint(rect)
 
@@ -201,8 +238,10 @@ function getLevitatePosition(pA: Placement, pV: Placement, levitate: Rect, const
     return new LevitatePosition(
         rect,
         constraint,
-        Math.round(constraint.width),
-        Math.round(constraint.height)
+        fixWidth ? fixWidth : Math.round(constraint.width),
+        fixHeight ? fixHeight : Math.round(constraint.height),
+        fixWidth,
+        fixHeight
     )
 }
 

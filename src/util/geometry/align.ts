@@ -1,23 +1,25 @@
-export type HAlign = "left" | "right" | "center"
-export type VAlign = "top" | "bottom" | "center"
+export type HAlign = "left" | "right" | "center" | "stretch"
+export type VAlign = "top" | "bottom" | "center" | "stretch"
 // export type Align = HAlign | VAlign
 export type Align = { horizontal: HAlign, vertical: VAlign }
 export type AlignInput = "top left" | "top right" | "top center" |
     "bottom left" | "bottom right" | "bottom center" |
     "left top" | "left bottom" | "left center" |
     "right top" | "right bottom" | "right center" |
-    "center" | "center center"
+    "center" | "center center" | "stretch" | "stretch stretch"
 
 export type MarginParsed = { top: number, right: number, bottom: number, left: number }
 export type Margin = Partial<MarginParsed> | number | string
 
 const CENTER_ALIGN: Align = { horizontal: "center", vertical: "center" }
+const STRETCH_ALIGN: Align = { horizontal: "stretch", vertical: "stretch" }
 export const OPPOSITE_ALIGN: { [key: string]: string } = {
     "left": "right",
     "right": "left",
     "top": "bottom",
     "bottom": "top",
-    "center": "center"
+    "center": "center",
+    "stretch": "stretch",
 }
 
 export function parseAlign(align: Align | AlignInput): Align {
@@ -30,6 +32,8 @@ export function parseAlign(align: Align | AlignInput): Align {
 
     if (align === "center") {
         return CENTER_ALIGN
+    } else if (align === "stretch") {
+        return STRETCH_ALIGN
     } else {
         let parts = align.split(/\s+/)
         if (parts.length !== 2) {
