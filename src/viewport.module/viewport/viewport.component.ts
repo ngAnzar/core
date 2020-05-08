@@ -3,8 +3,8 @@ import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { merge } from "rxjs"
 
 import { Destruct } from "../../util"
-import { ViewportService, VPPanelStyle, VPPanel } from "../viewport.service"
-import { VPAnimState, VPSidenavAnimation, VPContentAnimation, VPOverlayAnimation } from "./viewport.animation"
+import { RectMutationService } from "../../layout.module"
+import { ViewportService, VPPanelStyle } from "../viewport.service"
 
 
 
@@ -22,11 +22,18 @@ export class ViewportComponent implements AfterViewInit, OnInit {
     public rightTransform: SafeStyle
     public overlayOpacity = 0
     public overlayDisplay = "none"
+    public sidepanelMaxWidth: number
 
     public constructor(
         @Inject(ViewportService) public readonly vps: ViewportService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(DomSanitizer) protected readonly sanitizer: DomSanitizer) {
+        @Inject(DomSanitizer) protected readonly sanitizer: DomSanitizer,
+        @Inject(RectMutationService) rectMutation: RectMutationService) {
+
+        this.destruct.subscription(rectMutation.watchViewport()).subscribe(v => {
+            this.sidepanelMaxWidth = v.width * 0.8
+            cdr.markForCheck()
+        })
     }
 
     public ngOnInit() {
