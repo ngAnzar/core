@@ -440,6 +440,11 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
         listeners.state.lastEvent = event
 
+        if (listeners.activeRecognizer.name === "tap") {
+            const focusable = this._findFocusable(event.target as any)
+            focusable && focusable.focus()
+        }
+
         this._uninstallPeriodic()
         this.zone.run(() => {
             this._fireEvent(event, listeners, true)
@@ -469,6 +474,25 @@ export class TouchEventService extends ɵDomEventsPlugin {
             || tagname === "textarea"
             || tagname === "select"
             || el.hasAttribute("contenteditable")
+    }
+
+    private _findFocusable(begin: HTMLElement) {
+        const until = this._activeElement
+        while (begin) {
+            if (this._isFocusable(begin)) {
+                return begin
+            }
+            if (begin === until) {
+                return null
+            }
+            begin = begin.parentNode as any
+        }
+
+        return null
+    }
+
+    private _isFocusable(el: HTMLElement) {
+        return el.tabIndex >= 0
     }
 
     private _installPeriodic() {
