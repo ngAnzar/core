@@ -44,9 +44,15 @@ export class NavbarSearchComponent implements AfterViewInit {
     public get empty(): boolean { return this._empty }
     private _empty: boolean = true
 
+    @Input()
     public set opened(val: boolean) {
         if (this._opened !== val) {
             this._opened = val
+            if (val) {
+                this.showSearch()
+            } else {
+                this.hideSearch()
+            }
             this.cdr.detectChanges()
         }
     }
@@ -98,6 +104,8 @@ export class NavbarSearchComponent implements AfterViewInit {
 
     @Output("selectionChange") public readonly onSelect: Observable<any> = new EventEmitter()
 
+    private _useOverlap: boolean = false
+
     public constructor(
         @Inject(ViewportService) public readonly vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
@@ -116,16 +124,19 @@ export class NavbarSearchComponent implements AfterViewInit {
         }))
 
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
+            this._useOverlap = event.matches
             if (event.matches && this.select && this.select.opened) {
                 this.vps.navbarCenterOverlap = true
             }
         })
-
-
     }
 
     @HostListener("tap", ["$event"])
-    public onTap() {
+    public onTap(event: Event) {
+        if (event.defaultPrevented) {
+            return
+        }
+
         if (this.select
             && this.select.el.nativeElement !== event.target
             && !this.select.el.nativeElement.contains(event.target as any)) {
@@ -162,13 +173,13 @@ export class NavbarSearchComponent implements AfterViewInit {
 
     public showSearch() {
         this._backWatcher.on()
-        this.vps.navbarCenterOverlap = true
-        setTimeout(() => this.select.opened = true, 200)
+        this.vps.navbarCenterOverlap = this._useOverlap
+        setTimeout(() => this.select.opened = true, 100)
     }
 
     public hideSearch() {
         this._backWatcher.off()
         this.select.reset()
-        setTimeout(() => this.vps.navbarCenterOverlap = false, 200)
+        setTimeout(() => this.vps.navbarCenterOverlap = false, 300)
     }
 }

@@ -90,6 +90,7 @@ export class ScrollerComponent implements OnInit {
     }
 
     private _panStartPos: ScrollPosition
+    private _pointerStartPos: ScrollPosition
 
     @HostListener("pan", ["$event"])
     public onPan(event: NzTouchEvent) {
@@ -107,7 +108,12 @@ export class ScrollerComponent implements OnInit {
         }
         if (!this._panStartPos) {
             this._panStartPos = this.service.vpRender.scrollPosition
+            this._pointerStartPos = {
+                top: event.clientY,
+                left: event.clientX,
+            }
         }
+
         event.preventDefault()
 
         if (this.exheader) {
@@ -138,10 +144,10 @@ export class ScrollerComponent implements OnInit {
             }
         } else {
             if (event.orient === "horizontal") {
-                let left = this._panStartPos.left - event.distanceX
+                let left = this._panStartPos.left + (this._pointerStartPos.left - event.clientX)
                 this.service.scrollTo({ left }, { smooth: true, velocity: event.velocityX })
             } else {
-                let top = this._panStartPos.top - event.distanceY
+                let top = this._panStartPos.top + (this._pointerStartPos.top - event.clientY)
                 this.service.scrollTo({ top }, { smooth: true, velocity: event.velocityY })
             }
         }

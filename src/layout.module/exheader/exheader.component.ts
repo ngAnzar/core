@@ -1,10 +1,11 @@
-import { Component, ViewChild, ElementRef, Inject, Input, ChangeDetectionStrategy, OnInit } from "@angular/core"
+import { Component, ViewChild, ElementRef, Inject, Input, ChangeDetectionStrategy } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { Destructible, __zone_symbol__ } from "../../util"
 import { NzTouchEvent, TouchEventService } from "../../common.module"
 
 const SET_TIMEOUT = __zone_symbol__("setTimeout")
+const RAF = __zone_symbol__("requestAnimationFrame")
 
 
 @Component({
@@ -21,10 +22,17 @@ export class ExheaderComponent extends Destructible {
         val = coerceBooleanProperty(val)
         if (this._disabled !== val) {
             this._disabled = val
+            if (val) {
+                this._expanded = true
+            }
         }
     }
     public get disabled(): boolean { return this._disabled }
-    private _disabled: boolean
+    private _disabled: boolean = false
+
+    @Input()
+    public set enabled(val: boolean) { this.disabled = !coerceBooleanProperty(val) }
+    public get enabled(): boolean { return !this._disabled }
 
     @Input() public headerMinHeight: number = 48
     public get headerMaxHeight() { return this.headerEl.nativeElement.scrollHeight }
@@ -52,7 +60,6 @@ export class ExheaderComponent extends Destructible {
 
     private _panStartPos: number
     private _headerStartHeight: number
-    private _disablePan: boolean = false
     private _lastPercent: number
     private _isSelf: boolean = false
 
@@ -63,29 +70,40 @@ export class ExheaderComponent extends Destructible {
 
         this.destruct.any(touchEventSvc.addEventListener(el.nativeElement, "pan", this.onPan, true))
         this.destruct.any(touchEventSvc.addEventListener(el.nativeElement, "pan", this.onPanSelf, false))
+
+        // const onRaf = () => {
+        //     if (!this.destruct.done) {
+        //         if (this.disabled) {
+
+        //         }
+        //         rafId = window[RAF](onRaf)
+        //     }
+        // }
+
+        // let rafId = window[RAF](onRaf)
     }
 
     private onPan = (event: NzTouchEvent) => {
-        if (event.defaultPrevented || event.pointerType !== "touch") {
+        if (event.defaultPrevented || event.pointerType !== "touch" || this._disabled) {
             return
         }
         if (event.orient === "horizontal") {
             return
         }
 
-        if (!this._disablePan && !this.disablePan) {
+        if (!this.disablePan) {
             this._initResize(event)
 
             if (!this._isSelf) {
                 this._doResize(event)
             }
+        } else {
+            this._finalEvent()
         }
-
-        this._finalEvent(event)
     }
 
     private onPanSelf = (event: NzTouchEvent) => {
-        if (event.defaultPrevented || event.pointerType !== "touch") {
+        if (event.defaultPrevented || event.pointerType !== "touch" || this._disabled) {
             return
         }
         if (event.orient === "horizontal") {
@@ -95,7 +113,6 @@ export class ExheaderComponent extends Destructible {
         this._initResize(event)
         this._isSelf = true
         this._doResize(event)
-        this._finalEvent(event)
     }
 
     private _initResize(event: NzTouchEvent) {
@@ -109,22 +126,7 @@ export class ExheaderComponent extends Destructible {
 
     private _doResize(event: NzTouchEvent) {
         if (event.isFinal) {
-            const percent = this._lastPercent
-            const expanded = this.expanded
-            this._expanded = null
-
-            if (expanded) {
-                if (percent <= 0.8) {
-                    this.expanded = false
-                } else {
-                    this.expanded = true
-                }
-            } else if (percent >= 0.2) {
-                this.expanded = true
-            } else {
-                this.expanded = false
-            }
-
+            this._finalEvent()
             event.preventDefault()
         } else {
             const headerMaxHeight = this.headerEl.nativeElement.scrollHeight
@@ -141,12 +143,30 @@ export class ExheaderComponent extends Destructible {
         }
     }
 
-    private _finalEvent(event: NzTouchEvent) {
-        if (event.isFinal) {
-            delete this._panStartPos
-            delete this._headerStartHeight
-            delete this._disablePan
+    private _finalEvent() {
+        if (!this._panStartPos) {
+            return
         }
+
+        const percent = this._lastPercent
+        const expanded = this.expanded
+        this._expanded = null
+
+        if (expanded) {
+            if (percent <= 0.8) {
+                this.expanded = false
+            } else {
+                this.expanded = true
+            }
+        } else if (percent >= 0.2) {
+            this.expanded = true
+        } else {
+            this.expanded = false
+        }
+
+        delete this._panStartPos
+        delete this._headerStartHeight
+        delete this._lastPercent
     }
 
     private _animateHeight(height: number) {

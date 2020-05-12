@@ -2,7 +2,7 @@
 div(#container, fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
   i.nz-icon(fxShow, fxHide.xs, [class]="icon")
 
-  .nz-button(fxFlex="0 0 28px", fxHide, fxShow.xs, on-tap="hideSearch()", variant="tiny filled icon")
+  .nz-button(fxFlex="0 0 28px", fxHide, fxShow.xs, (tap)="$event.preventDefault();opened=false", variant="tiny filled icon")
     i.nz-icon(class=icon("mdi/arrow-left"))
 
   .nz-placeholder(fxFlex="grow", variant="hide")
@@ -27,10 +27,10 @@ div(#container, fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxL
       (empty)="empty=$event")
 
 
-  .nz-button(*ngIf="!empty", fxFlex="0 0 28px", variant="tiny filled icon", on-tap="select.reset()")
+  .nz-button(*ngIf="!empty", fxFlex="0 0 28px", variant="tiny filled icon", (tap)="select.reset()")
     i.nz-icon(class=icon("mdi/close"))
 
 
 ng-template(nzViewportItem="topRight:-100")
-  button.nz-button(variant="medium icon", fxHide, [fxShow.xs]="!vps.navbarCenterOverlap", on-tap="showSearch()")
+  button.nz-button(variant="medium icon", fxHide, [fxShow.xs]="!vps.navbarCenterOverlap", (tap)="opened=true")
     i.nz-icon([class]="icon")
