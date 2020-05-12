@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@angular/core"
 import { BreakPointRegistry, ɵMatchMedia as MatchMedia, MediaChange } from "@angular/flex-layout"
 import { Observable, of } from "rxjs"
-import { filter, distinctUntilChanged, switchMap, startWith } from "rxjs/operators"
+import { map, distinctUntilChanged, switchMap, startWith, shareReplay, finalize } from "rxjs/operators"
 
 
 export type MQWatch = "xs" | "sm" | "md" | "lg" | "xl"
@@ -11,6 +11,8 @@ export type MQWatch = "xs" | "sm" | "md" | "lg" | "xl"
 
 @Injectable()
 export class MediaQueryService {
+    private _watches: { [key: string]: Observable<MediaChange> } = {}
+
     public constructor(
         @Inject(MatchMedia) protected readonly match: MatchMedia,
         @Inject(BreakPointRegistry) protected readonly bpr: BreakPointRegistry) {
@@ -23,18 +25,27 @@ export class MediaQueryService {
             throw new Error("Invalid media query alias")
         }
 
-        return this.match.observe([bp.mediaQuery]).pipe(
-            startWith(new MediaChange(this.match.isActive(bp.mediaQuery), bp.mediaQuery, name, bp.suffix)),
-            switchMap(item => {
-                if (item.mediaQuery === bp.mediaQuery) {
-                    return of(item)
-                } else {
-                    return of(new MediaChange(this.match.isActive(bp.mediaQuery), bp.mediaQuery, name, bp.suffix))
-                }
-            }),
-            distinctUntilChanged((a, b) => {
-                return !a || !b || a.matches === b.matches
-            })
-        )
+        if (this._watches[bp.mediaQuery]) {
+            return this._watches[bp.mediaQuery]
+        } else {
+            return this._watches[bp.mediaQuery] = this.match.observe([bp.mediaQuery]).pipe(
+                startWith(null),
+                map(() => new MediaChange(this.match.isActive(bp.mediaQuery), bp.mediaQuery, name, bp.suffix)),
+                switchMap(item => {
+                    if (item.mediaQuery === bp.mediaQuery) {
+                        return of(item)
+                    } else {
+                        return of(new MediaChange(this.match.isActive(bp.mediaQuery), bp.mediaQuery, name, bp.suffix))
+                    }
+                }),
+                distinctUntilChanged((a, b) => {
+                    return !a || !b || a.matches === b.matches
+                }),
+                finalize(() => {
+                    delete this._watches[bp.mediaQuery]
+                }),
+                shareReplay(1)
+            )
+        }
     }
 }

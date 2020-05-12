@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, ElementRef, NgZone, HostBinding } from "@angular/core"
+import { Component, Inject, ViewChild, ElementRef, HostBinding } from "@angular/core"
 
 
 import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
@@ -7,7 +7,6 @@ import { RichtextMenuDirective } from "./richtext-menu.component"
 import { RichtextStream } from "./core/richtext-stream"
 import { RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
 import { SelectionService } from "./core/selection"
-import { RichtextComponentParams } from "./core/component-ref"
 
 
 @Component({
@@ -25,32 +24,14 @@ export class RichtextInputComponent extends InputComponent<string> {
     public readonly tabIndexAttr = -1
 
     private _checkScrollRaf: any
-    private _scrollHack: () => void
 
     public constructor(
         @Inject(InputModel) model: InputModel<string>,
-        @Inject(ElementRef) el: ElementRef,
-        @Inject(NgZone) private readonly zone: NgZone) {
+        @Inject(ElementRef) el: ElementRef) {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
         this.destruct.subscription(model.focusChanges).subscribe(this.handleFocus.bind(this))
-
-        // XXX: Atom heck, content editable, always try to scroll scroller element, when overflow...
-        zone.runOutsideAngular(() => {
-            this._scrollHack = () => {
-                let el = this.scrollerEl ? this.scrollerEl.nativeElement : null
-                if (el) {
-                    if (el.scrollTop !== 0) {
-                        el.scrollTop = 0
-                    }
-                    if (el.scrollLeft !== 0) {
-                        el.scrollLeft = 0
-                    }
-                }
-                this._checkScrollRaf = requestAnimationFrame(this._scrollHack)
-            }
-        })
     }
 
     protected _renderValue(value: any): void {
@@ -69,13 +50,8 @@ export class RichtextInputComponent extends InputComponent<string> {
     protected handleFocus(event: FocusChangeEvent) {
         const focused = event.current
 
-        if (focused) {
-            this._startScrollHack()
-        } else {
-            this._stopScrollHack()
-            if (!this.menu.isMouseOver) {
-                this.menu.hide()
-            }
+        if (!focused && !this.menu.isMouseOver) {
+            this.menu.hide()
         }
     }
 
@@ -86,12 +62,6 @@ export class RichtextInputComponent extends InputComponent<string> {
             }
         } else {
             this.menu.hide()
-        }
-    }
-
-    private _startScrollHack() {
-        if (!this._checkScrollRaf) {
-            this.zone.runOutsideAngular(this._scrollHack)
         }
     }
 

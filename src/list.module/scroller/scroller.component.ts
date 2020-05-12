@@ -51,6 +51,11 @@ export class ScrollerComponent implements OnInit {
         this.service.orient = this.orient
     }
 
+    @HostListener("scroll")
+    public onScroll() {
+        this.el.nativeElement.scrollTo(0, 0)
+    }
+
     @HostListener("wheel", ["$event"])
     public onMouseScroll(event: WheelEvent) {
         if (!this.service.lockMethod("wheel") || event.defaultPrevented) {
