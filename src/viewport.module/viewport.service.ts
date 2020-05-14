@@ -186,18 +186,24 @@ export class ViewportService implements OnDestroy {
             }
         })
 
-        let first = true
+
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
             if (!event.matches) {
                 this.navbarCenterOverlap = false
+            }
+        })
+
+        let first = true
+        this.destruct.subscription(mq.watch("lt-md")).subscribe(event => {
+            if (event.matches) {
+                this.menu.style = VPPanelStyle.OVERLAY
+                this.right.style = VPPanelStyle.OVERLAY
+            } else {
                 this.menu.style = VPPanelStyle.SLIDE
                 this.right.style = VPPanelStyle.SLIDE
                 if (first) {
                     this.menu.opened = true
                 }
-            } else {
-                this.menu.style = VPPanelStyle.OVERLAY
-                this.right.style = VPPanelStyle.OVERLAY
             }
             first = false
         })
