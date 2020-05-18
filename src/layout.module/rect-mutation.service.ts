@@ -23,6 +23,7 @@ const MUTATION_CONFIG: MutationObserverInit = {
 @Injectable()
 export class RectMutationService {
     protected resizeWatchers: Watchers<Observable<Dimension>> = new Map()
+    protected swWatchers: Watchers<Observable<Dimension>> = new Map()
     protected positionWatchers: Watchers<Observable<Position>> = new Map()
 
     public constructor(@Inject(NgZone) protected readonly zone: NgZone) {
@@ -40,6 +41,13 @@ export class RectMutationService {
             element = element.nativeElement
         }
         return this.getResizeWatcher(element)
+    }
+
+    public watchScrollDimension(element: HTMLElement | ElementRef<HTMLElement>): Observable<Dimension> {
+        if ("nativeElement" in element) {
+            element = element.nativeElement
+        }
+        return this.getSwWatcher(element)
     }
 
     public watchPosition(element: HTMLElement | ElementRef<HTMLElement>): Observable<Position> {
@@ -171,19 +179,7 @@ export class RectMutationService {
     }
 
     protected getResizeWatcher(element: HTMLElement): Observable<Dimension> {
-        if (!this.resizeWatchers.has(element)) {
-            this.resizeWatchers.set(element, { rc: 0, watcher: this.createResizeWatcher(element) })
-        }
-        const def = this.resizeWatchers.get(element)
-        def.rc += 1
-
-
-        return def.watcher.pipe(finalize(() => {
-            def.rc -= 1
-            if (def.rc <= 0) {
-                this.resizeWatchers.delete(element)
-            }
-        }))
+        return this._getOrCreateWatcher(this.resizeWatchers, element, "createResizeWatcher")
     }
 
     protected createPositionWatcher(element: HTMLElement): Observable<Position> {
@@ -198,10 +194,13 @@ export class RectMutationService {
                         rect = current
                         observer.next({ x: current.left, y: current.top })
                     }
-                    rafId = window[REQUEST_ANIMATION_FRAME](watcher)
+
+                    if (!observer.closed) {
+                        rafId = window[REQUEST_ANIMATION_FRAME](watcher)
+                    }
                 }
 
-                rafId = window[REQUEST_ANIMATION_FRAME](watcher)
+                watcher()
 
                 return () => {
                     window[CANCEL_ANIMATION_FRAME](rafId)
@@ -211,16 +210,51 @@ export class RectMutationService {
     }
 
     protected getPositonWatcher(element: HTMLElement): Observable<Position> {
-        if (!this.positionWatchers.has(element)) {
-            this.positionWatchers.set(element, { rc: 0, watcher: this.createPositionWatcher(element) })
+        return this._getOrCreateWatcher(this.positionWatchers, element, "createPositionWatcher")
+    }
+
+    protected createSwWatcher(element: HTMLElement): Observable<Dimension> {
+        return this.zone.runOutsideAngular(() => {
+            return Observable.create((observer: Observer<Dimension>) => {
+                let lastSw: number = 0
+                let lastSh: number = 0
+                let rafId: any
+
+                const check = () => {
+                    if (lastSw !== element.scrollWidth || lastSh !== element.scrollHeight) {
+                        lastSw = element.scrollWidth
+                        lastSh = element.scrollHeight
+                        observer.next({ width: lastSw, height: lastSh })
+                    }
+                    if (!observer.closed) {
+                        rafId = window[REQUEST_ANIMATION_FRAME](check)
+                    }
+                }
+
+                check()
+                return () => {
+                    rafId && window[CANCEL_ANIMATION_FRAME](rafId)
+                }
+            })
+        })
+
+    }
+
+    protected getSwWatcher(element: HTMLElement): Observable<Dimension> {
+        return this._getOrCreateWatcher(this.swWatchers, element, "createSwWatcher")
+    }
+
+    protected _getOrCreateWatcher<T>(container: Watchers<Observable<T>>, element: HTMLElement, fn: string): Observable<T> {
+        if (!container.has(element)) {
+            container.set(element, { rc: 0, watcher: (this as any)[fn](element) })
         }
-        const def = this.positionWatchers.get(element)
+        const def = container.get(element)
         def.rc += 1
 
         return def.watcher.pipe(finalize(() => {
             def.rc -= 1
             if (def.rc <= 0) {
-                this.positionWatchers.delete(element)
+                container.delete(element)
             }
         }))
     }

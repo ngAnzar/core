@@ -14,7 +14,7 @@ import { Model } from "../../data.module"
 import { ColumnComponent, NumberWithUnit } from "./column.component"
 
 
-export type ColumnsLayout = Array<{ column: ColumnComponent, width: NumberWithUnit }>;
+export type ColumnsLayout = Array<{ column: ColumnComponent, width: NumberWithUnit }>
 
 
 @Component({
@@ -84,11 +84,16 @@ export class ColumnsComponent<T extends Model = Model> implements AfterContentIn
                 width: column.width
             })
 
-            if (column.width.unit === "auto") {
-                col.push("1fr")
+            let maxWidth = column.width.unit === "auto"
+                ? `${column.flex || 1}fr`
+                : `${column.width.number}${column.width.unit}`
+
+            if (column.minWidth) {
+                col.push(`minmax(${column.minWidth.number}${column.minWidth.unit}, ${maxWidth})`)
             } else {
-                col.push(`${column.width.number}${column.width.unit}`)
+                col.push(maxWidth)
             }
+
         });
 
         (this as any).gridColTemplate = col.join(" ")

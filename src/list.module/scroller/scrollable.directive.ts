@@ -1,8 +1,11 @@
 import { Directive, Inject, ElementRef, NgZone } from "@angular/core"
 
-import { Rect, getBoundingClientRect } from "../../util"
+import { Rect, getBoundingClientRect, __zone_symbol__ } from "../../util"
 import { RectMutationService } from "../../layout.module"
 import { ScrollerService } from "./scroller.service"
+
+
+const RAF = __zone_symbol__("requestAnimationFrame")
 
 
 @Directive({
@@ -41,6 +44,14 @@ export class ScrollableDirective {
                     scrollWidth: dim.width,
                     scrollHeight: dim.height
                 })
+            })
+
+            service.destruct.subscription(rectMutation.watchScrollDimension(el)).subscribe(dim => {
+                if (nativeEl.parentElement.offsetWidth <= dim.width) {
+                    nativeEl.style.minWidth = `${dim.width}px`
+                } else {
+                    nativeEl.style.minWidth = `100%`
+                }
             })
         })
     }

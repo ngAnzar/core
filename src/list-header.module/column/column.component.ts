@@ -54,6 +54,26 @@ export class ColumnComponent<T extends Model = Model> implements OnInit, AfterCo
     public get width(): NumberWithUnit { return this._width }
     protected _width: NumberWithUnit = { number: -1, unit: "auto" }
 
+    @Input()
+    public set minWidth(val: NumberWithUnit) {
+        let width = parseNumber(val)
+        if (!this._minWidth || !width || this._minWidth.unit !== width.unit || this._minWidth.number !== width.number) {
+            this.widthChange.next(this._minWidth = width)
+        }
+    }
+    public get minWidth(): NumberWithUnit { return this._minWidth }
+    private _minWidth: NumberWithUnit
+
+    @Input()
+    public set flex(val: number) {
+        val = Number(val)
+        if (this._flex !== val) {
+            this._flex = val
+        }
+    }
+    public get flex(): number { return this._flex }
+    private _flex: number
+
     @Output() public widthChange = new EventEmitter<NumberWithUnit>()
 
     @Input()
