@@ -21,6 +21,17 @@
     left: 0
     bottom: 0
 
+    .nz-scrollbar-bar
+      bottom: 3px
+      height: 5px
+      border-radius: 5px
+      transition: height 250ms, bottom 250ms
+
+    &:hover
+      .nz-scrollbar-bar
+        bottom: 1px
+        height: 10px
+
   &[orient="vertical"]
     top: 0
     right: 0

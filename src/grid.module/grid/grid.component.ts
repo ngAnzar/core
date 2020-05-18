@@ -6,7 +6,7 @@ import {
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 
-import { Destruct } from "../../util"
+import { Destruct, Margin, MarginParsed, parseMargin } from "../../util"
 import { DataSourceDirective, SelectionModel, Model, PrimaryKey, SelectionEvent } from "../../data.module"
 import { ListFilterService, ColumnsComponent } from "../../list-header.module"
 
@@ -22,6 +22,13 @@ import { GridRowDirective } from "./grid-row.directive"
 export class GridComponent<T extends Model = Model> implements AfterContentInit, OnDestroy, OnInit {
     @ContentChild(ColumnsComponent, { static: true }) public readonly columns: ColumnsComponent<T>
     @ViewChildren(GridRowDirective) public readonly rows: QueryList<GridRowDirective<T>>
+
+    @Input()
+    public set padding(val: MarginParsed) {
+        this._padding = parseMargin(val as any)
+    }
+    public get padding(): MarginParsed { return this._padding }
+    public _padding: MarginParsed
 
     @Output() public rowTap = new EventEmitter<T>()
 
@@ -48,6 +55,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective,
         @Inject(ListFilterService) public readonly filterSvc: ListFilterService,
         @Attribute("emptyText") public readonly emptyText: string) {
+        this.padding = 24 as any
         if (!emptyText) {
             this.emptyText = "A lista üres"
         }
