@@ -58,7 +58,7 @@ export class ScrollerComponent implements OnInit {
 
     @HostListener("wheel", ["$event"])
     public onMouseScroll(event: WheelEvent) {
-        if (!this.service.lockMethod("wheel") || event.defaultPrevented) {
+        if (this.orient !== "vertical" || event.defaultPrevented || !this.service.lockMethod("wheel")) {
             return
         }
 
