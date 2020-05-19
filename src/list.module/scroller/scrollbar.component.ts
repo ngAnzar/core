@@ -1,6 +1,6 @@
 import {
     Component, Inject, Input, HostBinding, Attribute, ViewChild,
-    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ElementRef, NgZone
+    ChangeDetectionStrategy, OnInit, OnDestroy, ElementRef, NgZone
 } from "@angular/core"
 
 import { Destruct } from "../../util"
@@ -16,10 +16,12 @@ import { ScrollerService, ScrollOrient } from "./scroller.service"
         { provide: DragService, useClass: DragService }
     ]
 })
-export class ScrollbarComponent implements OnDestroy {
+export class ScrollbarComponent implements OnDestroy, OnInit {
     @ViewChild("btnUp", { static: false }) public readonly btnUp: ElementRef<HTMLElement>
     @ViewChild("btnDown", { static: false }) public readonly btnDown: ElementRef<HTMLElement>
     @ViewChild("bar", { static: true }) public readonly bar: ElementRef<HTMLElement>
+
+    @Input() public readonly scroller: ScrollerService
 
     public set position(val: number) {
         if (this._position !== val) {
@@ -63,16 +65,17 @@ export class ScrollbarComponent implements OnDestroy {
 
     public constructor(
         @Inject(ElementRef) el: ElementRef<HTMLElement>,
-        @Inject(ScrollerService) public readonly scroller: ScrollerService,
         @Inject(DragEventService) public readonly dragEvent: DragEventService,
-        @Inject(NgZone) zone: NgZone,
+        @Inject(NgZone) private readonly zone: NgZone,
         @Attribute("orient") public readonly orient: ScrollOrient) {
 
         this.el = el.nativeElement
+    }
 
-        zone.runOutsideAngular(() => {
+    public ngOnInit() {
+        this.zone.runOutsideAngular(() => {
 
-            this.destruct.subscription(scroller.vpImmediate.change).subscribe(viewport => {
+            this.destruct.subscription(this.scroller.vpImmediate.change).subscribe(viewport => {
                 let canScroll = true
                 if (this.orient === "horizontal") {
                     this.width = viewport.width
@@ -91,7 +94,7 @@ export class ScrollbarComponent implements OnDestroy {
                 this._layout()
             })
 
-            this.destruct.subscription(scroller.vpRender.scroll).subscribe(scroll => {
+            this.destruct.subscription(this.scroller.vpRender.scroll).subscribe(scroll => {
                 if (this.orient === "horizontal") {
                     this.position = scroll.percent.left
                 } else {
@@ -99,11 +102,11 @@ export class ScrollbarComponent implements OnDestroy {
                 }
             })
 
-            let scrollerBeginPosition = scroller.scrollPosition
-            this.destruct.subscription(dragEvent.watch(el.nativeElement)).subscribe(event => {
+            let scrollerBeginPosition = this.scroller.scrollPosition
+            this.destruct.subscription(this.dragEvent.watch(this.el)).subscribe(event => {
                 switch (event.type) {
                     case "begin":
-                        scrollerBeginPosition = scroller.scrollPosition
+                        scrollerBeginPosition = this.scroller.scrollPosition
                         break
 
                     case "drag":
@@ -112,12 +115,12 @@ export class ScrollbarComponent implements OnDestroy {
                         }
                         // this.scroller.velocityX = this.scroller.velocityY = 1
                         if (this.orient === "horizontal") {
-                            scroller.scrollTo({
+                            this.scroller.scrollTo({
                                 top: scrollerBeginPosition.top,
                                 left: scrollerBeginPosition.left + (event.current.x - event.begin.x) * this.scrollRatio
                             }, { smooth: false })
                         } else {
-                            scroller.scrollTo({
+                            this.scroller.scrollTo({
                                 top: scrollerBeginPosition.top + (event.current.y - event.begin.y) * this.scrollRatio,
                                 left: scrollerBeginPosition.left
                             }, { smooth: false })
@@ -131,7 +134,6 @@ export class ScrollbarComponent implements OnDestroy {
             })
 
         })
-
     }
 
     // TODO: remove detect changes...

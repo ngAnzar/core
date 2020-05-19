@@ -1,8 +1,9 @@
-import { Directive, Inject, ElementRef, NgZone } from "@angular/core"
+import { Directive, Inject, ElementRef, NgZone, SkipSelf } from "@angular/core"
 
 import { Rect, getBoundingClientRect, __zone_symbol__ } from "../../util"
 import { RectMutationService } from "../../layout.module"
 import { ScrollerService } from "./scroller.service"
+import { ScrollerComponent } from "./scroller.component"
 
 
 const RAF = __zone_symbol__("requestAnimationFrame")
@@ -20,11 +21,12 @@ export class ScrollableDirective {
     public constructor(
         @Inject(NgZone) zone: NgZone,
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
-        @Inject(ScrollerService) service: ScrollerService,
+        @Inject(ScrollerComponent) @SkipSelf() public readonly scroller: ScrollerComponent,
         @Inject(RectMutationService) rectMutation: RectMutationService) {
-        service.scrollable = this
 
         const nativeEl = el.nativeElement
+        const service = scroller.service
+        service.scrollable = this
 
         zone.runOutsideAngular(() => {
             service.destruct.subscription(service.vpRender.scroll).subscribe(event => {
@@ -46,13 +48,15 @@ export class ScrollableDirective {
                 })
             })
 
-            service.destruct.subscription(rectMutation.watchScrollDimension(el)).subscribe(dim => {
-                if (nativeEl.parentElement.offsetWidth <= dim.width) {
-                    nativeEl.style.minWidth = `${dim.width}px`
-                } else {
-                    nativeEl.style.minWidth = `100%`
-                }
-            })
+            if (scroller.orient === "horizontal") {
+                service.destruct.subscription(rectMutation.watchScrollDimension(el)).subscribe(dim => {
+                    if (nativeEl.parentElement.offsetWidth <= dim.width) {
+                        nativeEl.style.minWidth = `${dim.width}px`
+                    } else {
+                        nativeEl.style.minWidth = `100%`
+                    }
+                })
+            }
         })
     }
 

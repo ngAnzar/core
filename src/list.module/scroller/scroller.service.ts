@@ -3,8 +3,8 @@ import { Observable, Subject, Subscription } from "rxjs"
 import { startWith, debounceTime } from "rxjs/operators"
 
 import { Destruct, IDisposable, Rect, RectProps } from "../../util"
-import { Animation, Transition, easeOutCubic } from "../../animation.module"
-import { ScrollableDirective } from "./scrollable.directive"
+import { Animation, easeOutCubic } from "../../animation.module"
+import type { ScrollableDirective } from "./scrollable.directive"
 
 
 export type ScrollOrient = "horizontal" | "vertical"

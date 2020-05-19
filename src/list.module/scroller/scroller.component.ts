@@ -1,10 +1,9 @@
-import { Component, Inject, ElementRef, HostListener, Input, ContentChild, OnInit, HostBinding, Optional } from "@angular/core"
+import { Component, Inject, ElementRef, HostListener, Input, ContentChild, OnInit, HostBinding, Optional, SkipSelf, ChangeDetectionStrategy } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { RectMutationService, ExheaderComponent } from "../../layout.module"
 import { NzTouchEvent } from "../../common.module"
 import { ScrollerService, ScrollPosition, ScrollOrient } from "./scroller.service"
-import { ScrollableDirective } from "./scrollable.directive"
 
 
 @Component({
@@ -12,11 +11,10 @@ import { ScrollableDirective } from "./scrollable.directive"
     templateUrl: "./scroller.template.pug",
     providers: [
         ScrollerService
-    ]
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScrollerComponent implements OnInit {
-    @ContentChild(ScrollableDirective, { static: true }) protected readonly scrollable: ScrollableDirective
-
     @Input()
     @HostBinding("attr.orient")
     public orient: ScrollOrient = "vertical"
@@ -31,24 +29,37 @@ export class ScrollerComponent implements OnInit {
     public get hideScrollbar(): boolean { return this._hideScrollbar }
     private _hideScrollbar: boolean = false
 
+    @Input() public scrollbarHService: ScrollerService
+    @Input() public scrollbarVService: ScrollerService
+
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ScrollerService) public readonly service: ScrollerService,
         @Inject(RectMutationService) rectMutation: RectMutationService,
-        @Inject(ExheaderComponent) @Optional() private readonly exheader: ExheaderComponent) {
+        @Inject(ExheaderComponent) @Optional() private readonly exheader: ExheaderComponent,
+        @Inject(ScrollerComponent) @Optional() @SkipSelf() public readonly parent: ScrollerComponent) {
+        this.scrollbarHService = service
+        this.scrollbarVService = service
 
         this.service.destruct.subscription(rectMutation.watchDimension(this.el)).subscribe(dim => {
             this.service.vpImmediate.update(dim)
         })
-
-        // el.nativeElement.addEventListener("touchstart", this._stopSwipeScroll, true)
-        // this.service.destruct.any(() => {
-        //     el.nativeElement.removeEventListener("touchstart", this._stopSwipeScroll, true)
-        // })
     }
 
     public ngOnInit() {
         this.service.orient = this.orient
+
+        if (this.parent) {
+            if (this.parent.orient !== this.orient) {
+                this.hideScrollbar = true
+            }
+
+            if (this.orient === "horizontal") {
+                this.parent.scrollbarHService = this.service
+            } else if (this.orient === "vertical") {
+                this.parent.scrollbarVService = this.service
+            }
+        }
     }
 
     @HostListener("scroll")
@@ -58,13 +69,19 @@ export class ScrollerComponent implements OnInit {
 
     @HostListener("wheel", ["$event"])
     public onMouseScroll(event: WheelEvent) {
-        if (this.orient !== "vertical" || event.defaultPrevented || !this.service.lockMethod("wheel")) {
+        if (event.defaultPrevented) {
+            return
+        }
+        if (this.orient === "horizontal" && !this.service.horizontalOverflow) {
+            return
+        }
+        if (this.orient === "vertical" && !this.service.verticalOverflow) {
+            return
+        }
+        if (!this.service.lockMethod("wheel")) {
             return
         }
 
-        if (this.service.verticalOverflow) {
-            event.preventDefault()
-        }
 
         let deltaMultipler = event.deltaMode === WheelEvent.DOM_DELTA_PIXEL
             ? 1
@@ -106,6 +123,9 @@ export class ScrollerComponent implements OnInit {
             return
         }
         if (event.orient === "vertical" && !this.service.verticalOverflow) {
+            return
+        }
+        if (event.orient !== this.orient) {
             return
         }
         if (!this.service.lockMethod("pan")) {

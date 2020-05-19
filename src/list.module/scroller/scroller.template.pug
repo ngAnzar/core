@@ -1,5 +1,5 @@
 ng-content
 
 ng-template([ngIf]="!hideScrollbar")
-  .nz-scrollbar(orient="horizontal")
-  .nz-scrollbar(orient="vertical")
+  .nz-scrollbar(orient="horizontal", [scroller]="scrollbarHService")
+  .nz-scrollbar(orient="vertical", [scroller]="scrollbarVService")
