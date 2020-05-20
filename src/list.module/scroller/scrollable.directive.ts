@@ -1,8 +1,7 @@
-import { Directive, Inject, ElementRef, NgZone, SkipSelf } from "@angular/core"
+import { Directive, Inject, ElementRef, NgZone, SkipSelf, OnInit } from "@angular/core"
 
 import { Rect, getBoundingClientRect, __zone_symbol__ } from "../../util"
 import { RectMutationService } from "../../layout.module"
-import { ScrollerService } from "./scroller.service"
 import { ScrollerComponent } from "./scroller.component"
 
 
@@ -17,18 +16,21 @@ const RAF = __zone_symbol__("requestAnimationFrame")
         // "[style.will-change]": "'transform'", // TODO: csak akkor kell hozzáadni, ha animálom
     }
 })
-export class ScrollableDirective {
+export class ScrollableDirective implements OnInit {
     public constructor(
-        @Inject(NgZone) zone: NgZone,
+        @Inject(NgZone) private readonly zone: NgZone,
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ScrollerComponent) @SkipSelf() public readonly scroller: ScrollerComponent,
-        @Inject(RectMutationService) rectMutation: RectMutationService) {
+        @Inject(RectMutationService) private readonly rectMutation: RectMutationService) {
+    }
 
-        const nativeEl = el.nativeElement
-        const service = scroller.service
+    public ngOnInit() {
+        const nativeEl = this.el.nativeElement
+        const service = this.scroller.service
+
         service.scrollable = this
 
-        zone.runOutsideAngular(() => {
+        this.zone.runOutsideAngular(() => {
             service.destruct.subscription(service.vpRender.scroll).subscribe(event => {
                 const pos = event.position
                 nativeEl.style.willChange = "transform"
@@ -36,20 +38,15 @@ export class ScrollableDirective {
                 nativeEl.style.willChange = null
             })
 
-            // service.destruct.subscription(service.vpImmediate.scroll).subscribe(event => {
-            //     const pos = event.position
-            //     nativeEl.style.transform = `translate3d(-${pos.left}px, -${pos.top}px, 0)`
-            // })
-
-            service.destruct.subscription(rectMutation.watchDimension(el)).subscribe(dim => {
+            service.destruct.subscription(this.rectMutation.watchDimension(nativeEl)).subscribe(dim => {
                 service.vpImmediate.update({
                     scrollWidth: dim.width,
                     scrollHeight: dim.height
                 })
             })
 
-            if (scroller.orient === "horizontal") {
-                service.destruct.subscription(rectMutation.watchScrollDimension(el)).subscribe(dim => {
+            if (this.scroller.orient === "horizontal") {
+                service.destruct.subscription(this.rectMutation.watchScrollDimension(nativeEl)).subscribe(dim => {
                     if (nativeEl.parentElement.offsetWidth <= dim.width) {
                         nativeEl.style.minWidth = `${dim.width}px`
                     } else {
