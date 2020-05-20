@@ -1,4 +1,5 @@
 import { Directive, Inject, ElementRef, NgZone, SkipSelf, OnInit } from "@angular/core"
+import { debounceTime } from "rxjs/operators"
 
 import { Rect, getBoundingClientRect, __zone_symbol__ } from "../../util"
 import { RectMutationService } from "../../layout.module"
@@ -46,7 +47,7 @@ export class ScrollableDirective implements OnInit {
             })
 
             if (this.scroller.orient === "horizontal") {
-                service.destruct.subscription(this.rectMutation.watchScrollDimension(nativeEl)).subscribe(dim => {
+                service.destruct.subscription(this.rectMutation.watchScrollDimension(nativeEl)).pipe(debounceTime(200)).subscribe(dim => {
                     if (nativeEl.parentElement.offsetWidth <= dim.width) {
                         nativeEl.style.minWidth = `${dim.width}px`
                     } else {
