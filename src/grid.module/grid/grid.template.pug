@@ -15,10 +15,10 @@
 
 .nz-scroller(fxFlex="grow", orient="horizontal")
   div(scrollable, fxLayout="column", fxLayoutAlign="start stretch")
-    .nz-list-header([ngStyle]="{'padding-left.px': _padding.left, 'padding-right.px': _padding.right}")
+    .nz-list-header([ngStyle]="{'padding-left.px': _padding.left, 'padding-right.px': _padding.right}", fxFlex="none")
       ng-content(select=".nz-columns", ngProjectAs=".nz-columns")
 
-    .nz-scroller.body(orient="vertical")
+    .nz-scroller.body(orient="vertical", fxFlex="grow")
       div(scrollable)
         .nz-list.rows(
             [style.gridTemplate]="gtRows",
