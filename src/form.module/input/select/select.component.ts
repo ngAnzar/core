@@ -637,7 +637,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.model.focusMonitor.focusVia(this.el.nativeElement, origin)
             }
 
-            if (!this.opened && this.autoTrigger && this.input && !this.disabled && !this.readonly) {
+            if (!this.opened && this.autoTrigger && this.input && !this.disabled && !this.readonly && this.model.isEmpty) {
                 this._querySuggestions(this.input.nativeElement.value)
             }
         } else {
