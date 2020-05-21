@@ -83,7 +83,6 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
             })
 
             player.onDone(() => {
-                layer.container.style.willChange = null
                 player.destroy()
                 this.currentAnimation = null
                 resolve()
