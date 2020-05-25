@@ -1,9 +1,9 @@
 import { Inject, Injectable, NgZone } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
+
+
+import { Destructible, isDeviceReady } from "../../util"
 import { Shortcuts, ShortcutDefs, Shortcut } from "./shortcuts"
-
-
-import { Destructible } from "../../util"
 
 /**
  * ss.create(this.el, [
@@ -136,28 +136,17 @@ export class ShortcutService extends Destructible {
 
     private _installBackButton() {
         if (!this._registeredEvents.back) {
+            this._registeredEvents.back = true
+            // isDeviceReady().subscribe(v => {
             const handler = this._execSpecial.bind(this, "back")
-            this.doc.addEventListener("backbutton", handler)
+            this.doc.addEventListener("backbutton", handler, false)
             this.destruct.any(() => {
-                this.doc.removeEventListener("backbutton", handler)
+                this.doc.removeEventListener("backbutton", handler, false)
                 delete this._registeredEvents.back
             })
+            // })
         }
     }
-
-
-
-    // private _onFocusChange = () => {
-    //     const activeElement = this.doc.activeElement
-    //     for (const bucket of this._shortcuts) {
-    //         const root = bucket.root
-    //         if (activeElement === root || root.contains(activeElement)) {
-    //             bucket.focused = true
-    //         } else {
-    //             bucket.focused = false
-    //         }
-    //     }
-    // }
 }
 
 

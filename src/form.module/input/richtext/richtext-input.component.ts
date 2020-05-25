@@ -56,24 +56,12 @@ export class RichtextInputComponent extends InputComponent<string> {
     }
 
     public _onCursorMove() {
-        if (this.selection.current.type === "Range" || this.menu.canShowByState()) {
-            if (!this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
-                this.menu.show()
-            }
+        if (!this.destruct.done
+            && (this.selection.current.type === "Range" || this.menu.canShowByState())
+            && !this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
+            this.menu.show()
         } else {
             this.menu.hide()
         }
-    }
-
-    private _stopScrollHack() {
-        if (this._checkScrollRaf) {
-            cancelAnimationFrame(this._checkScrollRaf)
-            delete this._checkScrollRaf
-        }
-    }
-
-    public ngOnDestroy() {
-        this._stopScrollHack()
-        return super.ngOnDestroy()
     }
 }
