@@ -1,6 +1,6 @@
 import {
     Component, Inject, ContentChildren, QueryList, AfterContentInit,
-    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, TemplateRef, Output, ElementRef, ViewChild, Input
+    ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, Output, ElementRef, ViewChild, Input
 } from "@angular/core"
 import { Subject } from "rxjs"
 import { startWith } from "rxjs/operators"
@@ -8,6 +8,7 @@ import { startWith } from "rxjs/operators"
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"
 import { StackComponent } from "../../layout.module/stack/stack.component"
+import { ScrollerComponent } from "../scroller/scroller.component"
 import { TabComponent } from "./tab.component"
 
 
@@ -24,6 +25,8 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     public readonly _tabsAsArray: TabComponent[]
 
     @ViewChild("stack", { static: true }) public readonly stack: StackComponent
+    @ViewChild("tabScroller", { static: false }) public readonly tabScroller: ScrollerComponent
+    @ViewChild("labelContainer", { read: ElementRef, static: false }) public readonly labelContainer: ElementRef<HTMLElement>
 
     @Input()
     public set selectedIndex(val: number) {
@@ -83,6 +86,10 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
     public onSelectedIndexChanged(index: number) {
         this.changes.next(index)
+        if (this.tabScroller && this.labelContainer) {
+            const label = this.labelContainer.nativeElement.querySelector(`td:nth-child(${index + 1})`) as HTMLElement
+            label && this.tabScroller.service.scrollIntoViewport(label)
+        }
         this.cdr.markForCheck()
     }
 }

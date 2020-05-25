@@ -9,7 +9,7 @@
 
 
 div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
-  .nz-scroller.label-scroller(fxFlex="none", hideScrollbar, *ngIf="tabs && tabs.length > 1", orient="horizontal")
+  .nz-scroller.label-scroller(fxFlex="none", hideScrollbar, *ngIf="tabs && tabs.length > 1", orient="horizontal", #tabScroller)
 
     //- .nz-tab-labels(scrollable, fxLayout="row", fxLayoutAlign="start stretch")
     //-   .nz-tab-label(
