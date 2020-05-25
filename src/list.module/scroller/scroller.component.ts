@@ -1,4 +1,4 @@
-import { Component, Inject, ElementRef, HostListener, Input, ContentChild, OnInit, HostBinding, Optional, SkipSelf, ChangeDetectionStrategy } from "@angular/core"
+import { Component, Inject, ElementRef, HostListener, Input, OnInit, OnDestroy, HostBinding, Optional, SkipSelf, ChangeDetectionStrategy } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { RectMutationService, ExheaderComponent } from "../../layout.module"
@@ -14,7 +14,7 @@ import { ScrollerService, ScrollPosition, ScrollOrient } from "./scroller.servic
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScrollerComponent implements OnInit {
+export class ScrollerComponent implements OnInit, OnDestroy {
     @Input()
     @HostBinding("attr.orient")
     public orient: ScrollOrient = "vertical"
@@ -47,6 +47,8 @@ export class ScrollerComponent implements OnInit {
                 service.scrollIntoViewport(document.activeElement)
             }
         })
+
+        el.nativeElement.addEventListener("focus", this._focusHandler, true)
     }
 
     public ngOnInit() {
@@ -179,6 +181,16 @@ export class ScrollerComponent implements OnInit {
                 this.service.scrollTo({ top }, { smooth: true, velocity: event.velocityY })
             }
         }
+    }
+
+    private _focusHandler = () => {
+        const activeElement = document.activeElement
+        const formField = activeElement.closest(".nz-form-field")
+        this.service.scrollIntoViewport(formField || activeElement)
+    }
+
+    public ngOnDestroy() {
+        this.el.nativeElement.removeEventListener("focus", this._focusHandler, true)
     }
 
     // TODO: stop scroll when tap
