@@ -43,6 +43,9 @@ export class ScrollerComponent implements OnInit {
 
         this.service.destruct.subscription(rectMutation.watchDimension(this.el)).subscribe(dim => {
             this.service.vpImmediate.update(dim)
+            if (document.activeElement && el.nativeElement.contains(document.activeElement)) {
+                service.scrollIntoViewport(document.activeElement)
+            }
         })
     }
 

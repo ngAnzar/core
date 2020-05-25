@@ -234,11 +234,11 @@ export class ScrollerService implements OnDestroy {
             this.destruct.disposable(this.animation)
         })
 
-        this.destruct.subscription(this.vpImmediate.change)
-            .pipe(debounceTime(100))
-            .subscribe(_ => {
-                this.scrollTo(this.vpImmediate.scrollPosition, { smooth: false })
-            })
+        // this.destruct.subscription(this.vpImmediate.change)
+        //     .pipe(debounceTime(100))
+        //     .subscribe(_ => {
+        //         this.scrollTo(this.vpImmediate.scrollPosition, { smooth: false })
+        //     })
     }
 
     public lockMethod(method: ScrollingMethod): boolean {
