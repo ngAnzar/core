@@ -16,14 +16,12 @@ import { SelectionService } from "./core/selection"
 })
 export class RichtextInputComponent extends InputComponent<string> {
     @ViewChild("input", { read: RichtextDirective, static: true }) public readonly input: RichtextDirective
-    @ViewChild("input", { read: RichtextMenuDirective, static: true }) public readonly menu: RichtextMenuDirective
+    // @ViewChild("input", { read: RichtextMenuDirective, static: true }) public readonly menu: RichtextMenuDirective
     @ViewChild("input", { read: SelectionService, static: true }) public readonly selection: SelectionService
     @ViewChild("scroller", { read: ElementRef, static: true }) public readonly scrollerEl: ElementRef
 
     @HostBinding("attr.tabindex")
     public readonly tabIndexAttr = -1
-
-    private _checkScrollRaf: any
 
     public constructor(
         @Inject(InputModel) model: InputModel<string>,
@@ -31,7 +29,7 @@ export class RichtextInputComponent extends InputComponent<string> {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
-        this.destruct.subscription(model.focusChanges).subscribe(this.handleFocus.bind(this))
+        // this.destruct.subscription(model.focusChanges).subscribe(this.handleFocus.bind(this))
     }
 
     protected _renderValue(value: any): void {
@@ -47,21 +45,21 @@ export class RichtextInputComponent extends InputComponent<string> {
         this.model.emitValue(value)
     }
 
-    protected handleFocus(event: FocusChangeEvent) {
-        const focused = event.current
+    // protected handleFocus(event: FocusChangeEvent) {
+    //     const focused = event.current
 
-        if (!focused && !this.menu.isMouseOver) {
-            this.menu.hide()
-        }
-    }
+    //     if (!focused && !this.menu.isMouseOver) {
+    //         this.menu.hide()
+    //     }
+    // }
 
-    public _onCursorMove() {
-        if (!this.destruct.done
-            && (this.selection.current.type === "Range" || this.menu.canShowByState())
-            && !this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
-            this.menu.show()
-        } else {
-            this.menu.hide()
-        }
-    }
+    // public _onCursorMove() {
+    //     if (!this.destruct.done
+    //         && (this.selection.current.type === "Range" || this.menu.canShowByState())
+    //         && !this.input.stream.getState(RICHTEXT_AUTO_COMPLETE_EL)) {
+    //         this.menu.show()
+    //     } else {
+    //         this.menu.hide()
+    //     }
+    // }
 }
