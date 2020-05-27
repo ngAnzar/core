@@ -1,0 +1,29 @@
+.nz-tree-item-row
+  padding: 0 8px
+  user-select: none
+
+  &:hover
+    background: $theme.base.dark
+    nz-elevation: 2
+
+    .nz-tree-item-content
+      background: $theme.base.dark
+      nz-elevation: 0
+
+
+.nz-tree-item-content
+  position: relative
+  margin: 0
+  padding: 0
+  height: 48px
+  background: $theme.base.normal
+
+  display: flex
+  flex-direction: row
+  align-items: center
+  justify-content: start
+  white-space: nowrap
+
+  nz-elevation: 2
+  padding: 0 16px
+  cursor: default

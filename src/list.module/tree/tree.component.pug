@@ -1,0 +1,8 @@
+:stylus
+  .scrollable
+    padding: 16px 0
+
+
+.nz-scroller(fxFlex="grow")
+  .scrollable(scrollable)
+    .nz-tree-item(*ngIf="root", [level]="0", [model]="root", [isNode]="true")

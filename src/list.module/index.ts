@@ -55,6 +55,10 @@ import { TabComponent } from "./tabs/tab.component"
 import { TabLabelsDirective } from "./tabs/tab-labels.directive"
 export { TabsComponent, TabComponent }
 
+import { TreeComponent } from "./tree/tree.component"
+import { TreeItemComponent } from "./tree/tree-item.component"
+export { TreeComponent, TreeItemComponent }
+
 import { VirtualForDirective } from "./virtual-for.directive"
 import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-strategy.directive"
 
@@ -100,6 +104,9 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
         TabComponent,
         TabLabelsDirective,
 
+        TreeComponent,
+        TreeItemComponent,
+
         VirtualForDirective,
         VirtualForFixedItems,
         VirtualForVaryingItems
@@ -130,6 +137,8 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
 
         TabsComponent,
         TabComponent,
+
+        TreeComponent,
 
         VirtualForDirective,
         VirtualForFixedItems,
