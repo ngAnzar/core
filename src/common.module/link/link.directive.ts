@@ -6,7 +6,7 @@ import { DomSanitizer } from "@angular/platform-browser"
     selector: ".nz-link"
 })
 export class LinkDirective {
-    @HostBinding() public href = this.sanitizer.bypassSecurityTrustUrl("javascript:;")
+    @HostBinding("attr.href") public href = this.sanitizer.bypassSecurityTrustUrl("javascript:;")
 
     public constructor(@Inject(DomSanitizer) private readonly sanitizer: DomSanitizer) {
 
