@@ -54,7 +54,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.sorter.changed,
         this.meta.changed,
         this.reseted,
-    ).pipe(debounceTime(10), share())
+    ).pipe(share())
 
     // public get invalidated(): Observable<void> {
     //     return Observable.create((observer: Observer<any>) => {

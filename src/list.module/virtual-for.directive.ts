@@ -2,8 +2,8 @@ import {
     Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter
 } from "@angular/core"
-import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber } from "rxjs"
-import { startWith, tap, map, switchMap, pairwise, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil } from "rxjs/operators"
+import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber, timer } from "rxjs"
+import { startWith, tap, map, switchMap, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil, debounce } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items, PrimaryKey } from "../data.module"
 import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__, RectProps } from "../util"
@@ -45,6 +45,7 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 
 
 const EMPTY_ITEMS = new Items([], new NzRange(0, 0), 0)
+const EXTRA_INVISIBLE_COUNT = 3
 
 
 @Directive({
@@ -68,12 +69,11 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         if (value) {
             this._srcSubInvalidate = this.destruct
                 .subscription(value.storage.invalidated)
-                .pipe(startWith(null))
+                .pipe(startWith(null), debounceTime(100))
                 .subscribe(this._reset as any)
 
             this._srcSubItems = this.destruct
                 .subscription(value.storage.items)
-                .pipe(startWith(null))
                 .subscribe(this._itemsChanged)
 
             this._srcSubChange = this.destruct
@@ -93,7 +93,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     private _srcSubInvalidate: Subscription
     private _srcSubItems: Subscription
     private _srcSubChange: Subscription
-    // private _srcSub: Subscription
 
     @Input()
     public set itemsPerRequest(value: number) { this._itemsPerRequest = parseInt(value as any, 10) }
@@ -127,7 +126,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
             }
-        })
+        }),
+        share()
     )
 
     private _scroll = new Subject()
@@ -147,12 +147,19 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     )
 
     private renderRange$ = this.destruct.subscription(this.scroll$).pipe(
-        map(vr => {
-            let offset = vr.begin === -1 || vr.begin === vr.end ? this.itemsPerRequest : Math.round(this.itemsPerRequest / 2)
-            return new NzRange(
-                Math.max(0, vr.begin - offset),
-                vr.end + offset
-            )
+        withPrevious(this.reset$),
+        map(([vrOld, vrNew]) => {
+            let begin: number
+            let end: number
+
+            if (!vrOld || vrOld.begin <= vrNew.begin) {
+                begin = Math.max(0, vrNew.begin - EXTRA_INVISIBLE_COUNT)
+                end = begin + this.itemsPerRequest
+            } else {
+                begin = Math.max(0, vrNew.end - this.itemsPerRequest)
+                end = vrNew.end + EXTRA_INVISIBLE_COUNT
+            }
+            return new NzRange(begin, end)
         }),
         withPrevious(this.reset$),
         switchMap(skipWhenRangeIsEq),
@@ -160,11 +167,19 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     )
 
     private requestRange$ = this.destruct.subscription(this.renderRange$).pipe(
-        map(rr => {
+        withPrevious(this.reset$),
+        map(([rrOld, rrNew]) => {
+            let nextPage: number
+
+            if (!rrOld || rrOld.begin <= rrNew.begin) {
+                nextPage = Math.floor((rrOld ? rrOld.end : 0) / this.itemsPerRequest) + 1
+            } else {
+                nextPage = Math.max(1, Math.floor(rrOld.begin / this.itemsPerRequest) - 1)
+            }
+
             return new NzRange(
-                Math.floor(rr.begin / this.itemsPerRequest) * this.itemsPerRequest,
-                Math.ceil(rr.end / this.itemsPerRequest) * this.itemsPerRequest,
-            )
+                Math.max(0, nextPage - 1) * this.itemsPerRequest,
+                nextPage * this.itemsPerRequest)
         }),
         withPrevious(this.reset$),
         switchMap(skipWhenRangeIsEq),
