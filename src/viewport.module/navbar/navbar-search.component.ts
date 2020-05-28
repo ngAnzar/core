@@ -119,7 +119,7 @@ export class NavbarSearchComponent implements AfterViewInit {
         @Attribute("queryField") protected readonly queryField: string) {
 
         this.shortcut.create(el.nativeElement, {
-            "hide": { shortcut: "escape, back", handler: this.hideSearch.bind(this) }
+            "navbar-search.hide": { shortcut: "escape, back", handler: this.hideSearch.bind(this) }
         })
 
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {

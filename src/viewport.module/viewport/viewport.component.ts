@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Inject, AfterViewInit, OnInit } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { merge } from "rxjs"
+import { debounceTime } from "rxjs/operators"
 
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"

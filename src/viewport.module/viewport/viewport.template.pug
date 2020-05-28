@@ -19,10 +19,6 @@
     left: 0
     bottom: 0
 
-    transition-property: transform
-    transition-duration: 400ms
-    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
-
   .rightpanel
     z-index: 10
     position: absolute
@@ -30,6 +26,7 @@
     right: 0
     bottom: 0
 
+  .panel-transition
     transition-property: transform
     transition-duration: 400ms
     transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1)
@@ -72,6 +69,7 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         fxFlex="none",
         fxLayout="column",
         fxLayoutAlign="start stretch",
+        [ngClass]=`{"${style('panel-transition')}": vps.menu.animate}`,
         [attr.tabindex]="vps.menu.opened ? '0' : '-1'",
         [style.width.px]="vps.menu.width",
         [style.maxWidth.px]="sidepanelMaxWidth",
@@ -91,6 +89,7 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
 
     .nz-vp-rightpanel.rightpanel(
         fxFlex="noshrink",
+        [ngClass]=`{"${style('panel-transition')}": vps.right.animate}`,
         [attr.tabindex]="vps.right.opened ? '0' : '-1'",
         [style.width.px]="vps.right.width",
         [style.maxWidth.px]="sidepanelMaxWidth",

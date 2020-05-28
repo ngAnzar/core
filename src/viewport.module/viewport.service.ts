@@ -1,8 +1,7 @@
 import { Injectable, Inject, EventEmitter, TemplateRef, Injector, EmbeddedViewRef, OnDestroy } from "@angular/core"
 import { Router, NavigationEnd } from "@angular/router"
-import { Portal, ComponentType, ComponentPortal, TemplatePortal } from "@angular/cdk/portal"
-import { Observable, NEVER, of, Subject, Subscription, merge } from "rxjs"
-import { share, filter, map, startWith, switchMap, debounceTime, shareReplay } from "rxjs/operators"
+import { Observable, of, Subject, merge, BehaviorSubject } from "rxjs"
+import { share, map, startWith, switchMap, debounceTime, shareReplay } from "rxjs/operators"
 
 import { Destruct } from "../util"
 import { ShortcutService, MediaQueryService, Shortcuts } from "../common.module"
@@ -32,8 +31,8 @@ export interface VPCriticalMessage {
 export class VPPanel {
     public set width(val: number) {
         if (this._width !== val) {
-            this._width = val;
-            (this.changes as EventEmitter<any>).emit()
+            this._width = val
+            this._changes.next()
         }
     }
     public get width(): number { return this._width }
@@ -41,8 +40,8 @@ export class VPPanel {
 
     public set disabled(val: boolean) {
         if (this._disabled !== val) {
-            this._disabled = val;
-            (this.changes as EventEmitter<any>).emit()
+            this._disabled = val
+            this._changes.next()
         }
     }
     public get disabled(): boolean { return this._disabled }
@@ -51,8 +50,9 @@ export class VPPanel {
 
     public set style(val: VPPanelStyle) {
         if (this._style !== val) {
-            this._style = val;
-            (this.changes as EventEmitter<any>).emit()
+            this._style = val
+            this._updateAnimate()
+            this._changes.next()
         }
     }
     public get style(): VPPanelStyle { return this._style }
@@ -61,14 +61,34 @@ export class VPPanel {
 
     public set opened(val: boolean) {
         if (this._opened !== val) {
-            this._opened = val;
-            (this.changes as EventEmitter<any>).emit()
+            this._opened = val
+            this._updateAnimate()
+            this._changes.next()
         }
     }
     public get opened(): boolean { return this._opened }
     private _opened: boolean = false
 
-    public readonly changes: Observable<void> = new EventEmitter<any>()
+    public set animate(val: boolean) {
+        if (this._animate !== val) {
+            this._animate = val
+        }
+    }
+    public get animate(): boolean { return this._animate }
+    private _animate: boolean
+
+    private readonly _changes = new Subject<void>()
+    public readonly changes = this._changes.pipe(debounceTime(50), share())
+
+    private _updateAnimate() {
+        if (!this._opened) {
+            if (this._animate == null) {
+                this._animate = false
+            }
+        } else {
+            this._animate = true
+        }
+    }
 }
 
 
