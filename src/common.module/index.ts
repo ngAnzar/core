@@ -45,13 +45,15 @@ import { FileDownloadService, FileDownloadEvent } from "./services/file-download
 import { FileUploadService, FileUploadEvent } from "./services/file-upload.service"
 import { TouchEventService, TOUCH_EVENT_PLUGIN, NzTouchEvent } from "./services/touch-event.service"
 import { ScriptService } from "./services/script.service"
-import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
+// import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
 import { MediaQueryService } from "./services/media-query.service"
+import { CordovaService } from "./services/cordova.service"
 export {
     FileDownloadService, FileDownloadEvent,
     FileUploadService, FileUploadEvent,
-    TouchEventService, ScriptService, KeyEventService, SpecialKey, KeyWatcher, MediaQueryService,
-    TOUCH_EVENT_PLUGIN, NzTouchEvent
+    TouchEventService, ScriptService, MediaQueryService,
+    TOUCH_EVENT_PLUGIN, NzTouchEvent,
+    CordovaService
 }
 
 import { ShortcutService } from "./shortcut/shortcut.service"
@@ -109,12 +111,12 @@ const content = [
         FileUploadService,
         ScriptService,
         DragEventService,
-        KeyEventService,
         MediaQueryService,
         ShortcutService,
         TouchEventService,
         TOUCH_EVENT_PLUGIN,
         LocalStorageService,
+        CordovaService,
     ]
 })
 export class NzCommonModule { }

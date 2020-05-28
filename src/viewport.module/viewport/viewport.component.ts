@@ -4,6 +4,7 @@ import { merge } from "rxjs"
 
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"
+import { CordovaService } from "../../common.module"
 import { ViewportService, VPPanelStyle } from "../viewport.service"
 
 
@@ -28,7 +29,8 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         @Inject(ViewportService) public readonly vps: ViewportService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected readonly sanitizer: DomSanitizer,
-        @Inject(RectMutationService) rectMutation: RectMutationService) {
+        @Inject(RectMutationService) rectMutation: RectMutationService,
+        @Inject(CordovaService) public readonly cordova: CordovaService) {
 
         this.destruct.subscription(rectMutation.watchViewport()).subscribe(v => {
             this.sidepanelMaxWidth = v.width * 0.8

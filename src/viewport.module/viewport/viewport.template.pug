@@ -97,7 +97,8 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         [style.transform]="rightTransform",
         (transitionend)="_recalcContentPadding()")
 
-  .critical-message(*ngIf="vps.cmMessage | async as cmMessage")
-    div {{ cmMessage.message }}
-    ng-template([ngIf]="cmMessage.expire")
-      div.cm-time([nzDate]="cmMessage.expire", format="relative-to")
+  ng-template([ngIf]="!(cordova.keyboardIsVisible | async)")
+    .critical-message(*ngIf="vps.cmMessage | async as cmMessage")
+      div {{ cmMessage.message }}
+      ng-template([ngIf]="cmMessage.expire")
+        div.cm-time([nzDate]="cmMessage.expire", format="relative-to")

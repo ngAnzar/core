@@ -8,7 +8,7 @@ import { Observable } from "rxjs"
 
 import { Destruct } from "../../util"
 import { DataSourceDirective } from "../../data.module"
-import { KeyEventService, SpecialKey, MediaQueryService, KeyWatcher } from "../../common.module"
+import { MediaQueryService, ShortcutService } from "../../common.module"
 import { AutocompleteComponent, ListActionComponent } from "../../list.module"
 import { ViewportService } from "../viewport.service"
 import { SelectComponent } from "../../form.module"
@@ -100,7 +100,7 @@ export class NavbarSearchComponent implements AfterViewInit {
     private _autoTrigger: boolean = false
 
     public readonly AutocompleteComponent = AutocompleteComponent
-    private _backWatcher: KeyWatcher
+    // private _backWatcher: KeyWatcher
 
     @Output("selectionChange") public readonly onSelect: Observable<any> = new EventEmitter()
 
@@ -110,18 +110,17 @@ export class NavbarSearchComponent implements AfterViewInit {
         @Inject(ViewportService) public readonly vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<any>,
+        @Inject(ShortcutService) private readonly shortcut: ShortcutService,
         // @Inject(PointerEventService) pointerEvents: PointerEventService,
-        @Inject(KeyEventService) keyEvents: KeyEventService,
         @Inject(MediaQueryService) protected readonly mq: MediaQueryService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Attribute("displayField") protected readonly displayField: string,
         @Attribute("valueField") protected readonly valueField: string,
         @Attribute("queryField") protected readonly queryField: string) {
 
-        this._backWatcher = this.destruct.disposable(keyEvents.newWatcher(SpecialKey.BackButton, (event: KeyboardEvent) => {
-            this.hideSearch()
-            return true
-        }))
+        this.shortcut.create(el.nativeElement, {
+            "hide": { shortcut: "escape, back", handler: this.hideSearch.bind(this) }
+        })
 
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
             this._useOverlap = event.matches
@@ -172,13 +171,11 @@ export class NavbarSearchComponent implements AfterViewInit {
     }
 
     public showSearch() {
-        this._backWatcher.on()
         this.vps.navbarCenterOverlap = this._useOverlap
         setTimeout(() => this.select.opened = true, 100)
     }
 
     public hideSearch() {
-        this._backWatcher.off()
         this.select.reset()
         setTimeout(() => this.vps.navbarCenterOverlap = false, 300)
     }
