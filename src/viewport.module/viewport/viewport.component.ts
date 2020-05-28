@@ -1,7 +1,7 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Inject, AfterViewInit, OnInit } from "@angular/core"
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Inject, AfterViewInit, OnInit, ElementRef } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { merge } from "rxjs"
-import { debounceTime } from "rxjs/operators"
+
 
 import { Destruct } from "../../util"
 import { RectMutationService } from "../../layout.module"
@@ -13,6 +13,9 @@ import { ViewportService, VPPanelStyle } from "../viewport.service"
 @Component({
     selector: ".nz-viewport",
     templateUrl: "./viewport.template.pug",
+    host: {
+        "[attr.tabindex]": "'-1'"
+    },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ViewportComponent implements AfterViewInit, OnInit {
@@ -31,11 +34,18 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected readonly sanitizer: DomSanitizer,
         @Inject(RectMutationService) rectMutation: RectMutationService,
-        @Inject(CordovaService) public readonly cordova: CordovaService) {
+        @Inject(CordovaService) public readonly cordova: CordovaService,
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>) {
 
         this.destruct.subscription(rectMutation.watchViewport()).subscribe(v => {
             this.sidepanelMaxWidth = v.width * 0.8
             cdr.markForCheck()
+        })
+
+        cordova.keyboardHiding.subscribe(_ => {
+            if (this._getFocusedInput()) {
+                el.nativeElement.focus()
+            }
         })
     }
 
@@ -109,6 +119,15 @@ export class ViewportComponent implements AfterViewInit, OnInit {
         if (this.overlayDisplay !== display) {
             this.overlayDisplay = display
             this.cdr.detectChanges()
+        }
+    }
+
+    private _getFocusedInput() {
+        const activeEl = document.activeElement
+        if (activeEl.matches("input, textarea, [contenteditable]")) {
+            return activeEl
+        } else {
+            return activeEl.closest("[contenteditable]")
         }
     }
 }
