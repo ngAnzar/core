@@ -212,6 +212,13 @@ export class RichtextEditableDirective extends Destructible {
         }
     }
 
+    @HostListener("paste", ["$event"])
+    public onPaste(event: ClipboardEvent) {
+        event.preventDefault()
+        const text = event.clipboardData.getData("text/plain")
+        this.ce.insertText(text)
+    }
+
     private onMutation(mutations: MutationRecord[]) {
         let nodes: NodeList
         let node: Node
