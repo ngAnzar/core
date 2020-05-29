@@ -31,6 +31,7 @@ export interface VirtualForContext<T> {
     end: number
     first: boolean
     last: boolean
+    prev: T
 }
 
 
@@ -380,6 +381,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         ctx.end = range.end
         ctx.first = index === range.begin
         ctx.last = index === range.end
+        ctx.prev = index > 0 ? (this._vcr.get(index - 1) as EmbeddedView<T>)?.context.$implicit : null
         return ctx
     }
 }
