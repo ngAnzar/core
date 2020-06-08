@@ -46,7 +46,7 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 
 
 const EMPTY_ITEMS = new Items([], new NzRange(0, 0), 0)
-const EXTRA_INVISIBLE_COUNT = 3
+const EXTRA_INVISIBLE_COUNT = 10
 
 
 @Directive({
@@ -127,6 +127,11 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
             }
+
+            for (let i = 0, l = this._vcr.length; i < l; i++) {
+                const view = this._vcr.get(i) as EmbeddedView<T>
+                view.context.index = -1
+            }
         }),
         share()
     )
@@ -135,7 +140,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
         map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpImmediate)),
         map((vr: NzRange) => {
-            // console.log("visible range", vr)
             if (vr.begin === -1) {
                 return new NzRange(0, this.itemsPerRequest)
             } else {
@@ -323,7 +327,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     }
 
     private _applyChanges(changes: Array<ListDiffItem<T>>, renderedRange: NzRange, currentRange: NzRange) {
-        // console.log("_applyChanges", changes)
         let vcrOffset = Math.max(currentRange.begin - this._vcr.length, currentRange.begin)
         let delOffset = Math.max(renderedRange.begin - this._vcr.length, renderedRange.begin)
         let vcrIdx: number
@@ -336,6 +339,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (change.kind === ListDiffKind.CREATE) {
                 // console.log("CREATE", change.index, vcrIdx, change.item, this._vcr)
                 view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
+                view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
                 view.detectChanges()
                 this.visibleItems.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.UPDATE) {
@@ -346,6 +350,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                 } else {
                     view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
                 }
+                view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
                 view.detectChanges()
                 this.visibleItems.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.DELETE) {
@@ -381,7 +386,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         ctx.end = range.end
         ctx.first = index === range.begin
         ctx.last = index === range.end
-        ctx.prev = index > 0 ? (this._vcr.get(index - 1) as EmbeddedView<T>)?.context.$implicit : null
+        ctx.prev = null
         return ctx
     }
 }

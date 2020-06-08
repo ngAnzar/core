@@ -286,7 +286,6 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems implements On
 
     public clearCache(): void {
         this.rects.length = 0
-        this.minHeight = 0
         this._setPaddingTop(0)
         this._setMinHeight(0)
     }
@@ -331,7 +330,7 @@ export class VirtualForVaryingItems extends VirtualForVisibleItems implements On
         if (this.els.has(el)) {
             this.els.delete(el)
             this.observer.unobserve(el)
-            this._cacheRect(el, index)
+            this.rects.length >= index && this._cacheRect(el, index)
         }
     }
 
