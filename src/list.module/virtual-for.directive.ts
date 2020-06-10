@@ -127,11 +127,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
             }
-
-            for (let i = 0, l = this._vcr.length; i < l; i++) {
-                const view = this._vcr.get(i) as EmbeddedView<T>
-                view.context.index = -1
-            }
         }),
         share()
     )
