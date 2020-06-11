@@ -57,12 +57,12 @@ export class ScrollerComponent implements OnInit, OnDestroy {
         if (this.parent) {
             if (this.parent.orient !== this.orient) {
                 this.hideScrollbar = true
-            }
 
-            if (this.orient === "horizontal") {
-                this.parent.scrollbarHService = this.service
-            } else if (this.orient === "vertical") {
-                this.parent.scrollbarVService = this.service
+                if (this.orient === "horizontal") {
+                    this.parent.scrollbarHService = this.service
+                } else if (this.orient === "vertical") {
+                    this.parent.scrollbarVService = this.service
+                }
             }
         }
     }
