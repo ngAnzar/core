@@ -1,6 +1,6 @@
 import {
     Directive, Input, Inject, TemplateRef, ViewContainerRef, OnInit,
-    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter
+    OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter, NgZone
 } from "@angular/core"
 import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber, timer } from "rxjs"
 import { startWith, tap, map, switchMap, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil, debounce } from "rxjs/operators"
@@ -147,19 +147,10 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     )
 
     private renderRange$ = this.destruct.subscription(this.scroll$).pipe(
-        withPrevious(this.reset$),
-        map(([vrOld, vrNew]) => {
-            let begin: number
-            let end: number
-
-            if (!vrOld || vrOld.begin <= vrNew.begin) {
-                begin = Math.max(0, vrNew.begin - EXTRA_INVISIBLE_COUNT)
-                end = begin + this.itemsPerRequest
-            } else {
-                begin = Math.max(0, vrNew.end - this.itemsPerRequest)
-                end = vrNew.end + EXTRA_INVISIBLE_COUNT
-            }
-            return new NzRange(begin, end)
+        map(vr => {
+            return new NzRange(
+                Math.max(0, vr.begin - EXTRA_INVISIBLE_COUNT),
+                vr.end + EXTRA_INVISIBLE_COUNT)
         }),
         withPrevious(this.reset$),
         switchMap(skipWhenRangeIsEq),

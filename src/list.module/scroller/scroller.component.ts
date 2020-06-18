@@ -1,4 +1,4 @@
-import { Component, Inject, ElementRef, HostListener, Input, OnInit, OnDestroy, HostBinding, Optional, SkipSelf, ChangeDetectionStrategy } from "@angular/core"
+import { Component, Inject, ElementRef, HostListener, Input, OnInit, OnDestroy, HostBinding, Optional, SkipSelf, ChangeDetectionStrategy, NgZone } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { RectMutationService, ExheaderComponent } from "../../layout.module"
@@ -34,6 +34,7 @@ export class ScrollerComponent implements OnInit, OnDestroy {
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
+        @Inject(NgZone) public readonly zone: NgZone,
         @Inject(ScrollerService) public readonly service: ScrollerService,
         @Inject(RectMutationService) rectMutation: RectMutationService,
         @Inject(ExheaderComponent) @Optional() private readonly exheader: ExheaderComponent,
@@ -41,14 +42,17 @@ export class ScrollerComponent implements OnInit, OnDestroy {
         this.scrollbarHService = service
         this.scrollbarVService = service
 
-        this.service.destruct.subscription(rectMutation.watchDimension(this.el)).subscribe(dim => {
-            this.service.vpImmediate.update(dim)
-            if (document.activeElement && el.nativeElement.contains(document.activeElement)) {
-                service.scrollIntoViewport(document.activeElement)
-            }
-        })
+        zone.runOutsideAngular(() => {
+            this.service.destruct.subscription(rectMutation.watchDimension(this.el)).subscribe(dim => {
+                this.service.vpImmediate.update(dim)
+                if (document.activeElement && el.nativeElement.contains(document.activeElement)) {
+                    service.scrollIntoViewport(document.activeElement)
+                }
+            })
 
-        el.nativeElement.addEventListener("focus", this._focusHandler, true)
+            el.nativeElement.addEventListener("focus", this._focusHandler, true)
+            el.nativeElement.addEventListener("wheel", this.onMouseScroll)
+        })
     }
 
     public ngOnInit() {
@@ -72,8 +76,7 @@ export class ScrollerComponent implements OnInit, OnDestroy {
         this.el.nativeElement.scrollTo(0, 0)
     }
 
-    @HostListener("wheel", ["$event"])
-    public onMouseScroll(event: WheelEvent) {
+    public onMouseScroll = (event: WheelEvent) => {
         if (event.defaultPrevented) {
             return
         }
@@ -191,6 +194,7 @@ export class ScrollerComponent implements OnInit, OnDestroy {
 
     public ngOnDestroy() {
         this.el.nativeElement.removeEventListener("focus", this._focusHandler, true)
+        this.el.nativeElement.removeEventListener("wheel", this.onMouseScroll)
     }
 
     // TODO: stop scroll when tap
