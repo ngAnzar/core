@@ -158,7 +158,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     )
 
     private requestRange$ = this.destruct.subscription(this.renderRange$).pipe(
-        withPrevious(this.reset$),
+        withPrevious(merge(this.reset$, this._refresh)),
         map(([rrOld, rrNew]) => {
             let nextPage: number
 
@@ -192,7 +192,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             this._itemsChanged
         ))
         .pipe(
-            switchMap(_ => this.renderRange$),
+            switchMap(_ => this.renderRange$.pipe(take(1))),
             map(rr => {
                 return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             })
