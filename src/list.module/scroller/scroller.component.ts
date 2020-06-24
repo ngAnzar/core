@@ -90,7 +90,6 @@ export class ScrollerComponent implements OnInit, OnDestroy {
             return
         }
 
-
         let deltaMultipler = event.deltaMode === WheelEvent.DOM_DELTA_PIXEL
             ? 1
             : event.deltaMode === WheelEvent.DOM_DELTA_LINE
@@ -115,6 +114,11 @@ export class ScrollerComponent implements OnInit, OnDestroy {
             top: pos.top + deltaY,
             left: pos.left + deltaX
         }, { smooth: true, velocity: 1 })
+
+        const newPos = this.service.vpImmediate.scrollPosition
+        if (pos.top !== newPos.top || pos.left !== newPos.left) {
+            event.preventDefault()
+        }
 
         this.service.releaseMethod("wheel")
     }
