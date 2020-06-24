@@ -23,7 +23,7 @@ export type TPState = "progress" | "success" | "failure"
     templateUrl: "./toast-progress.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ToastProgressComponent extends ToastBase implements OnDestroy, AfterViewInit, OnInit {
+export class ToastProgressComponent extends ToastBase implements OnDestroy {
     public readonly destruct = new Destruct()
 
     public set infoText(val: string) {
@@ -83,9 +83,7 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
         @Inject(RectMutationService) protected readonly rectMutation: RectMutationService) {
         super()
-    }
 
-    public ngOnInit() {
         this.detailsFactory = this.options.details
 
         if (this.options.progress) {
@@ -109,16 +107,9 @@ export class ToastProgressComponent extends ToastBase implements OnDestroy, Afte
             this.destruct.subscription(this._progress).subscribe(event => {
                 this.lengthenHide()
                 this.infoText = event.message
+                this.cdr.markForCheck()
             })
         }
-    }
-
-    public ngAfterViewInit() {
-        // const infoContainer = this.infoEl.nativeElement
-        // const infoTextMeasure = infoContainer.childNodes[0] as HTMLElement
-        // this.destruct.subscription(this.rectMutation.watchDimension(infoTextMeasure)).subscribe(dim => {
-        //     infoContainer.style.width = dim.width ? `${dim.width + (this.state === "success" ? 16 : 8)}px` : "0px"
-        // })
     }
 
     public ngOnDestroy() {

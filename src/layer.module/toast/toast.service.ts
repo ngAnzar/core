@@ -140,6 +140,10 @@ export class ToastService {
                                     current: v.current,
                                     percent: v.percent
                                 })
+                            } else {
+                                if (options.beginMsg) {
+                                    progress.next({ message: options.beginMsg })
+                                }
                             }
                             break
                     }
