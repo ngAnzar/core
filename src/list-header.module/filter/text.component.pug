@@ -7,7 +7,7 @@ ng-template(#layer)
     .input-row(fxFlex="grow")
       .nz-form-field(fxFlex="grow")
         label {{ title }} tartalmazza
-        input.nz-input([formControl]="value")
+        input.nz-input([formControl]="value", cdkFocusInitial)
 
     div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px")
       button.nz-button(*ngIf="value.value", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés

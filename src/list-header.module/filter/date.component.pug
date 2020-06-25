@@ -10,7 +10,7 @@ ng-template(#layer)
     .input-row(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
       .nz-form-field(fxFlex="none")
         label {{ isRange ? "Ettől" : "Dátum" }}
-        .nz-date-input.date-input([formControl]="begin")
+        .nz-date-input.date-input([formControl]="begin", cdkFocusInitial)
 
       ng-template([ngIf]="isRange", [ngIfElse]="ifIsNotRange")
         span(fxFlex="none") —
