@@ -226,32 +226,6 @@ export class TimeInputComponent extends InputComponent<Time> {
     }
 
     private _showPicker() {
-        /*
-        const ref = this.timePicker.show({
-            position: {
-                anchor: {
-                    ref: this.el.nativeElement,
-                    align: "bottom left",
-                    margin: "6 0 6 0"
-                },
-                align: "top left"
-            }
-        })
-        ref.show()
-        const cmp = ref.component.instance
-
-        this.destruct.subscription(cmp.valueChange)
-            .pipe(debounceTime(10))
-            .subscribe(time => {
-                if (time.isValid) {
-                    this.model.emitValue(time)
-                    this._renderValue(time)
-                }
-            })
-
-        return ref
-        */
-
         this.timePicker
             .toggle({ anchor: { ref: this.el.nativeElement, align: "bottom left", margin: "6 0" }, align: "top left" }, this.value)
             .pipe(takeUntil(this.destruct.on))
@@ -278,17 +252,25 @@ export class TimeInputComponent extends InputComponent<Time> {
 
     private _createPartialValue(): Time {
         let date = new Date()
+        let hasValue = false
 
-        if (this._hour) {
+        if (this._hour !== null) {
             date = setHours(date, this._hour)
+            hasValue = true
         }
 
-        if (this._minute) {
+        if (this._minute !== null) {
             date = setMinutes(date, this._minute)
+            hasValue = true
         }
 
-        if (this._second) {
+        if (this._second !== null) {
             date = setSeconds(date, this._second)
+            hasValue = true
+        }
+
+        if (!hasValue) {
+            return null
         }
 
         date = setMilliseconds(date, 0)
