@@ -26,6 +26,11 @@ export class LevitateRef {
         public readonly constraint: Constraint = { ref: "viewport" }) {
     }
 
+    public updateAnchor(anchor: Anchor) {
+        (this as { anchor: Anchor }).anchor = anchor
+        this.reset()
+    }
+
     public suspend(): void {
         this.suspended += 1
 

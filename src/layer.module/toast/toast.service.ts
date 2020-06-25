@@ -13,6 +13,8 @@ import { ToastLayer } from "./toast-behavior"
 import { ToastComponent } from "./toast.component"
 import { ToastProgressComponent } from "./toast-progress.component"
 import { ToastOptions, ToastProgressOptions, TOAST_AUTO_HIDE_MIN, TOAST_DEFAULT_ALIGN } from "./toast-options"
+import { Anchor } from "../levitate/levitate-options"
+import { Align, parseAlign, OPPOSITE_ALIGN } from "../../util"
 
 
 function defaultOptions(options: ToastOptions): ToastOptions {
@@ -46,6 +48,7 @@ export interface FileDownloadOptions extends ToastOptions {
 @Injectable()
 export class ToastService {
     protected queue = new ToastQueue()
+    protected stack = new ToastStack()
 
     public constructor(@Inject(LayerService) protected layerService: LayerService) {
 
@@ -165,7 +168,7 @@ export class ToastService {
 
     protected _show<T>(provides: StaticProvider[], options: ToastOptions = {} as any, cmp?: ComponentType<T>): ComponentLayerRef<T> {
         let ref = this.layerService.createFromComponent(cmp, this._behavior(options), null, provides)
-        return this.queue.add(ref) as ComponentLayerRef<T>
+        return this.stack.add(ref) as ComponentLayerRef<T>
     }
 
     protected _behavior(options: ToastOptions): ToastLayer {
@@ -224,5 +227,63 @@ class ToastQueue {
         })
 
         next.show()
+    }
+}
+
+
+
+class ToastStack {
+    private items: LayerRef[] = []
+
+    public add(ref: LayerRef) {
+        if (this.items.length) {
+            const prev = this.items[this.items.length - 1]
+            ref.behavior.levitate.updateAnchor(this._determineAnchor(ref, prev))
+        }
+        this.items.push(ref)
+
+        ref.subscribe(event => {
+            if (event.type === "hidden") {
+                this.remove(ref)
+            }
+        })
+
+        ref.show()
+
+        return ref
+    }
+
+    public remove(ref: LayerRef) {
+        let idx = this.items.indexOf(ref)
+        if (idx !== -1) {
+            let next = this.items[idx + 1]
+            if (next) {
+                next.behavior.levitate.updateAnchor(ref.behavior.levitate.anchor)
+                // let prev = this.items[idx - 1]
+                // if (prev) {
+                //     next.behavior.levitate.updateAnchor(this._determineAnchor(ref, prev))
+                // } else {
+                //     next.behavior.levitate.updateAnchor(this._determineAnchor(ref, null))
+                // }
+            }
+            this.items.splice(idx, 1)
+        }
+    }
+
+    private _determineAnchor(ref: LayerRef, anchor?: LayerRef): Anchor {
+        if (anchor) {
+            let refAlign = parseAlign(ref.behavior.options.position.align)
+            return {
+                align: `${OPPOSITE_ALIGN[refAlign.vertical]} ${refAlign.horizontal}` as any,
+                ref: anchor.container,
+                margin: "12 0"
+            }
+        } else {
+            return {
+                align: ref.behavior.options.position.align,
+                ref: "viewport",
+                margin: "12 0"
+            }
+        }
     }
 }

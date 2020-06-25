@@ -2,7 +2,7 @@ import { LayerBehavior } from "../layer/layer-behavior"
 import { LayerOptions } from "../layer/layer-options"
 import { LayerRef } from "../layer/layer-ref"
 
-import { tada } from "./toast-animations"
+import { tada, slide } from "./toast-animations"
 
 
 export class ToastLayer<O extends LayerOptions = LayerOptions> extends LayerBehavior<O> {
@@ -18,12 +18,12 @@ export class ToastLayer<O extends LayerOptions = LayerOptions> extends LayerBeha
     }
 
     public animateShow(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, tada.show)
+        return this.playAnimation(layer, slide.show)
             .then(() => super.animateShow(layer))
     }
 
     public animateHide(layer: LayerRef): Promise<void> {
-        return this.playAnimation(layer, tada.hide)
+        return this.playAnimation(layer, slide.hide)
             .then(() => super.animateHide(layer))
     }
 }

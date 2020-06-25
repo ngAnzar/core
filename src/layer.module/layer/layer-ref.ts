@@ -157,6 +157,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
             return Promise.all([
                 // this.behavior.hideBackdrop(this),
                 this.behavior.animateHide(this).then(() => {
+                    this.emit(new LayerEvent("hidden") as E)
                     this.dispose()
                 })
             ])
