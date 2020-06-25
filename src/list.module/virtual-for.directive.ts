@@ -157,42 +157,56 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         shareReplay(1)
     )
 
-    private requestRange$ = this.destruct.subscription(this.renderRange$).pipe(
-        withPrevious(merge(this.reset$, this._refresh)),
-        map(([rrOld, rrNew]) => {
-            let nextPage: number
+    private _requestRange$ = this.destruct.subscription(this.renderRange$).pipe(
 
-            if (!rrOld || rrOld.begin <= rrNew.begin) {
-                nextPage = Math.floor((rrOld ? rrOld.end : 0) / this.itemsPerRequest) + 1
-            } else {
-                nextPage = Math.max(1, Math.floor(rrOld.begin / this.itemsPerRequest) - 1)
-            }
-
-            return new NzRange(
-                Math.max(0, nextPage - 1) * this.itemsPerRequest,
-                nextPage * this.itemsPerRequest)
-        }),
-        withPrevious(this.reset$),
-        switchMap(skipWhenRangeIsEq),
         shareReplay(1)
     )
 
+    private requestRange$ = merge(
+        this.renderRange$.pipe(
+            withPrevious(this.reset$),
+            map(([rrOld, rrNew]) => {
+                let nextPage: number
+
+                if (!rrOld || rrOld.begin <= rrNew.begin) {
+                    nextPage = Math.floor((rrOld ? rrOld.end : 0) / this.itemsPerRequest) + 1
+                } else {
+                    nextPage = Math.max(1, Math.floor(rrOld.begin / this.itemsPerRequest) - 1)
+                }
+
+                return new NzRange(
+                    Math.max(0, nextPage - 1) * this.itemsPerRequest,
+                    nextPage * this.itemsPerRequest)
+            }),
+            withPrevious(this.reset$),
+            switchMap(skipWhenRangeIsEq),
+        ),
+        this._refresh.pipe(
+            switchMap(v => this.renderRange$),
+            map(rr => {
+                let currentPage = Math.floor((rr ? rr.begin : 0) / this.itemsPerRequest)
+                return new NzRange(
+                    currentPage * this.itemsPerRequest,
+                    (currentPage + 1) * this.itemsPerRequest,
+                )
+            })
+        )
+    ).pipe(shareReplay(1))
+
     private items$: Observable<Items<T>> = this.destruct.subscription(
         merge(
-            merge(this.requestRange$, this._refresh)
-                .pipe(
-                    switchMap(_ => this.requestRange$.pipe(take(1))),
-                    switchMap(rr => {
-                        if (this._nzVirtualForOf && this._nzVirtualForOf.loadRange(rr)) {
-                            return EMPTY
-                        }
-                        return of(null)
-                    })
-                ),
+            this.requestRange$.pipe(
+                switchMap(rr => {
+                    if (this._nzVirtualForOf && this._nzVirtualForOf.loadRange(rr)) {
+                        return EMPTY
+                    }
+                    return of(null)
+                })
+            ),
             this._itemsChanged
         ))
         .pipe(
-            switchMap(_ => this.renderRange$.pipe(take(1))),
+            switchMap(_ => this.renderRange$),
             map(rr => {
                 return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             })
