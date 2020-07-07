@@ -58,7 +58,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         }
     }
     public get trueValue(): T { return this._trueValue }
-    protected _trueValue: T
+    protected _trueValue: T = true as any
 
     @Input("false-value")
     public set falseValue(val: T) {
@@ -68,7 +68,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         }
     }
     public get falseValue(): T { return this._falseValue }
-    protected _falseValue: T
+    protected _falseValue: T = false as any
 
     @Input("indeterminate-value")
     public set indeterminateValue(val: T) {
@@ -205,17 +205,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
                 return { checked: true, indeterminate: true }
             }
         } else if (this._checked) {
-            if (this._trueValue != null) {
-                return this._trueValue
-            } else {
-                return true
-            }
+            return this._trueValue
         } else {
-            if (this._falseValue != null) {
-                return this._falseValue
-            } else {
-                return false
-            }
+            return this._falseValue
         }
     }
 }
