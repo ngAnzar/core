@@ -157,11 +157,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         shareReplay(1)
     )
 
-    private _requestRange$ = this.destruct.subscription(this.renderRange$).pipe(
-
-        shareReplay(1)
-    )
-
     private requestRange$ = merge(
         this.renderRange$.pipe(
             withPrevious(this.reset$),

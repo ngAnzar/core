@@ -255,9 +255,9 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         (this as any).isEmpty = this.range.length === 0
 
         if (items.length) {
-            (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length);
-            (this._itemsStream as EventEmitter<Items<T>>).emit(this._collectRange(r))
+            (this as any).lastIndex = Math.max(this.lastIndex, r.begin + items.length)
         }
+        (this._itemsStream as EventEmitter<Items<T>>).emit(this._collectRange(r))
     }
 
     protected _collectRange(r: NzRange): Items<T> {
