@@ -43,6 +43,7 @@ export abstract class ProgressComponent implements OnDestroy {
     private _source: Observable<ProgressEvent>
     private _sourceS: Subscription
 
+    @Input()
     public set percent(val: number) {
         if (this._percent !== val) {
             this._percent = val

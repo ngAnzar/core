@@ -25,8 +25,8 @@ import { ViewportAreaDirective } from "./viewport/viewport-area.directive"
 import { ViewportItemDirective } from "./viewport/viewport-item.directive"
 import { ViewportContentComponent } from "./viewport/viewport-content.component"
 
-import { ViewportService } from "./viewport.service"
-export { ViewportService }
+import { ViewportService, VPPanelStyle } from "./viewport.service"
+export { ViewportService, VPPanelStyle }
 
 
 @NgModule({
