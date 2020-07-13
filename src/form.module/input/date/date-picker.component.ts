@@ -139,7 +139,13 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
 
                     if (this.isAllowed(day)) {
                         if (isSameDay(value, day)) {
+                            const dayIndex = day.getDate()
+                            const ed = externalData ? externalData[dayIndex] : null
                             dd = { ...dd, ...SELECTED_DATA }
+
+                            if (ed) {
+                                dd.data = ed.data || dd.data
+                            }
                         } else if (sameMonth) {
                             const dayIndex = day.getDate()
                             if (externalData && externalData[dayIndex]) {
