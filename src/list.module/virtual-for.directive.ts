@@ -177,7 +177,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             switchMap(skipWhenRangeIsEq),
         ),
         this._refresh.pipe(
-            switchMap(v => this.renderRange$),
+            switchMap(v => this.renderRange$.pipe(take(1))),
             map(rr => {
                 let currentPage = Math.floor((rr ? rr.begin : 0) / this.itemsPerRequest)
                 return new NzRange(

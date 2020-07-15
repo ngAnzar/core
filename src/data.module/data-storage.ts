@@ -148,7 +148,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
 
-        if (this.cachedRanges.contains(r) || this.endReached) {
+        if (this.cachedRanges.contains(r) && this.endReached) {
             return false
         }
 
@@ -227,6 +227,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     protected reset(skipEvent?: boolean) {
+        if (this._abortLoad) {
+            this._abortLoad.complete()
+            delete this._abortLoad
+        }
+
         this.cache = []
         this.cachedRanges = new NzRangeList()
         this.pendingRanges = []
