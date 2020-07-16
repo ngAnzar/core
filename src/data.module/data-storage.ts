@@ -16,7 +16,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     public readonly meta = new DictField<Meta<T>>()
     public readonly range: NzRange = new NzRange(0, 0)
     public readonly lastIndex: number = 0
-    public readonly endReached: boolean = false
+    public readonly endReached: number = Infinity
     public readonly destruct = new Destruct(() => {
         delete this.cache
         this.cachedRanges.length = 0
@@ -148,7 +148,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             r = new NzRange(Math.min(this.total, r.begin), Math.min(this.total, r.end))
         }
 
-        if (this.cachedRanges.contains(r) && this.endReached) {
+        if (this.cachedRanges.contains(r)) {
+            return false
+        }
+
+        if (this.endReached <= r.begin) {
             return false
         }
 
@@ -172,10 +176,10 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
                 (this as any).range = items.range || r
                 if (items.total != null) {
                     (this as any).lastIndex = items.total;
-                    (this as any).endReached = items.total <= this.range.end
+                    (this as any).endReached = items.total <= this.range.end ? this.lastIndex : Infinity
                     this.total = items.total
                 } else {
-                    (this as any).endReached = request.length !== items.length
+                    (this as any).endReached = items.length < request.length ? this.range.begin + items.length : Infinity
                 }
                 this._cacheItems(items, this.range)
             })
@@ -238,7 +242,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
         this.total = 0;
         (this as any).lastIndex = 0;
-        (this as any).endReached = false;
+        (this as any).endReached = Infinity;
         (this as any).isBusy = this.source.async;
         (this as any).isEmpty = true
         if (skipEvent !== true) {
