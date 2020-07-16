@@ -15,7 +15,7 @@ import { LayerRef, TemplateLayerRef, ComponentLayerRef } from "./layer-ref"
 import { LayerContainer } from "./layer-container"
 import { LayerBackdropRef } from "./layer-backdrop"
 import type { LayerBehavior } from "./layer-behavior"
-import type { LevitateOptions, BackdropOptions } from "./layer-options"
+import type { LevitateOptions, BackdropOptions, LayerOptions } from "./layer-options"
 
 
 @Injectable()
@@ -47,7 +47,7 @@ export class LayerService {
     }
 
     protected _finalizeRef<T extends LayerRef>(ref: T, behavior: LayerBehavior, provides: StaticProvider[], injector?: Injector): T {
-        let levitate: LevitateRef = this._createLevitateRef(ref as any, behavior.options ? behavior.options.position : null)
+        let levitate: LevitateRef = this._createLevitateRef(ref as any, behavior.options)
         let backdrop: StaticProvider[] = []
         const baseInjector = injector || this.injector
 
@@ -79,20 +79,23 @@ export class LayerService {
         return ref
     }
 
-    protected _createLevitateRef(ref: LayerRef<any>, opt?: LevitateOptions): LevitateRef {
+    protected _createLevitateRef(ref: LayerRef<any>, opt?: LayerOptions): LevitateRef {
         opt = opt || {}
+        const position = opt.position
 
         let base: Levitating = {
             ref: ref.container,
-            align: opt.align || "center",
-            margin: opt.margin
+            align: position.align || "center",
+            margin: position.margin,
+            maxWidth: opt.maxWidth,
+            maxHeight: opt.maxHeight,
         }
 
-        if (!opt.constraint) {
-            opt.constraint = { ref: "viewport" }
+        if (!position.constraint) {
+            position.constraint = { ref: "viewport" }
         }
 
-        return this.levitateSvc.levitate(base, opt.anchor, opt.constraint)
+        return this.levitateSvc.levitate(base, position.anchor, position.constraint)
     }
 
     protected _getBackdrop(options: BackdropOptions): LayerBackdropRef {

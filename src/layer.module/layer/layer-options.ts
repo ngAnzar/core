@@ -28,6 +28,8 @@ export interface LayerOptions {
     backdrop?: BackdropOptions
     minWidth?: number
     minHeight?: number
+    maxWidth?: number
+    maxHeight?: number
     elevation?: number
     rounded?: number
     // Can close layer with backButton (esc, or back button on mobile device)

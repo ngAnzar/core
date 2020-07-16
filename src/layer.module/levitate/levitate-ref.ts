@@ -72,6 +72,13 @@ export class LevitateRef {
         // TODO: CHECK EQ
         (this as any).position = pos
 
+        if (this.levitate.maxWidth) {
+            (pos as { maxWidth: number }).maxWidth = Math.min(pos.maxWidth, this.levitate.maxWidth)
+        }
+        if (this.levitate.maxHeight) {
+            (pos as { maxHeight: number }).maxHeight = Math.min(pos.maxHeight, this.levitate.maxHeight)
+        }
+
         // console.log(JSON.parse(JSON.stringify(pos)))
         pos.applyToElement(this.levitate.ref, this.concrete)
     }
@@ -126,6 +133,12 @@ export class LevitateRef {
 
             let s1 = this.getRectObserver(this.levitate).subscribe((val) => {
                 rects.levitate = val
+                if (this.levitate.maxWidth) {
+                    val.width = Math.min(val.width, this.levitate.maxWidth)
+                }
+                if (this.levitate.maxHeight) {
+                    val.height = Math.min(val.height, this.levitate.maxHeight)
+                }
                 if (levitateOrigin) {
                     val.setOrigin(levitateOrigin)
                 }

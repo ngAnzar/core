@@ -39,10 +39,11 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
     @ViewChild("scroller", { read: ScrollerComponent, static: false }) protected readonly scroller: ScrollerComponent
     @ViewChild("createNewAction", { read: ListActionComponent, static: false }) protected readonly createNewAction: ListActionComponent
 
-    public static readonly PRELOAD_COUNT = 42
+    public static readonly PRELOAD_COUNT = 20
 
     public readonly gridTemplateRows: SafeStyle
     public readonly hasCreateNew: boolean = false
+    public readonly itemsPerRequest = AutocompleteComponent.PRELOAD_COUNT
 
     public get isNotFound() {
         return this.source.storage && this.source.storage.isEmpty && !this.source.storage.isBusy
@@ -74,18 +75,15 @@ export class AutocompleteComponent<T extends Model> extends Destructible impleme
             })
 
         const storage = this.source.storage
-        merge(storage.items, storage.busy, storage.empty)
+        merge(storage.items, storage.busy, storage.empty, this.actions.changes)
             .pipe(
+                startWith(null),
                 // debounceTime(20),
                 takeUntil(this.destruct.on)
             )
             .subscribe(event => {
                 this._updateActions()
             })
-
-        this.destruct.subscription(this.actions.changes).pipe(startWith(this.actions)).subscribe(items => {
-            this._updateActions()
-        })
     }
 
     public onItemsRendered(event: RenderedEvent<any>) {

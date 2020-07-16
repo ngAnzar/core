@@ -40,6 +40,11 @@ export class ChipComponent extends AnzarComponent {
         event.preventDefault()
     }
 
+    @HostListener("mousedown", ["$event"])
+    public onMouseDown(event: Event) {
+        event.preventDefault()
+    }
+
     @HostListener("tap", ["$event"])
     public onTap(event: any) {
         if (this.selectable) {

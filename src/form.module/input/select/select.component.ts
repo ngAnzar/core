@@ -200,7 +200,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get autoTrigger(): boolean { return !this.readonly || this._autoTrigger }
+    public get autoTrigger(): boolean { return !this.readonly && this._autoTrigger }
     private _autoTrigger: boolean = false
 
     public set inputState(val: InputState) {
@@ -434,8 +434,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         )
         this.destruct.subscription(openDD).subscribe(opened => {
             if (opened) {
+                // console.log("_showDropDown")
                 this._showDropDown()
             } else {
+                // console.log("_hideDropDown")
                 this._hideDropDown()
             }
             this._detectChanges()
@@ -584,6 +586,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 },
                 minWidth: targetEl.offsetWidth + margin.left + margin.right,
                 minHeight: this.editable ? 0 : targetEl.offsetHeight,
+                maxHeight: 48 * 7,
                 initialWidth: targetEl.offsetWidth + margin.left + margin.right,
                 initialHeight: this.editable ? 0 : targetEl.offsetHeight,
                 elevation: 6
@@ -718,13 +721,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this.opened) {
             this.opened = false
         } else {
-            if (this.input) {
-                this.input.nativeElement.focus()
-            }
-
             this.inputState = "querying"
             this._updateFilter(null)
             this.opened = true
+
+            if (this.input) {
+                this.input.nativeElement.focus()
+            }
         }
     }
 

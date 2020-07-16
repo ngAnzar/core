@@ -212,8 +212,7 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
             this.portal = new ComponentPortal(this.componentCls, this.vcr, this.injector);
             (this as any).component = this.outlet.portal.attachComponentPortal(this.portal)
             this.component.location.nativeElement.classList.add("nz-layer-content")
-            // TODO: Maybe need
-            // this.component.changeDetectorRef.detectChanges()
+            this.component.changeDetectorRef.detectChanges()
         }
     }
 }

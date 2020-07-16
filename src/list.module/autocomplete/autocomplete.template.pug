@@ -25,42 +25,41 @@
 
 
 .container(fxFlex="grow", fxLayout="column inline", tabindex="0")
+  ng-template([ngIf]="!hasCreateNew && isNotFound", [ngIfElse]="ifFound")
+    .nz-list-empty.notfound(*ngIf="", fxFlex="none") Nem található
 
-  .nz-list-empty.notfound(*ngIf="!hasCreateNew && isNotFound", fxFlex="none") Nem található
+  ng-template(#ifFound)
+    .nz-scroller.scroller(#scroller, fxFlex="grow")
+      .nz-list.list(#list, [style.gridTemplateRows]="gridTemplateRows", scrollable)
+        ng-template([ngIf]="actionsByPosition.first && !source.isBusy")
+          ng-template(ngFor, [ngForOf]="actionsByPosition.first", let-action, let-index="index")
+            .nz-list-item.item.action(
+                [style.gridRow]="index + 1",
+                [selectableAction]="action.model",
+                [selectionIndex]="index + 1",
+                color="light-accent")
+              ng-container([ngTemplateOutlet]="action.tpl")
 
-  //- TODO: loading anim
+        ng-template(nzVirtualFor,
+            [nzVirtualForOf]="source",
+            let-virtual,
+            let-index="index",
+            let-first="first",
+            let-last="last",
+            [fixedItemHeight]="48",
+            [itemsPerRequest]="itemsPerRequest",
+            (rendered)="onItemsRendered($event)")
+          .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)")
+            ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit:virtual}")
 
-  .nz-scroller.scroller(#scroller, *ngIf="source.storage", fxFlex="grow")
-    .nz-list.list(#list, [style.gridTemplateRows]="gridTemplateRows", scrollable)
-      ng-template([ngIf]="actionsByPosition.first")
-        ng-template(ngFor, [ngForOf]="actionsByPosition.first", let-action, let-index="index")
-          .nz-list-item.item.action(
-              [style.gridRow]="index + 1",
-              [selectableAction]="action.model",
-              [selectionIndex]="index + 1",
-              color="light-accent")
-            ng-container([ngTemplateOutlet]="action.tpl")
-
-      ng-template(nzVirtualFor,
-          [nzVirtualForOf]="source",
-          let-virtual,
-          let-index="index",
-          let-first="first",
-          let-last="last",
-          [fixedItemHeight]="48",
-          [itemsPerRequest]="42",
-          (rendered)="onItemsRendered($event)")
-        .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)")
-          ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit:virtual}")
-
-      ng-template([ngIf]="actionsByPosition.last")
-        ng-template(ngFor, [ngForOf]="actionsByPosition.last", let-action, let-index="index")
-          .nz-list-item.item.action(
-              [style.gridRow]="_offset(index) + source.storage.lastIndex",
-              [selectableAction]="action.model",
-              [selectionIndex]="_offset(index) + source.storage.lastIndex",
-              color="light-accent")
-            ng-container([ngTemplateOutlet]="action.tpl")
+        ng-template([ngIf]="actionsByPosition.last && !source.isBusy")
+          ng-template(ngFor, [ngForOf]="actionsByPosition.last", let-action, let-index="index")
+            .nz-list-item.item.action(
+                [style.gridRow]="_offset(index) + source.storage.lastIndex",
+                [selectableAction]="action.model",
+                [selectionIndex]="_offset(index) + source.storage.lastIndex",
+                color="light-accent")
+              ng-container([ngTemplateOutlet]="action.tpl")
 
 
 nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()")
