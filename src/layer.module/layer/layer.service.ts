@@ -81,7 +81,7 @@ export class LayerService {
 
     protected _createLevitateRef(ref: LayerRef<any>, opt?: LayerOptions): LevitateRef {
         opt = opt || {}
-        const position = opt.position
+        const position = opt.position || {}
 
         let base: Levitating = {
             ref: ref.container,
