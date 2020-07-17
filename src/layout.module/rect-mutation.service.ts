@@ -106,10 +106,17 @@ export class RectMutationService {
                     const ro = new resizeObserver((entries: any) => {
                         for (const entry of entries) {
                             if (entry.borderBoxSize) {
-                                observer.next({
-                                    width: entry.borderBoxSize.inlineSize,
-                                    height: entry.borderBoxSize.blockSize
-                                })
+                                if (entry.borderBoxSize.length > 0) {
+                                    observer.next({
+                                        width: entry.borderBoxSize[0].inlineSize,
+                                        height: entry.borderBoxSize[0].blockSize
+                                    })
+                                } else {
+                                    observer.next({
+                                        width: entry.borderBoxSize.inlineSize,
+                                        height: entry.borderBoxSize.blockSize
+                                    })
+                                }
                             } else {
                                 observer.next({
                                     width: element.offsetWidth,

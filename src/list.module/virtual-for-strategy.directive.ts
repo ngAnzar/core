@@ -45,7 +45,7 @@ export class VirtualForFixedItems extends VirtualForVisibleItems {
     public get fixedItemHeight(): number { return this._fixedItemHeight }
     private _fixedItemHeight: number
 
-    public constructor(@Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective, ) {
+    public constructor(@Inject(ScrollableDirective) private readonly scrollable: ScrollableDirective,) {
         super()
     }
 
