@@ -1,9 +1,9 @@
 import { OnDestroy, NgZone, Inject } from "@angular/core"
 import { Observable, Subject, Subscription } from "rxjs"
-import { startWith, debounceTime } from "rxjs/operators"
+import { startWith, debounceTime, map } from "rxjs/operators"
 
 import { Destruct, IDisposable, Rect, RectProps } from "../../util"
-import { Animation, easeOutCubic } from "../../animation.module"
+import { Animation, easeOutCubic, easeLineral } from "../../animation.module"
 import type { ScrollableDirective } from "./scrollable.directive"
 
 
@@ -38,6 +38,10 @@ export interface ViewportDimensions {
     readonly height: number
     readonly top: number
     readonly left: number
+    readonly virtualHeight: number
+    readonly virtualWidth: number
+    readonly virtualOffsetTop: number
+    readonly virtualOffsetLeft: number
 }
 
 
@@ -49,6 +53,12 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
     public abstract readonly top: number
     public abstract readonly left: number
     public abstract readonly visible: Rect
+
+    public readonly virtualHeight: number
+    public readonly virtualWidth: number
+    public readonly virtualOffsetTop: number
+    public readonly virtualOffsetLeft: number
+
 
     public readonly scroll: Observable<ScrollEvent> = new Subject<ScrollEvent>()
     protected _lastEvent: ScrollEvent
@@ -121,8 +131,8 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
 
 
 export class ImmediateViewport extends Viewport {
-    public readonly scrollWidth: number = 0
-    public readonly scrollHeight: number = 0
+    // public readonly scrollWidth: number = 0
+    // public readonly scrollHeight: number = 0
     public readonly width: number = 0
     public readonly height: number = 0
     public readonly top: number = 0
@@ -130,6 +140,14 @@ export class ImmediateViewport extends Viewport {
     public readonly visible: Rect = new Rect(0, 0, 0, 0)
 
     public readonly change: Observable<Viewport> = new Subject<Viewport>()
+
+    public set scrollWidth(val: number) { this._scrollWidth = val }
+    public get scrollWidth(): number { return this.virtualWidth != null ? this.virtualWidth : this._scrollWidth }
+    private _scrollWidth: number = 0
+
+    public set scrollHeight(val: number) { this._scrollHeight = val }
+    public get scrollHeight(): number { return this.virtualHeight != null ? this.virtualHeight : this._scrollHeight }
+    private _scrollHeight: number = 0
 
     public update(dim: Partial<ViewportDimensions>): boolean {
         dim = dim || {} as any
@@ -225,20 +243,32 @@ export class ScrollerService implements OnDestroy {
             (this as any).vpImmediate = this.destruct.disposable(new ImmediateViewport());
             (this as any).vpRender = this.destruct.disposable(new RenderedViewport(this.vpImmediate))
 
-            this.animation = new ScrollerAnimation((x, y) => {
+            this.animation = new ScrollerAnimation((x, y, vx, vy) => {
+                (this.vpRender as { virtualOffsetLeft: number }).virtualOffsetLeft = vx;
+                (this.vpRender as { virtualOffsetTop: number }).virtualOffsetTop = vy
                 this.vpRender.scrollPosition = {
                     top: y,
                     left: x
                 }
             })
             this.destruct.disposable(this.animation)
-        })
 
-        // this.destruct.subscription(this.vpImmediate.change)
-        //     .pipe(debounceTime(100))
-        //     .subscribe(_ => {
-        //         this.scrollTo(this.vpImmediate.scrollPosition, { smooth: false })
-        //     })
+            this.destruct.subscription(this.vpImmediate.change)
+                // .pipe(debounceTime(100))
+                .subscribe(() => {
+                    if (this.animation && this.animation.isRunning) {
+                        const target = this._scrollToTarget(this.vpImmediate.scrollPosition)
+                        this.animation.update({
+                            toX: target.left,
+                            toY: target.top,
+                            toVX: this.vpImmediate.virtualOffsetLeft || 0,
+                            toVY: this.vpImmediate.virtualOffsetTop || 0,
+                        })
+                    } else {
+                        this.scrollTo(this.vpImmediate.scrollPosition, { smooth: true, velocity: 1 })
+                    }
+                })
+        })
     }
 
     public lockMethod(method: ScrollingMethod): boolean {
@@ -262,13 +292,8 @@ export class ScrollerService implements OnDestroy {
     }
 
     public scrollTo(pos: Partial<ScrollPosition>, options: ScrollOption) {
-        const scrollPos = this.vpImmediate.scrollPosition
-        let target: ScrollPosition = {
-            top: pos.top != null ? pos.top : scrollPos.top,
-            left: pos.left != null ? pos.left : scrollPos.left,
-        }
-        this.vpImmediate.scrollPosition = target
-        target = this.vpImmediate.scrollPosition
+        const target = this._scrollToTarget(pos)
+
         if (options.smooth) {
             const rendered = this.vpRender.scrollPosition
             this.animation.update({
@@ -276,18 +301,34 @@ export class ScrollerService implements OnDestroy {
                 fromY: rendered.top,
                 toX: target.left,
                 toY: target.top,
+                fromVX: this.vpRender.virtualOffsetLeft || 0,
+                toVX: this.vpImmediate.virtualOffsetLeft || 0,
+                fromVY: this.vpRender.virtualOffsetTop || 0,
+                toVY: this.vpImmediate.virtualOffsetTop || 0,
                 velocity: options.velocity
             })
             if (options.done) {
                 this.animation.didDone(options.done)
             }
         } else {
-            this.animation.stop()
+            this.animation.stop();
+            (this.vpRender as { virtualOffsetLeft: number }).virtualOffsetLeft = this.vpImmediate.virtualOffsetLeft;
+            (this.vpRender as { virtualOffsetTop: number }).virtualOffsetTop = this.vpImmediate.virtualOffsetTop
             this.vpRender.scrollPosition = target
             if (options.done) {
                 options.done()
             }
         }
+    }
+
+    private _scrollToTarget(desired: Partial<ScrollPosition>): ScrollPosition {
+        const scrollPos = this.vpImmediate.scrollPosition
+        let target: ScrollPosition = {
+            top: desired.top != null ? desired.top : scrollPos.top,
+            left: desired.left != null ? desired.left : scrollPos.left,
+        }
+        this.vpImmediate.scrollPosition = target
+        return this.vpImmediate.scrollPosition
     }
 
     public scrollBy(pos: Partial<ScrollPosition>, options: ScrollOption) {
@@ -356,6 +397,10 @@ interface AnimProps {
     toX: number
     fromY: number
     toY: number
+    fromVX: number
+    toVX: number
+    fromVY: number
+    toVY: number
     velocity: number
 }
 
@@ -365,20 +410,27 @@ class ScrollerAnimation extends Animation<AnimProps> implements AnimProps, IDisp
     public readonly toX: number
     public readonly fromY: number
     public readonly toY: number
+    public readonly fromVX: number
+    public readonly toVX: number
+    public readonly fromVY: number
+    public readonly toVY: number
     public readonly velocity: number
 
     private _trans = this.transition(easeOutCubic, (diff) => Math.max(1, Math.abs(diff) * this.velocity))
+    private _transV = this.transition(easeLineral)
 
-    public constructor(private onTick: (x: number, y: number) => void) {
+    public constructor(private onTick: (x: number, y: number, vx: number, vy: number) => void) {
         super()
     }
 
     protected tick(timestamp: number): boolean {
         const x = this._trans(timestamp, this.fromX, this.toX)
         const y = this._trans(timestamp, this.fromY, this.toY)
+        const vx = this._transV(timestamp, this.fromVX, this.toVX)
+        const vy = this._transV(timestamp, this.fromVY, this.toVY)
 
-        this.onTick(x.value, y.value)
+        this.onTick(x.value, y.value, vx.value, vy.value)
 
-        return !(x.progress === 1.0 && y.progress === 1.0)
+        return !(x.progress === 1.0 && y.progress === 1.0 && vx.progress === 1.0 && vy.progress === 1.0)
     }
 }

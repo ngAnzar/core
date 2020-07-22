@@ -5,11 +5,12 @@ import {
 import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber, timer } from "rxjs"
 import { startWith, tap, map, switchMap, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil, debounce } from "rxjs/operators"
 
-import { DataSourceDirective, Model, Items, PrimaryKey } from "../data.module"
-import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__, RectProps } from "../util"
-import { ScrollerService } from "./scroller/scroller.service"
-import { ScrollableDirective } from "./scroller/scrollable.directive"
-import { VirtualForVisibleItems } from "./virtual-for-strategy.directive"
+import { DataSourceDirective, Model, Items, PrimaryKey } from "../../data.module"
+import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__, RectProps } from "../../util"
+import { ScrollerService } from "../scroller/scroller.service"
+import { ScrollableDirective } from "../scroller/scrollable.directive"
+import { VirtualForVisibleRange } from "./visible-range"
+import { withPrevious, skipWhenRangeIsEq } from "./utils"
 
 
 const SET_TIMEOUT = __zone_symbol__("setTimeout")
@@ -121,33 +122,44 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private _reset = new Subject()
     private reset$ = this.destruct.subscription(this._reset).pipe(
-        tap(this.visibleItems.clearCache.bind(this.visibleItems)),
+        tap(this.visibleRangeStrategy.reset.bind(this.visibleRangeStrategy)),
         tap(() => {
             let sp = this._scroller.scrollPercent
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
             }
+            this.visibleRangeStrategy.update()
         }),
         share()
     )
 
-    private _scroll = new Subject()
-    private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
-        map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpImmediate)),
-        map((vr: NzRange) => {
-            if (vr.begin === -1) {
-                return new NzRange(0, this.itemsPerRequest)
-            } else {
-                return vr
-            }
-        }),
-        withPrevious(this.reset$),
-        switchMap(skipWhenRangeIsEq),
-        shareReplay(1)
-    )
+    // private _scroll = new Subject()
+    // private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
+    //     map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpImmediate)),
+    //     map((vr: NzRange) => {
+    //         // console.log("visibleRange", vr)
+    //         if (vr.begin === -1) {
+    //             return new NzRange(0, this.itemsPerRequest)
+    //         } else {
+    //             return vr
+    //         }
+    //     }),
+    //     withPrevious(this.reset$),
+    //     switchMap(skipWhenRangeIsEq),
+    //     shareReplay(1)
+    // )
 
-    private renderRange$ = this.destruct.subscription(this.scroll$).pipe(
+    private visibleRange$ = this.visibleRangeStrategy.visibleRange$.pipe(map(vr => {
+        if (vr.begin == null || vr.begin === -1) {
+            return new NzRange(0, this.itemsPerRequest)
+        } else {
+            return vr
+        }
+    }))
+
+    private renderRange$ = this.destruct.subscription(this.visibleRange$).pipe(
         map(vr => {
+            // console.log("visibleRange", vr)
             return new NzRange(
                 Math.max(0, vr.begin - EXTRA_INVISIBLE_COUNT),
                 vr.end + EXTRA_INVISIBLE_COUNT)
@@ -241,9 +253,10 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         }),
         tap(result => {
             if (result.changes.length > 0) {
+                this.visibleRangeStrategy.onBeforeRender(result.currentRange)
                 this._applyChanges(result.changes, result.renderedRange, result.currentRange)
+                this.visibleRangeStrategy.onRender(result.currentRange)
             }
-            this.visibleItems.onRender(result.currentRange)
         }),
         shareReplay(1)
     )
@@ -254,16 +267,11 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         @Inject(ChangeDetectorRef) private readonly _cdr: ChangeDetectorRef,
         @Inject(ScrollerService) private readonly _scroller: ScrollerService,
         @Inject(ScrollableDirective) private readonly _scrollable: ScrollableDirective,
-        @Inject(VirtualForVisibleItems) private readonly visibleItems: VirtualForVisibleItems) {
+        @Inject(VirtualForVisibleRange) private readonly visibleRangeStrategy: VirtualForVisibleRange) {
     }
 
     public ngOnInit() {
         this.destruct.subscription(this.render$).subscribe()
-
-        this.destruct.subscription(merge(this._scroller.vpRender.scroll, this._scroller.vpImmediate.change))
-            // this.destruct.subscription(this._scroller.vpImmediate.scroll)
-            .pipe(startWith(0))
-            .subscribe(this._scroll)
     }
 
     public ngOnDestroy() {
@@ -292,7 +300,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                     return new Observable<RectProps>((subscriber: Subscriber<RectProps>) => {
                         let rafId: any = null
                         const emitRect = () => {
-                            const rect = this.visibleItems.getItemRect(position)
+                            const rect = this.visibleRangeStrategy.getItemRect(position)
                             if (rect) {
                                 subscriber.next(rect)
                                 subscriber.complete()
@@ -336,7 +344,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                 view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
                 view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
                 view.detectChanges()
-                this.visibleItems.onItemUpdate(change.index, view)
+                this.visibleRangeStrategy.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.UPDATE) {
                 // console.log("UPDATE", change.index, vcrIdx)
                 view = this._vcr.get(vcrIdx) as EmbeddedView<T>
@@ -347,13 +355,13 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                 }
                 view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
                 view.detectChanges()
-                this.visibleItems.onItemUpdate(change.index, view)
+                this.visibleRangeStrategy.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.DELETE) {
                 vcrIdx = change.index - delOffset
                 // console.log("DELETE", change.index, vcrIdx, delOffset)
                 view = this._vcr.get(vcrIdx) as EmbeddedView<T>
                 if (view) {
-                    this.visibleItems.onItemRemove(change.index, view)
+                    this.visibleRangeStrategy.onItemRemove(change.index, view)
                     view.context.index = -1
                     this._vcr.detach(vcrIdx)
                     this.reusable.push(view)
@@ -387,29 +395,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 }
 
 
-function skipWhenRangeIsEq(ranges: [NzRange, NzRange]): Observable<NzRange> {
-    const [a, b] = ranges
-    if (a && a.isEq(b)) {
-        return EMPTY
-    } else {
-        return of(b)
-    }
-}
 
-
-function withPrevious<T>(reset?: Observable<any>): (src: Observable<T>) => Observable<[T, T]> {
-    let lastValue: any = null
-    let resetSub = reset ? reset.subscribe(() => lastValue = null) : null
-
-    return (src: Observable<T>) => src.pipe(
-        map((val: T) => {
-            let tmp = lastValue
-            lastValue = val
-            return [tmp as T, val as T]
-        }),
-        finalize<[T, T]>(resetSub ? resetSub.unsubscribe.bind(resetSub) : () => null)
-    )
-}
 
 
 function removeNode(node: Node) {

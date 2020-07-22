@@ -5,7 +5,7 @@ import { take, startWith } from "rxjs/operators"
 import { Destruct, Margin, MarginParsed, parseMargin } from "../../util"
 import { DataSourceDirective, Model, SelectionItems, ISelectable, SelectOrigin } from "../../data.module"
 import { ExlistSwitchHandler } from "./exlist-switch-handler"
-import { VirtualForDirective } from "../virtual-for.directive"
+import { VirtualForDirective } from "../virtual-for/virtual-for.directive"
 import { ScrollerComponent } from "../scroller/scroller.component"
 import { ExlistItemComponent } from "./exlist-item.component"
 
@@ -93,7 +93,7 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
                 const opened = changes.length && changes[0] ? changes[0] : null
                 if (opened) {
                     this._updateOpenedRowByScroll()
-                    this.virtualList.scrollIntoViewport(opened)
+                    this.scrollIntoViewport(opened)
                 }
             })
 
@@ -113,6 +113,10 @@ export class ExlistComponent<T extends Model = Model> implements OnDestroy, OnIn
                     this.opened.set([model], origin)
                 }
             })
+    }
+
+    public scrollIntoViewport(model: T) {
+        this.virtualList.scrollIntoViewport(model)
     }
 
     public _handleOnDestroy(cmp: ISelectable<T>): void {

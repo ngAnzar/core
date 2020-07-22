@@ -34,10 +34,30 @@ export class ScrollableDirective implements OnInit {
         this.zone.runOutsideAngular(() => {
             service.destruct.subscription(service.vpRender.scroll).subscribe(event => {
                 const pos = event.position
-                nativeEl.style.willChange = "transform"
-                nativeEl.style.transform = `translate3d(-${pos.left}px, -${pos.top}px, 0)`
-                nativeEl.style.willChange = null
+
+                const left = service.vpRender.virtualOffsetLeft != null
+                    ? Math.max(0, pos.left - service.vpRender.virtualOffsetLeft)
+                    : pos.left
+
+                const top = service.vpRender.virtualOffsetTop != null
+                    ? Math.max(0, pos.top - service.vpRender.virtualOffsetTop)
+                    : pos.top
+
+                // console.log("virtualOffsetTop", service.vpRender.virtualOffsetTop)
+                // const top = pos.top
+                // nativeEl.style.willChange = "transform"
+                nativeEl.style.transform = `translate3d(-${left}px, -${top}px, 0)`
+                // nativeEl.style.willChange = null
             })
+
+            // service.destruct.subscription(service.vpRender.render).subscribe(({ top, left }) => {
+
+            //     console.log("virtualOffsetTop", service.vpRender.virtualOffsetTop)
+            //     // const top = pos.top
+            //     // nativeEl.style.willChange = "transform"
+            //     nativeEl.style.transform = `translate3d(-${left}px, -${top}px, 0)`
+            //     // nativeEl.style.willChange = null
+            // })
 
             service.destruct.subscription(this.rectMutation.watchDimension(nativeEl)).subscribe(dim => {
                 service.vpImmediate.update({
@@ -63,14 +83,27 @@ export class ScrollableDirective implements OnInit {
             return null
         }
 
+        let result: Rect
+
         if (el.nodeType === 1) {
-            return this._getRect(el as HTMLElement)
+            result = this._getRect(el as HTMLElement)
             // return this._getRect(el as HTMLElement)
         } else {
             let selfRect = getBoundingClientRect(this.el.nativeElement)
             let elRect = getBoundingClientRect(el)
-            return new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
+            result = new Rect(elRect.left - selfRect.left, elRect.top - selfRect.top, elRect.width, elRect.height)
         }
+
+        const scroller = this.scroller.service
+
+        if (scroller.vpRender.virtualOffsetTop != null) {
+            result.top += scroller.vpRender.virtualOffsetTop
+        }
+        if (scroller.vpRender.virtualOffsetLeft != null) {
+            result.left += scroller.vpRender.virtualOffsetLeft
+        }
+
+        return result
     }
 
     private _getRect(el: HTMLElement) {

@@ -1,12 +1,12 @@
 import {
     Component, Inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef,
-    EventEmitter, OnDestroy, NgZone, ViewChild, HostBinding
+    EventEmitter, OnDestroy, NgZone, ViewChild, HostBinding, Optional
 } from "@angular/core"
 import { EventManager } from "@angular/platform-browser"
 import { AnimationBuilder, AnimationPlayer } from "@angular/animations"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
-import { startWith } from "rxjs/operators"
+
 
 import { __zone_symbol__ } from "../../util"
 import { ISelectable, Model, SelectOrigin } from "../../data.module"
@@ -129,7 +129,7 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
 
         if (newValue) {
             this.onAnimation(finished => {
-                this.scroller.scrollIntoViewport(this.el.nativeElement)
+                this.list.scrollIntoViewport(this.model)
                 finished && this._updateByScroll()
             })
         }

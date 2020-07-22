@@ -3,13 +3,13 @@ import {
     ViewChild, QueryList, OnInit
 } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
-import { Subject, merge, Observable } from "rxjs"
-import { startWith, filter, debounceTime, takeUntil } from "rxjs/operators"
+import { merge } from "rxjs"
+import { startWith, filter, takeUntil } from "rxjs/operators"
 
 import { DataSourceDirective, Model, SelectionModel } from "../../data.module"
 import { ListDirective } from "../list/list.directive"
 import { ListActionComponent } from "../list/list-action.component"
-import { RenderedEvent } from "../virtual-for.directive"
+import { RenderedEvent } from "../virtual-for/virtual-for.directive"
 import { Destructible, __zone_symbol__ } from "../../util"
 import { ScrollerComponent } from "../scroller/scroller.component"
 import { LayerRef } from "../../layer.module"

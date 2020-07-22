@@ -8,6 +8,8 @@ export type Transition = (t: number, from: number, to: number) => { progress: nu
 
 
 export abstract class Animation<T> {
+    public readonly isRunning: boolean = false
+
     protected beginTime: number
     protected rafId: any
     protected lastFrameTime: number
@@ -69,12 +71,14 @@ export abstract class Animation<T> {
     }
 
     public play() {
+        (this as { isRunning: boolean }).isRunning = true
         if (!this.rafId) {
             this.rafId = window[RAF](this._tick)
         }
     }
 
     public stop() {
+        (this as { isRunning: boolean }).isRunning = true
         if (this.rafId) {
             cancelAnimationFrame(this.rafId)
             delete this.rafId

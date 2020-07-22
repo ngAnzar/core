@@ -59,8 +59,12 @@ import { TreeComponent } from "./tree/tree.component"
 import { TreeItemComponent } from "./tree/tree-item.component"
 export { TreeComponent, TreeItemComponent }
 
-import { VirtualForDirective } from "./virtual-for.directive"
-import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-strategy.directive"
+// import { VirtualForDirective } from "./virtual-for.directive"
+// import { VirtualForFixedItems, VirtualForVaryingItems, VirtualForVaryingItemsIntersection } from "./virtual-for-strategy.directive"
+
+
+import { VirtualForDirective } from "./virtual-for/virtual-for.directive"
+import { VF_FixedItemHeight, VF_VaryingItemHeight } from "./virtual-for/visible-range"
 
 
 @NgModule({
@@ -108,8 +112,11 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
         TreeItemComponent,
 
         VirtualForDirective,
-        VirtualForFixedItems,
-        VirtualForVaryingItems
+        VF_FixedItemHeight,
+        VF_VaryingItemHeight,
+        // VirtualForFixedItems,
+        // VirtualForVaryingItems,
+        // VirtualForVaryingItemsIntersection
     ],
     exports: [
         ExlistComponent,
@@ -141,8 +148,11 @@ import { VirtualForFixedItems, VirtualForVaryingItems } from "./virtual-for-stra
         TreeComponent,
 
         VirtualForDirective,
-        VirtualForFixedItems,
-        VirtualForVaryingItems
+        VF_FixedItemHeight,
+        VF_VaryingItemHeight,
+        // VirtualForFixedItems,
+        // VirtualForVaryingItems,
+        // VirtualForVaryingItemsIntersection
     ],
     entryComponents: [
         AutocompleteComponent
