@@ -10,7 +10,7 @@ const RAF = __zone_symbol__("requestAnimationFrame")
 
 export function skipWhenRangeIsEq(ranges: [NzRange, NzRange]): Observable<NzRange> {
     const [a, b] = ranges
-    if (a && a.isEq(b)) {
+    if (a && b && a.isEq(b)) {
         return EMPTY
     } else {
         return of(b)

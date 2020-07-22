@@ -13,8 +13,6 @@ import { VirtualForVisibleRange } from "./visible-range"
 import { withPrevious, skipWhenRangeIsEq } from "./utils"
 
 
-const SET_TIMEOUT = __zone_symbol__("setTimeout")
-const CLEAR_TIMEOUT = __zone_symbol__("clearTimeout")
 const requestAnimationFrame = __zone_symbol__("requestAnimationFrame")
 const cancelAnimationFrame = __zone_symbol__("cancelAnimationFrame")
 
@@ -128,7 +126,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (sp.top !== 0 || sp.left !== 0) {
                 this._scroller.scrollTo({ top: 0, left: 0 }, { smooth: false })
             }
-            this.visibleRangeStrategy.update()
         }),
         share()
     )
@@ -149,17 +146,23 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     //     shareReplay(1)
     // )
 
-    private visibleRange$ = this.visibleRangeStrategy.visibleRange$.pipe(map(vr => {
-        if (vr.begin == null || vr.begin === -1) {
-            return new NzRange(0, this.itemsPerRequest)
-        } else {
-            return vr
-        }
-    }))
+    private visibleRange$ = merge(
+        this.visibleRangeStrategy.visibleRange$,
+        this.reset$.pipe(tap(this.visibleRangeStrategy.update.bind(this.visibleRangeStrategy)))
+    ).pipe(
+        switchMap(_ => this.visibleRangeStrategy.visibleRange$.pipe(take(1))),
+        map(vr => {
+            if (vr.begin == null || vr.begin === -1) {
+                return new NzRange(0, this.itemsPerRequest)
+            } else {
+                return vr
+            }
+        }),
+        shareReplay(1)
+    )
 
     private renderRange$ = this.destruct.subscription(this.visibleRange$).pipe(
         map(vr => {
-            // console.log("visibleRange", vr)
             return new NzRange(
                 Math.max(0, vr.begin - EXTRA_INVISIBLE_COUNT),
                 vr.end + EXTRA_INVISIBLE_COUNT)
@@ -203,6 +206,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     private items$: Observable<Items<T>> = this.destruct.subscription(
         merge(
             this.requestRange$.pipe(
+                // switchMap(x => this.requestRange$.pipe(take(1))),
                 switchMap(rr => {
                     if (this._nzVirtualForOf && this._nzVirtualForOf.loadRange(rr)) {
                         return EMPTY

@@ -21,24 +21,18 @@ const _IntersectionObserver = window[INTERSECTION_OBSERVER]
 export abstract class VirtualForVisibleRange extends Destructible {
     protected readonly _update = new Subject()
     protected readonly _reset = new Subject()
-    protected readonly _visibleRange = new Subject<NzRange>()
+    // protected readonly _visibleRange = new Subject<NzRange>()
     protected isPaused: number = 0
 
-    public readonly visibleRange$: Observable<NzRange> = merge(
-        this._update.pipe(
-            filter(v => this.isPaused === 0),
-            // buffer(),
-            map(_ => this.getVisibleRange(this.scroller.vpImmediate))
-        ),
-        this._visibleRange.pipe(
-            filter(v => this.isPaused === 0),
-            // buffer()
-        )
-    ).pipe(
+    public readonly visibleRange$: Observable<NzRange> = this._update.pipe(
+        filter(v => this.isPaused === 0),
+        // buffer(),
+        map(_ => this.getVisibleRange(this.scroller.vpImmediate)),
         withPrevious(this._reset),
         switchMap(skipWhenRangeIsEq),
         shareReplay(1)
     )
+
 
     public constructor(public readonly scroller: ScrollerService) {
         super()
