@@ -72,7 +72,7 @@ export class InputModel<T> extends AbstractControlDirective {
             return this._isEmpty
         }
         const val = this.value as any
-        return !val || val.length === 0 || (isPlainObject(val) && Object.keys(val).length === 0)
+        return val == null || val.length === 0 || (isPlainObject(val) && Object.keys(val).length === 0)
     }
     public set isEmpty(val: boolean) {
         this._isEmpty = val

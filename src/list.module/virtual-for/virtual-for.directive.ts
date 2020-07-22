@@ -146,11 +146,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     //     shareReplay(1)
     // )
 
-    private visibleRange$ = merge(
-        this.visibleRangeStrategy.visibleRange$,
-        this.reset$.pipe(tap(this.visibleRangeStrategy.update.bind(this.visibleRangeStrategy)))
-    ).pipe(
-        switchMap(_ => this.visibleRangeStrategy.visibleRange$.pipe(take(1))),
+    private visibleRange$ = this.visibleRangeStrategy.visibleRange$.pipe(
         map(vr => {
             if (vr.begin == null || vr.begin === -1) {
                 return new NzRange(0, this.itemsPerRequest)
@@ -276,6 +272,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     public ngOnInit() {
         this.destruct.subscription(this.render$).subscribe()
+        this.destruct.subscription(this.reset$).subscribe(this.visibleRangeStrategy.update.bind(this.visibleRangeStrategy))
     }
 
     public ngOnDestroy() {
