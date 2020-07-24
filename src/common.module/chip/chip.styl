@@ -1,6 +1,6 @@
 .nz-chip
   display: flex
-  nz-typo: $typo.subtitle2
+  nz-typo: $typo.body2
   border-radius: (nz-local-grid-size(7) / 2)
   height: nz-local-grid-size(7)
   flex-direction: row
@@ -8,5 +8,13 @@
   padding: 0 nz-local-grid-size(3)
   cursor: default
   user-select: none
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
 
   nz-theme-component-states($include:"base" "selected")
+
+.nz-chip *:not(.nz-button)
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
