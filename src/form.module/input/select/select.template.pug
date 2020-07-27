@@ -88,12 +88,12 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
 .nz-button.trigger(*ngIf="!hideTrigger", (tap)="_onTriggerClick($event)", (mousedown)="$event.preventDefault()", tabindex="-1", color="common", variant="tiny icon")
   i.nz-icon(bind-attr.class=`triggerIcon || '${style(icon("mdi/chevron-down"))}'`)
 
-ng-template(#default_selected_single let-item)
+ng-template(#default_selected_single, let-item)
   span.noselect {{ getDisplayValue(item) }}
 
-ng-template(#default_selected_multi let-item)
+ng-template(#default_selected_multi, let-item)
   span.nz-chip.chip-item([selectable]="item", [selectionModel]="selection", [removable]="!readonly")
     ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit: item, chip: true}")
 
-ng-template(#default_item let-item)
+ng-template(#default_item, let-item)
   span.noselect {{ getDisplayValue(item) }}
