@@ -4,7 +4,7 @@ import { LayerService } from "../layer/layer.service"
 import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
 import { Destruct, Align } from "../../util"
 
-import { QtipComponent } from "./qtip.component"
+import { QtipComponent, QTIP_TEXT } from "./qtip.component"
 import { QtipBehavior } from "./qtip.behavior"
 import { QtipAlignDirective } from "./qtip-align.directive"
 import { QtipManager } from "./qtip.manager"
@@ -81,9 +81,10 @@ export class QtipDirective implements OnDestroy {
                     }
                 }
             })
-            this._layerRef = this.layerSvc.createFromComponent(QtipComponent, behavior, this.parentlayer)
+            this._layerRef = this.layerSvc.createFromComponent(QtipComponent, behavior, this.parentlayer, [
+                { provide: QTIP_TEXT, useValue: this.text }
+            ])
             this._layerRef.show()
-            this._layerRef.component.instance.text = this.text
         }
     }
 

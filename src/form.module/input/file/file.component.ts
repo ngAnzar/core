@@ -13,7 +13,9 @@ export class UploadedFile extends Model {
     @Field() public name: string
     @Field() public size: number
     @Field() public downloadUrl: string
+    @Field() public inlineUrl: string
     @Field() public mime: string
+    @Field() public meta: { [key: string]: any }
 }
 
 
@@ -58,7 +60,7 @@ export class FileInputComponent extends InputComponent<File | UploadedFile> {
         (this as { file: File }).file = null;
         (this as { uploaded: boolean }).uploaded = false;
         (this as { uploadInProgress: boolean }).uploadInProgress = false;
-        (this as { downloadUrl: string }).downloadUrl = null;
+        (this as { downloadUrl: string }).downloadUrl = null
 
         if (value instanceof File) {
             (this as { file: File }).file = value
@@ -67,13 +69,13 @@ export class FileInputComponent extends InputComponent<File | UploadedFile> {
             (this as { file: any }).file = value;
             (this as { uploaded: boolean }).uploaded = true;
             (this as { uploadInProgress: boolean }).uploadInProgress = false;
-            (this as { downloadUrl: string }).downloadUrl = value.downloadUrl;
+            (this as { downloadUrl: string }).downloadUrl = value.downloadUrl
             this.filename.setValue(value.name)
         } else {
             (this as { file: File }).file = null
             this.filename.setValue(null)
         }
-        this.cdr.detectChanges()
+        this.cdr.markForCheck()
     }
 
     public _clearValue(event: Event) {
@@ -81,7 +83,7 @@ export class FileInputComponent extends InputComponent<File | UploadedFile> {
 
         this._renderValue(null)
         this.model.emitValue(null)
-        this.cdr.detectChanges()
+        this.cdr.markForCheck()
     }
 
     public onFileChange(event: Event) {

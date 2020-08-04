@@ -1,5 +1,6 @@
 import { Point } from "./point"
 import { Align, AlignInput, HAlign, VAlign, parseAlign, Margin, MarginParsed, parseMargin } from "./align"
+import { SCALE_METHODS } from "./scale"
 
 const DEFAULT_ALIGN: Align = { horizontal: "left", vertical: "top" }
 
@@ -70,6 +71,8 @@ export class Rect implements RectProps {
 
     public readonly origin: Align
     public readonly margin: MarginParsed
+    // public readonly scaleX: number = 1
+    // public readonly scaleY: number = 1
 
     private _x: number
     private _y: number
@@ -213,6 +216,49 @@ export class Rect implements RectProps {
             this._y = y
         }
     }
+
+    // public crop(crop: Rect) {
+    //     const x = this.x + crop.x
+    //     const y = this.y + crop.y
+    //     const w = crop.width
+    //     const h = crop.height
+    //     const result = new Rect(
+    //         Math.max(0, Math.min(x, this.right)),
+    //         Math.max(0, Math.min(y, this.bottom)),
+    //         Math.max(0, Math.min(w, this.width)),
+    //         Math.max(0, Math.min(h, this.bottom)),
+    //     )
+
+    //     // (result as { margin: MarginParsed }).margin = {
+    //     //     top: result.y,
+    //     //     right: this.right - result.right,
+    //     //     bottom: this.bottom - result.bottom,
+    //     //     left: result.y,
+    //     // }
+
+    //     return result
+    // }
+
+    // public scale(method: keyof typeof SCALE_METHODS, width: number, height: number, minScale: number = null, maxScale: number = null) {
+    //     const s = SCALE_METHODS[method](this.width, this.height, width, height, minScale, maxScale)
+
+
+    //     // const ow = this.margin ? this.margin.left + this.margin.right + this.width : this.width
+    //     // const oh = this.margin ? this.margin.top + this.margin.bottom + this.height : this.height
+    //     // const oScaleX = this.width / ow
+    //     // const oScaleY = this.height / oh
+
+    //     const result = new Rect(
+    //         (this.x * s.scaleX) + s.x,
+    //         (this.y * s.scaleY) + s.y,
+    //         s.width,
+    //         s.height
+    //     );
+
+    //     (result as { scaleX: number }).scaleX = s.scaleX;
+    //     (result as { scaleY: number }).scaleY = s.scaleY
+    //     return result
+    // }
 }
 
 

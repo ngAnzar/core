@@ -4,6 +4,10 @@ import { DOCUMENT } from "@angular/common"
 import { Observable, Subject, Observer, timer, of } from "rxjs"
 import { map, distinctUntilChanged, switchMap, mapTo } from "rxjs/operators"
 
+// import { __zone_symbol__ } from "../../util"
+
+// const _MutationObserver = window[__zone_symbol__("MutationObserver")]
+
 
 @Injectable({ providedIn: "root" })
 export class QtipManager {
@@ -63,4 +67,27 @@ export class QtipManager {
     private _onMouseMove = (event: MouseEvent) => {
         this._trigger.next(event)
     }
+
+    // private _watchRemove(el: HTMLElement): Observable<boolean> {
+    //     return Observable.create((observer: Observer<boolean>) => {
+    //         const mutation = new _MutationObserver(mutations => {
+    //             for (const mutation of mutations) {
+    //                 console.log(mutation)
+    //                 if (mutation.type === "childList") {
+
+    //                 }
+    //             }
+    //         })
+    //         if (el.parentNode) {
+    //             console.log("watch parent Node", el.parentNode)
+    //             mutation.observe(document, { childList: true, subtree: true })
+    //             observer.next(true)
+    //         } else {
+    //             observer.next(false)
+    //         }
+    //         return () => {
+    //             mutation.disconnect()
+    //         }
+    //     })
+    // }
 }

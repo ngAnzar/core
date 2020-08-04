@@ -1,5 +1,6 @@
-import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, InjectionToken } from "@angular/core"
 
+export const QTIP_TEXT = new InjectionToken("QTIP_TEXT")
 
 
 @Component({
@@ -15,9 +16,9 @@ export class QtipComponent {
         }
     }
     public get text(): string { return this._text }
-    public _text: string
 
-    public constructor(@Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
-
+    public constructor(
+        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
+        @Inject(QTIP_TEXT) public _text: string) {
     }
 }

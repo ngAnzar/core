@@ -11,13 +11,13 @@ export const qtipAnimation: AnimationSet = {
             "transform-origin": "{{ origin }}",
             "visibility": "visible"
         }),
-        animate(`200ms ease-in`, style({
+        animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
             "opacity": "1",
             "transform": "scale(1)"
         }))
     ],
     hide: [
-        animate(`200ms ease-in`, style({ opacity: 0 }))
+        animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({ opacity: 0 }))
     ]
 }
 

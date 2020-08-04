@@ -32,7 +32,7 @@ export interface FieldMeta {
     save: boolean
     load: boolean
     type: FieldType
-    fields?: Fields[]
+    // fields?: Fields[]
     initEarly: boolean
     primary: boolean
 }
@@ -144,51 +144,51 @@ export function Field(name: string | FieldOptions = {}) {
         // let converter = typeOrConverterFactory(options.map || type)
         let converter
         let meta = {} as FieldMeta
-        let typeList
+        // let typeList
         meta.targetName = propertyKey
         meta.sourceName = options.name || propertyKey
         meta.primary = !!options.primary
 
-        if ("listOf" in options) {
-            typeList = Array.isArray(options.listOf) ? options.listOf : [options.listOf]
-            if (typeList.length === 1) {
-                converter = listFactory(customOrBuiltinFactory(typeList[0]) as any)
-            } else if (!options.map && typeList.length > 1) {
-                throw new Error("Multiple types is not supperted withput map function")
-            }
-            meta.type = { listOf: typeList }
-        } else if ("mapOf" in options) {
-            typeList = Array.isArray(options.mapOf) ? options.mapOf : [options.mapOf]
-            if (typeList.length === 1) {
-                converter = mapFactory(customOrBuiltinFactory(typeList[0]) as any)
-            } else if (!options.map && typeList.length > 1) {
-                throw new Error("Multiple types is not supperted withput map function")
-            }
-            meta.type = { mapOf: typeList }
-        } else if ("type" in options) {
-            typeList = Array.isArray(options.type) ? options.type : [options.type]
-            if (typeList.length === 1) {
-                converter = customOrBuiltinFactory(typeList[0])
-            } else if (!options.map && typeList.length > 1) {
-                throw new Error("Multiple types is not supperted withput map function")
-            }
-            meta.type = { single: typeList }
-        } else if (type) {
-            typeList = [type]
-            if (typeList.length === 1) {
-                converter = customOrBuiltinFactory(typeList[0])
-            } else if (!options.map && typeList.length > 1) {
-                throw new Error("Multiple types is not supperted withput map function")
-            }
-            meta.type = { single: typeList }
-        } else {
-            throw new Error("Missing type annotation")
-        }
+        // if ("listOf" in options) {
+        //     typeList = Array.isArray(options.listOf) ? options.listOf : [options.listOf]
+        //     if (typeList.length === 1) {
+        //         converter = listFactory(customOrBuiltinFactory(typeList[0]) as any)
+        //     } else if (!options.map && typeList.length > 1) {
+        //         throw new Error("Multiple types is not supperted withput map function")
+        //     }
+        //     meta.type = { listOf: typeList }
+        // } else if ("mapOf" in options) {
+        //     typeList = Array.isArray(options.mapOf) ? options.mapOf : [options.mapOf]
+        //     if (typeList.length === 1) {
+        //         converter = mapFactory(customOrBuiltinFactory(typeList[0]) as any)
+        //     } else if (!options.map && typeList.length > 1) {
+        //         throw new Error("Multiple types is not supperted withput map function")
+        //     }
+        //     meta.type = { mapOf: typeList }
+        // } else if ("type" in options) {
+        //     typeList = Array.isArray(options.type) ? options.type : [options.type]
+        //     if (typeList.length === 1) {
+        //         converter = customOrBuiltinFactory(typeList[0])
+        //     } else if (!options.map && typeList.length > 1) {
+        //         throw new Error("Multiple types is not supperted withput map function")
+        //     }
+        //     meta.type = { single: typeList }
+        // } else if (type) {
+        //     typeList = [type]
+        //     if (typeList.length === 1) {
+        //         converter = customOrBuiltinFactory(typeList[0])
+        //     } else if (!options.map && typeList.length > 1) {
+        //         throw new Error("Multiple types is not supperted withput map function")
+        //     }
+        //     meta.type = { single: typeList }
+        // } else {
+        //     throw new Error("Missing type annotation")
+        // }
 
         converter = options.map || converter || customOrBuiltinFactory(type)
         meta.save = options.save !== false
         meta.load = options.load !== false
-        meta.fields = typeList.map(t => Model.getFields(t)).filter(v => !!v)
+        // meta.fields = typeList.map(t => Model.getFields(t)).filter(v => !!v)
 
         if (!descriptor) {
             meta.initEarly = false
@@ -438,22 +438,10 @@ function defineModelProxyProperty(fm: any, field: FieldMeta) {
 }
 
 
-/*
-let u = new User({
-    id: "12",
-    inp_almafa: 23,
-    instituion_names: ["hello", "world"],
-    mapping: { a: "1", b: "2" },
-    location: { city: "Szarvas" },
-    f: [1, 2, 3],
-    created_time: "2018-01-01T12:23:34Z"
-})
-console.log(u.id)
-console.log(u.instituionNames)
-console.log(u.mapping)
-console.log(u.location)
-console.log(u.f)
-console.log(typeof u.created_time)
-console.log(JSON.stringify(u))
-console.log(Model.getFields(User))
-*/
+export function decorateModelClass(cls: { new(): Model }, descriptor: { [key: string]: FieldOptions }) {
+    for (const k in descriptor) {
+        if (descriptor.hasOwnProperty(k)) {
+            Field(descriptor[k])(cls.prototype, k)
+        }
+    }
+}

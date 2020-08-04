@@ -37,7 +37,7 @@ import { QtipComponent } from "./qtip/qtip.component"
 import { QtipBehavior } from "./qtip/qtip.behavior"
 import { QtipAlignDirective } from "./qtip/qtip-align.directive"
 import { QtipManager } from "./qtip/qtip.manager"
-export { QtipDirective, QtipComponent, QtipBehavior, QtipAlignDirective }
+export { QtipDirective, QtipComponent, QtipBehavior, QtipAlignDirective, QtipManager }
 
 
 import { ToastService } from "./toast/toast.service"

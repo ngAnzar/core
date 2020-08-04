@@ -65,6 +65,9 @@ export { LocalStorageService, LocalStorageBucket }
 
 import { NzRouterLink, NzRouterLinkHref } from "./ngpatches/router-link"
 
+export { ImageRef, ImageRefSource, CropRegion } from "./image/image-ref"
+import { ImageComponent } from "./image/image.component"
+
 
 const content = [
     ButtonComponent,
@@ -94,7 +97,9 @@ const content = [
     NzRouterLink,
     NzRouterLinkHref,
 
-    LinkDirective
+    LinkDirective,
+
+    ImageComponent
 ]
 
 

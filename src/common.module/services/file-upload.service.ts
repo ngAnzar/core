@@ -38,7 +38,9 @@ export class FileUploadService {
 
             if (data) {
                 for (const k in data) {
-                    formData.append(k, data[k])
+                    if (data.hasOwnProperty(k)) {
+                        formData.append(k, data[k])
+                    }
                 }
             }
 
