@@ -1,4 +1,5 @@
 import { Directive, Inject, ElementRef, NgZone, SkipSelf, OnInit } from "@angular/core"
+import { merge } from "rxjs"
 import { debounceTime } from "rxjs/operators"
 
 import { Rect, getBoundingClientRect, __zone_symbol__ } from "../../util"
@@ -50,13 +51,17 @@ export class ScrollableDirective implements OnInit {
                 // nativeEl.style.willChange = null
             })
 
-            // service.destruct.subscription(service.vpRender.render).subscribe(({ top, left }) => {
+            // service.destruct.subscription(merge(service.vpRender.scroll, service.vpImmediate.change)).subscribe(_ => {
+            //     const pos = service.vpRender.scrollPosition
+            //     const left = service.vpImmediate.virtualOffsetLeft != null
+            //         ? Math.max(0, pos.left - service.vpRender.virtualOffsetLeft)
+            //         : pos.left
 
-            //     console.log("virtualOffsetTop", service.vpRender.virtualOffsetTop)
-            //     // const top = pos.top
-            //     // nativeEl.style.willChange = "transform"
+            //     const top = service.vpImmediate.virtualOffsetTop != null
+            //         ? Math.max(0, pos.top - service.vpRender.virtualOffsetTop)
+            //         : pos.top
+
             //     nativeEl.style.transform = `translate3d(-${left}px, -${top}px, 0)`
-            //     // nativeEl.style.willChange = null
             // })
 
             service.destruct.subscription(this.rectMutation.watchDimension(nativeEl)).subscribe(dim => {
