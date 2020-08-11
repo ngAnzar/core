@@ -201,8 +201,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private items$: Observable<Items<T>> = this.destruct.subscription(
         merge(
-            this.requestRange$.pipe(
-                // switchMap(x => this.requestRange$.pipe(take(1))),
+            merge(this.reset$, this.requestRange$).pipe(
+                switchMap(x => this.requestRange$.pipe(take(1))),
                 switchMap(rr => {
                     if (this._nzVirtualForOf && this._nzVirtualForOf.loadRange(rr)) {
                         return EMPTY
@@ -210,7 +210,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                     return of(null)
                 })
             ),
-            this._itemsChanged
+            this._itemsChanged,
         ))
         .pipe(
             switchMap(_ => this.renderRange$),
