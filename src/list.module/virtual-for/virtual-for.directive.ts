@@ -78,6 +78,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
             this._srcSubChange = this.destruct
                 .subscription(value.storage.source.changed)
+                .pipe(filter(v => !v.reset))
                 .subscribe(this._refresh)
         } else {
             delete this._srcSubInvalidate

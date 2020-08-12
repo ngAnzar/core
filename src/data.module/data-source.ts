@@ -50,7 +50,7 @@ export abstract class DataSource<T extends Model> {
     public readonly busy: boolean = false
     public readonly busyChanged: Observable<boolean> = new EventEmitter()
     public abstract readonly async: boolean
-    public readonly changed: Observable<void> = new Subject()
+    public readonly changed: Observable<{ reset: boolean }> = new Subject()
     // public abstract readonly model: ModelClass<T>
 
     public search(f?: Filter<T>, s?: Sorter<T>, r?: NzRange, m?: Meta<T>): Observable<Items<T>> {
@@ -76,8 +76,8 @@ export abstract class DataSource<T extends Model> {
         return this._remove(model instanceof Model ? model.pk : model, m)
     }
 
-    public invalidate() {
-        (this.changed as Subject<any>).next()
+    public invalidate(reset: boolean = false) {
+        (this.changed as Subject<{ reset: boolean }>).next({ reset })
     }
 
     public abstract getPosition(id: PrimaryKey, f?: Filter<T>, s?: Sorter<T>): Observable<number>

@@ -174,7 +174,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 
     public replace(data: T[]) {
         (this as any).data = data
-        this.invalidate()
+        this.invalidate(true)
     }
 
     public add(model: T, index?: number) {

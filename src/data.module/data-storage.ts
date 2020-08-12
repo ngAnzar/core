@@ -1,6 +1,6 @@
 import { EventEmitter } from "@angular/core"
 import { Observable, of, Subject, Observer, merge } from "rxjs"
-import { map, startWith, debounceTime, tap, shareReplay, finalize, share, take, takeUntil } from "rxjs/operators"
+import { map, startWith, debounceTime, tap, shareReplay, finalize, share, take, takeUntil, filter } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
 
@@ -54,6 +54,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this.sorter.changed,
         this.meta.changed,
         this.reseted,
+        this.source.changed.pipe(filter(v => v.reset))
     ).pipe(share())
 
     // public get invalidated(): Observable<void> {
@@ -85,11 +86,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
     public readonly items = this._itemsStream
 
-    public constructor(public readonly source: DataSource<T>, filter?: F, sorter?: Sorter<T>) {
+    public constructor(public readonly source: DataSource<T>, filter_?: F, sorter?: Sorter<T>) {
         super()
 
-        if (filter) {
-            this.filter.set(filter)
+        if (filter_) {
+            this.filter.set(filter_)
         }
         if (sorter) {
             this.sorter.set(sorter)
