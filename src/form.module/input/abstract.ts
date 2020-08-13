@@ -122,13 +122,17 @@ export class InputModel<T> extends AbstractControlDirective {
     public emitValue(value: T, pristine?: boolean): void {
         if (this.control && !this.control.disabled) {
             let oldValue = this.value
-            this.control.setValue(value, { emitModelToViewChange: false })
 
             if (!this.cmp(oldValue, value)) {
+                this.control.setValue(value, { emitModelToViewChange: false })
                 this.inputChanges.next(value)
+                this.control.markAsDirty({ onlySelf: true })
             }
 
-            if (pristine || (this.untouched && this.focused === null)) {
+            // if (pristine || (this.untouched && this.focused === null)) {
+            //     this.control.markAsPristine()
+            // }
+            if (pristine) {
                 this.control.markAsPristine()
             }
         }

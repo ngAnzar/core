@@ -9,7 +9,7 @@ import { setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
 import { Time } from "../../../util"
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
-import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { MASK_BLOCKS } from "./mask-blocks"
 import { TimePickerComponent } from "./time-picker.component"
 import { TimePickerService } from "./time-picker.service"
@@ -19,7 +19,6 @@ import { InvalidDateValidator } from "./invalid-date.validator"
 
 const MIDNIGHT = new Time("24:00:00")
 const ZEROTIME = new Time("00:00:00")
-
 
 @Directive({
     selector: ".nz-time-input[min],.nz-time-input[max]",
@@ -91,6 +90,17 @@ export class TimeValidator implements Validator {
 }
 
 
+function cmpValue(a: any, b: any) {
+    if (a && b) {
+        a = Time.coerce(a)
+        b = Time.coerce(b)
+        return a.compare(b) === 0
+    } else {
+        return a === b
+    }
+}
+
+
 @Component({
     selector: ".nz-time-input",
     templateUrl: "./time-input.component.pug",
@@ -99,7 +109,8 @@ export class TimeValidator implements Validator {
         ...INPUT_MODEL,
         InputMask,
         InvalidDateValidator,
-        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true }
+        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true },
+        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }
     ]
 })
 export class TimeInputComponent extends InputComponent<Time> {

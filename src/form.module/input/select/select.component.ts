@@ -13,7 +13,7 @@ import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, s
 
 import { NzRange, __zone_symbol__, getPath, setPath } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
-import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
+import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { LayerService, DropdownLayer, LayerFactoryDirective, ComponentLayerRef } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
@@ -60,6 +60,22 @@ export type InputState = "typing" | "querying"
 export type SelectValue<T> = T | PrimaryKey | T[] | PrimaryKey[]
 export type AutoTrigger = "all" | "query" | null
 
+
+function cmpValue(a: any, b: any) {
+    if (Array.isArray(a) || Array.isArray(b)) {
+        if (Array.isArray(a) && Array.isArray(b)) {
+            const diff1 = a.filter(v => !b.includes(v))
+            const diff2 = b.filter(v => !a.includes(v))
+            return diff1.length === 0 && diff2.length === 0
+        } else {
+            return false
+        }
+    } else {
+        return a === b
+    }
+}
+
+
 @Component({
     selector: ".nz-select",
     templateUrl: "./select.template.pug",
@@ -69,7 +85,10 @@ export type AutoTrigger = "all" | "query" | null
         "[attr.editable]": "editable ? '' : null"
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: INPUT_MODEL
+    providers: [
+        ...INPUT_MODEL,
+        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }
+    ]
 })
 export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy, OnInit {
     @ContentChild("selected", { read: TemplateRef, static: true }) public _selectedTpl: SelectTemplateRef<T>

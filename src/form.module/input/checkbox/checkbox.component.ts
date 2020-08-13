@@ -7,8 +7,9 @@ import "@angular/cdk/a11y-prebuilt.css"
 import { Subject, merge } from "rxjs"
 import { debounceTime, map, takeUntil, startWith } from "rxjs/operators"
 
-import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { CheckboxGroupDirective } from "./checkbox-group.directive"
+import isPlainObject from "is-plain-object"
 // import { LabelDirective } from "../../directives/label.directive"
 
 
@@ -26,6 +27,14 @@ export interface CheckboxChangeEvent<T> extends CheckboxState {
 }
 
 
+function cmpValue(a: any, b: any) {
+    if (isPlainObject(a)) {
+        return isPlainObject(b) && a.checked === b.checked && a.indeterminate === b.indeterminate
+    } else {
+        return a === b
+    }
+}
+
 
 @Component({
     selector: ".nz-checkbox",
@@ -35,7 +44,10 @@ export interface CheckboxChangeEvent<T> extends CheckboxState {
         "[class.nz-checkbox-indeterminate]": "indeterminate",
         "(tap)": "_handleTap($event)"
     },
-    providers: INPUT_MODEL,
+    providers: [
+        ...INPUT_MODEL,
+        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckboxComponent<T = boolean> extends InputComponent<T> implements OnDestroy, OnInit {
@@ -123,7 +135,11 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             .pipe(
                 map(_ => {
                     const val = this._getValue()
-                    this.model.emitValue(val)
+
+                    if (!this.model.value || !val || this.model.value !== val) {
+                        this.model.emitValue(val)
+                    }
+
                     if (this.group) {
                         this.group.updateValue(this)
                     }

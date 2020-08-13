@@ -377,11 +377,11 @@ export class ScrollerService implements OnDestroy {
     }
 
     public getElementRenderedRect(el: HTMLElement): Rect {
-        return this.scrollable!.getElementRect(el)
+        return this.scrollable?.getElementRect(el)
     }
 
     public getElementImmediateRect(el: Node) {
-        const renderedRect = this.scrollable!.getElementRect(el)
+        const renderedRect = this.scrollable?.getElementRect(el)
         return renderedRect
     }
 

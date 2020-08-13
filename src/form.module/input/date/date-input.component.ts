@@ -8,7 +8,7 @@ import { parse, isDate, format, startOfDay, getDaysInMonth, parseISO, isSameDay,
 import { setTzToUTC } from "../../../util"
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
-import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { InputMask } from "../input-mask.service"
 import { DatePickerService } from "./date-picker.service"
 import { DatePickerComponent } from "./date-picker.component"
@@ -84,6 +84,11 @@ export class DateMinMaxValidator implements Validator {
 }
 
 
+function cmpDate(a: Date, b: Date) {
+    return a && b && isSameDay(a, b)
+}
+
+
 @Component({
     selector: ".nz-date-input",
     templateUrl: "./date-input.component.pug",
@@ -95,7 +100,8 @@ export class DateMinMaxValidator implements Validator {
         ...INPUT_MODEL,
         InputMask,
         InvalidDateValidator,
-        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true }
+        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true },
+        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpDate }
     ]
 })
 export class DateInputComponent extends InputComponent<Date> implements AfterViewInit {
@@ -223,7 +229,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         if (obj instanceof Date) {
             obj = setTzToUTC(startOfDay(obj))
             value = format(obj, this.displayFormat)
-            this.model.emitValue(obj, false)
+            this.model.emitValue(obj)
         } else if (typeof obj === "string" && obj.length) {
             this._renderValue(this.parseString(obj))
             return

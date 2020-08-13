@@ -6,13 +6,17 @@ import { map, takeUntil } from "rxjs/operators"
 
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
-import { InputComponent, INPUT_MODEL, InputModel } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { InputMask } from "../input-mask.service"
 import { DatetimePickerComponent } from "./datetime-picker.component"
 import { MASK_BLOCKS } from "./mask-blocks"
 import { DatetimePickerService } from "./datetime-picker.service"
 import { InvalidDateValidator } from "./invalid-date.validator"
 
+
+function cmpValue(a: any, b: any) {
+    return a === b
+}
 
 
 @Component({
@@ -23,7 +27,8 @@ import { InvalidDateValidator } from "./invalid-date.validator"
         ...INPUT_MODEL,
         InputMask,
         InvalidDateValidator,
-        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true }
+        { provide: NG_VALIDATORS, useExisting: InvalidDateValidator, multi: true },
+        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }
     ]
 })
 export class DatetimeInputComponent extends InputComponent<Date> {
