@@ -29,11 +29,12 @@ block content
 
 block buttons
   .buttons(*ngIf="buttons && buttons.length", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
-    ng-template(ngFor bind-ngForOf="buttons" let-button)
+    ng-template(ngFor, [ngForOf]="buttons", let-button, let-index="index")
       button.nz-button(*ngIf="button.role != 'spacer'",
         fxFlex="noshrink",
         [color]="button.color",
         [variant]="button.variant",
         [attr.type]="button.type",
+        [attr.cdkFocusInitial]="index === 0",
         (tap)="_handleButtonClick($event, button.role)") {{ button.label }}
       div.spacer(*ngIf="button.role === 'spacer'", fxFlex="grow")

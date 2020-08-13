@@ -1,8 +1,9 @@
 import { Component, ElementRef, Inject, Input, Output, EventEmitter, OnDestroy, OnInit, HostBinding, HostListener, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
 import { FocusMonitor } from "@angular/cdk/a11y"
-import { ENTER } from "@angular/cdk/keycodes"
+import { ENTER, SPACE } from "@angular/cdk/keycodes"
 
 import { AnzarComponent } from "../abstract-component"
+import { CUSTOM_EVENT_OPTIONS, NzTouchEvent } from "../services/touch-event.service"
 
 
 @Component({
@@ -42,16 +43,24 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
 
     @HostListener("keydown", ["$event"])
     protected _keyDown(event: KeyboardEvent) {
-        if (event.keyCode === ENTER
+        if ((event.keyCode === ENTER || event.keyCode === SPACE)
             && !event.shiftKey
             && !event.ctrlKey
             && !event.altKey
             && !event.metaKey
             && !event.defaultPrevented
             && !this.disabled) {
+
             event.preventDefault()
             event.stopImmediatePropagation()
-            this.el.nativeElement.click()
+
+            const el = this.el.nativeElement
+            const rect = el.getBoundingClientRect()
+            const evt = new CustomEvent("tap", CUSTOM_EVENT_OPTIONS) as any as { -readonly [P in keyof NzTouchEvent]: NzTouchEvent[P] }
+            evt.originalEvent = event as any
+            evt.clientX = rect.x + rect.width / 2
+            evt.clientY = rect.y + rect.height / 2
+            el.dispatchEvent(evt)
         }
     }
 

@@ -318,7 +318,7 @@ class Listeners {
 }
 
 
-const CUSTOM_EVENT_OPTIONS = {
+export const CUSTOM_EVENT_OPTIONS = {
     bubbles: true,
     cancelable: true
 }

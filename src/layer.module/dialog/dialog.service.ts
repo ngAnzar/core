@@ -135,6 +135,10 @@ export class DialogService {
             options.position.constraint = { ref: "viewport", inset: 16 }
         }
 
+        options.closeable = false
+        options.backdrop = { type: "filled", hideOnClick: false }
+        options.trapFocus = true
+
         let ref = this.layerService.createFromComponent(DialogComponent, new ModalLayer(options), null, provides) as DialogRef
         ref.show()
         return ref
