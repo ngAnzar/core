@@ -8,14 +8,14 @@ import { InputMask } from "../input-mask.service"
 
 
 @Component({
-    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input, input[type='number'].nz-input",
+    selector: "input.nz-input:not([type]), input[type='password'].nz-input, input[type='text'].nz-input, input[type='email'].nz-input",
     template: "",
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: INPUT_MODEL
 })
-export class TextFieldComponent extends InputComponent<string> implements AfterViewInit {
+export class TextFieldComponent<T = string> extends InputComponent<T> implements AfterViewInit {
     public constructor(
-        @Inject(InputModel) model: InputModel<string>,
+        @Inject(InputModel) model: InputModel<T>,
         @Inject(ElementRef) protected readonly el: ElementRef<HTMLInputElement>,
         @Inject(InputMask) @Optional() @Self() private readonly mask: InputMask,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef) {
@@ -30,8 +30,7 @@ export class TextFieldComponent extends InputComponent<string> implements AfterV
         if (mask) {
             mask.connect(this.el.nativeElement)
             this.destruct.subscription(mask.accept).subscribe(mask => {
-                const value = mask.unmaskedValue
-                this.model.emitValue(value ? value : null)
+                this.model.emitValue(this._convertValue(mask.unmaskedValue))
                 this.cdr.markForCheck()
             })
         }
@@ -46,11 +45,15 @@ export class TextFieldComponent extends InputComponent<string> implements AfterV
             })
     }
 
-    protected _renderValue(value: string) {
+    protected _renderValue(value: T) {
+        let renderValue = value == null
+            ? ""
+            : String(value)
+
         if (this.mask) {
-            this.mask.value = value
+            this.mask.value = renderValue
         } else {
-            this.el.nativeElement.value = value != null ? value : ""
+            this.el.nativeElement.value = renderValue
         }
         this.cdr.markForCheck()
     }
@@ -59,9 +62,27 @@ export class TextFieldComponent extends InputComponent<string> implements AfterV
     protected _onInput(event: Event) {
         if (!this.mask) {
             let value = this.el.nativeElement.value
-            this.model.emitValue(value ? value : null)
+
+            this.model.emitValue(this._convertValue(this.el.nativeElement.value))
             this.cdr.markForCheck()
         }
+    }
+
+    protected _convertValue(value: any): T {
+        return value == null ? null : String(value) as any
+    }
+}
+
+
+@Component({
+    selector: "input[type='number'].nz-input",
+    template: "",
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: INPUT_MODEL
+})
+export class NumberFieldComponent extends TextFieldComponent<number> {
+    protected _convertValue(value: any): number {
+        return value == null ? null : Number(value) as any
     }
 }
 

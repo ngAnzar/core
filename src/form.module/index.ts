@@ -67,7 +67,7 @@ import { SelectComponent } from "./input/select/select.component"
 export { SelectComponent }
 export { IAutocompleteModel, Match } from "./input/select/select.component"
 
-import { TextFieldComponent, TextareaComponent } from "./input/text/input.component"
+import { TextFieldComponent, NumberFieldComponent, TextareaComponent } from "./input/text/input.component"
 import { InputMaskDirective } from "./input/input-mask.directive"
 
 export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGroupModel, FocusChangeEvent, inputValueComparator } from "./input/abstract"
@@ -127,6 +127,7 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         SelectComponent,
 
         TextFieldComponent,
+        NumberFieldComponent,
         TextareaComponent,
         InputMaskDirective
     ],
@@ -175,6 +176,7 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         SelectComponent,
 
         TextFieldComponent,
+        NumberFieldComponent,
         TextareaComponent,
         InputMaskDirective
     ],
