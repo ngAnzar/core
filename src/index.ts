@@ -44,7 +44,7 @@ const modules: any[] = [
     exports: modules
 })
 export class NzModule {
-    public static forRoot(): ModuleWithProviders {
+    public static forRoot(): ModuleWithProviders<NzModule> {
         return {
             ngModule: NzModule,
             providers: [

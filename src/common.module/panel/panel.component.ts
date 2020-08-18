@@ -101,7 +101,7 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
         value = coerceBooleanProperty(value)
         if (this._opened !== value) {
             let event: PanelOpeningEvent = { source: this, pendigValue: value };
-            (this.openedChanging as EventEmitter<PanelOpeningEvent>).emit(event);
+            (this.openedChanging as EventEmitter<PanelOpeningEvent>).emit(event)
 
             if (typeof event.finalValue === "boolean") {
                 value = event.finalValue
@@ -110,7 +110,7 @@ export class PanelComponent implements AfterContentInit, AfterViewInit, OnDestro
                 }
             }
 
-            this._opened = value;
+            this._opened = value
             this._animationState = (value ? "opened" : "closed");
             (this.stateChanges as EventEmitter<PanelStateEvent>).emit({ source: this, state: value ? "opening" : "closing" })
             this.cdr.markForCheck()

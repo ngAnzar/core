@@ -1,4 +1,4 @@
-import { Inject, Optional, Self, Input, Output, HostBinding, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter, Injectable, Component } from "@angular/core"
+import { Directive, Inject, Optional, Self, Input, Output, HostBinding, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter, Injectable, Component } from "@angular/core"
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -193,6 +193,7 @@ export const INPUT_MODEL: Provider[] = [
 let UID_COUNTER = 0
 
 
+@Directive()
 export abstract class InputComponent<T> implements OnDestroy, OnInit {
     public readonly destruct = new Destruct()
 

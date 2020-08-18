@@ -1,4 +1,4 @@
-import { OnDestroy, NgZone, Inject } from "@angular/core"
+import { OnDestroy, NgZone, Inject, Injectable } from "@angular/core"
 import { Observable, Subject, Subscription } from "rxjs"
 import { startWith, debounceTime, map } from "rxjs/operators"
 
@@ -222,6 +222,7 @@ export type ScrollOption = ({ smooth: true, velocity: number } | { smooth: false
     & { done?: () => void }
 
 
+@Injectable()
 export class ScrollerService implements OnDestroy {
     public readonly destruct = new Destruct()
     public readonly vpImmediate: ImmediateViewport

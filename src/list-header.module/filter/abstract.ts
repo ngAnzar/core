@@ -1,4 +1,4 @@
-import { ViewChild, TemplateRef, Inject, OnDestroy, OnInit, Input, ContentChild, EventEmitter } from "@angular/core"
+import { Directive, ViewChild, TemplateRef, Inject, OnDestroy, OnInit, Input, ContentChild, EventEmitter } from "@angular/core"
 import { Observable } from "rxjs"
 const DeepDiff = require("deep-diff")
 
@@ -15,6 +15,7 @@ export interface ListFilterLayerContext {
 }
 
 
+@Directive()
 export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDestroy, OnInit {
     @ViewChild("layer", { read: TemplateRef, static: true }) public readonly layer: TemplateRef<ListFilterLayerContext>
     @ViewChild("chip", { read: TemplateRef, static: true }) public readonly chip: TemplateRef<ListFilterLayerContext>
@@ -58,6 +59,7 @@ export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDes
 }
 
 
+@Directive()
 export abstract class ColumnFilter extends ListFilter {
     @Input() public title: string
     @Input() public name: string

@@ -1,4 +1,4 @@
-import { Directive, Inject, EmbeddedViewRef, Input, OnDestroy } from "@angular/core"
+import { Directive, Inject, Injectable, EmbeddedViewRef, Input, OnDestroy } from "@angular/core"
 import { Observable, Subject, merge } from "rxjs"
 import { map, startWith, shareReplay, filter, switchMap } from "rxjs/operators"
 
@@ -17,7 +17,7 @@ const _ResizeObserver = (window as any)[RESIZE_OBSERVER]
 const _IntersectionObserver = window[INTERSECTION_OBSERVER]
 
 
-
+@Injectable()
 export abstract class VirtualForVisibleRange extends Destructible {
     protected readonly _update = new Subject()
     protected readonly _reset = new Subject()
@@ -65,6 +65,7 @@ export abstract class VirtualForVisibleRange extends Destructible {
 }
 
 
+@Injectable()
 export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
     public set itemHeight(val: number) {
         if (this._itemHeight !== val) {
@@ -103,6 +104,7 @@ export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
 }
 
 
+@Injectable()
 export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange {
     public set extraHeight(val: number) {
         if (this._extraHeight !== val) {
@@ -313,6 +315,7 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
 
 
 
+@Directive()
 export abstract class DirectiveBase implements OnDestroy {
     public constructor(@Inject(VirtualForVisibleRange) public readonly strategy: VirtualForVisibleRange) {
     }

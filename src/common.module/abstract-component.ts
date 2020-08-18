@@ -1,4 +1,4 @@
-import { Input, Output, HostBinding, EventEmitter, OnDestroy, Component } from "@angular/core"
+import { Input, Output, HostBinding, EventEmitter, OnDestroy, Directive } from "@angular/core"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
@@ -10,6 +10,7 @@ import { Destruct } from "../util"
 export type ColorOptions = "primary" | "accent" | "warn" | "error" | "success" | string | undefined
 
 
+@Directive()
 export abstract class AnzarComponent implements OnDestroy {
     public readonly destruct = new Destruct()
 

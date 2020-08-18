@@ -1,4 +1,4 @@
-import { Input, Inject, ChangeDetectorRef, HostBinding, OnDestroy } from "@angular/core"
+import { Directive, Input, Inject, ChangeDetectorRef, HostBinding, OnDestroy } from "@angular/core"
 import { Observable, Subscription } from "rxjs"
 
 import { Destruct } from "../../util"
@@ -22,7 +22,7 @@ export interface ProgressEvent {
 }
 
 
-// @Directive({})
+@Directive()
 export abstract class ProgressComponent implements OnDestroy {
     public readonly destruct = new Destruct()
 

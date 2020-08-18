@@ -1,4 +1,4 @@
-import { OnDestroy } from "@angular/core"
+import { OnDestroy, Directive } from "@angular/core"
 import { Observable, Subject } from "rxjs"
 import { share, takeUntil, take } from "rxjs/operators"
 
@@ -54,6 +54,7 @@ export class Destruct {
 }
 
 
+@Directive()
 export abstract class Destructible implements OnDestroy, IDisposable {
     public readonly destruct = new Destruct()
 

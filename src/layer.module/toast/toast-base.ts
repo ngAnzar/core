@@ -1,9 +1,10 @@
-import { HostListener } from "@angular/core"
+import { Directive, HostListener } from "@angular/core"
 
 import { LayerRef } from "../layer/layer-ref"
 import { DialogEvent } from "../dialog/dialog.service"
 
 
+@Directive()
 export abstract class ToastBase {
     protected abstract readonly layerRef: LayerRef
 
