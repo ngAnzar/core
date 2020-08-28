@@ -232,6 +232,13 @@ export class TimeInputComponent extends InputComponent<Time> {
             value = time.format(this.displayFormat)
         }
 
+        if (!(this.model.value instanceof Time) && this.model.value !== time) {
+            const pristine = this.model.control.pristine
+            this.model.control.setValue(time, { emitModelToViewChange: false })
+            if (pristine) {
+                this.model.control.markAsPristine()
+            }
+        }
         this.mask.value = value
         !this.destruct.done && this.cdr.detectChanges()
     }
