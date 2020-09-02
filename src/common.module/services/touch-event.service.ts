@@ -440,7 +440,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
         listeners.state.lastEvent = event
 
-        if (listeners.activeRecognizer.name === "tap") {
+        if (listeners.activeRecognizer?.name === "tap") {
             const focusable = this._findFocusable(event.target as any)
             focusable && focusable.focus()
         }
