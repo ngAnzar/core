@@ -5,6 +5,7 @@ import { startWith, debounceTime, map } from "rxjs/operators"
 import { Destruct, IDisposable, Rect, RectProps } from "../../util"
 import { Animation, easeOutCubic, easeLineral } from "../../animation.module"
 import type { ScrollableDirective } from "./scrollable.directive"
+import { merge } from "hammerjs"
 
 
 export type ScrollOrient = "horizontal" | "vertical"
@@ -22,11 +23,7 @@ export type ScrollingMethod = "drag" | "wheel" | "pan"
 export class ScrollEvent {
     public constructor(
         public readonly percent: ScrollPosition,
-        public readonly position: ScrollPosition,
-        public readonly deltaTop: number,
-        public readonly deltaLeft: number,
-        public readonly directionX: number,
-        public readonly directionY: number) {
+        public readonly position: ScrollPosition) {
     }
 }
 
@@ -64,27 +61,17 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
     protected _lastEvent: ScrollEvent
 
     public set scrollPercent(val: ScrollPosition) {
-        // console.log("scrollPercent", val)
         const old = this._scrollPercent
-
-        const oldLeft = old ? old.left : 0
-        const oldTop = old ? old.top : 0
         const left = val ? constrainPercent(val.left) : 0
         const top = val ? constrainPercent(val.top) : 0
-        const directionX = oldLeft > left ? -1 : oldLeft === left ? 0 : 1
-        const directionY = oldTop > top ? -1 : oldTop === top ? 0 : 1
 
-        if (directionX || directionY) {
-            const deltaTop = oldTop - top
-            const deltaLeft = oldLeft - left
+        if (old.left !== left || old.top !== top) {
+            const pxTop = Math.round(((this.scrollHeight - this.height) * top)) || 0
+            const pxLeft = Math.round(((this.scrollWidth - this.width) * left)) || 0
 
-            if (deltaTop || deltaLeft) {
-                this._scrollPercent = { top, left }
-
-                this._recalcPosition();
-
-                (this.scroll as Subject<ScrollEvent>)
-                    .next(this._lastEvent = new ScrollEvent(this._scrollPercent, this._scrollPosition, deltaTop, deltaLeft, directionX, directionY))
+            this.scrollPosition = {
+                top: pxTop,
+                left: pxLeft
             }
         }
     }
@@ -95,14 +82,22 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
     public set scrollPosition(val: ScrollPosition) {
         const maxTop = Math.max(0, this.scrollHeight - this.height)
         const maxLeft = Math.max(0, this.scrollWidth - this.width)
-        const top = Math.min(val ? Math.round(val.top) || 0 : 0, maxTop)
-        const left = Math.min(val ? Math.round(val.left) || 0 : 0, maxLeft)
+        const top = val ? Math.max(0, Math.min(val.top || 0, maxTop)) : 0
+        const left = val ? Math.max(0, Math.min(val.left || 0, maxLeft)) : 0
 
-        // console.log({ maxTop, top })
+        const old = this._scrollPosition
+        if (old.top !== top || old.left !== left) {
+            this._scrollPercent = {
+                top: (top / (this.scrollHeight - this.height)) || 0,
+                left: (left / (this.scrollWidth - this.width)) || 0
+            }
 
-        this.scrollPercent = {
-            top: (top / (this.scrollHeight - this.height)) || 0,
-            left: (left / (this.scrollWidth - this.width)) || 0
+            this._scrollPosition = { top, left }
+
+            this.visible.top = top
+            this.visible.left = left;
+
+            (this.scroll as Subject<ScrollEvent>).next(this._lastEvent = new ScrollEvent(this._scrollPercent, this._scrollPosition))
         }
     }
     public get scrollPosition(): ScrollPosition { return this._scrollPosition }
@@ -114,19 +109,6 @@ export abstract class Viewport implements ViewportDimensions, IDisposable {
     }
 
     public abstract update(dim: ViewportDimensions): boolean
-
-    protected _recalcPosition() {
-        const percent = this._scrollPercent
-        const pxTop = Math.round(((this.scrollHeight - this.height) * percent.top)) || 0
-        const pxLeft = Math.round(((this.scrollWidth - this.width) * percent.left)) || 0
-
-        this._scrollPosition = {
-            top: pxTop,
-            left: pxLeft
-        }
-        this.visible.top = pxTop
-        this.visible.left = pxLeft
-    }
 }
 
 
@@ -164,8 +146,7 @@ export class ImmediateViewport extends Viewport {
             this.visible.width = this.width
             this.visible.height = this.height
             // recalc min scroll position
-            this.scrollPosition = this.scrollPosition
-            this._recalcPosition();
+            this.scrollPosition = this.scrollPosition;
             (this.change as Subject<Viewport>).next(this)
         }
 
@@ -255,19 +236,8 @@ export class ScrollerService implements OnDestroy {
             this.destruct.disposable(this.animation)
 
             this.destruct.subscription(this.vpImmediate.change)
-                // .pipe(debounceTime(100))
                 .subscribe(() => {
-                    if (this.animation && this.animation.isRunning) {
-                        const target = this._scrollToTarget(this.vpImmediate.scrollPosition)
-                        this.animation.update({
-                            toX: target.left,
-                            toY: target.top,
-                            toVX: this.vpImmediate.virtualOffsetLeft || 0,
-                            toVY: this.vpImmediate.virtualOffsetTop || 0,
-                        })
-                    } else {
-                        this.scrollTo(this.vpImmediate.scrollPosition, { smooth: true, velocity: 1 })
-                    }
+                    this.scrollTo(this.vpImmediate.scrollPosition, { smooth: true, velocity: 1 })
                 })
         })
     }
@@ -432,6 +402,6 @@ class ScrollerAnimation extends Animation<AnimProps> implements AnimProps, IDisp
 
         this.onTick(x.value, y.value, vx.value, vy.value)
 
-        return !(x.progress === 1.0 && y.progress === 1.0 && vx.progress === 1.0 && vy.progress === 1.0)
+        return !(x.progress === 1.0 && y.progress === 1.0 && vx.progress === 1.0 && vy.progress === 1.0 && !isNaN(x.value) && !isNaN(y.value))
     }
 }

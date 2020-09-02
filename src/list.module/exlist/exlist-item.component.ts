@@ -21,6 +21,7 @@ const REQUEST_ANIMATION_FRAME = __zone_symbol__("requestAnimationFrame")
     templateUrl: "./exlist-item.template.pug",
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
+        "[attr.without-animation]": "_withoutAnimation ? '' : null",
         "[style.margin-left.px]": "_selected ? -(list.paddingLeft / 2) : 0",
         "[style.margin-right.px]": "_selected ? -(list.paddingLeft / 2) : 0",
         "[style.margin-top.px]": "_selected && selectionIndex !== 0 ? 24 : 0",
@@ -65,8 +66,17 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
             let old = this.$implicit;
             (this as any).$implicit = val
             this._selected = val ? this.list.opened.origin[val.pk] : null
+
+            if (this._withoutAnimationT) {
+                clearTimeout(this._withoutAnimationT)
+            }
+
+            this._withoutAnimation = !!this._selected
             this.list._handleModelChange(this, old, val)
             this.cdr && this.cdr.markForCheck()
+            this._withoutAnimationT = setTimeout(() => {
+                this._withoutAnimation = false
+            }, 100)
         }
     }
     public get model(): T { return this.$implicit }
@@ -100,6 +110,8 @@ export class ExlistItemComponent<T extends Model = Model> implements RowTplConte
 
     private _scroll: Subscription
     private _currentAnimation: AnimationPlayer
+    public _withoutAnimation: boolean = false
+    public _withoutAnimationT: any
     // private _rebindAfterCheck: boolean = false
 
     public constructor(

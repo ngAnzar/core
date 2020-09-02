@@ -51,7 +51,11 @@ export class MagicCarpet {
             return b.rect.area - a.rect.area
         })[0]
 
-        return getLevitatePosition(result.placements[0], result.placements[1], rects.levitate, result.rect, rects.anchor)
+        if (result && result.placements) {
+            return getLevitatePosition(result.placements[0], result.placements[1], rects.levitate, result.rect, rects.anchor)
+        } else {
+            return null
+        }
     }
 
     public getPlacements(rects: Rects) {

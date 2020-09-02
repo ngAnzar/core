@@ -94,7 +94,7 @@ export class ScrollbarComponent implements OnDestroy, OnInit {
                 this._layout()
             })
 
-            this.destruct.subscription(this.scroller.vpRender.scroll).subscribe(scroll => {
+            this.destruct.subscription(this.scroller.vpImmediate.scroll).subscribe(scroll => {
                 if (this.orient === "horizontal") {
                     this.position = scroll.percent.left
                 } else {
@@ -113,7 +113,7 @@ export class ScrollbarComponent implements OnDestroy, OnInit {
                         if (!this.scroller.lockMethod("drag")) {
                             return
                         }
-                        // this.scroller.velocityX = this.scroller.velocityY = 1
+
                         if (this.orient === "horizontal") {
                             this.scroller.scrollTo({
                                 top: scrollerBeginPosition.top,
@@ -129,6 +129,7 @@ export class ScrollbarComponent implements OnDestroy, OnInit {
 
                     case "end":
                         this.scroller.releaseMethod("drag")
+                        this._layout()
                         break
                 }
             })
@@ -169,7 +170,6 @@ export class ScrollbarComponent implements OnDestroy, OnInit {
             bs.height = `${barHeight}px`
             bs.top = `${barTop}px`
             bs.left = `${barLeft}px`
-
         } else {
             this.el.style.display = `none`
         }

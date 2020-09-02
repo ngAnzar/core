@@ -68,19 +68,20 @@ export class LevitateRef {
     }
 
     protected update = (rects: Rects) => {
-        let pos = this.mc.levitate(rects);
-        // TODO: CHECK EQ
-        (this as any).position = pos
+        let pos = this.mc.levitate(rects)
+        if (pos) {
+            (this as any).position = pos
 
-        if (this.levitate.maxWidth) {
-            (pos as { maxWidth: number }).maxWidth = Math.min(pos.maxWidth, this.levitate.maxWidth)
-        }
-        if (this.levitate.maxHeight) {
-            (pos as { maxHeight: number }).maxHeight = Math.min(pos.maxHeight, this.levitate.maxHeight)
-        }
+            if (this.levitate.maxWidth) {
+                (pos as { maxWidth: number }).maxWidth = Math.min(pos.maxWidth, this.levitate.maxWidth)
+            }
+            if (this.levitate.maxHeight) {
+                (pos as { maxHeight: number }).maxHeight = Math.min(pos.maxHeight, this.levitate.maxHeight)
+            }
 
-        // console.log(JSON.parse(JSON.stringify(pos)))
-        pos.applyToElement(this.levitate.ref, this.concrete)
+            // console.log(JSON.parse(JSON.stringify(pos)))
+            pos.applyToElement(this.levitate.ref, this.concrete)
+        }
     }
 
     public dispose(): void {

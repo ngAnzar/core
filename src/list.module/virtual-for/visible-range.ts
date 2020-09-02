@@ -121,7 +121,7 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
     protected readonly rects: RectProps[] = []
     protected minHeight: number = 0
 
-    protected readonly resize = new _ResizeObserver(this._onResize.bind(this))
+    // protected readonly resize = new _ResizeObserver(this._onResize.bind(this))
     protected readonly intersection = new _IntersectionObserver(this._onIntersection.bind(this), {
         root: this.scrollable.el.nativeElement.parentElement,
         threshold: 0
@@ -144,7 +144,7 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
             if (!this.elements.has(el)) {
                 this.elements.set(el, index)
                 this.intersection.observe(el)
-                this.resize.observe(el)
+                // this.resize.observe(el)
             } else {
                 this.elements.set(el, index)
             }
@@ -158,7 +158,7 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
         if (this.elements.has(el)) {
             this.elements.delete(el)
             this.intersection.unobserve(el)
-            this.resize.unobserve(el)
+            // this.resize.unobserve(el)
         }
     }
 
