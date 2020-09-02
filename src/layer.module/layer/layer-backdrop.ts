@@ -80,14 +80,16 @@ export class LayerBackdropRef implements IDisposable {
 
         if (!this.isVisible) {
             (this as any).isVisible = true
-
-            this.mask.container.nativeElement.style.display = "block"
+            const el = this.mask.container.nativeElement
+            el.style.pointerEvents = "auto"
+            el.style.touchAction = "auto"
+            el.style.display = "block"
 
             return new Promise(resolve => {
                 let animationFactory = this.animationBuilder.build(fadeAnimation.show)
-                let player = animationFactory.create(this.mask.container.nativeElement)
+                let player = animationFactory.create(el)
                 player.onDone(() => {
-                    // this.mask.container.nativeElement.style.opacity = "1"
+                    // el.style.opacity = "1"
                     player.destroy()
                     resolve()
                 })
@@ -101,12 +103,15 @@ export class LayerBackdropRef implements IDisposable {
     public hide(): Promise<void> {
         if (this.isVisible) {
             (this as any).isVisible = false
+            const el = this.mask.container.nativeElement
+            el.style.pointerEvents = "none"
+            el.style.touchAction = "none"
 
             return new Promise(resolve => {
                 let animationFactory = this.animationBuilder.build(fadeAnimation.hide)
-                let player = animationFactory.create(this.mask.container.nativeElement)
+                let player = animationFactory.create(el)
                 player.onDone(() => {
-                    this.mask.container.nativeElement.style.display = "none"
+                    el.style.display = "none"
                     player.destroy()
                     resolve()
                 })
@@ -121,9 +126,13 @@ export class LayerBackdropRef implements IDisposable {
     }
 
     protected onClick = (event: MouseEvent) => {
-        let options = this.currentLayer.behavior.options
-        if (options.backdrop && options.backdrop.hideOnClick === true) {
-            this.currentLayer.close()
+        if (this.currentLayer.behavior) {
+            let options = this.currentLayer.behavior.options
+            if (options.backdrop && options.backdrop.hideOnClick === true) {
+                this.currentLayer.close()
+            }
+        } else {
+            this.hide()
         }
     }
 
