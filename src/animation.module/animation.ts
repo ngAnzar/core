@@ -26,7 +26,9 @@ export abstract class Animation<T> {
 
             if (this.tick(timestamp)) {
                 this.lastFrameTime = timestamp
-                this.rafId = window[RAF](this._tick)
+                if (this._tick) {
+                    this.rafId = window[RAF](this._tick)
+                }
             } else {
                 this.stop()
             }
@@ -72,7 +74,7 @@ export abstract class Animation<T> {
 
     public play() {
         (this as { isRunning: boolean }).isRunning = true
-        if (!this.rafId) {
+        if (!this.rafId && this._tick) {
             this.rafId = window[RAF](this._tick)
         }
     }
