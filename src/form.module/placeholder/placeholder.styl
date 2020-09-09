@@ -11,19 +11,21 @@
     bottom: 0px
     cursor: text
     color: $theme.common.dark
-    transition: all $nz-form-field-anim-duration
     user-select: none
     pointer-events: none
     opacity: 1
+    transform-origin: top left
 
-  &.hide-label[variant="hide"]
-    > label
+  &[variant="hide"]
+    &[animate] > label
+      transition: opacity $nz-form-field-anim-duration
+
+    &[ishidden] > label
       opacity: 0
 
-  &.hide-label[variant="translate"]
-    > label
-      nz-typo: $typo.caption
-      top: -($nz-form-field-top-caption-height)
-      left: 0px
-      //transform-origin: 0
-      //transform: scale($typo.caption.font-size / $typo.body1.font-size) translateY(-110%)
+  &[variant="translate"]
+    &[animate] > label
+      transition: transform $nz-form-field-anim-duration
+
+    &[ishidden] > label
+      transform: translate(-2px, -($nz-form-field-top-caption-height)) scale(0.8)

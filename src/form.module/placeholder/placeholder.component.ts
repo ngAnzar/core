@@ -1,54 +1,93 @@
-import { Component, Inject, ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, Input, ElementRef } from "@angular/core"
-import { merge, Subject } from "rxjs"
-import { startWith, debounceTime, takeUntil } from "rxjs/operators"
+import { Component, Inject, ContentChild, ChangeDetectionStrategy, OnDestroy, Input, ElementRef } from "@angular/core"
+import { merge, Subscription } from "rxjs"
+import { startWith, tap } from "rxjs/operators"
 
-import { Destruct } from "../../util"
+import { FastDOM, rawSetTimeout } from "../../util"
 import { InputModel } from "../input/abstract"
 
 
 @Component({
     selector: ".nz-placeholder",
+    template: "<ng-content></ng-content>",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: "./placeholder.template.pug"
 })
-export class PlaceholderComponent implements AfterContentInit, OnDestroy {
-    public readonly destruct = new Destruct();
-
-    @ContentChild(InputModel, { static: true }) protected _inputModel: InputModel<any>
+export class PlaceholderComponent implements OnDestroy {
+    @ContentChild(InputModel, { static: true })
+    public set contentModel(val: InputModel<any>) {
+        if (this._inputModel !== val) {
+            this._inputModel = val
+            this.onInputModelChange()
+        }
+    }
 
     @Input()
+    public set inputModel(val: InputModel<any>) {
+        if (this._inputModel !== val) {
+            this._inputModel = val
+            this.onInputModelChange()
+        }
+    }
+
+    private _inputModel: InputModel<any>
+
     public set hideLabel(val: boolean) {
         if (this._hideLabel !== val) {
             this._hideLabel = val
-            this._hideLabel$.next(val)
+            FastDOM.mutate(() => {
+                if (this._animate) {
+                    this.el.nativeElement.setAttribute("animate", "")
+                }
+
+                if (val) {
+                    this.el.nativeElement.setAttribute("ishidden", "")
+                    this._animate = true
+                } else {
+                    this.el.nativeElement.removeAttribute("ishidden")
+                }
+            })
         }
     }
     public get hideLabel(): boolean { return this._hideLabel }
-    private _hideLabel: boolean = false
-    private _hideLabel$ = this.destruct.subject(new Subject<boolean>())
+    private _hideLabel: boolean
 
-    public constructor(
-        @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(ElementRef) el: ElementRef<HTMLElement>) {
+    private _subscription: Subscription
+    private _animate: boolean = false
 
-        this.destruct.subscription(this._hideLabel$)
-            .pipe(debounceTime(10), takeUntil(this.destruct.on))
-            .subscribe(val => {
-                el.nativeElement.classList[val ? "add" : "remove"]("hide-label")
-            })
+    public constructor(@Inject(ElementRef) private readonly el: ElementRef<HTMLElement>) {
+
     }
 
-    public ngAfterContentInit() {
+    private onInputModelChange() {
+        if (this._subscription) {
+            this._subscription.unsubscribe()
+            delete this._subscription
+        }
+
         if (this._inputModel) {
-            merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.focusChanges, this._inputModel.inputChanges)
-                .pipe(startWith(null), takeUntil(this.destruct.on))
-                .subscribe(event => {
+            if (!this._inputModel.control) {
+                rawSetTimeout(this.onInputModelChange.bind(this), 20)
+                return
+            }
+
+            const q1 = merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.inputChanges)
+            const q2 = this._inputModel.focusChanges.pipe(tap(v => {
+                if (!this._animate && v.current) {
+                    this._animate = true
+                }
+            }))
+
+            this._subscription = merge(q1, q2)
+                .pipe(startWith(null))
+                .subscribe(() => {
                     this.hideLabel = !this._inputModel.isEmpty || this._inputModel.focused !== null
                 })
         }
     }
 
     public ngOnDestroy() {
-        this.destruct.run()
+        if (this._subscription) {
+            this._subscription.unsubscribe()
+            delete this._subscription
+        }
     }
 }
