@@ -225,27 +225,61 @@ export class RectMutationService {
             return Observable.create((observer: Observer<Dimension>) => {
                 let lastSw: number = 0
                 let lastSh: number = 0
-                let rafId: any
 
-                const check = () => {
-                    if (lastSw !== element.scrollWidth || lastSh !== element.scrollHeight) {
-                        lastSw = element.scrollWidth
-                        lastSh = element.scrollHeight
+                const emit = () => {
+                    let sw = element.scrollWidth
+                    let sh = element.scrollHeight
+                    if (lastSw !== sw || lastSh !== sh) {
+                        lastSw = sw
+                        lastSh = sh
                         observer.next({ width: lastSw, height: lastSh })
-                    }
-                    if (!observer.closed) {
-                        rafId = window[REQUEST_ANIMATION_FRAME](check)
                     }
                 }
 
-                check()
+                const dimSub = this.watchDimension(element).subscribe(emit)
+                const mutationObserver = (window as any)[MUTATION_OBSERVER] as any
+                const mutation = new mutationObserver(emit)
+                mutation.observe(element, {
+                    subtree: true,
+                    childList: true,
+                    attributes: true,
+                    characterData: true
+                })
+
                 return () => {
-                    rafId && window[CANCEL_ANIMATION_FRAME](rafId)
+                    mutation.disconnect()
+                    dimSub.unsubscribe()
                 }
             })
         })
-
     }
+
+    // protected createSwWatcher_(element: HTMLElement): Observable<Dimension> {
+    //     return this.zone.runOutsideAngular(() => {
+    //         return Observable.create((observer: Observer<Dimension>) => {
+    //             let lastSw: number = 0
+    //             let lastSh: number = 0
+    //             let rafId: any
+
+    //             const check = () => {
+    //                 if (lastSw !== element.scrollWidth || lastSh !== element.scrollHeight) {
+    //                     lastSw = element.scrollWidth
+    //                     lastSh = element.scrollHeight
+    //                     observer.next({ width: lastSw, height: lastSh })
+    //                 }
+    //                 if (!observer.closed) {
+    //                     rafId = window[REQUEST_ANIMATION_FRAME](check)
+    //                 }
+    //             }
+
+    //             check()
+    //             return () => {
+    //                 rafId && window[CANCEL_ANIMATION_FRAME](rafId)
+    //             }
+    //         })
+    //     })
+
+    // }
 
     protected getSwWatcher(element: HTMLElement): Observable<Dimension> {
         return this._getOrCreateWatcher(this.swWatchers, element, "createSwWatcher")
