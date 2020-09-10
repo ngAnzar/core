@@ -1,0 +1,15 @@
+.nz-scroller(fxFlex="grow", hideScrollbar, orient="horizontal", #scroller)
+  .content(scrollable)
+    table([style.minWidth.px]="_minWidth")
+      tr
+        ng-template(ngFor, [ngForOf]="tabs", let-tab, let-index="index")
+          td.nz-tab-label(
+              [index]="index",
+              [attr.selected]="_selectedIndex === index ? '' : null",
+              [attr.disabled]="tab.disabled ? '' : null",
+              (tap)="onLabelTap($event, index)")
+            div.nz-tab-label-content
+              ng-container([ngTemplateOutlet]="tab.labelTpl")
+            .nz-ripple
+
+.nz-tab-underline(#underline)

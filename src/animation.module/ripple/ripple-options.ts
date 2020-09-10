@@ -7,4 +7,5 @@ export interface RippleOptions {
     radius?: number,
     yoyo?: boolean,
     duration?: number
+    mouse?: { x: number, y: number }
 }

@@ -52,7 +52,8 @@ export { SlideableComponent, SlideableBackDirective }
 
 import { TabsComponent } from "./tabs/tabs.component"
 import { TabComponent } from "./tabs/tab.component"
-import { TabLabelsDirective } from "./tabs/tab-labels.directive"
+import { TabLabelsComponent } from "./tabs/tab-labels.component"
+import { TabLabelDirective } from "./tabs/tab-label.directive"
 export { TabsComponent, TabComponent }
 
 import { TreeComponent } from "./tree/tree.component"
@@ -106,7 +107,8 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight } from "./virtual-for/visible-
 
         TabsComponent,
         TabComponent,
-        TabLabelsDirective,
+        TabLabelDirective,
+        TabLabelsComponent,
 
         TreeComponent,
         TreeItemComponent,

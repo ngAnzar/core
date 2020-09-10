@@ -1,6 +1,5 @@
-import { Injectable, ElementRef, Inject } from "@angular/core"
+import { Injectable, ElementRef, Inject, NgZone } from "@angular/core"
 
-import { Renderer } from "../renderer.service"
 import { RippleOptions } from "./ripple-options"
 import { RippleRef } from "./ripple-ref"
 
@@ -11,16 +10,12 @@ import { RippleRef } from "./ripple-ref"
 export class RippleService {
     protected ripples: RippleRef[] = []
 
-    constructor(@Inject(Renderer) protected renderer: Renderer) {
+    constructor(@Inject(NgZone) private readonly zone: NgZone) {
 
     }
 
-    /*public attach(trigger: ElementRef, container: ElementRef): BoundedRippleRef {
-        return new BoundedRippleRef(this, trigger, container)
-    }*/
-
     public launch(container: ElementRef, config: RippleOptions): RippleRef {
-        const ripple = new RippleRef(config, container.nativeElement, this.renderer)
+        const ripple = new RippleRef(config, container.nativeElement, this.zone)
         this.ripples.push(ripple)
         ripple.destruct.any(() => {
             let i = this.ripples.indexOf(ripple)
