@@ -58,9 +58,8 @@ export abstract class DataSource<T extends Model> {
             return of(new Items([], r))
         }
         return this._search(f, s, r, m).pipe(map(items => {
-            let total = items ? (items as any).total : null
-            let range = r ? new NzRange(r.begin, r.begin + items.length) : new NzRange(0, items.length)
-            return new Items(items, range, total)
+            (items as any).range = r ? new NzRange(r.begin, r.begin + items.length) : new NzRange(0, items.length)
+            return items
         })) as any
     }
 

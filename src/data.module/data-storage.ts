@@ -1,5 +1,5 @@
 import { EventEmitter } from "@angular/core"
-import { Observable, of, Subject, Observer, merge } from "rxjs"
+import { Observable, of, Subject, Observer, merge, ReplaySubject } from "rxjs"
 import { map, startWith, debounceTime, tap, shareReplay, finalize, share, take, takeUntil, filter } from "rxjs/operators"
 const DeepDiff = require("deep-diff")
 
@@ -85,6 +85,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     protected pendingRanges: Array<[NzRange, Observable<any>]> = []
 
     public readonly items = this._itemsStream
+    public readonly result = new ReplaySubject<Items<T>>(1)
 
     public constructor(public readonly source: DataSource<T>, filter_?: F, sorter?: Sorter<T>) {
         super()
@@ -174,6 +175,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
 
         this._setPending(request, src)
             .subscribe(items => {
+                this.result.next(items);
                 (this as any).range = items.range || r
                 if (items.total != null) {
                     (this as any).lastIndex = items.total;
