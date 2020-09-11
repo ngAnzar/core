@@ -135,11 +135,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             .pipe(
                 map(_ => {
                     const val = this._getValue()
-
-                    if (!this.model.value || !val || this.model.value !== val) {
-                        this.model.emitValue(val)
-                    }
-
+                    this.model.emitValue(val)
                     if (this.group) {
                         this.group.updateValue(this)
                     }
@@ -152,6 +148,10 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
                 this._renderValue(val)
                 this.cdr.markForCheck()
             })
+
+        this.destruct.subscription(this.model.valueChanges).subscribe(value => {
+            this._renderValue(value)
+        })
 
         if (this.group) {
             this.group.addCheckbox(this)
@@ -206,7 +206,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             return { checked: false, indeterminate: false }
         } else if (this.indeterminateValue != null && this.indeterminateValue === value) {
             return { checked: true, indeterminate: true }
-        } else if (value && "checked" in value && "indeterminate" in value) {
+        } else if (isPlainObject(value) && value && "checked" in value && "indeterminate" in value) {
             return value
         } else {
             return { checked: false, indeterminate: false }
