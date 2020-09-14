@@ -18,6 +18,10 @@ import { ExheaderComponent } from "./exheader/exheader.component"
 import { Exheader_HeaderDirective, Exheader_ContentDirective } from "./exheader/exheader.directive"
 export { ExheaderComponent, Exheader_HeaderDirective, Exheader_ContentDirective }
 
+import { HideDirective } from "./hide.directive"
+import { FlexLayoutDirective, FlexParentLayoutDirective } from "./flex/flex-layout.directive"
+import { FlexChildDirective } from "./flex/flex-child.directive"
+
 
 
 @NgModule({
@@ -33,7 +37,12 @@ export { ExheaderComponent, Exheader_HeaderDirective, Exheader_ContentDirective 
         StackItemDirective,
         ExheaderComponent,
         Exheader_HeaderDirective,
-        Exheader_ContentDirective
+        Exheader_ContentDirective,
+
+        HideDirective,
+        FlexLayoutDirective,
+        FlexParentLayoutDirective,
+        FlexChildDirective
     ],
     exports: [
         StackComponent,
@@ -41,7 +50,12 @@ export { ExheaderComponent, Exheader_HeaderDirective, Exheader_ContentDirective 
         FlexLayoutModule,
         ExheaderComponent,
         Exheader_HeaderDirective,
-        Exheader_ContentDirective
+        Exheader_ContentDirective,
+
+        HideDirective,
+        FlexLayoutDirective,
+        FlexParentLayoutDirective,
+        FlexChildDirective
     ],
     providers: [
         RectMutationService,
