@@ -1,8 +1,8 @@
 ng-template(ngFor, [ngForOf]="children", let-child, let-i="index")
   ng-template([ngIf]="childSwitch[i]")
     .nz-stack-child(
-      fxLayout="column",
-      fxLayoutAlign="start stretch",
+      nzLayout="column",
+      nzLayoutAlign="start stretch",
       [@childSwitch]="childSwitch[i]",
       (@childSwitch.start)="_startChildAnim($event, i)",
       (@childSwitch.done)="_doneChildAnim($event, i)")

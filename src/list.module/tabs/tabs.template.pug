@@ -1,52 +1,12 @@
-div(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
+ng-container(nzLayout="column", nzLayoutAlign="start stretch")
   .nz-tab-labels(
       *ngIf="_tabsAsArray && _tabsAsArray.length",
       [tabs]="tabs",
       [selectedIndex]="selectedIndex",
       (changes)="selectedIndex=$event",
-      fxFlex="none")
-  //- .nz-scroller.label-scroller(fxFlex="none", hideScrollbar, *ngIf="tabs && tabs.length > 1", orient="horizontal", #tabScroller)
-
-  //-   //- .nz-tab-labels(scrollable, fxLayout="row", fxLayoutAlign="start stretch")
-  //-   //-   .nz-tab-label(
-  //-   //-       fxFlex="noshrink",
-  //-   //-       fxLayout="row",
-  //-   //-       fxLayoutAlign="center center",
-  //-   //-       *ngFor="let tab of tabs; let i=index",
-  //-   //-       [attr.selected]="selectedIndex === i ? '' : null",
-  //-   //-       [attr.disabled]="tab.disabled ? '' : null",
-  //-   //-       (tap)="onLabelTap($event, i)")
-  //-   //-     div.nz-tab-label-content
-  //-   //-       ng-template([ngTemplateOutlet]="tab.labelTpl")
-  //-   //-     .nz-ripple
-
-  //-   //-   .nz-tab-underline(
-  //-   //-     #underline,
-  //-   //-     *ngIf="selectedIndex >= 0",
-  //-   //-     [style.left.px]="underline.parentNode.children[selectedIndex]!.offsetLeft",
-  //-   //-     [style.width.px]="underline.parentNode.children[selectedIndex]!.offsetWidth")
-
-  //-   .nz-tab-labels(scrollable, #tabLabels="nzTabLabels")
-  //-     table([style.min-width]="tableMinWidth")
-  //-       tr(#labelContainer )
-  //-         ng-template(ngFor, [ngForOf]="tabs", let-tab, let-i="index")
-  //-           td.nz-tab-label(
-  //-               [index]="i",
-  //-               [attr.selected]="selectedIndex === i ? '' : null",
-  //-               [attr.disabled]="tab.disabled ? '' : null",
-  //-               (tap)="onLabelTap($event, i)")
-  //-             div.nz-tab-label-content
-  //-               ng-container([ngTemplateOutlet]="tab.labelTpl")
-  //-             .nz-ripple
-
-  //-     .nz-tab-underline(
-  //-       #underline,
-  //-       *ngIf="selectedIndex >= 0",
-  //-       [style.left.px]="tabLabels.underlineLeft(selectedIndex)",
-  //-       [style.width.px]="tabLabels.underlineWidth(selectedIndex)")
-
+      nzFlex="none")
   .nz-stack(
     #stack,
-    fxFlex="grow",
+    nzFlex="grow",
     [children]="_tabsAsArray",
     (changed)="onSelectedIndexChanged($event)")

@@ -14,7 +14,6 @@ export class CssService implements OnDestroy {
             this._ruleInserted.add(selector)
             const el = this.getStyleEl(media)
             const style = typeof props === "string" ? props : this.renderProps(props)
-            console.log("insertRule", `${selector} {${style}}`)
             el.sheet.insertRule(`${selector} {${style}}`)
         }
         return selector

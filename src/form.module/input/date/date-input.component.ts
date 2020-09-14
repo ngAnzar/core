@@ -18,6 +18,9 @@ import { InvalidDateValidator } from "./invalid-date.validator"
 
 @Directive({
     selector: ".nz-date-input[min],.nz-date-input[max]",
+    host: {
+        "(tap)": "isButtonVariant && !readonly && !disabled && (opened=!opened)"
+    },
     providers: [
         { provide: NG_VALIDATORS, useExisting: DateMinMaxValidator, multi: true }
     ]

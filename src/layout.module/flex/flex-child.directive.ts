@@ -5,6 +5,10 @@ import { FastDOM } from "../../util"
 import { replaceClass } from "./helper"
 
 
+const FLEX_NONE = ["0", "0", "auto"]
+const FLEX_GROW = ["1", "1", "100%"]
+
+
 @Directive({
     selector: "[nzFlex]"
 })
@@ -24,7 +28,11 @@ export class FlexChildDirective implements OnChanges {
     public ngOnChanges(changes: SimpleChanges) {
         if ("flex" in changes) {
             const flex = changes.flex.currentValue as string
-            const parts = flex === "none" ? ["0", "0", "auto"] : flex.split(/\s+/g);
+            const parts = flex === "none"
+                ? FLEX_NONE
+                : flex === "grow"
+                    ? FLEX_GROW
+                    : flex.split(/\s+/g);
             (this as { grow: string }).grow = parts[0];
             (this as { shrink: string }).shrink = parts[1] || parts[0];
             (this as { basis: string }).basis = parts[2] || "100%"
@@ -33,7 +41,7 @@ export class FlexChildDirective implements OnChanges {
             this.css.insertRule("." + cls, {
                 flexGrow: this.grow,
                 flexShrink: this.shrink,
-                flexBasis: this.basis,
+                flexBasis: this.basis
             })
 
             replaceClass(this.el.nativeElement, "nz-flex-child", cls, changes.flex.firstChange)

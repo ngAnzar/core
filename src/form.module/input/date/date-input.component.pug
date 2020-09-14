@@ -6,19 +6,10 @@
   .input
     transition: opacity 180ms
 
-  .container
-    position: relative
 
-
-.container(
-    fxFlex="grow",
-    fxLayout="row",
-    fxLayoutAlign="start center",
-    fxLayoutGap="4px",
-    (tap)="isButtonVariant && !readonly && !disabled && (opened=!opened)")
-
+ng-container(nzLayout="row", nzLayoutAlign="start center", nzLayoutGap="4px")
   input.nz-input.input(
-    fxFlex="grow",
+    nzFlex="grow",
     type="text",
     #input,
     [tabindex]="tabIndex",
@@ -33,5 +24,5 @@
 
   ng-template(#ifNotButtonIcon )
     ng-template([ngIf]="!readonly && !disabled")
-      .nz-button.picker-btn(fxFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
+      .nz-button.picker-btn(nzFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
         i.nz-icon(class=icon("mdi/calendar-today", 18))

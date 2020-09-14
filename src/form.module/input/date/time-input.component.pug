@@ -6,13 +6,13 @@
   .input
     transition: opacity 180ms
 
-div(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="4px")
+ng-container(nzLayout="row", nzLayoutAlign="start center", nzLayoutGap="4px")
   input.nz-input.input(
-    fxFlex="grow",
+    nzFlex="grow",
     type="text",
     #input,
     [tabindex]="tabIndex",
     [style.opacity]="(model.value || model.focused) ? '1' : '0'")
 
-  .nz-button.picker-btn(fxFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
+  .nz-button.picker-btn(nzFlex="none", tabindex="-1", color="common", variant="tiny icon", (tap)="opened=!opened")
     i.nz-icon(class=icon("mdi/alarm", 18))
