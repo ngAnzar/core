@@ -1,6 +1,6 @@
 ng-container(nzLayout="column", nzLayoutAlign="start stretch")
   .nz-tab-labels(
-      *ngIf="_tabsAsArray && _tabsAsArray.length",
+      *ngIf="_tabsAsArray && _tabsAsArray.length > 1",
       [tabs]="tabs",
       [selectedIndex]="selectedIndex",
       (changes)="selectedIndex=$event",

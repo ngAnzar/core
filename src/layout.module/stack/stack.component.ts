@@ -25,7 +25,15 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
     @ContentChildren(StackItemDirective, { read: StackItemDirective }) protected readonly contentChildren: QueryList<StackItemDirective>
     private _contentChildren: StackItemDirective[]
 
-    @Input("children") public inputChildren: StackItemDirective[]
+    @Input("children")
+    public set inputChildren(val: StackItemDirective[]) {
+        if (this._inputChildren !== val) {
+            this._inputChildren = val
+            this._applyPendingIndex()
+        }
+    }
+    public get inputChildren(): StackItemDirective[] { return this._inputChildren }
+    private _inputChildren: StackItemDirective[]
 
     public get children() {
         return this.inputChildren ? this.inputChildren : this._contentChildren
@@ -70,7 +78,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
             this._selectedIndex = val;
             (this.changed as EventEmitter<number>).emit(val)
-            this.cdr.markForCheck()
+            this.cdr.detectChanges()
         }
     }
     public get selectedIndex(): number { return this._selectedIndex }
@@ -91,11 +99,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
 
     public ngAfterViewInit() {
         this._viewReady = true
-        let pending = this._pendingIndex
-        if (pending != null) {
-            delete this._pendingIndex
-            this.selectedIndex = pending
-        }
+        this._applyPendingIndex()
     }
 
     public ngAfterContentInit() {
@@ -103,6 +107,7 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
             .pipe(startWith(this.contentChildren))
             .subscribe(content => {
                 this._contentChildren = content.toArray()
+                this._applyPendingIndex()
                 const children = this.children
                 const length = children.length
                 if (this.selectedIndex >= children.length) {
@@ -160,6 +165,14 @@ export class StackComponent implements AfterViewInit, OnDestroy, AfterContentIni
         this._viewReady = true
         if (this._pendingIndex >= 0) {
             this.selectedIndex = this._pendingIndex
+        }
+    }
+
+    private _applyPendingIndex() {
+        let pending = this._pendingIndex
+        if (pending != null) {
+            delete this._pendingIndex
+            this.selectedIndex = pending
         }
     }
 }
