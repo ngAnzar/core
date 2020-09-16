@@ -41,7 +41,9 @@ export class FlexChildDirective implements OnChanges {
             this.css.insertRule("." + cls, {
                 flexGrow: this.grow,
                 flexShrink: this.shrink,
-                flexBasis: this.basis
+                flexBasis: this.basis,
+                maxWidth: "100%",
+                maxHeight: "100%",
             })
 
             replaceClass(this.el.nativeElement, "nz-flex-child", cls, changes.flex.firstChange)

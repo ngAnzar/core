@@ -22,6 +22,8 @@ import { HideDirective } from "./hide.directive"
 import { FlexLayoutDirective, FlexParentLayoutDirective } from "./flex/flex-layout.directive"
 import { FlexChildDirective } from "./flex/flex-child.directive"
 
+import { SyncHeightFromDirective, SyncHeightToDirective } from "./sync-height.directive"
+export { SyncHeightFromDirective, SyncHeightToDirective }
 
 
 @NgModule({
@@ -42,7 +44,10 @@ import { FlexChildDirective } from "./flex/flex-child.directive"
         HideDirective,
         FlexLayoutDirective,
         FlexParentLayoutDirective,
-        FlexChildDirective
+        FlexChildDirective,
+
+        SyncHeightFromDirective,
+        SyncHeightToDirective
     ],
     exports: [
         StackComponent,
@@ -55,7 +60,10 @@ import { FlexChildDirective } from "./flex/flex-child.directive"
         HideDirective,
         FlexLayoutDirective,
         FlexParentLayoutDirective,
-        FlexChildDirective
+        FlexChildDirective,
+
+        SyncHeightFromDirective,
+        SyncHeightToDirective
     ],
     providers: [
         RectMutationService,
