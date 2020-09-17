@@ -1,7 +1,7 @@
 :stylus
   .viewport
     position: relative
-    overflow: hidden
+    height: 100%
 
   .navbar
     z-index: 10
@@ -9,8 +9,8 @@
   .content-wrap
     z-index: 5
     max-height: 100%
+    height: 100%
     position: relative
-    overflow: hidden
 
   .sidenav
     z-index: 10
@@ -61,14 +61,14 @@
     nz-elevation: 3
 
 
-div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
-  .nz-navbar.navbar(fxFlex="none")
+div.viewport(nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch")
+  .nz-navbar.navbar(nzFlex="none")
 
-  div.content-wrap(fxFlex="1 1 0", fxLayout="row", fxLayoutAlign="start stretch")
+  div.content-wrap(nzFlex="1 1 0", nzLayout="row", nzLayoutAlign="start stretch")
     .nz-sidenav.sidenav(
-        fxFlex="none",
-        fxLayout="column",
-        fxLayoutAlign="start stretch",
+        nzFlex="none",
+        nzLayout="column",
+        nzLayoutAlign="start stretch",
         [ngClass]=`{"${style('panel-transition')}": vps.menu.animate}`,
         [attr.tabindex]="vps.menu.opened ? '0' : '-1'",
         [style.width.px]="vps.menu.width",
@@ -77,7 +77,7 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         (transitionend)="_recalcContentPadding()")
 
     .nz-viewport-content.content(
-        fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch",
+        nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch",
         [style.padding-right.px]="contentPadding",
         [style.transform]="contentTransform")
       ng-content
@@ -88,7 +88,7 @@ div.viewport(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch")
         (transitionend)="_updateOverlayVisibility()")
 
     .nz-vp-rightpanel.rightpanel(
-        fxFlex="noshrink",
+        nzFlex="noshrink",
         [ngClass]=`{"${style('panel-transition')}": vps.right.animate}`,
         [attr.tabindex]="vps.right.opened ? '0' : '-1'",
         [style.width.px]="vps.right.width",

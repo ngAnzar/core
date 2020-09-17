@@ -1,12 +1,16 @@
 import { Directive, Inject, ElementRef, Input, OnChanges, SimpleChanges, SimpleChange } from "@angular/core"
 
 import { CssService } from "../../common.module"
-import { FastDOM } from "../../util"
 import { replaceClass } from "./helper"
 
 
-const FLEX_NONE = ["0", "0", "auto"]
-const FLEX_GROW = ["1", "1", "100%"]
+const PREDEFINED: { [key: string]: [string, string, string] } = {
+    "none": ["0", "0", "auto"],
+    "grow": ["1", "1", "100%"],
+    "initial": ["0", "1", "auto"],
+    "nogrow": ["0", "1", "auto"],
+    "noshrink": ["1", "0", "auto"],
+}
 
 
 @Directive({
@@ -28,11 +32,7 @@ export class FlexChildDirective implements OnChanges {
     public ngOnChanges(changes: SimpleChanges) {
         if ("flex" in changes) {
             const flex = changes.flex.currentValue as string
-            const parts = flex === "none"
-                ? FLEX_NONE
-                : flex === "grow"
-                    ? FLEX_GROW
-                    : flex.split(/\s+/g);
+            const parts = PREDEFINED[flex] || flex.split(/\s+/g);
             (this as { grow: string }).grow = parts[0];
             (this as { shrink: string }).shrink = parts[1] || parts[0];
             (this as { basis: string }).basis = parts[2] || "100%"
