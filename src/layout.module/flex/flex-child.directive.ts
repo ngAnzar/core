@@ -34,8 +34,8 @@ export class FlexChildDirective implements OnChanges {
             const flex = changes.flex.currentValue as string
             const parts = PREDEFINED[flex] || flex.split(/\s+/g);
             (this as { grow: string }).grow = parts[0];
-            (this as { shrink: string }).shrink = parts[1] || parts[0];
-            (this as { basis: string }).basis = parts[2] || "100%"
+            (this as { shrink: string }).shrink = parts[1] == null ? parts[0] : parts[1];
+            (this as { basis: string }).basis = parts[2] == null ? "100%" : parts[2]
 
             const cls = `nz-flex-child-${this.grow}-${this.shrink}-${this.basis.replace('%', '')}`
             this.css.insertRule("." + cls, {

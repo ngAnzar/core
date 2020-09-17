@@ -1,8 +1,4 @@
 :stylus
-  .viewport
-    position: relative
-    height: 100%
-
   .navbar
     z-index: 10
 
@@ -61,7 +57,7 @@
     nz-elevation: 3
 
 
-div.viewport(nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch")
+ng-container(nzLayout="column", nzLayoutAlign="start stretch")
   .nz-navbar.navbar(nzFlex="none")
 
   div.content-wrap(nzFlex="1 1 0", nzLayout="row", nzLayoutAlign="start stretch")
@@ -73,11 +69,10 @@ div.viewport(nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch")
         [attr.tabindex]="vps.menu.opened ? '0' : '-1'",
         [style.width.px]="vps.menu.width",
         [style.maxWidth.px]="sidepanelMaxWidth",
-        [style.transform]="menuTransform",
-        (transitionend)="_recalcContentPadding()")
+        [style.transform]="menuTransform")
 
     .nz-viewport-content.content(
-        nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch",
+        nzFlex="1 1 0", nzLayout="column", nzLayoutAlign="start stretch",
         [style.padding-right.px]="contentPadding",
         [style.transform]="contentTransform")
       ng-content
@@ -93,8 +88,7 @@ div.viewport(nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch")
         [attr.tabindex]="vps.right.opened ? '0' : '-1'",
         [style.width.px]="vps.right.width",
         [style.maxWidth.px]="sidepanelMaxWidth",
-        [style.transform]="rightTransform",
-        (transitionend)="_recalcContentPadding()")
+        [style.transform]="rightTransform")
 
   ng-template([ngIf]="!(cordova.keyboardIsVisible | async)")
     .critical-message(*ngIf="vps.cmMessage | async as cmMessage")

@@ -1,4 +1,9 @@
 :stylus
+  .filename
+    height: 100%
+    height: 20px
+    cursor: pointer
+
   .fileinput
     width: 0.1px
     height: 0.1px
@@ -9,7 +14,7 @@
 
   .btn
     cursor: pointer
-    margin: -4px 4px -10px 4px
+    margin: -10px 4px -10px 4px
 
   .progress
     position: absolute
@@ -18,20 +23,20 @@
     bottom: -4px
 
 
-input.nz-input(fxFlex="grow", readonly, tabindex="-1", [formControl]="filename")
+ng-container(nzLayout="inline row", nzLayoutAlign="start center")
+  label.filename([attr.for]="id + '-file'", nzFlex="grow", nzLayout="row", nzLayoutAlign="start center") {{ filename.value || '' }}
 
-ng-template([ngIf]="this.downloadUrl")
-  .nz-button.btn(fxFlex="none", (tap)="_download($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
-    i.nz-icon(class=icon("mdi/download-outline", 18))
+  ng-template([ngIf]="this.downloadUrl")
+    .nz-button.btn(nzFlex="none", (tap)="_download($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+      i.nz-icon(class=icon("mdi/download-outline", 18))
 
-ng-template([ngIf]="this.file")
-  .nz-button.btn(fxFlex="none", (tap)="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
-    i.nz-icon(class=icon("mdi/close", 18))
+  ng-template([ngIf]="this.file")
+    .nz-button.btn(nzFlex="none", (tap)="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+      i.nz-icon(class=icon("mdi/close", 18))
 
-label.nz-button.btn(fxFlex="none", [attr.tabindex]="tabIndex", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
-  input.fileinput(type="file", (change)="onFileChange($event)", tabindex="-1", [disabled]="this.uploadInProgress")
-  i.nz-icon(class=icon("mdi/file-upload", 18))
-  ng-content
+  label.nz-button.btn([attr.for]="id + '-file'", nzFlex="none", [attr.tabindex]="tabIndex", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+    i.nz-icon(class=icon("mdi/file-upload", 18))
 
+input.fileinput([attr.id]="id + '-file'", type="file", (change)="onFileChange($event)", tabindex="-1", [disabled]="this.uploadInProgress")
 ng-template([ngIf]="this.uploadInProgress")
   nz-progress.progress(type="bar", [source]="model.progress", height="4", color="info")

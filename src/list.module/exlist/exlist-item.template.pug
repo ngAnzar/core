@@ -20,18 +20,18 @@
     z-index: 10
 
 
-ng-template([ngIf]="!_selected", [ngIfElse]="selectedTpl")
-  div.nz-exlist-item-collapsed(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", on-tap="onHeaderTap($event)")
-    ng-container([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
+ng-container(nzLayout="column", nzLayoutAlign="start stretch")
+  ng-template([ngIf]="!_selected", [ngIfElse]="selectedTpl")
+    div.nz-exlist-item-collapsed(nzFlex="noshrink", nzLayout="row", nzLayoutAlign="start center", (tap)="onHeaderTap($event)")
+      ng-container([ngTemplateOutlet]="list.tplItem", [ngTemplateOutletContext]="this")
 
 ng-template(#selectedTpl)
-  div.expanded(fxLayout="column", fxLayoutAlign="start stretch")
-    div.header(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", on-tap="onHeaderTap($event)", #header)
-      ng-container([ngTemplateOutlet]="list.tplExHeader || list.tplItem", [ngTemplateOutletContext]="this")
+  div.header(nzFlex="noshrink", nzLayout="row", nzLayoutAlign="start center", (tap)="onHeaderTap($event)", #header)
+    ng-container([ngTemplateOutlet]="list.tplExHeader || list.tplItem", [ngTemplateOutletContext]="this")
 
-    div.content(fxFlex="grow", fxLayout="column", fxLayoutAlign="start stretch", #content)
-      ng-container([ngTemplateOutlet]="list.tplExContent", [ngTemplateOutletContext]="this")
+  div.content(nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch", #content)
+    ng-container([ngTemplateOutlet]="list.tplExContent", [ngTemplateOutletContext]="this")
 
-    ng-template([ngIf]="list.tplExFooter")
-      div.footer(fxFlex="noshrink", fxLayout="row", fxLayoutAlign="start center", #footer)
-        ng-container([ngTemplateOutlet]="list.tplExFooter", [ngTemplateOutletContext]="this")
+  ng-template([ngIf]="list.tplExFooter")
+    div.footer(nzFlex="noshrink", nzLayout="row", nzLayoutAlign="start center", #footer)
+      ng-container([ngTemplateOutlet]="list.tplExFooter", [ngTemplateOutletContext]="this")

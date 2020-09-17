@@ -93,6 +93,7 @@ export class ViewportComponent implements AfterViewInit, OnInit {
             this.overlayDisplay = "block"
         }
 
+        this._recalcContentPadding()
         this.cdr.detectChanges()
     }
 
@@ -107,10 +108,10 @@ export class ViewportComponent implements AfterViewInit, OnInit {
             padding += this.vps.right.width
         }
 
-        if (this.contentPadding !== padding) {
-            this.contentPadding = padding
-            this.cdr.detectChanges()
-        }
+        this.contentPadding = padding
+        // if (this.contentPadding !== padding) {
+        //     skipDetect && this.cdr.detectChanges()
+        // }
     }
 
     public _updateOverlayVisibility() {

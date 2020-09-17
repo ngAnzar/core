@@ -15,14 +15,16 @@ ng-template([ngIf]="_isBusy")
       [style.right.px]="paddingRight",
       color="info")
 
-.nz-scroller.scroller(fxFlex="grow", #scroller)
-  div(scrollable)
-    .nz-list(
-      fxLayout="column",
-      fxLayoutAlign="start stretch",
-      [style.padding-top.px]="paddingTop",
-      [style.padding-left.px]="paddingLeft",
-      [style.padding-right.px]="paddingRight",
-      [style.padding-bottom.px]="paddingBottom")
-      ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", [extraHeight]="paddingTop + paddingBottom", #virtualList="nzVirtualFor")
-        .nz-exlist-item([data]="virtual", [index]="index")
+
+ng-container(nzLayout="row", nzLayoutAlign="start stretch")
+  .nz-scroller.scroller(nzFlex="grow", #scroller)
+    div(scrollable)
+      .nz-list(
+        nzLayout="column",
+        nxLayoutAlign="start stretch",
+        [style.padding-top.px]="paddingTop",
+        [style.padding-left.px]="paddingLeft",
+        [style.padding-right.px]="paddingRight",
+        [style.padding-bottom.px]="paddingBottom")
+        ng-template(nzVirtualFor, [nzVirtualForOf]="source", let-virtual, let-index="index", [extraHeight]="paddingTop + paddingBottom", #virtualList="nzVirtualFor")
+          .nz-exlist-item([data]="virtual", [index]="index")

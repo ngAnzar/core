@@ -1,4 +1,4 @@
-import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, Input, Output, Optional } from "@angular/core"
+import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, Input, Output, Optional, HostListener } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 import { Observable, Subject, merge, of, zip } from "rxjs"
 import { shareReplay, map, switchMap, take, startWith, tap } from "rxjs/operators"
@@ -19,6 +19,9 @@ const SELECTED_DATA: DayData = { color: "accent", variant: "filled icon" }
 @Component({
     selector: "nz-date-picker",
     templateUrl: "./date-picker.component.pug",
+    host: {
+        "[attr.tabindex]": "'0'"
+    },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatePickerComponent extends Destructible implements OnInit, PickerPopup<Date> {
@@ -229,6 +232,7 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
         this.displayed = addMonths(this._displayed, 1)
     }
 
+    @HostListener("wheel", ["$event"])
     public onWheel(event: WheelEvent) {
         if (event.deltaY < 0) {
             this.decMonth()
