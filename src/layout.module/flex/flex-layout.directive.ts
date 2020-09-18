@@ -1,7 +1,7 @@
 import { Directive, Input, OnChanges, SimpleChanges, Inject, ElementRef } from "@angular/core"
 
 import { CssService } from "../../common.module"
-import { replaceClass } from "./helper"
+import { replaceClass, FlexDirectiveBase } from "./helper"
 
 
 const FLEX_ALISASES: { [key: string]: string } = {
@@ -115,22 +115,6 @@ export class FlexLayoutDirective implements OnChanges {
 }
 
 
-// @Directive({
-//     selector: "[nzParentLayout]:not(ng-container)"
-// })
-// export class FlexParentLayoutDirective extends FlexLayoutDirective {
-//     @Input("nzParentLayout") public type: string
-//     @Input("nzParentLayoutGap") public gap: number
-//     @Input("nzParentLayoutAlign") public align: string
-
-//     public constructor(
-//         @Inject(ElementRef) el: ElementRef<HTMLElement>,
-//         @Inject(CssService) css: CssService) {
-//         super({ nativeElement: el.nativeElement.parentNode as HTMLElement }, css)
-//     }
-// }
-
-
 @Directive({
     selector: "ng-container[nzLayout]"
 })
@@ -141,3 +125,25 @@ export class FlexParentLayoutDirective extends FlexLayoutDirective {
         super({ nativeElement: el.nativeElement.parentNode as HTMLElement }, css)
     }
 }
+
+
+
+
+
+// const inputs = ["nzLayoutGap", "nzLayoutGap.lt-md"]
+
+
+// @Directive({
+//     selector: "[almafa]",
+//     inputs
+// })
+// export class XTest extends FlexDirectiveBase<"nzLayout" | "nzLayoutGap" | "nzLayoutAlign"> {
+//     public constructor() {
+//         super(inputs)
+//     }
+
+//     public ngOnChanges(changes: SimpleChanges) {
+//         super.ngOnChanges(changes)
+//         console.log(this.values)
+//     }
+// }
