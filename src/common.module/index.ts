@@ -45,7 +45,7 @@ import { FileDownloadService, FileDownloadEvent } from "./services/file-download
 import { FileUploadService, FileUploadEvent } from "./services/file-upload.service"
 import { TouchEventService, TOUCH_EVENT_PLUGIN, NzTouchEvent } from "./services/touch-event.service"
 import { ScriptService } from "./services/script.service"
-import { CssService } from "./services/css.service"
+import { CssService, CssProps } from "./services/css.service"
 // import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
 import { MediaQueryService } from "./services/media-query.service"
 import { CordovaService } from "./services/cordova.service"
@@ -54,7 +54,7 @@ export {
     FileUploadService, FileUploadEvent,
     TouchEventService, ScriptService, MediaQueryService,
     TOUCH_EVENT_PLUGIN, NzTouchEvent,
-    CordovaService, CssService
+    CordovaService, CssService, CssProps
 }
 
 import { ShortcutService } from "./shortcut/shortcut.service"

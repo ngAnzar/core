@@ -8,7 +8,11 @@ import { InputModel } from "../input/abstract"
 
 @Component({
     selector: ".nz-placeholder",
-    template: "<ng-content></ng-content>",
+    template: `
+        <ng-container nzLayout="column" nzLayoutAlign="start stretch">
+            <ng-content></ng-content>
+        </ng-container>
+    `,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlaceholderComponent implements OnDestroy {

@@ -1,6 +1,6 @@
 import { Directive, Inject, ElementRef, Input, OnChanges, SimpleChanges, SimpleChange } from "@angular/core"
 
-import { CssService } from "../../common.module"
+import { CssService, CssProps } from "../../common.module"
 import { replaceClass } from "./helper"
 
 
@@ -38,13 +38,19 @@ export class FlexChildDirective implements OnChanges {
             (this as { basis: string }).basis = parts[2] == null ? "100%" : parts[2]
 
             const cls = `nz-flex-child-${this.grow}-${this.shrink}-${this.basis.replace('%', '')}`
-            this.css.insertRule("." + cls, {
+            const css: CssProps = {
                 flexGrow: this.grow,
                 flexShrink: this.shrink,
                 flexBasis: this.basis,
                 maxWidth: "100%",
                 maxHeight: "100%",
-            })
+            }
+
+            if (Number(this.shrink) > 0) {
+                css.minWidth = css.minHeight = "0px"
+            }
+
+            this.css.insertRule("." + cls, css)
 
             replaceClass(this.el.nativeElement, "nz-flex-child", cls, changes.flex.firstChange)
         }
