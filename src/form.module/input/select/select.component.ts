@@ -418,7 +418,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             map(_ => this.opened && !this.readonly && !this.disabled),
             distinctUntilChanged(),
             switchMap(value => {
-                // console.log("openDD", value)
                 if (value) {
                     const range = new NzRange(0, AutocompleteComponent.PRELOAD_COUNT)
                     if (this.source.getRange(range).length > 0) {
@@ -453,10 +452,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         )
         this.destruct.subscription(openDD).subscribe(opened => {
             if (opened) {
-                // console.log("_showDropDown")
                 this._showDropDown()
             } else {
-                // console.log("_hideDropDown")
                 this._hideDropDown()
             }
             this._detectChanges()
@@ -468,7 +465,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         if (this.input) {
             this.input.nativeElement.value = ""
             if (!this.opened) {
-                this._updateFilter(null)
+                this._updateFilter(null, true)
             } else {
                 this.opened = false
             }
@@ -634,7 +631,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.model.focusMonitor.stopMonitoring(outletEl)
                 this._closeShortcuts.unwatch(outletEl)
                 if (!this.opened) {
-                    this._updateFilter(null)
+                    this._updateFilter(null, true)
                 } else {
                     this.opened = false
                 }
@@ -828,14 +825,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.destruct.run()
     }
 
-    private _updateFilter(qv: string | null) {
+    private _updateFilter(qv: string | null, silent?: boolean) {
         let filter = { ...this.source.filter } as any
         if (!qv || qv.length === 0) {
             delete filter[this.queryField]
         } else {
             filter[this.queryField] = { contains: qv }
         }
-        this.source.filter = filter
+        if (silent) {
+            this.source.setFilterSilent(filter)
+        } else {
+            this.source.filter = filter
+        }
     }
 }
 

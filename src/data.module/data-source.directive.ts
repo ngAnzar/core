@@ -112,6 +112,15 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
     private _filter: Filter<T>
 
+    public setFilterSilent(f: Filter<T>) {
+        if (this._dsd) {
+            this._dsd.setFilterSilent(f)
+        } else {
+            this._filter = f
+            this._updateFilter(true)
+        }
+    }
+
     public set sort(s: Sorter<T>) {
         this.storage.sorter.set(s)
     }
