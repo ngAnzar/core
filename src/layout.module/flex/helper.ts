@@ -22,11 +22,16 @@ export function replaceClass(el: HTMLElement, prefix: string, newClass: string, 
 }
 
 
-export type Breakpoints = "all" | "lt-md" | "md"
+export type Breakpoints = "all" | "xs" | "sm" | "md" | "lg" | "xl"
+    | "lt-sm" | "lt-md" | "lt-lg" | "lt-xl"
+    | "gt-xs" | "gt-sm" | "gt-md" | "gt-lg"
+
+
+export type ValueChange = { value: any, first: boolean, parsed?: any }
 
 
 export abstract class FlexDirectiveBase<Keys extends string> extends DottedInputs {
-    public readonly values: { [B in Breakpoints]?: { [K in Keys]?: { value: any, first: boolean } } } = {} as any
+    public readonly values: { [B in Breakpoints]?: { [K in Keys]?: ValueChange } } = {} as any
 
     protected onInputChange(path: string[], value: any, first: boolean): void {
         let [attr, bp] = path as [Keys, Breakpoints]

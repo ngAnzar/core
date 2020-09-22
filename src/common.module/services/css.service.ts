@@ -1,4 +1,5 @@
-import { Injectable, OnDestroy } from "@angular/core"
+import { Injectable, OnDestroy, Inject } from "@angular/core"
+import { BreakPointRegistry, BreakPoint } from "@angular/flex-layout"
 
 
 export type CssProps = { [P in keyof CSSStyleDeclaration]?: CSSStyleDeclaration[P] }
@@ -6,13 +7,23 @@ export type CssProps = { [P in keyof CSSStyleDeclaration]?: CSSStyleDeclaration[
 
 @Injectable({ providedIn: "root" })
 export class CssService implements OnDestroy {
+    public readonly breakpoints: BreakPoint[] = []
+
     private _styleEl: { [key: string]: HTMLStyleElement } = {}
     private _ruleInserted = new Set<string>()
+    private _bpr: { [key: string]: BreakPoint } = {}
 
-    public insertRule(selector: string, props: CssProps | string, media: string = "all"): string {
+    public constructor(@Inject(BreakPointRegistry) private readonly bpr: BreakPointRegistry) {
+        this.breakpoints = [{ alias: "all", mediaQuery: "all", priority: -1000 } as BreakPoint].concat(bpr.items)
+        for (const bp of this.breakpoints) {
+            this._bpr[bp.alias] = bp
+        }
+    }
+
+    public insertRule(selector: string, props: CssProps | string, breakpoint: string = "all"): string {
         if (!this._ruleInserted.has(selector)) {
             this._ruleInserted.add(selector)
-            const el = this.getStyleEl(media)
+            const el = this.getStyleEl(breakpoint)
             const style = typeof props === "string" ? props : this.renderProps(props)
             el.sheet.insertRule(`${selector} {${style}}`)
         }
@@ -27,15 +38,38 @@ export class CssService implements OnDestroy {
         return res
     }
 
-    protected getStyleEl(media: string) {
-        if (!this._styleEl[media]) {
+    protected getStyleEl(breakpoint: string) {
+        if (!this._styleEl[breakpoint]) {
+            const bp = this._bpr[breakpoint]
             const styleEl = document.createElement("style")
-            styleEl.media = media
+            styleEl.media = bp.mediaQuery
             styleEl.type = "text/css"
-            document.getElementsByTagName("head")[0].appendChild(styleEl)
-            this._styleEl[media] = styleEl
+            styleEl.dataset["nzflex"] = `${bp.priority}`
+
+            const styles = document.querySelectorAll<HTMLStyleElement>("style[data-nzflex]")
+            if (styles.length === 0) {
+                document.getElementsByTagName("head")[0].appendChild(styleEl)
+            } else {
+                for (let i = 0, l = styles.length; i < l; i++) {
+                    const existing = styles[i]
+                    if (Number(existing.dataset["nzflex"]) > bp.priority) {
+                        existing.parentElement.insertBefore(styleEl, existing)
+                        break
+                    }
+                }
+                if (!styleEl.parentElement) {
+                    const last = styles[styles.length - 1]
+                    if (last.nextElementSibling) {
+                        last.parentElement.insertBefore(styleEl, last.nextElementSibling)
+                    } else {
+                        last.parentElement.appendChild(styleEl)
+                    }
+                }
+            }
+
+            this._styleEl[breakpoint] = styleEl
         }
-        return this._styleEl[media]
+        return this._styleEl[breakpoint]
     }
 
     public ngOnDestroy() {
