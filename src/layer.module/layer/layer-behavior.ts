@@ -101,10 +101,8 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
 export class ModalLayer extends LayerBehavior {
     public constructor(options: LayerOptions = {} as any) {
         super(options)
-        if (!this.options.backdrop) {
+        if (this.options.backdrop === undefined) {
             this.options.backdrop = { type: "filled", hideOnClick: false }
-        } else {
-            // this.options.backdrop.hideOnClick = false
         }
 
         if (options.closeable == null) {

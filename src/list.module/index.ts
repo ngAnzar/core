@@ -146,6 +146,7 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight } from "./virtual-for/visible-
 
         TabsComponent,
         TabComponent,
+        TabLabelsComponent,
 
         TreeComponent,
 

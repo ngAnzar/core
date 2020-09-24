@@ -144,8 +144,14 @@ function placementCalculator(levitateAlign: HAlign | VAlign, targetAlign: HAlign
             }
         } else if (levitateAlign === "center" && targetAlign === "center") {
             placement[levitateAlign] = target[targetAlign]
-        } else if (levitateAlign === "center" || targetAlign === "center") {
+        } else if (levitateAlign === "center") {
             throw new Error("Not implemented...")
+        } else if (targetAlign === "center") {
+            if (orient === "H") {
+                placement[levitateAlign] = target.center.left
+            } else {
+                placement[levitateAlign] = target.center.top
+            }
         } else {
             placement[levitateAlign] = target[targetAlign]
         }

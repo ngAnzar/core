@@ -1,12 +1,17 @@
 ng-container(nzLayout="column", nzLayoutAlign="start stretch")
-  .nz-tab-labels(
-      *ngIf="_tabsAsArray && _tabsAsArray.length > 1",
-      [tabs]="tabs",
-      [selectedIndex]="selectedIndex",
-      (changes)="selectedIndex=$event",
-      nzFlex="none")
+  div(nzFlex="none", nzLayout="row", nzLayoutAlign="start center")
+    .nz-tab-labels(
+        *ngIf="_tabsAsArray && _tabsAsArray.length > 1",
+        [tabs]="tabs",
+        [selectedIndex]="selectedIndex",
+        (changes)="selectedIndex=$event",
+        nzFlex="grow")
+
+    ng-content(select="[nzAfterTabLabels]")
+
   .nz-stack(
     #stack,
     nzFlex="grow",
     [children]="_tabsAsArray",
+    [dynamicHeight]="_dynamicHeight",
     (changed)="onSelectedIndexChanged($event)")

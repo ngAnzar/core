@@ -2,6 +2,7 @@ import {
     Component, Inject, ContentChildren, QueryList, AfterContentInit,
     ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, Output, ElementRef, ViewChild, Input
 } from "@angular/core"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Subject } from "rxjs"
 import { startWith } from "rxjs/operators"
 
@@ -36,6 +37,17 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     }
     public get selectedIndex(): number { return this.stack ? this.stack.selectedIndex : -1 }
     private _pendingIndex: number = null
+
+    @Input()
+    public set dynamicHeight(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._dynamicHeight !== val) {
+            this._dynamicHeight = val
+            this.cdr.markForCheck()
+        }
+    }
+    public get dynamicHeight(): boolean { return this._dynamicHeight }
+    public _dynamicHeight: boolean = false
 
     @Output() public readonly changes = new Subject<number>()
 
