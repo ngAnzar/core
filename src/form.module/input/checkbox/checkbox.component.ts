@@ -171,6 +171,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             return
         }
         event.preventDefault()
+        this.model.control.markAsTouched()
 
         if (this.indeterminateValue != null) {
             if (this.checked) {
