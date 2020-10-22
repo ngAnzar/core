@@ -82,7 +82,7 @@ export class TextFieldComponent<T = string> extends InputComponent<T> implements
 })
 export class NumberFieldComponent extends TextFieldComponent<number> {
     protected _convertValue(value: any): number {
-        return value == null ? null : Number(value) as any
+        return value == null || (typeof value === "string" && value.length === 0) ? null : Number(value) as any
     }
 }
 
