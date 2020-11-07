@@ -45,7 +45,6 @@ export type EmbeddedView<T> = EmbeddedViewRef<VirtualForContext<T>>
 
 
 const EMPTY_ITEMS = new Items([], new NzRange(0, 0), 0)
-const EXTRA_INVISIBLE_COUNT = 10
 
 
 @Directive({
@@ -161,8 +160,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     private renderRange$ = this.destruct.subscription(this.visibleRange$).pipe(
         map(vr => {
             return new NzRange(
-                Math.max(0, vr.begin - EXTRA_INVISIBLE_COUNT),
-                vr.end + EXTRA_INVISIBLE_COUNT)
+                Math.max(0, vr.begin - this.visibleRangeStrategy.extraCount),
+                vr.end + this.visibleRangeStrategy.extraCount)
         }),
         withPrevious(this.reset$),
         switchMap(skipWhenRangeIsEq),

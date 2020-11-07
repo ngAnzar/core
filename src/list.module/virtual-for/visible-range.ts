@@ -23,6 +23,7 @@ export abstract class VirtualForVisibleRange extends Destructible {
     protected readonly _reset = new Subject()
     // protected readonly _visibleRange = new Subject<NzRange>()
     protected isPaused: number = 0
+    public abstract readonly extraCount: number
 
     public readonly visibleRange$: Observable<NzRange> = this._update.pipe(
         filter(v => this.isPaused === 0),
@@ -76,8 +77,19 @@ export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
     public get itemHeight(): number { return this._itemHeight }
     private _itemHeight: number
 
+    public set itemsPerRow(val: number) {
+        if (this._itemsPerRow !== val) {
+            this._itemsPerRow = val
+            this._update.next()
+        }
+    }
+    public get itemsPerRow(): number { return this._itemsPerRow }
+    private _itemsPerRow: number = 1
+
+    public get extraCount() { return this.itemsPerRow * Math.ceil(10 / this.itemsPerRow) }
+
     public getItemRect(index: number) {
-        return new Rect(0, this._itemHeight * index, this.scroller.vpImmediate.scrollWidth, this._itemHeight)
+        return new Rect(0, this._itemHeight * Math.floor(index / this._itemsPerRow), this.scroller.vpImmediate.scrollWidth, this._itemHeight)
     }
 
     public onItemUpdate(index: number, view: EmbeddedViewRef<VirtualForContext<any>>): void {
@@ -93,13 +105,97 @@ export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
     }
 
     public getVisibleRange(viewport: Viewport): NzRange {
-        let begin: number = Math.floor(viewport.visible.top / this._itemHeight)
-        let end: number = begin + Math.ceil(viewport.visible.height / this._itemHeight)
+        let begin: number = Math.floor(viewport.visible.top / this._itemHeight) * this._itemsPerRow
+        let end: number = begin + Math.ceil(viewport.visible.height / this._itemHeight) * this._itemsPerRow - 1
         return new NzRange(begin, end)
     }
 
     public reset(): void {
         this._reset.next()
+    }
+}
+
+
+@Injectable()
+export abstract class VisibleRange_Layout {
+    public abstract updateRects(rects: RectProps[], from: number): void
+    public abstract getElRect(el: HTMLElement, prevElRect: RectProps, width: number, height: number, vtop: number, vleft: number): RectProps
+
+    protected _rectLike(x: number, y: number, w: number, h: number): RectProps {
+        return {
+            width: w,
+            height: h,
+            x: x,
+            y: y,
+            left: x,
+            top: y,
+            right: x + w,
+            bottom: y + h,
+        }
+    }
+}
+
+
+@Injectable()
+export class VisibleRange_Layout_Column extends VisibleRange_Layout {
+    public updateRects(rects: RectProps[], from: number) {
+        const prev = rects[from - 1]
+        let top = prev ? prev.bottom : 0
+
+        for (let i = from; i < rects.length; i++) {
+            const rect = rects[i]
+            if (rect) {
+                rect.top = rect.y = top
+                rect.bottom = top + rect.height
+                top = rect.bottom
+            }
+        }
+    }
+
+    public getElRect(el: HTMLElement, prevElRect: RectProps, width: number, height: number, vtop: number, vleft: number): RectProps {
+        const marginTop = parseInt(el.style.marginTop, 10) || 0
+        const marginBottom = parseInt(el.style.marginBottom, 10) || 0
+        return this._rectLike(0, prevElRect ? prevElRect.top + prevElRect.height : 0, width, height + marginTop + marginBottom)
+    }
+}
+
+
+@Injectable()
+export class VisibleRange_Layout_Grid extends VisibleRange_Layout {
+    public updateRects(rects: RectProps[], from: number) {
+        const prev = rects[from - 1]
+        let prevX = prev ? prev.x : 0
+        let prevY = prev ? prev.y : 0
+        let top = prev ? prev.top : 0
+        let maxRowHeight = prev ? prev.height : 0
+
+        for (let i = from; i < rects.length; i++) {
+            const rect = rects[i]
+            if (rect) {
+                let rectX = rect.x
+                let rectY = rect.y
+
+                // same row, maybe?
+                if (prevY === rect.y && prevX !== rect.x) {
+                    rect.top = rect.y = top
+                    rect.bottom = top + rect.height
+                    maxRowHeight = Math.max(maxRowHeight, rect.height)
+                } else {
+                    top = prevY + maxRowHeight
+                    rect.top = rect.y = top
+                    rect.bottom = top + rect.height
+                }
+
+                prevX = rectX
+                prevY = rectY
+            }
+        }
+    }
+
+    public getElRect(el: HTMLElement, prevElRect: RectProps, width: number, height: number, vtop: number, vleft: number): RectProps {
+        const marginTop = parseInt(el.style.marginTop, 10) || 0
+        const marginBottom = parseInt(el.style.marginBottom, 10) || 0
+        return this._rectLike(el.offsetLeft + vleft, el.offsetTop + vtop, width, height + marginTop + marginBottom)
     }
 }
 
@@ -127,9 +223,12 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
         threshold: 0
     })
 
+    public get extraCount() { return 10 }
 
-
-    public constructor(scroller: ScrollerService, protected readonly scrollable: ScrollableDirective) {
+    public constructor(
+        scroller: ScrollerService,
+        protected readonly scrollable: ScrollableDirective,
+        protected readonly layout: VisibleRange_Layout) {
         super(scroller)
     }
 
@@ -207,7 +306,7 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
         this._reset.next()
     }
 
-    private _onResize(entries: any[]) {
+    protected _onResize(entries: any[]) {
         let minIndex = Infinity
 
         for (const entry of entries) {
@@ -224,13 +323,13 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
         }
 
         // if (changed) {
-        this._updateRects(minIndex)
+        this.layout.updateRects(this.rects, minIndex)
         this._updateVirtualScroll()
         this.update()
         // }
     }
 
-    private _onIntersection(entries: IntersectionObserverEntry[]) {
+    protected _onIntersection(entries: IntersectionObserverEntry[]) {
         let minIndex = Infinity
 
         for (const entry of entries) {
@@ -247,47 +346,18 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
         }
 
         // if (changed) {
-        this._updateRects(minIndex)
+        this.layout.updateRects(this.rects, minIndex)
         this._updateVirtualScroll()
         this.update()
         // }
     }
 
     private _cacheRect(el: HTMLElement, index: number, width: number, height: number) {
-        const marginTop = parseInt(el.style.marginTop, 10) || 0
-        const marginBottom = parseInt(el.style.marginBottom, 10) || 0
         const prev = this.rects[index - 1]
-        this.rects[index] = this._rectLike(0, prev ? prev.bottom : 0, width, height + marginTop + marginBottom)
+        this.rects[index] = this.layout.getElRect(el, prev, width, height, this.scroller.vpImmediate.virtualOffsetTop || 0, this.scroller.vpImmediate.virtualOffsetLeft || 0)
     }
 
-    private _rectLike(x: number, y: number, w: number, h: number): RectProps {
-        return {
-            width: w,
-            height: h,
-            x: x,
-            y: y,
-            left: x,
-            top: y,
-            right: x + w,
-            bottom: y + h,
-        }
-    }
-
-    private _updateRects(from: number) {
-        const prev = this.rects[from - 1]
-        let top = prev ? prev.bottom : 0
-
-        for (let i = from; i < this.rects.length; i++) {
-            const rect = this.rects[i]
-            if (rect) {
-                rect.top = rect.y = top
-                rect.bottom = top + rect.height
-                top = rect.bottom
-            }
-        }
-    }
-
-    private _updateVirtualScroll() {
+    protected _updateVirtualScroll() {
         let paddingTop: number = 0
         let minHeight: number = 0
 
@@ -342,6 +412,10 @@ export class VF_FixedItemHeight extends DirectiveBase {
     @Input()
     public set fixedItemHeight(val: number) { (this.strategy as VisibleRange_FixedHeight).itemHeight = val }
     public get fixedItemHeight(): number { return (this.strategy as VisibleRange_FixedHeight).itemHeight }
+
+    @Input()
+    public set itemsPerRow(val: number) { (this.strategy as VisibleRange_FixedHeight).itemsPerRow = val }
+    public get itemsPerRow(): number { return (this.strategy as VisibleRange_FixedHeight).itemsPerRow }
 }
 
 
@@ -350,9 +424,9 @@ export class VF_FixedItemHeight extends DirectiveBase {
     providers: [
         {
             provide: VirtualForVisibleRange,
-            deps: [ScrollerService, ScrollableDirective],
-            useFactory: function (scroller: ScrollerService, scrollable: ScrollableDirective) {
-                return new VisibleRange_VaryHeight_Intersection(scroller, scrollable)
+            deps: [ScrollerService, ScrollableDirective, VisibleRange_Layout],
+            useFactory: function (scroller: ScrollerService, scrollable: ScrollableDirective, layout: VisibleRange_Layout) {
+                return new VisibleRange_VaryHeight_Intersection(scroller, scrollable, layout)
             }
         }
     ]
@@ -362,6 +436,20 @@ export class VF_VaryingItemHeight extends DirectiveBase {
     public set extraHeight(val: number) { (this.strategy as VisibleRange_VaryHeight_Intersection).extraHeight = val }
     public get extraHeight(): number { return (this.strategy as VisibleRange_VaryHeight_Intersection).extraHeight }
 }
+
+
+@Directive({
+    selector: "[nzVirtualFor]:not([layout])",
+    providers: [{ provide: VisibleRange_Layout, useClass: VisibleRange_Layout_Column }]
+})
+export class VF_Layout_Column { }
+
+
+@Directive({
+    selector: "[nzVirtualFor][layout='grid']",
+    providers: [{ provide: VisibleRange_Layout, useClass: VisibleRange_Layout_Grid }]
+})
+export class VF_Layout_Grid { }
 
 
 function getViewEl(view: EmbeddedViewRef<VirtualForContext<any>>): HTMLElement | null {

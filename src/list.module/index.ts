@@ -65,7 +65,7 @@ export { TreeComponent, TreeItemComponent }
 
 
 import { VirtualForDirective } from "./virtual-for/virtual-for.directive"
-import { VF_FixedItemHeight, VF_VaryingItemHeight } from "./virtual-for/visible-range"
+import { VF_FixedItemHeight, VF_VaryingItemHeight, VF_Layout_Column, VF_Layout_Grid } from "./virtual-for/visible-range"
 
 
 @NgModule({
@@ -116,6 +116,8 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight } from "./virtual-for/visible-
         VirtualForDirective,
         VF_FixedItemHeight,
         VF_VaryingItemHeight,
+        VF_Layout_Column,
+        VF_Layout_Grid,
         // VirtualForFixedItems,
         // VirtualForVaryingItems,
         // VirtualForVaryingItemsIntersection
@@ -153,6 +155,8 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight } from "./virtual-for/visible-
         VirtualForDirective,
         VF_FixedItemHeight,
         VF_VaryingItemHeight,
+        VF_Layout_Column,
+        VF_Layout_Grid,
         // VirtualForFixedItems,
         // VirtualForVaryingItems,
         // VirtualForVaryingItemsIntersection
