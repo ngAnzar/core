@@ -426,7 +426,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                     } else {
                         // console.log("RANGE PRELOADING")
                         // preload items
-                        return Observable.create((observer: Observer<boolean>) => {
+                        return new Observable((observer: Observer<boolean>) => {
                             const s = this.source.storage.items.subscribe(_ => {
                                 // console.log("preload", _)
                                 observer.next(value)
