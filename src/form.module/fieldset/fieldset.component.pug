@@ -1,0 +1,6 @@
+ng-template([ngIf]="legend")
+  .nz-fieldset-legend(nzLayout="row", nzLayoutAlign="start center", nzLayoutGap="8px")
+    ng-template([ngTemplateOutlet]="legend")
+
+.nz-fieldset-content(nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px")
+  ng-content

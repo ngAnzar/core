@@ -47,7 +47,7 @@ export class ScrollableDirective implements OnInit {
                 // console.log("virtualOffsetTop", service.vpRender.virtualOffsetTop)
                 // const top = pos.top
                 // nativeEl.style.willChange = "transform"
-                nativeEl.style.transform = `translate3d(-${left}px, -${top}px, 0)`
+                nativeEl.style.transform = `translate(-${Math.round(left)}px, -${Math.round(top)}px)`
                 // nativeEl.style.willChange = null
             })
 

@@ -1,15 +1,17 @@
 label.nz-checkbox-label(for="{{id}}-chk")
-  .nz-checkbox-input
-    input.cdk-visually-hidden(
-      #input,
-      id="{{id}}-chk",
-      type="checkbox",
-      tabindex="-1",
-      [disabled]="disabled",
-      [checked]="checked",
-      [indeterminate]="indeterminate")
-    .nz-checkbox-border
-    .nz-checkbox-indicator
-      .nz-checkbox-checkmark
+  span.nz-checkbox-input
+    span.nz-checkbox-border
+    span.nz-checkbox-indicator
+      span.nz-checkbox-checkmark
   span.nz-checkbox-content
     ng-content
+
+input.cdk-visually-hidden(
+  #input,
+  id="{{id}}-chk",
+  type="checkbox",
+  tabindex="-1",
+  [disabled]="disabled",
+  [checked]="checked",
+  [indeterminate]="indeterminate")
+

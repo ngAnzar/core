@@ -1,7 +1,7 @@
 import { AnimationBuilder, AnimationOptions, AnimationPlayer, AnimationMetadata } from "@angular/animations"
 import { take } from "rxjs/operators"
 
-import { IDisposable, Rect } from "../../util"
+import { IDisposable, Rect, rawSetTimeout } from "../../util"
 import { LevitateRef } from "../levitate/levitate-ref"
 import { LayerOptions, DropdownLayerOptions, ClosingGuarded } from "./layer-options"
 import { LayerRef, ComponentLayerRef } from "./layer-ref"
@@ -86,6 +86,8 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
                 player.destroy()
                 this.currentAnimation = null
                 resolve()
+
+                layer.container.style.willChange = null
             })
 
             player.play()

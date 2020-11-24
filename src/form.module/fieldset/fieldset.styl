@@ -1,10 +1,31 @@
 
 
 .nz-fieldset
+  position: relative
+  padding-top: 9px
+
+  &[error]
+    .nz-fieldset-content
+      border-color: $theme.critical.normal
+
+    .nz-fieldset-legend, .nz-fieldset-legend *
+      color: $theme.critical.normal
+
+.nz-fieldset-legend
+  padding: 0 4px
+  nz-typo: $typo.caption
+  text-transform: uppercase
+  color: $theme.common.normal
+  background: $theme.base.normal
+  position: absolute
+  top: 0
+  left: 12px
+  z-index: 10
+  height: 20px
+
+.nz-fieldset-content
+  position: relative
   border: 1px solid $theme.common.light
   border-radius: 5px
-
-  legend
-    nz-typo: $typo.caption
-    text-transform: uppercase
-    color: $theme.common.normal
+  padding: 26px 16px 16px 16px
+  z-index: 5

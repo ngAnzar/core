@@ -35,6 +35,7 @@ import { TimePickerService } from "./input/date/time-picker.service"
 import { NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator } from "./input/date/number-scroll.component"
 import { TimePickerComponent } from "./input/date/time-picker.component"
 import { DatePickerDayDataProvider, ExternalDayData, DayData } from "./input/date/abstract"
+import { FieldsetComponent } from "./fieldset/fieldset.component"
 export {
     DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent, TimeValidator, TimePickerService,
     NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator,
@@ -126,6 +127,8 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
 
         SelectComponent,
 
+        FieldsetComponent,
+
         TextFieldComponent,
         NumberFieldComponent,
         TextareaComponent,
@@ -174,6 +177,8 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         AutocompleteComponent,
 
         SelectComponent,
+
+        FieldsetComponent,
 
         TextFieldComponent,
         NumberFieldComponent,

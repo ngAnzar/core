@@ -86,6 +86,7 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
 
 
 .nz-checkbox-border
+  display: inline-block
   position: absolute
   top: 0
   left: 0
@@ -96,18 +97,18 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
 
 .nz-checkbox-content
   display: inline-block
-  flex-grow: 1
+  flex: 1 0 auto
   position: relative
   top: 2px
   overflow: hidden
   max-width: 100%
 
 .nz-checkbox-input
+  display: inline-block
   position: relative
   width: $nz-checkbox-size
   height: $nz-checkbox-size
-  flex-shrink: 0
-  flex-grow: 0
+  flex: 0 0 auto
 
   & + .nz-checkbox-content:not(:empty)
     margin-left: nz-local-grid-size(2)
@@ -116,6 +117,7 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
 
 
 .nz-checkbox-indicator
+  display: inline-block
   position: absolute
   top: 0
   left: 0
@@ -125,6 +127,7 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
   transition: 250ms opacity, 250ms background-color
 
 .nz-checkbox-checkmark
+  display: inline-block
   position: absolute
   opacity: 0
   transition: 250ms opacity, 250ms transform, 250ms width, 250ms height, 250ms border
