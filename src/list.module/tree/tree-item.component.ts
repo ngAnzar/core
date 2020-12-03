@@ -1,4 +1,4 @@
-import { Component, Input, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, Inject, OnDestroy } from "@angular/core"
+import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Inject, OnDestroy, OnInit } from "@angular/core"
 import { Observable, Subject, of, Observer } from "rxjs"
 import { takeUntil, finalize, take, tap } from "rxjs/operators"
 
@@ -10,7 +10,7 @@ import { TreeComponent } from "./tree.component"
     templateUrl: "./tree-item.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreeItemComponent<T = any> implements OnDestroy {
+export class TreeItemComponent<T = any> implements OnDestroy, OnInit {
     @Input() public level: number
     @Input() public isNode: boolean
 
@@ -56,9 +56,17 @@ export class TreeItemComponent<T = any> implements OnDestroy {
     private _loadUntil: Subject<void>
     public _children: T[]
 
+    public readonly height = 32
+
     public constructor(
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
         @Inject(TreeComponent) public readonly tree: TreeComponent) {
+    }
+
+    public ngOnInit() {
+        if (this.level < 0) {
+            this.isExpanded = true
+        }
     }
 
     public expand(): Observable<T[]> {
@@ -78,7 +86,7 @@ export class TreeItemComponent<T = any> implements OnDestroy {
     }
 
     public collapse(): Observable<void> {
-        return Observable.create((observer: Observer<void>) => {
+        return new Observable((observer: Observer<void>) => {
             this._children = null
             this._isBusy = false
             this._isExpanded = false
@@ -109,5 +117,14 @@ export class TreeItemComponent<T = any> implements OnDestroy {
     public ngOnDestroy() {
         this._loadUntil && this._loadUntil.complete()
         this.$implicit && this.tree.unregisterTreeItem(this)
+    }
+
+    public onItemTap(event: Event) {
+        if (event.defaultPrevented) {
+            return
+        }
+        if (this.isNode) {
+            this.isExpanded = !this._isExpanded
+        }
     }
 }

@@ -14,7 +14,7 @@ import { SingleSelection, MultiSelection, NoneSelection, PropagateSelection } fr
 import { SelectableDirective } from "./selection/selectable.directive"
 import { SelectionKeyboardHandler } from "./selection/keyboard-handler"
 export { SelectionModel, ISelectionModel, SelectionEvent, ISelectable, SelectOrigin, SelectionItems } from "./selection/abstract"
-export { SingleSelection, MultiSelection, PropagateSelection, SelectableDirective }
+export { SingleSelection, MultiSelection, NoneSelection, PropagateSelection, SelectableDirective }
 export { SelectionKeyboardHandler }
 
 

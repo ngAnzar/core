@@ -3,51 +3,51 @@
     cursor: pointer !important
 
   .indicator
-    width: 36px
+    text-align: center
 
   .children
-    padding-left: 36px + 16px
-    margin-top: 8px
-
-  .icon-container
-    width: 36px
-    height: 48px
-    position: relative
+    overflow: visible !important
 
   .icon
-    position: absolute
-    left: 50%
-    top: 50%
-    margin: -12px 0 0 -12px
+    opacity: 0.7
+    position: relative
+    top: -1px
 
 
-.nz-tree-item-row(fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
-  .indicator(fxFlex="none")
+.nz-tree-item-row(
+    *ngIf="level >= 0",
+    nzLayout="row",
+    nzLayoutAlign="start center",
+    [style.height.px]="height",
+    [style.padding-left.px]="(height - 8) * level",
+    (tap)="onItemTap($event)",
+    [ngClass]=`{"${style('content-expandable')}": isNode || this.tree.selection.type != 'none'}`,
+    [selectable]="$implicit",
+    #sel="selectable")
+
+  .indicator(nzFlex="none", nzLayout="row", nzLayoutAlign="center center", [style.width.px]="height", [style.height.px]="height")
     ng-template([ngIf]="_isBusy", [ngIfElse]="ifNotBusy")
-      nz-progress(type="circle", radius="14", color="common")
-    ng-template(#ifNotBusy )
+      nz-progress(type="circle", [radius]="(height - 8) / 2", [color]="sel.selected ? 'normal' : 'common'")
+    ng-template(#ifNotBusy)
       ng-template([ngIf]="isNode", [ngIfElse]="ifIsLeaf")
         ng-template([ngIf]="_isExpanded", [ngIfElse]="ifNotExpanded")
-          button.nz-button(variant="small icon", color="common", (tap)="isExpanded=false")
-            i.nz-icon(class=icon("mdi/minus-box"))
-        ng-template(#ifNotExpanded )
-          button.nz-button(variant="small icon", color="common", (tap)="isExpanded=true")
-            i.nz-icon(class=icon("mdi/plus-box-outline"))
-      ng-template(#ifIsLeaf )
-        .icon-container
-          i.nz-icon.icon(class=icon("mdi/circle-medium"), color="common")
+          i.nz-icon.icon(class=icon("mdi/folder-open-outline", 19))
+        ng-template(#ifNotExpanded)
+          i.nz-icon.icon(class=icon("mdi/folder-outline", 19))
+      ng-template(#ifIsLeaf)
+        i.nz-icon.icon(class=icon("mdi/circle-medium", 19))
 
-  .nz-tree-item-content(fxFlex="grow", (tap)="isNode ? isExpanded=!_isExpanded : null", [ngClass]=`{"${style('content-expandable')}": isNode}`)
+  .nz-tree-item-content(nzFlex="grow", nzLayout="row", nzLayoutAlign="start center")
     ng-container([ngTemplateOutlet]="tree.contentTpl", [ngTemplateOutletContext]="this")
-  .buttons(fxFlex="none")
+  .buttons(nzFlex="none")
     ng-container([ngTemplateOutlet]="tree.buttonsTpl", [ngTemplateOutletContext]="this")
 
 ng-template([ngIf]="isNode && _isExpanded && _children")
   ng-template([ngIf]="_children.length > 0", [ngIfElse]="ifIsEmpty")
-    .children(fxLayout="column", fxLayoutAlign="start stretch", fxLayoutGap="8px")
+    .children(nzLayout="column", nzLayoutAlign="start stretch")
       ng-template(ngFor, [ngForOf]="_children", let-child)
-        .nz-tree-item(fxFlex="none", [level]="level + 1", [model]="child")
+        .nz-tree-item(nzFlex="none", [level]="level + 1", [model]="child")
 
-  ng-template(#ifIsEmpty )
-    .nz-list-empty Nincs további gyereke
+  ng-template(#ifIsEmpty)
+    .nz-list-empty([style.height.px]="height") Nincs további gyereke
 

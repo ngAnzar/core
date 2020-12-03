@@ -3,6 +3,7 @@
     padding: 16px 0
 
 
-.nz-scroller(fxFlex="grow")
-  .scrollable(scrollable)
-    .nz-tree-item(*ngIf="root", [level]="0", [model]="root", [isNode]="true")
+ng-container(nzLayout="column", nzLayoutAlign="start stretch")
+  .nz-scroller(nzFlex="grow")
+    .scrollable(scrollable)
+      .nz-tree-item(*ngIf="root", [level]="rootVisible ? 0 : -1", [model]="root", [isNode]="true")

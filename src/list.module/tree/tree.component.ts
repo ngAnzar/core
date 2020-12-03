@@ -1,9 +1,10 @@
-import { Component, Input, ContentChild, TemplateRef, Inject } from "@angular/core"
+import { Component, Input, ContentChild, TemplateRef, Inject, Directive } from "@angular/core"
 import { Observable, Subscription, from, of, EMPTY } from "rxjs"
 import { startWith, switchMap, mapTo } from "rxjs/operators"
 
-import { DataSourceDirective } from "../../data.module"
+import { DataSourceDirective, SelectionModel, NoneSelection, SelectOrigin } from "../../data.module"
 import { LocalStorageService, LocalStorageBucket } from "../../common.module"
+
 import type { TreeItemComponent } from "./tree-item.component"
 
 
@@ -13,7 +14,8 @@ export type ExpandedItems = { [key: string]: ExpandedItems }
 
 @Component({
     selector: ".nz-tree",
-    templateUrl: "tree.component.pug"
+    templateUrl: "tree.component.pug",
+    exportAs: "nzTree"
 })
 export class TreeComponent {
     @ContentChild("content", { static: true, read: TemplateRef }) public readonly contentTpl: TemplateRef<TreeItemComponent>
@@ -35,6 +37,7 @@ export class TreeComponent {
     @Input() public queryField: string = "parent_id"
     @Input() public isLeafField: string = "is_leaf"
     @Input() public singleExpand: boolean = true
+    @Input() public rootVisible: boolean = true
 
     @Input()
     public set stateId(val: string) {
@@ -66,7 +69,28 @@ export class TreeComponent {
 
     public constructor(
         @Inject(DataSourceDirective) private readonly source: DataSourceDirective,
-        @Inject(LocalStorageService) private readonly localStorage: LocalStorageService) {
+        @Inject(LocalStorageService) private readonly localStorage: LocalStorageService,
+        @Inject(SelectionModel) public readonly selection: SelectionModel) {
+    }
+
+    public reload() {
+        const expanded = JSON.parse(JSON.stringify(this.expandedItems))
+        const selected = this.selection.selected.get().map(val => val.pk)
+
+        if (!this._itemsById[this.root?.id]) {
+            return
+        }
+
+        this._itemsById[this.root.id]
+            .collapse()
+            .pipe(switchMap(v => this.expandItems(expanded)))
+            .subscribe(() => {
+                const x: { [key: string]: SelectOrigin } = {}
+                for (const pk of selected) {
+                    x[pk] = "program"
+                }
+                this.selection.selected.update(x)
+            })
     }
 
     public expandById() {
@@ -173,4 +197,15 @@ export class TreeComponent {
             this._disableStateChange = false
         })
     }
+}
+
+
+@Directive({
+    selector: ".nz-tree:not([selection])",
+    providers: [
+        { provide: SelectionModel, useExisting: TreeDefaultSelecton }
+    ]
+})
+export class TreeDefaultSelecton extends NoneSelection {
+
 }

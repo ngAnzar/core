@@ -8,7 +8,8 @@ import { SelectionModel, ISelectable, SelectOrigin } from "./abstract"
 
 
 @Directive({
-    selector: "[selectable]"
+    selector: "[selectable]",
+    exportAs: "selectable"
 })
 export class SelectableDirective<T extends Model = Model> implements ISelectable<T>, OnDestroy, OnInit {
     @Input("selectable")
