@@ -23,6 +23,7 @@
     (tap)="onItemTap($event)",
     [ngClass]=`{"${style('content-expandable')}": isNode || this.tree.selection.type != 'none'}`,
     [selectable]="$implicit",
+    (selected)="onSelectionChange($event)",
     #sel="selectable")
 
   .indicator(nzFlex="none", nzLayout="row", nzLayoutAlign="center center", [style.width.px]="height", [style.height.px]="height")

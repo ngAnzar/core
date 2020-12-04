@@ -117,7 +117,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
     private _pending: Update = {}
 
     public update(update: Update): void {
-        // console.log(update)
+        // console.trace(update)
         if (this._suspended || !this.byId) {
             this._pending = Object.assign(this._pending, update)
             return
@@ -290,7 +290,7 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
     public _handleOnDestroy(cmp: ISelectable<T>): void {
         let model = cmp.model
         if (model) {
-            if (!this.maintainSelection) {
+            if (!this.maintainSelection && this.getSelectOrigin(cmp.model.pk)) {
                 this.setSelected(cmp.model.pk, null)
             }
             delete this._selectables[cmp.model.pk]
