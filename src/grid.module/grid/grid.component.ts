@@ -85,6 +85,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     public ngAfterContentInit() {
         this.destruct.subscription(this.columns.layoutChanged).subscribe(this._update)
         this.updateGridTemplate()
+        this.cdr.markForCheck()
     }
 
     protected updateGridTemplate() {
