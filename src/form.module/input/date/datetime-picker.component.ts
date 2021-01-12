@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy, Inject, ViewChild } from "@angular/core"
 import { differenceInSeconds, startOfDay, isSameDay, setYear, setMonth, setDate, setHours, setMinutes, setSeconds } from "date-fns"
 
-import { Time, setTzToUTC } from "../../../util"
+import { Time } from "../../../util"
 import { LayerRef } from "../../../layer.module"
 import { DatePickerComponent } from "./date-picker.component"
 import { TimePickerComponent } from "./time-picker.component"

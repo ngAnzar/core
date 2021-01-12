@@ -4,7 +4,7 @@ import { Observable, Subject, merge, of, zip } from "rxjs"
 import { shareReplay, map, switchMap, take, startWith, tap } from "rxjs/operators"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, addDays, isToday, isSameDay, isSameMonth, addMonths, subMonths, startOfDay, compareAsc } from "date-fns"
 
-import { setTzToUTC, Destructible } from "../../../util"
+import { Destructible } from "../../../util"
 import { LocaleService } from "../../../common.module"
 import { DatePickerDayDataProvider, DayData, PickerPopup } from "./abstract"
 import { LayerRef } from "../../../layer.module"
@@ -95,10 +95,10 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
                 const day = idx % 7
 
                 if (!weeks[week]) {
-                    weeks[week] = [setTzToUTC(current)]
+                    weeks[week] = [current]
                     data[week] = [OTHER_MONTH_DATA]
                 } else {
-                    weeks[week][day] = setTzToUTC(current)
+                    weeks[week][day] = current
                     data[week][day] = OTHER_MONTH_DATA
                 }
 
@@ -256,7 +256,7 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
 
     private _setDateField(name: "_value" | "_displayed" | "_min" | "_max", val: Date, isEq: (a: Date, b: Date) => boolean): boolean {
         if (val) {
-            val = setTzToUTC(startOfDay(val))
+            val = startOfDay(val)
         }
 
         if (!this[name] || !val || !isEq(this[name], val)) {

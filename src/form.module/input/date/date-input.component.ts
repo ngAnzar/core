@@ -1,17 +1,14 @@
 import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, HostBinding, Directive } from "@angular/core"
 import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { take, map, takeUntil, takeWhile } from "rxjs/operators"
+import { map, takeUntil } from "rxjs/operators"
 import { parse, isDate, format, startOfDay, getDaysInMonth, parseISO, isSameDay, isValid, differenceInDays } from "date-fns"
 
 
-import { setTzToUTC } from "../../../util"
 import { LocaleService } from "../../../common.module"
-import { ComponentLayerRef } from "../../../layer.module"
 import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { InputMask } from "../input-mask.service"
 import { DatePickerService } from "./date-picker.service"
-import { DatePickerComponent } from "./date-picker.component"
 import { MASK_BLOCKS } from "./mask-blocks"
 import { InvalidDateValidator } from "./invalid-date.validator"
 
@@ -201,7 +198,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
             .subscribe(value => {
                 let isValid = value === null
                 if (value instanceof Date && !isNaN(value.getTime())) {
-                    this.model.emitValue(value = setTzToUTC(startOfDay(value)))
+                    this.model.emitValue(value = startOfDay(value))
                     this._updatePickerValue(value)
                     isValid = true
                 } else {
@@ -230,7 +227,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     protected _renderValue(obj: Date | string): void {
         let value = ""
         if (obj instanceof Date) {
-            obj = setTzToUTC(startOfDay(obj))
+            obj = startOfDay(obj)
             value = format(obj, this.displayFormat)
             this.model.emitValue(obj)
         } else if (typeof obj === "string" && obj.length) {
@@ -275,7 +272,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     }
                     this.monitorFocus(event.layerRef.container, true)
                 } else if (event.type === "value") {
-                    const value = setTzToUTC(startOfDay(event.value))
+                    const value = startOfDay(event.value)
                     this._renderValue(value)
                     this.model.emitValue(value)
                     this.stopFocusMonitor(event.layerRef.container)
@@ -296,10 +293,10 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         const today = new Date()
         const year = this._year || today.getFullYear()
         const month = this._month === null ? today.getMonth() : this._month - 1
-        return setTzToUTC(new Date(
+        return new Date(
             year,
             month,
-            this._day || Math.min(getDaysInMonth(new Date(year, month)), today.getDate())))
+            this._day || Math.min(getDaysInMonth(new Date(year, month)), today.getDate()))
     }
 
     // public _onAccept() {
