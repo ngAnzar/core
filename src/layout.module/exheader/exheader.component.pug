@@ -10,7 +10,7 @@ ng-container(nzLayout="column", nzLayoutAlign="start stretch")
       nzFlex="none",
       [style.height]="disabled ? null : headerMinHeight + 'px'",
       [attr.elevation]="elevated ? 2 : null")
-    ng-content(select="nz-exheader-header")
+    ng-content(select=".nz-exheader-header")
 
   .content(#content, nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch")
-    ng-content(select="nz-exheader-content")
+    ng-content(select=".nz-exheader-content")
