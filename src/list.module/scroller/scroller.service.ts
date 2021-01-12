@@ -310,7 +310,7 @@ export class ScrollerService implements OnDestroy {
         }, options)
     }
 
-    public scrollIntoViewport(el: Node | RectProps): void {
+    public scrollIntoViewport(el: Node | RectProps, center: boolean = false): void {
         const visibleRect = this.vpImmediate.visible
         const elRect: RectProps = el instanceof Node ? this.getElementImmediateRect(el) : el
         let pos = { ...this.scrollPosition }
@@ -336,6 +336,16 @@ export class ScrollerService implements OnDestroy {
             let rightSpace = visibleRect.right - elRect.right
             if (rightSpace < 0) {
                 pos.left -= rightSpace
+            }
+        }
+
+        if (center) {
+            if (this.orient === "vertical") {
+                if (elRect.height < visibleRect.height) {
+                    pos.top = elRect.top - visibleRect.height / 2 + elRect.height / 2
+                }
+            } else {
+                throw new Error("Not implemented")
             }
         }
 

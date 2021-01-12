@@ -1,8 +1,10 @@
-import { Component, Input, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, Inject, OnDestroy } from "@angular/core"
+import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Inject, OnDestroy, OnInit, ElementRef } from "@angular/core"
 import { Observable, Subject, of, Observer } from "rxjs"
 import { takeUntil, finalize, take, tap } from "rxjs/operators"
 
+import { SelectOrigin } from "../../data.module"
 import { TreeComponent } from "./tree.component"
+import { ScrollerService } from "../scroller/scroller.service"
 
 
 @Component({
@@ -10,7 +12,7 @@ import { TreeComponent } from "./tree.component"
     templateUrl: "./tree-item.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreeItemComponent<T = any> implements OnDestroy {
+export class TreeItemComponent<T = any> implements OnDestroy, OnInit {
     @Input() public level: number
     @Input() public isNode: boolean
 
@@ -53,12 +55,25 @@ export class TreeItemComponent<T = any> implements OnDestroy {
     public get isExpanded(): boolean { return this._isExpanded }
     public _isExpanded: boolean
 
+    public get selected(): SelectOrigin { return this._selected }
+    private _selected: SelectOrigin = null
+
     private _loadUntil: Subject<void>
     public _children: T[]
 
+    public readonly height = 32
+
     public constructor(
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
-        @Inject(TreeComponent) public readonly tree: TreeComponent) {
+        @Inject(TreeComponent) public readonly tree: TreeComponent,
+        @Inject(ScrollerService) private readonly scroller: ScrollerService) {
+    }
+
+    public ngOnInit() {
+        if (this.level < 0) {
+            this.isExpanded = true
+        }
     }
 
     public expand(): Observable<T[]> {
@@ -72,13 +87,13 @@ export class TreeItemComponent<T = any> implements OnDestroy {
                     this._children = children
                     this._isExpanded = true
                     this.tree.onExpandedChange(this)
-                    this.cdr.markForCheck()
+                    this.cdr.detectChanges()
                 })
             )
     }
 
     public collapse(): Observable<void> {
-        return Observable.create((observer: Observer<void>) => {
+        return new Observable((observer: Observer<void>) => {
             this._children = null
             this._isBusy = false
             this._isExpanded = false
@@ -102,6 +117,7 @@ export class TreeItemComponent<T = any> implements OnDestroy {
                 finalize(() => {
                     this._isBusy = false
                     delete this._loadUntil
+                    this.cdr.detectChanges()
                 })
             )
     }
@@ -109,5 +125,29 @@ export class TreeItemComponent<T = any> implements OnDestroy {
     public ngOnDestroy() {
         this._loadUntil && this._loadUntil.complete()
         this.$implicit && this.tree.unregisterTreeItem(this)
+    }
+
+    public onItemTap(event: Event) {
+        if (event.defaultPrevented) {
+            return
+        }
+        if (this.isNode) {
+            this.isExpanded = !this._isExpanded
+        }
+    }
+
+    public onSelectionChange(origin: SelectOrigin) {
+        if (this._selected !== origin) {
+            this._selected = origin
+            this.cdr.detectChanges()
+        }
+
+        if (origin === "keyboard" || origin === "program") {
+            this.scrollIntoViewport()
+        }
+    }
+
+    public scrollIntoViewport() {
+        this.scroller.scrollIntoViewport(this.el.nativeElement, true)
     }
 }

@@ -56,7 +56,7 @@ import { TabLabelsComponent } from "./tabs/tab-labels.component"
 import { TabLabelDirective } from "./tabs/tab-label.directive"
 export { TabsComponent, TabComponent }
 
-import { TreeComponent } from "./tree/tree.component"
+import { TreeComponent, TreeDefaultSelecton } from "./tree/tree.component"
 import { TreeItemComponent } from "./tree/tree-item.component"
 export { TreeComponent, TreeItemComponent }
 
@@ -111,6 +111,7 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight, VF_Layout_Column, VF_Layout_G
         TabLabelsComponent,
 
         TreeComponent,
+        TreeDefaultSelecton,
         TreeItemComponent,
 
         VirtualForDirective,
@@ -151,6 +152,7 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight, VF_Layout_Column, VF_Layout_G
         TabLabelsComponent,
 
         TreeComponent,
+        TreeDefaultSelecton,
 
         VirtualForDirective,
         VF_FixedItemHeight,
