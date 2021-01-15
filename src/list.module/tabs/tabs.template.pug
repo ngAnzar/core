@@ -4,6 +4,7 @@ ng-container(nzLayout="column", nzLayoutAlign="start stretch")
         *ngIf="_tabsAsArray && _tabsAsArray.length > 1",
         [tabs]="tabs",
         [selectedIndex]="selectedIndex",
+        [swipeChanging]="_swipeChanging",
         (changes)="selectedIndex=$event",
         nzFlex="grow")
 
@@ -14,4 +15,6 @@ ng-container(nzLayout="column", nzLayoutAlign="start stretch")
     nzFlex="grow",
     [children]="_tabsAsArray",
     [dynamicHeight]="_dynamicHeight",
-    (changed)="onSelectedIndexChanged($event)")
+    [changing]="_swipeChanging",
+    (changed)="onSelectedIndexChanged($event)",
+    (pan)="onPan($event)")

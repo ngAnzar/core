@@ -40,6 +40,7 @@ export interface TouchEventDetails {
     readonly velocityX?: number
     readonly velocityY?: number
     readonly angle?: number
+    readonly movement?: TouchPoint[][]
 }
 
 
@@ -203,7 +204,8 @@ export class MoveRecognizer extends Recognizer<RecognizerOptions> {
             velocityX,
             velocityY,
             distanceX,
-            distanceY
+            distanceY,
+            movement: path
         }
     }
 }

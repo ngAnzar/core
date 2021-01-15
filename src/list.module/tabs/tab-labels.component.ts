@@ -32,6 +32,15 @@ export class TabLabelsComponent extends Destructible implements OnInit, AfterVie
     public get selectedIndex(): number { return this._selectedIndex }
     public _selectedIndex: number
 
+    @Input()
+    public set swipeChanging(val: number) {
+        if (this._swipeChanging != val) {
+            this._swipeChanging = val
+            this._updateUnderline()
+        }
+    }
+    public _swipeChanging: number = 0
+
     @Output() public readonly changes: Observable<number> = new Subject<number>()
     @ViewChild("underline", { static: true, read: ElementRef }) public readonly underline: ElementRef<HTMLElement>
     @ViewChild("scroller", { static: true, read: ScrollerComponent }) public readonly scroller: ScrollerComponent
@@ -95,14 +104,36 @@ export class TabLabelsComponent extends Destructible implements OnInit, AfterVie
         const underline = this.underline?.nativeElement
         if (underline) {
             const size = this.labelSizes[this._selectedIndex]
-            const left = size ? size.left - (this.scroller?.service.scrollPosition.left || 0) : 0
-            if (size && (this._underlineLeft !== left || this._underlineWidth !== size.width)) {
+            let left = 0
+            let width = 0
+
+            if (size) {
+                if (this._swipeChanging !== 0) {
+                    const newLabelSize = this.labelSizes[this._selectedIndex + (this._swipeChanging < 0 ? 1 : -1)]
+                    if (!newLabelSize) {
+                        return
+                    }
+
+                    left = size.left + (newLabelSize.left - size.left) * Math.abs(this._swipeChanging)
+                    width = size.width + (newLabelSize.width - size.width) * Math.abs(this._swipeChanging)
+                } else {
+                    left = size.left
+                    width = size.width
+                }
+            } else {
+                width = 0
+            }
+
+            left -= (this.scroller?.service.scrollPosition.left || 0)
+
+            if (this._underlineLeft !== left || this._underlineWidth !== width) {
                 this._underlineLeft = left
-                this._underlineWidth = size.width
+                this._underlineWidth = width
                 FastDOM.mutate(() => {
-                    underline.style.transform = `translateX(${left}px) scaleX(${size.width})`
+                    underline.style.transform = `translateX(${left}px) scaleX(${width})`
                 })
             }
+
         }
     }
 }

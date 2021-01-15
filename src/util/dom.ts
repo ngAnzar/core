@@ -14,6 +14,13 @@ export class _FastDOM {
         this._schedule()
     }
 
+    public mutateNext(handler: FastDomHandler) {
+        this._mutate.push(() => {
+            this._mutate.push(handler)
+        })
+        this._schedule()
+    }
+
     public measure(handler: FastDomHandler) {
         this._measure.push(handler)
         this._schedule()

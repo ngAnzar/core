@@ -7,9 +7,8 @@ import { Subject } from "rxjs"
 import { startWith } from "rxjs/operators"
 
 import { Destruct } from "../../util"
-import { RectMutationService } from "../../layout.module"
 import { StackComponent } from "../../layout.module/stack/stack.component"
-import { ScrollerComponent } from "../scroller/scroller.component"
+import { NzTouchEvent } from "../../common.module"
 import { TabComponent } from "./tab.component"
 
 
@@ -49,10 +48,18 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     public get dynamicHeight(): boolean { return this._dynamicHeight }
     public _dynamicHeight: boolean = false
 
+    public set swipeChanging(val: number) {
+        if (this._swipeChanging !== val) {
+            this._swipeChanging = val
+            this.cdr.markForCheck()
+        }
+    }
+    public _swipeChanging: number = 0
+
     @Output() public readonly changes = new Subject<number>()
 
     public constructor(
-        @Inject(ElementRef) el: ElementRef<HTMLElement>,
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef) {
     }
 
@@ -76,5 +83,34 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     public onSelectedIndexChanged(index: number) {
         this.changes.next(index)
         this.cdr.markForCheck()
+    }
+
+    private _panBeginWidth: number
+    public onPan(event: NzTouchEvent) {
+        if (event.orient !== "horizontal" || event.defaultPrevented) {
+            return
+        }
+        event.preventDefault()
+
+        if (this._panBeginWidth == null) {
+            this._panBeginWidth = this.el.nativeElement.offsetWidth
+        }
+
+        let swipeChanging = Math.min(Math.max(Math.abs(event.distanceX / this._panBeginWidth), 0.0), 1.0)
+        if (event.distanceX < 0) {
+            swipeChanging *= -1
+        }
+        this.swipeChanging = swipeChanging
+
+        if (event.isFinal) {
+            this._swipeChanging = 0
+
+            if (Math.abs(swipeChanging) >= 0.6 || event.velocityX >= 0.5) {
+                this.selectedIndex = this.selectedIndex + (swipeChanging < 0 ? 1 : -1)
+            }
+
+            delete this._panBeginWidth
+            this.cdr.markForCheck()
+        }
     }
 }

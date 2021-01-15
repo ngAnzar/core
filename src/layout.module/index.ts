@@ -11,6 +11,7 @@ export { Dimension, Position } from "./rect-mutation.service"
 
 import { StackComponent } from "./stack/stack.component"
 import { StackItemDirective, StackItemRef } from "./stack/stack-item.directive"
+import { StackChildDirective } from "./stack/stack-child.directive"
 export { StackItemDirective, StackItemRef }
 
 
@@ -37,6 +38,8 @@ export { SyncHeightFromDirective, SyncHeightToDirective }
     declarations: [
         StackComponent,
         StackItemDirective,
+        StackChildDirective,
+
         ExheaderComponent,
         Exheader_HeaderDirective,
         Exheader_ContentDirective,
