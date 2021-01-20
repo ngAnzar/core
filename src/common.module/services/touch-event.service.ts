@@ -259,7 +259,7 @@ export const DEFAULT_EVENT_FACTORIES: TouchEventFactories = {
 
 // type Listeners = Array<{ handler: any, recognizer: Recognizer, rc: number }>
 
-interface TouchPoint {
+export interface TouchPoint {
     x: number,
     y: number,
     t: number
@@ -349,11 +349,11 @@ export class TouchEventService extends ɵDomEventsPlugin {
         this.recognizers = recognizers || DEFAULT_RECOGNIZERS
         this.eventFactories = eventFactories || DEFAULT_EVENT_FACTORIES
 
-        doc[ADD_EVENT_LISTENER]("mousemove", this._mousemove)
+        doc[ADD_EVENT_LISTENER]("mousemove", this._mousemove, { passive: true })
         doc[ADD_EVENT_LISTENER]("mouseup", this._mouseup)
         doc[ADD_EVENT_LISTENER]("touchcancel", this._touchcancel)
         doc[ADD_EVENT_LISTENER]("touchend", this._touchend)
-        doc[ADD_EVENT_LISTENER]("touchmove", this._touchmove)
+        doc[ADD_EVENT_LISTENER]("touchmove", this._touchmove, { passive: true })
     }
 
     public supports(eventName: string): boolean {

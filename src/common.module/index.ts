@@ -43,7 +43,7 @@ export { ChipComponent }
 
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
 import { FileUploadService, FileUploadEvent } from "./services/file-upload.service"
-import { TouchEventService, TOUCH_EVENT_PLUGIN, NzTouchEvent } from "./services/touch-event.service"
+import { TouchEventService, TOUCH_EVENT_PLUGIN, NzTouchEvent, TouchPoint } from "./services/touch-event.service"
 import { ScriptService } from "./services/script.service"
 import { CssService, CssProps } from "./services/css.service"
 // import { KeyEventService, SpecialKey, KeyWatcher } from "./services/key-event.service"
@@ -52,7 +52,7 @@ import { CordovaService } from "./services/cordova.service"
 export {
     FileDownloadService, FileDownloadEvent,
     FileUploadService, FileUploadEvent,
-    TouchEventService, ScriptService, MediaQueryService,
+    TouchEventService, TouchPoint, ScriptService, MediaQueryService,
     TOUCH_EVENT_PLUGIN, NzTouchEvent,
     CordovaService, CssService, CssProps
 }

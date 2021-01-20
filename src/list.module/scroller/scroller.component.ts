@@ -123,72 +123,57 @@ export class ScrollerComponent implements OnInit, OnDestroy {
         this.service.releaseMethod("wheel")
     }
 
-    private _panStartPos: ScrollPosition
-    private _pointerStartPos: ScrollPosition
+    private _panning: PanHelper
 
     @HostListener("pan", ["$event"])
     public onPan(event: NzTouchEvent) {
-        if (event.defaultPrevented || event.pointerType !== "touch") {
-            return
-        }
-        if (event.orient === "horizontal" && !this.service.horizontalOverflow) {
-            return
-        }
-        if (event.orient === "vertical" && !this.service.verticalOverflow) {
-            return
-        }
-        if (event.orient !== this.orient) {
-            return
-        }
-        if (!this.service.lockMethod("pan")) {
-            return
-        }
-        if (!this._panStartPos) {
-            this._panStartPos = this.service.vpRender.scrollPosition
-            this._pointerStartPos = {
-                top: event.clientY,
-                left: event.clientX,
+        if (this._panning) {
+            if (event.pointerType !== "touch") {
+                return
             }
-        }
+            event.preventDefault()
 
-        event.preventDefault()
+            if (this._panning.orient !== event.orient) {
+                if (this._panning.ended) {
+                    this._panning = new PanHelper(this.service, event)
+                } else {
+                    return
+                }
+            }
+        } else {
+            if (event.defaultPrevented || event.pointerType !== "touch") {
+                console.log("defaultPrevented", "isFinal", event.isFinal, this._panning)
+                return
+            }
+            if (event.orient === "horizontal" && !this.service.horizontalOverflow) {
+                return
+            }
+            if (event.orient === "vertical" && !this.service.verticalOverflow) {
+                return
+            }
+            if (!this.service.lockMethod("pan")) {
+                return
+            }
+            event.preventDefault()
+            this._panning = new PanHelper(this.service, event)
+        }
 
         if (this.exheader) {
             this.exheader.disablePan = this.service.vpRender.scrollPercent.top !== 0
         }
 
+        this._panning.feed(event)
+
         if (event.isFinal) {
-            delete this._panStartPos
-
-            const done = () => {
+            this._panning.scrollTo(() => {
                 this.service.releaseMethod("pan")
-            }
-
-            const scrollPosition = this.service.vpRender.scrollPosition
-
-            if (event.orient === "horizontal" && event.velocityX >= 0.7) {
-                let left = event.direction === "left"
-                    ? scrollPosition.left + this.service.vpImmediate.width * event.velocityX
-                    : scrollPosition.left - this.service.vpImmediate.width * event.velocityX
-                this.service.scrollTo({ left }, { smooth: true, velocity: event.velocityX, done })
-            } else if (event.orient === "vertical" && event.velocityY >= 0.7) {
-                let top = event.direction === "top"
-                    ? scrollPosition.top + this.service.vpImmediate.height * event.velocityY
-                    : scrollPosition.top - this.service.vpImmediate.height * event.velocityY
-                this.service.scrollTo({ top }, { smooth: true, velocity: event.velocityY, done })
-            } else {
-                done()
-            }
+            })
+            this._panning = null
         } else {
-            if (event.orient === "horizontal") {
-                let left = this._panStartPos.left + (this._pointerStartPos.left - event.clientX)
-                this.service.scrollTo({ left }, { smooth: true, velocity: event.velocityX })
-            } else {
-                let top = this._panStartPos.top + (this._pointerStartPos.top - event.clientY)
-                this.service.scrollTo({ top }, { smooth: true, velocity: event.velocityY })
-            }
+            this._panning.scrollTo()
         }
     }
+
 
     private _focusHandler = () => {
         const activeElement = document.activeElement
@@ -208,4 +193,74 @@ export class ScrollerComponent implements OnInit, OnDestroy {
     //         this.service.scrollTo(this.service.vpRender.scrollPosition, { smooth: false })
     //     }
     // }
+}
+
+
+class PanHelper {
+    // public readonly pointerStart: TouchPoint
+
+    public readonly orient: ScrollOrient
+    public distance: number
+    public position: number
+    public velocity: number
+
+    public scrollStart: ScrollPosition
+    public ended: Date
+
+    public constructor(public readonly service: ScrollerService, event: NzTouchEvent) {
+        this.scrollStart = service.vpRender.scrollPosition
+        this.orient = event.orient
+    }
+
+    public feed(event: NzTouchEvent) {
+        let start: number
+        let velocity: number
+        let axis: "x" | "y"
+        let hw: "height" | "width"
+
+        if (this.orient === "horizontal") {
+            start = this.scrollStart.left
+            axis = "x"
+            hw = "width"
+            this.distance = event.distanceX
+        } else {
+            start = this.scrollStart.top
+            axis = "y"
+            hw = "height"
+            this.distance = event.distanceY
+        }
+
+        if (event.isFinal) {
+            this.ended = new Date()
+
+            let velocities = event.movement
+                .slice(-10)
+                .reduce((result, v, i, a) => {
+                    const pv = a[i - 1]
+                    if (pv) {
+                        const duration = v[0].t - pv[0].t
+                        result.push((v[0][axis] - pv[0][axis]) / duration)
+                    }
+                    return result
+                }, [] as Array<number>)
+
+            console.log("velocities", velocities)
+            velocity = velocities.reduce((a, b) => a + b, 0) / velocities.length
+
+            if (Math.abs(velocity) >= 0.7) {
+                this.distance += this.service.vpImmediate[hw] * velocity
+            }
+        } else {
+            velocity = 0.5
+        }
+        this.velocity = velocity
+        this.position = start - this.distance
+    }
+
+    public scrollTo(done?: () => void) {
+        this.service.scrollTo(
+            { [this.orient === "horizontal" ? "left" : "top"]: this.position },
+            { smooth: true, velocity: Math.abs(this.velocity), done }
+        )
+    }
 }

@@ -1,5 +1,4 @@
 import { Directive, Inject, ElementRef, NgZone, SkipSelf, OnInit } from "@angular/core"
-import { merge } from "rxjs"
 import { debounceTime } from "rxjs/operators"
 
 import { Rect, getBoundingClientRect, __zone_symbol__ } from "../../util"
@@ -7,14 +6,12 @@ import { RectMutationService } from "../../layout.module"
 import { ScrollerComponent } from "./scroller.component"
 
 
-const RAF = __zone_symbol__("requestAnimationFrame")
-
-
 @Directive({
     selector: "[scrollable]",
     host: {
         "[style.position]": "'relative'",
-        // "[style.transition]": "'transform 300ms'",
+        "[style.transform-style]": "'preserve-3d'",
+        // "[style.transition]": "'transform 100ms cubic-bezier(0.215, 0.61, 0.355, 1)'",
         // "[style.will-change]": "'transform'", // TODO: csak akkor kell hozzáadni, ha animálom
     }
 })
@@ -44,11 +41,7 @@ export class ScrollableDirective implements OnInit {
                     ? Math.max(0, pos.top - service.vpRender.virtualOffsetTop)
                     : pos.top
 
-                // console.log("virtualOffsetTop", service.vpRender.virtualOffsetTop)
-                // const top = pos.top
-                // nativeEl.style.willChange = "transform"
                 nativeEl.style.transform = `translate(-${Math.round(left)}px, -${Math.round(top)}px)`
-                // nativeEl.style.willChange = null
             })
 
             // service.destruct.subscription(merge(service.vpRender.scroll, service.vpImmediate.change)).subscribe(_ => {
