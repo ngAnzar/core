@@ -11,6 +11,8 @@ ng-container(nzLayout="row", nzLayoutAlign="start center", nzLayoutGap="4px")
   input.nz-input.input(
     nzFlex="grow",
     type="text",
+    pattern="[0-9]*",
+    inputmode="numeric",
     #input,
     [tabindex]="tabIndex",
     [style.opacity]="(!model.isEmpty || model.focused) ? '1' : '0'",

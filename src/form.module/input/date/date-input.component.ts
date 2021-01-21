@@ -123,7 +123,8 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     public get withoutPicker(): boolean { return this._withoutPicker }
     private _withoutPicker: boolean = false
 
-    public get isButtonVariant(): boolean { return this.datePicker.isDialogMode }
+    // public get isButtonVariant(): boolean { return this.datePicker.isDialogMode }
+    public readonly isButtonVariant = false
 
     @HostBinding("attr.tabindex")
     public readonly tabIndexAttr = -1
