@@ -53,7 +53,7 @@ export class FlexLayoutDirective implements OnChanges {
         }
 
         if (applyCls) {
-            const cls = `nz-layout-flex-${this.isRow ? 'row' : 'column'}${this.isInline ? '-inline' : ''}-${this.justifyContent}-${this.alignItems}`
+            const cls = `nz-layout-flex-${this.isRow ? 'row' : 'column'}${this.isInline ? '-inline' : ''}${this.isWrapped ? '-wrap' : ''}-${this.justifyContent}-${this.alignItems}`
             this.css.insertRule("." + cls, {
                 display: this.isInline ? "inline-flex" : "flex",
                 flexDirection: this.isRow ? "row" : "column",

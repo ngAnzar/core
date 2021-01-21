@@ -32,34 +32,34 @@ export class LevitatePosition {
         if (concrete.x !== true) {
             if (origin.horizontal === "right") {
                 style.left = ""
-                style.right = `${opRect.width - this.rect.right}px`
+                style.right = `${Math.round(opRect.width - this.rect.right)}px`
             } else {
                 style.right = ""
-                style.left = `${this.rect.left}px`
+                style.left = `${Math.round(this.rect.left)}px`
             }
         }
 
         if (concrete.y !== true) {
             if (origin.vertical === "bottom") {
                 style.top = ""
-                style.bottom = `${opRect.height - this.rect.bottom}px`
+                style.bottom = `${Math.round(opRect.height - this.rect.bottom)}px`
             } else {
                 style.bottom = ""
-                style.top = `${this.rect.top}px`
+                style.top = `${Math.round(this.rect.top)}px`
             }
         }
 
         if (this.maxWidth != null) {
-            style.maxWidth = `${this.maxWidth}px`
+            style.maxWidth = `${Math.round(this.maxWidth)}px`
         }
         if (this.maxHeight != null) {
-            style.maxHeight = `${this.maxHeight}px`
+            style.maxHeight = `${Math.round(this.maxHeight)}px`
         }
         if (this.width != null) {
-            style.width = `${this.width}px`
+            style.width = `${Math.round(this.width)}px`
         }
         if (this.height != null) {
-            style.height = `${this.height}px`
+            style.height = `${Math.round(this.height)}px`
         }
     }
 

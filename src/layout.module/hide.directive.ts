@@ -11,7 +11,7 @@ import { FastDOM } from "../util"
 export class HideDirective implements OnChanges {
     @Input("nzHide") public readonly hide: boolean
 
-    private readonly cls = this.css.insertRule(".nz-hidden", { display: "none" }).substr(1)
+    private readonly cls = this.css.insertRule(".nz-hidden", { display: "none !important" }).substr(1)
 
     public constructor(
         @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,

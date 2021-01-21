@@ -66,7 +66,8 @@ export class SyncHeightToDirective implements OnChanges, OnDestroy {
 
     public ngOnChanges(changes: SimpleChanges) {
         if ("src" in changes) {
-            changes.src.currentValue?.addElement(this.el.nativeElement)
+            console.log("changes.src", changes.src)
+            changes.src?.currentValue?.addElement(this.el.nativeElement)
         }
     }
 

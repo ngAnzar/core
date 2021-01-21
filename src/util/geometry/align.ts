@@ -30,9 +30,9 @@ export function parseAlign(align: Align | AlignInput): Align {
         throw new Error(`Invalid align value: ${align}`)
     }
 
-    if (align === "center") {
+    if (align === "center" || align === "center center") {
         return CENTER_ALIGN
-    } else if (align === "stretch") {
+    } else if (align === "stretch" || align === "stretch stretch") {
         return STRETCH_ALIGN
     } else {
         let parts = align.split(/\s+/)
@@ -61,12 +61,21 @@ export function parseAlign(align: Align | AlignInput): Align {
                         res.horizontal = "center"
                     }
                     return res
+                } else if (parts.indexOf("stretch") !== -1) {
+                    if (res.horizontal) {
+                        res.vertical = "stretch"
+                    } else {
+                        res.horizontal = "stretch"
+                    }
+                    return res
                 }
                 break
 
             case 2:
                 if (parts[0] === "center" && parts[1] === "center") {
                     return CENTER_ALIGN
+                } else if (parts[0] === "stretch" && parts[1] === "stretch") {
+                    return STRETCH_ALIGN
                 }
                 break
 
