@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core"
 import { Observable, Observer, merge } from "rxjs"
-import { shareReplay, map, startWith } from "rxjs/operators"
+import { shareReplay, map, startWith, filter } from "rxjs/operators"
 
 import { isDeviceReady, __zone_symbol__ } from "../../util"
 
@@ -40,6 +40,19 @@ export class CordovaService {
         }
     }
 
+    public hideStatusbar() {
+        this._statusbar().subscribe((sb: any) => {
+            console.log({ statusbar: sb })
+            sb.hide()
+        })
+    }
+
+    public showStatusbar() {
+        this._statusbar().subscribe((sb: any) => {
+            sb.show()
+        })
+    }
+
     private _createEventListener(target: any, name: string): Observable<Event> {
         return Observable.create((observer: Observer<Event>) => {
             const handler = (event: Event) => {
@@ -51,5 +64,17 @@ export class CordovaService {
                 target.removeEventListener(name, handler, false)
             }
         }).pipe(shareReplay(1))
+    }
+
+    private _statusbar(): any {
+        return isDeviceReady()
+            .pipe(
+                map(_ => {
+                    return typeof (window as any).cordova !== "undefined"
+                        ? (window as any).StatusBar
+                        : null
+                }),
+                filter(sb => !!sb)
+            )
     }
 }

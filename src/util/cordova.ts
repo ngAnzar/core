@@ -1,29 +1,30 @@
 import { Observable, of, Observer } from "rxjs"
+import { shareReplay } from "rxjs/operators"
 
-import { __zone_symbol__ } from "./zone"
+
+function initDeviceReady() {
+    return new Observable((observer: Observer<boolean>) => {
+        console.log("AAAAAAAAAA")
+        const handler = () => {
+            console.log("initDeviceReady.handler")
+            observer.next(true)
+            observer.complete()
+        }
+
+        document.addEventListener("deviceready", handler, false)
+        return () => {
+            document.removeEventListener("deviceready", handler, false)
+        }
+    })
+}
 
 
-const ADD_EVENT_LISTENER = __zone_symbol__("addEventListener")
-const REMOVE_EVENT_LISTENER = __zone_symbol__("removeEventListener")
+const DEVICE_READY = typeof (window as any).cordova !== "undefined"
+    ? initDeviceReady().pipe(shareReplay(1))
+    : of(true)
+
 
 
 export function isDeviceReady(): Observable<boolean> {
-    if (typeof (window as any).cordova !== "undefined") {
-        return Observable.create((observer: Observer<boolean>) => {
-            console.log("AAAAAAAAAAAAAAAAAAAA")
-            const handler = () => {
-                console.log("deviceready handlere")
-                observer.next(true)
-                observer.complete()
-            }
-
-            // document[ADD_EVENT_LISTENER]("deviceready", handler, false)
-            document.addEventListener("deviceready", handler, false)
-            return () => {
-                document.removeEventListener("deviceready", handler, false)
-            }
-        })
-    } else {
-        return of(true)
-    }
+    return DEVICE_READY
 }
