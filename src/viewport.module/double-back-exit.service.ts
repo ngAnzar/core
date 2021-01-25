@@ -46,7 +46,6 @@ export class DoubleBackExitService implements OnDestroy {
     }
 
     public install() {
-        console.log("BASE_HREF", this.locationStrategy.getBaseHref(), this.locationStrategy.path(), this.rootUri)
         this.sc.watch(document.body)
     }
 
