@@ -2,12 +2,19 @@ import { Injectable } from "@angular/core"
 import { Observable, Observer, merge } from "rxjs"
 import { shareReplay, map, startWith, filter } from "rxjs/operators"
 
-import { isDeviceReady, __zone_symbol__ } from "../../util"
-
-const SET_TIMEOUT = __zone_symbol__("setTimeout")
+import { onDeviceReady, rawSetTimeout } from "../../util"
 
 
 declare const Keyboard: { isVisible: boolean }
+
+
+function _onReady(handler: () => void) {
+    onDeviceReady(() => {
+        if (typeof (window as any).cordova !== "undefined") {
+            handler()
+        }
+    })
+}
 
 
 @Injectable({ providedIn: "root" })
@@ -31,30 +38,40 @@ export class CordovaService {
     )
 
     public hideSplashScreen(delay: number) {
-        if (typeof (window as any).cordova !== "undefined" && typeof (navigator as any).splashscreen !== "undefined") {
-            isDeviceReady().subscribe(ready => {
-                window[SET_TIMEOUT](() => {
-                    (navigator as any).splashscreen.hide()
-                }, delay)
-            })
-        }
-    }
-
-    public hideStatusbar() {
-        this._statusbar().subscribe((sb: any) => {
-            console.log({ statusbar: sb })
-            sb.hide()
+        _onReady(() => {
+            if (typeof (window as any).cordova !== "undefined" && typeof (navigator as any).splashscreen !== "undefined") {
+                const splashscreen: any = (navigator as any).splashscreen
+                rawSetTimeout(splashscreen.hide.bind(splashscreen), delay)
+            }
         })
     }
 
+    public get isCordova(): boolean { return typeof (window as any).cordova !== "undefined" }
+
+    public hideStatusbar() {
+        this._statusbar(sb => sb.hide())
+    }
+
     public showStatusbar() {
-        this._statusbar().subscribe((sb: any) => {
-            sb.show()
+        this._statusbar(sb => sb.show())
+    }
+
+    public enterFullScreen() {
+        _onReady(() => {
+            if (typeof (window as any).AndroidFullScreen !== "undefined") {
+                (window as any).AndroidFullScreen.immersiveMode()
+            }
+        })
+    }
+
+    public exit() {
+        _onReady(() => {
+            (navigator as any).app.exitApp()
         })
     }
 
     private _createEventListener(target: any, name: string): Observable<Event> {
-        return Observable.create((observer: Observer<Event>) => {
+        return new Observable((observer: Observer<Event>) => {
             const handler = (event: Event) => {
                 observer.next(event)
             }
@@ -66,15 +83,11 @@ export class CordovaService {
         }).pipe(shareReplay(1))
     }
 
-    private _statusbar(): any {
-        return isDeviceReady()
-            .pipe(
-                map(_ => {
-                    return typeof (window as any).cordova !== "undefined"
-                        ? (window as any).StatusBar
-                        : null
-                }),
-                filter(sb => !!sb)
-            )
+    private _statusbar(handler: (statusbar: any) => void): void {
+        _onReady(() => {
+            if (typeof (window as any).StatusBar !== "undefined") {
+                handler((window as any).StatusBar)
+            }
+        })
     }
 }

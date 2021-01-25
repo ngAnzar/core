@@ -2,7 +2,7 @@ import { Inject, Injectable, NgZone } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 
 
-import { Destructible, isDeviceReady } from "../../util"
+import { Destructible } from "../../util"
 import { Shortcuts, ShortcutDefs, Shortcut } from "./shortcuts"
 
 /**

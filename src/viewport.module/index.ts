@@ -28,6 +28,9 @@ import { ViewportContentComponent } from "./viewport/viewport-content.component"
 import { ViewportService, VPPanelStyle } from "./viewport.service"
 export { ViewportService, VPPanelStyle }
 
+import { DoubleBackExitService } from "./double-back-exit.service"
+export { DoubleBackExitService }
+
 
 @NgModule({
     imports: [
@@ -58,6 +61,9 @@ export { ViewportService, VPPanelStyle }
         ViewportComponent,
         ViewportAreaDirective,
         ViewportItemDirective
+    ],
+    providers: [
+        DoubleBackExitService
     ]
 })
 export class NzViewportModule {

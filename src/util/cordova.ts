@@ -1,12 +1,10 @@
 import { Observable, of, Observer } from "rxjs"
-import { shareReplay } from "rxjs/operators"
+import { shareReplay, take } from "rxjs/operators"
 
 
 function initDeviceReady() {
     return new Observable((observer: Observer<boolean>) => {
-        console.log("AAAAAAAAAA")
         const handler = () => {
-            console.log("initDeviceReady.handler")
             observer.next(true)
             observer.complete()
         }
@@ -25,6 +23,6 @@ const DEVICE_READY = typeof (window as any).cordova !== "undefined"
 
 
 
-export function isDeviceReady(): Observable<boolean> {
-    return DEVICE_READY
+export function onDeviceReady(handler: () => void) {
+    DEVICE_READY.pipe(take(1)).subscribe(handler)
 }
