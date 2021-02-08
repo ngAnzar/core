@@ -142,7 +142,6 @@ export class ScrollerComponent implements OnInit, OnDestroy {
             }
         } else {
             if (event.defaultPrevented || event.pointerType !== "touch") {
-                console.log("defaultPrevented", "isFinal", event.isFinal, this._panning)
                 return
             }
             if (event.orient === "horizontal" && !this.service.horizontalOverflow) {

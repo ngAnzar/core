@@ -39,7 +39,7 @@ import { FieldsetComponent } from "./fieldset/fieldset.component"
 export {
     DateInputComponent, DatePickerComponent, DatePickerService, TimeInputComponent, TimeValidator, TimePickerService,
     NumberScrollComponent, YearGenerator, MonthGenerator, DayGenerator, HourGenerator, MinuteGenerator,
-    DatetimePickerService, DatePickerDayDataProvider, DayData, ExternalDayData
+    DatetimePickerService, DatePickerDayDataProvider, DayData, ExternalDayData, DateMinMaxValidator
 }
 
 import { RadioComponent } from "./input/radio/radio.component"
