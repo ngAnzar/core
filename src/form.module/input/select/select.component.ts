@@ -198,7 +198,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
     public get tabIndex(): number { return this.editable ? -1 : this._tabIndex }
-    protected _tabIndex: number
 
     @Input()
     public set hideTrigger(val: boolean) {

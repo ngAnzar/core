@@ -5,7 +5,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, Subject } from "rxjs"
 import { map, filter, debounceTime, shareReplay } from "rxjs/operators"
 
-import isPlainObject from "is-plain-object"
+import { isPlainObject } from "is-plain-object"
 
 import { Destruct } from "../../util"
 import { ProgressEvent } from "../../animation.module"
@@ -211,7 +211,13 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     @Input()
     @HostBinding("attr.tabindex")
-    public tabIndex: number = 0
+    public set tabIndex(val: number) {
+        if (this._tabIndex !== val) {
+            this._tabIndex = val
+        }
+    }
+    public get tabIndex(): number { return this._tabIndex }
+    protected _tabIndex: number = 0
 
     @Input("disableInput")
     public set disabled(val: boolean) {

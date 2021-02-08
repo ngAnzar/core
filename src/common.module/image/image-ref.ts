@@ -1,8 +1,7 @@
-import { Subject, BehaviorSubject, Observable, Observer, of, merge, zip } from "rxjs"
-import { switchMap, shareReplay, debounceTime, take, map, distinctUntilChanged, tap } from "rxjs/operators"
-import isPlainObject from "is-plain-object"
+import { BehaviorSubject, Observable, Observer, of, merge, zip } from "rxjs"
+import { switchMap, shareReplay, debounceTime, take, map, distinctUntilChanged } from "rxjs/operators"
 
-import { SCALE_METHODS, ScaleMethods, ScaleMethod, ScaleResult, Rect } from "../../util"
+import { SCALE_METHODS, ScaleMethods, ScaleMethod } from "../../util"
 
 export interface CropRegion {
     x: number

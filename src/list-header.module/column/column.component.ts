@@ -41,7 +41,15 @@ function parseNumber(val: any): NumberWithUnit {
 export class ColumnComponent<T extends Model = Model> implements OnInit, AfterContentInit, OnDestroy {
     @ContentChild(LabelDirective, { read: ElementRef, static: true }) public readonly label: ElementRef<HTMLElement>
     @ContentChild(ColumnFilter, { static: true }) public readonly filter: ColumnFilter
-    @ContentChild("content", { static: true }) public readonly content: TemplateRef<any>
+    @ContentChild("content", { static: true })
+    public set content(val: TemplateRef<any>) {
+        if (this._content !== val) {
+            this._content = val
+        }
+    }
+    public get content(): TemplateRef<any> { return this._content }
+    protected _content: TemplateRef<any>
+
     @ContentChild("editor", { static: true }) public readonly editor: TemplateRef<any>
 
     @Input()

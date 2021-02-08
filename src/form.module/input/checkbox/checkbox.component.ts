@@ -9,7 +9,7 @@ import { debounceTime, map, takeUntil, startWith } from "rxjs/operators"
 
 import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { CheckboxGroupDirective } from "./checkbox-group.directive"
-import isPlainObject from "is-plain-object"
+import { isPlainObject } from "is-plain-object"
 // import { LabelDirective } from "../../directives/label.directive"
 
 

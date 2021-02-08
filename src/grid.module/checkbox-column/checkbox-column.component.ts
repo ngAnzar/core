@@ -17,13 +17,12 @@ import { PrimaryKey } from "../../data.module"
 export class CheckboxColumnComponent extends ColumnComponent implements OnInit {
     @ViewChild("defaultContent", { static: true }) protected readonly defaultContent: TemplateRef<any>
 
-    public get content(): TemplateRef<any> {
-        return this._content || this.defaultContent
-    }
     public set content(val: TemplateRef<any>) {
         this._content = val
     }
-    protected _content: TemplateRef<any>
+    public get content(): TemplateRef<any> {
+        return this._content || this.defaultContent
+    }
 
     public ngOnInit() {
         if (this._width.number === -1) {
