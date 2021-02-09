@@ -18,13 +18,13 @@ nz-font(family, light = 300, regular = 400, medium = 500)
   }
 
 
-nz-typo-level(font, size, weight, case, spacing)
+nz-typo-level(font, size, weight, ttransform, spacing)
   return {
     "font": font,
     "font-size": nz-remify(size),
     "font-weight": weight,
     "letter-spacing": nz-remify(spacing),
-    "text-transform": case
+    "text-transform": ttransform
   }
 
 
@@ -40,9 +40,9 @@ nz-typo-levels(font)
     "subtitle2": nz-typo-level(font, 14px, font.medium, none, 0.1px),
     "body1": nz-typo-level(font, 16px, font.regular, none, 0.5px),
     "body2": nz-typo-level(font, 14px, font.regular, none, 0.25px),
-    "button": nz-typo-level(font, 14px, font.medium, "uppercase", 0.75px),
+    "button": nz-typo-level(font, 14px, font.medium, uppercase, 0.75px),
     "caption": nz-typo-level(font, 12px, font.regular, none, 0.4px),
-    "overline": nz-typo-level(font, 10px, font.regular, "uppercase", 1.5px)
+    "overline": nz-typo-level(font, 10px, font.regular, uppercase, 1.5px)
   }
 
 
@@ -51,7 +51,6 @@ nz-typo(level)
   letter-spacing: level.letter-spacing
   if level.text-transform != none
     text-transform: level.text-transform
-
 
 nz-basic-typo(typo)
   h1
