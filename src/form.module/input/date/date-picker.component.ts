@@ -76,7 +76,7 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
     @Output("value") public valueChange: Observable<Date> = this.destruct.subject(new Subject())
     private _renderValue = this.destruct.subject(new Subject<Date>())
 
-    public readonly daysToRender$ = merge(this.displayed$, this._minChanged, this._maxChanged).pipe(
+    public readonly daysToRender$ = merge(this.displayed$).pipe(
         map(day => {
             const monthStart = startOfMonth(day)
             const monthEnd = endOfMonth(day)
@@ -122,7 +122,9 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
             data$ = data$.pipe(tap(v => data = v))
             let value$ = this._renderValue.pipe(startWith(this._value), tap(v => value = v))
 
-            return merge(data$, value$).pipe(map(_ => [render, data, value] as [typeof render, typeof data, typeof value]))
+            return merge(data$, value$, this._minChanged, this._maxChanged).pipe(
+                map(_ => [render, data, value] as [typeof render, typeof data, typeof value])
+            )
         }),
         map(([render, externalData, value]) => {
             const today = new Date()

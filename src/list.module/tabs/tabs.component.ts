@@ -87,7 +87,7 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
 
     private _panBeginWidth: number
     public onPan(event: NzTouchEvent) {
-        if (event.orient !== "horizontal" || event.defaultPrevented) {
+        if (event.orient !== "horizontal" || event.defaultPrevented || event.pointerType === "mouse") {
             return
         }
         event.preventDefault()
