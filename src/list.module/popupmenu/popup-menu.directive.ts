@@ -1,4 +1,4 @@
-import { Directive, Input, HostListener, Inject, Optional, Self, ViewContainerRef, ElementRef } from "@angular/core"
+import { Directive, Input, HostListener, Inject, Optional, Self, ViewContainerRef, ElementRef, TemplateRef } from "@angular/core"
 
 import { LayerFactoryDirective, TargetAnchorDirective, LevitateAnchorDirective, LayerService, DropdownLayer } from "../../layer.module"
 import { PopupMenuComponent } from "./popup-menu.component"
@@ -11,18 +11,25 @@ export class MenuLayer extends DropdownLayer {
 
 @Directive({
     selector: "[nzPopupMenu]",
+    exportAs: "nzPopupMenu",
     host: {
         "[style.cursor]": "'pointer'"
     }
 })
 export class PopupMenuDirective extends LayerFactoryDirective {
     @Input()
-    public set nzPopupMenu(val: PopupMenuComponent) {
-        this._menu = val
+    public set nzPopupMenu(val: PopupMenuComponent | TemplateRef<any>) {
+        if (val instanceof PopupMenuComponent) {
+            this._menu = val
+        } else {
+            this._tpl = val
+        }
     }
     protected _menu: PopupMenuComponent
+    protected _tpl: TemplateRef<any>
 
     @Input() public menuLikeAnimation: boolean
+    @Input() public nzPopupMenuContext?: { [key: string]: any }
 
     public constructor(
         @Inject(LevitateAnchorDirective) @Optional() @Self() levitateAnchor: LevitateAnchorDirective,
@@ -49,10 +56,12 @@ export class PopupMenuDirective extends LayerFactoryDirective {
     protected onClick(event: MouseEvent) {
         event.preventDefault()
 
-        this.nzLayerFactory = this._menu.layer
+        this.nzLayerFactory = this._tpl ? this._tpl : this._menu.layer
 
         if (this.isVisible) {
-            delete this._menu._layerRef
+            if (this._menu) {
+                delete this._menu._layerRef
+            }
             this.hide()
         } else {
             let behavior = new MenuLayer({
@@ -64,10 +73,14 @@ export class PopupMenuDirective extends LayerFactoryDirective {
                 },
                 trapFocus: true,
                 elevation: 10,
+                rounded: 3,
                 minWidth: this.targetEl.nativeElement.offsetWidth,
                 menuLike: this.menuLikeAnimation
             })
-            this._menu._layerRef = this.show(behavior, { $implicit: this })
+            const ref = this.show(behavior, { ... this.nzPopupMenuContext, $implicit: this })
+            if (this._menu) {
+                this._menu._layerRef = ref
+            }
         }
     }
 }

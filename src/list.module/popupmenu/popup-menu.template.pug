@@ -3,7 +3,7 @@
     max-height: inherit !important
     max-width: inherit !important
 
-ng-template(#layer let-trigger)
+ng-template(#layer, let-trigger)
   .nz-scroller.scroller.nz-popup-menu-content
     div.nz-popupmenu-body(scrollable)
       ng-template(ngFor, [ngForOf]="menuItems", let-menuItem)
