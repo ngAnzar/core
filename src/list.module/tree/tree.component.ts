@@ -1,8 +1,8 @@
 import { Component, Input, ContentChild, TemplateRef, Inject, Directive } from "@angular/core"
 import { Observable, Subscription, from, of, EMPTY, concat } from "rxjs"
-import { startWith, switchMap, mapTo, withLatestFrom } from "rxjs/operators"
+import { startWith, switchMap, mapTo, withLatestFrom, take } from "rxjs/operators"
 
-import { DataSourceDirective, SelectionModel, NoneSelection, SelectOrigin } from "../../data.module"
+import { DataSourceDirective, SelectionModel, NoneSelection, SelectOrigin, Model } from "../../data.module"
 import { LocalStorageService, LocalStorageBucket } from "../../common.module"
 
 import type { TreeItemComponent } from "./tree-item.component"
@@ -18,20 +18,25 @@ export type ExpandedItems = { [key: string]: ExpandedItems }
     exportAs: "nzTree"
 })
 export class TreeComponent {
-    @ContentChild("content", { static: true, read: TemplateRef }) public readonly contentTpl: TemplateRef<TreeItemComponent>
-    @ContentChild("buttons", { static: true, read: TemplateRef }) public readonly buttonsTpl: TemplateRef<TreeItemComponent>
+    @ContentChild("content", { static: true, read: TemplateRef }) public readonly contentTpl: TemplateRef<TreeItemComponent<Model>>
+    @ContentChild("buttons", { static: true, read: TemplateRef }) public readonly buttonsTpl: TemplateRef<TreeItemComponent<Model>>
 
     @Input()
-    public set root(val: any) {
-        if (this._root !== val) {
+    public set root(val: Model) {
+        if (!Model.isEq(this._root, val)) {
             this._root = val
-            if (this._stateBucket && val) {
-                this._onStateChanges(this._stateBucket)
-            }
+
+            // if (val) {
+            //     if (initial && this._stateBucket) {
+            //         this._onStateChanges(this._stateBucket)
+            //     } else {
+            //         this.reload()
+            //     }
+            // }
         }
     }
-    public get root(): any { return this._root }
-    private _root: any
+    public get root(): Model { return this._root }
+    private _root: Model
 
     @Input() public queryValue: string = "id"
     @Input() public queryField: string = "parent_id"
@@ -64,7 +69,7 @@ export class TreeComponent {
 
     public readonly expandedItems: ExpandedItems = {}
 
-    private _itemsById: { [key: string]: TreeItemComponent } = {}
+    private _itemsById: { [key: string]: TreeItemComponent<Model> } = {}
     private _pendingExpand: { [key: string]: ExpandedItems } = {}
 
     public constructor(
@@ -78,13 +83,13 @@ export class TreeComponent {
         const expanded = JSON.parse(JSON.stringify(this.expandedItems))
         const selected = this.selection.selected.get().map(val => val.pk)
 
-        if (!this._itemsById[this.root?.id]) {
+        if (!this._itemsById[this.root?.pk]) {
             return
         }
 
-        this._itemsById[this.root.id]
+        this._itemsById[this.root.pk]
             .collapse()
-            .pipe(switchMap(v => this.expandItems(expanded)))
+            .pipe(switchMap(v => this.expandItems(expanded)), take(1))
             .subscribe(() => {
                 const x: { [key: string]: SelectOrigin } = {}
                 for (const pk of selected) {
@@ -92,6 +97,20 @@ export class TreeComponent {
                 }
                 this.selection.selected.update(x)
             })
+    }
+
+    public reset() {
+        if (!this._itemsById[this.root?.pk]) {
+            return
+        }
+
+        this._itemsById[this.root.pk]
+            .collapse()
+            .pipe(
+                switchMap(_ => this._itemsById[this.root.pk].expand()),
+                take(1)
+            )
+            .subscribe()
     }
 
     public expandById() {
@@ -161,23 +180,26 @@ export class TreeComponent {
         )
     }
 
-    public registerTreeItem(item: TreeItemComponent) {
-        this._itemsById[item.model.id] = item
-        if (this._pendingExpand[item.model.id]) {
-            const pending = this._pendingExpand[item.model.id]
-            delete this._pendingExpand[item.model.id]
+    public registerTreeItem(item: TreeItemComponent<Model>) {
+        this._itemsById[item.model.pk] = item
+
+        if (Model.isEq(this._root, item.model)) {
+            this.reset()
+        } else if (this._pendingExpand[item.model.pk]) {
+            const pending = this._pendingExpand[item.model.pk]
+            delete this._pendingExpand[item.model.pk]
             this.expandItems(pending).subscribe()
         }
     }
 
-    public unregisterTreeItem(item: TreeItemComponent) {
-        delete this._itemsById[item.model.id]
-        delete this._pendingExpand[item.model.id]
+    public unregisterTreeItem(item: TreeItemComponent<Model>) {
+        delete this._itemsById[item.model.pk]
+        delete this._pendingExpand[item.model.pk]
     }
 
-    public onExpandedChange(item: TreeItemComponent) {
+    public onExpandedChange(item: TreeItemComponent<Model>) {
         if (item.isExpanded) {
-            const expandedParent = this._getExpandedChild(item.model[this.queryField], this.expandedItems)
+            const expandedParent = this._getExpandedChild((item.model as any)[this.queryField], this.expandedItems)
             if (!expandedParent) {
                 this.expandedItems[item.model.pk] = {}
             } else {
@@ -192,9 +214,9 @@ export class TreeComponent {
         }
     }
 
-    public loadChildren(item: TreeItemComponent): Observable<any[]> {
+    public loadChildren(item: TreeItemComponent<Model>): Observable<any[]> {
         return this.source.storage.source.search(
-            { ...this.source.storage.filter.get(), [this.queryField]: item.model[this.queryValue] },
+            { ...this.source.storage.filter.get(), [this.queryField]: (item.model as any)[this.queryValue] },
             this.source.storage.sorter.get(),
             null,
             this.source.storage.meta.get())

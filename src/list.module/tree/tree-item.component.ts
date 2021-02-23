@@ -2,7 +2,7 @@ import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Inject, O
 import { Observable, Subject, of, Observer } from "rxjs"
 import { takeUntil, finalize, take, tap } from "rxjs/operators"
 
-import { SelectOrigin } from "../../data.module"
+import { SelectOrigin, Model } from "../../data.module"
 import { TreeComponent } from "./tree.component"
 import { ScrollerService } from "../scroller/scroller.service"
 
@@ -12,13 +12,13 @@ import { ScrollerService } from "../scroller/scroller.service"
     templateUrl: "./tree-item.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreeItemComponent<T = any> implements OnDestroy, OnInit {
+export class TreeItemComponent<T extends Model> implements OnDestroy {
     @Input() public level: number
     @Input() public isNode: boolean
 
     @Input()
     public set model(val: T) {
-        if (this.$implicit !== val) {
+        if (!Model.isEq(this.$implicit, val)) {
             if (this.$implicit) {
                 this.tree.unregisterTreeItem(this)
             }
@@ -68,12 +68,6 @@ export class TreeItemComponent<T = any> implements OnDestroy, OnInit {
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
         @Inject(TreeComponent) public readonly tree: TreeComponent,
         @Inject(ScrollerService) private readonly scroller: ScrollerService) {
-    }
-
-    public ngOnInit() {
-        if (this.level < 0) {
-            this.isExpanded = true
-        }
     }
 
     public expand(): Observable<T[]> {
