@@ -18,6 +18,7 @@ import { ListFilter, ColumnFilter } from "./filter/abstract"
 import { ListFilterChipComponent } from "./filter/filter-chip.component"
 import { ListFilterService } from "./filter/list-filter.service"
 import { ListFilterText } from "./filter/text.component"
+import { ListFilterNumber } from "./filter/number.component"
 import { ListFilterDate } from "./filter/date.component"
 export { ListFilter, ColumnFilter, ListFilterChipComponent, ListFilterService, ListFilterText, ListFilterDate }
 
@@ -42,6 +43,7 @@ export { ListHeaderComponent }
 
         ListFilterChipComponent,
         ListFilterText,
+        ListFilterNumber,
         ListFilterDate,
 
         ListHeaderComponent,
@@ -51,6 +53,7 @@ export { ListHeaderComponent }
         ColumnsComponent,
 
         ListFilterText,
+        ListFilterNumber,
         ListFilterDate,
 
         ListHeaderComponent,

@@ -272,6 +272,7 @@ function installHAlign(rect: WritableRect, align: HAlign) {
     const left = rect.left
 
     switch (align) {
+        default:
         case "left":
             setLeft = (val: number) => { rect._x = val }
             getLeft = () => { return rect._x }
@@ -323,6 +324,7 @@ function installVAlign(rect: WritableRect, align: VAlign) {
     const top = rect.top
 
     switch (align) {
+        default:
         case "top":
             setTop = (val: number) => { rect._y = val }
             getTop = () => { return rect._y }

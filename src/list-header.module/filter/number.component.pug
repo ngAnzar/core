@@ -1,0 +1,38 @@
+:stylus
+  .input-row
+    padding: 0 8px
+
+  .number-input
+    width: 140px
+
+ng-template(#layer)
+  form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch", (submit)="applyValue();$event.preventDefault()", ngNoForm)
+    .input-row(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
+      .nz-form-field(fxFlex="none")
+        label {{ isRange ? "Ettől" : "Érték" }}
+        input.nz-input.number-input(type="number", [formControl]="begin", cdkFocusInitial)
+
+      ng-template([ngIf]="isRange", [ngIfElse]="ifIsNotRange")
+        span(fxFlex="none") —
+
+        .nz-form-field(fxFlex="none")
+          label Eddig
+          input.nz-input.number-input(type="number"[formControl]="end")
+
+        button.nz-button(fxFlex="none", color="common", variant="tiny icon", (tap)="isRange=false")
+          i.nz-icon(class=icon("mdi/minus-box-outline", 18))
+
+      ng-template(#ifIsNotRange)
+        button.nz-button(fxFlex="none", color="common", variant="tiny icon", (tap)="isRange=true")
+          i.nz-icon(class=icon("mdi/plus-box-outline", 18))
+
+
+    div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px")
+      button.nz-button(*ngIf="begin.value", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés
+      div(fxFlex="grow")
+      button.nz-button(fxFlex="noshrink", color="confirm", type="submit") Szűrés
+
+
+ng-template(#chip)
+  .nz-list-filter-chip([title]="title", (remove)="clearValue()") {{ chipText }}
+
