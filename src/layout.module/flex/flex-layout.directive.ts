@@ -6,7 +6,9 @@ import { replaceClass, FlexDirectiveBase } from "./helper"
 
 const FLEX_ALISASES: { [key: string]: string } = {
     "start": "flex-start",
+    "left": "flex-start",
     "end": "flex-end",
+    "right": "flex-end",
 }
 
 
