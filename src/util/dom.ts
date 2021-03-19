@@ -35,8 +35,13 @@ export class _FastDOM {
     private _apply() {
         delete this._rafId
 
-        runQ(this._measure)
-        runQ(this._mutate)
+        const measure = this._measure.slice()
+        const mutate = this._mutate.slice()
+        this._measure.length = 0
+        this._mutate.length = 0
+
+        runQ(measure)
+        runQ(mutate)
 
         if (this._measure.length || this._mutate.length) {
             this._schedule()

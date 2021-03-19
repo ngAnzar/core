@@ -3,7 +3,7 @@ import { Observable, Observer, merge, fromEvent } from "rxjs"
 import { finalize, share, distinctUntilChanged } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
-import { __zone_symbol__, Rect } from "../util"
+import { __zone_symbol__, Rect, FastDOM } from "../util"
 
 export type Watchers<T> = Map<HTMLElement, { rc: number, watcher: T }>
 export type Dimension = { width: number, height: number }
@@ -191,9 +191,9 @@ export class RectMutationService {
 
     protected createPositionWatcher(element: HTMLElement): Observable<Position> {
         return this.zone.runOutsideAngular(() => {
-            return Observable.create((observer: Observer<Position>) => {
+            return new Observable((observer: Observer<Position>) => {
                 let rect = element.getBoundingClientRect()
-                let rafId: any
+                let paused: number = 0
 
                 const watcher = () => {
                     let current = element.getBoundingClientRect()
@@ -202,15 +202,40 @@ export class RectMutationService {
                         observer.next({ x: current.left, y: current.top })
                     }
 
-                    if (!observer.closed) {
-                        rafId = window[REQUEST_ANIMATION_FRAME](watcher)
+                    if (!observer.closed && paused <= 0) {
+                        FastDOM.measure(watcher)
                     }
                 }
 
-                watcher()
+                const pause = () => {
+                    ++paused
+                }
+
+                const resume = () => {
+                    if (--paused <= 0) {
+                        paused = 0
+                        watcher()
+                    }
+                }
+
+                element.addEventListener("animationstart", pause)
+                element.addEventListener("transitionstart", pause)
+
+                element.addEventListener("animationcancel", resume)
+                element.addEventListener("animationend", resume)
+                element.addEventListener("transitioncancel", resume)
+                element.addEventListener("transitionend", resume)
+
+                FastDOM.measure(watcher)
 
                 return () => {
-                    window[CANCEL_ANIMATION_FRAME](rafId)
+                    element.removeEventListener("animationstart", pause)
+                    element.removeEventListener("transitionstart", pause)
+
+                    element.removeEventListener("animationcancel", resume)
+                    element.removeEventListener("animationend", resume)
+                    element.removeEventListener("transitioncancel", resume)
+                    element.removeEventListener("transitionend", resume)
                 }
             }).pipe(share())
         })
