@@ -125,7 +125,6 @@ export class ToastService {
         return ((src: T) => {
             return src.pipe(
                 catchError(err => {
-                    console.log(err)
                     progress.error({ percent: 1, message: err.message })
                     return NEVER
                 }),
