@@ -38,7 +38,7 @@ export class FileDownloadService {
     }
 
     public download(url: string, filename?: string): Observable<FileDownloadEvent> {
-        return Observable.create((observer: Observer<FileDownloadEvent>) => {
+        return new Observable((observer: Observer<FileDownloadEvent>) => {
             url = this._qualifyUrl(url)
 
             const request = new HttpRequest("GET", url, {
@@ -53,6 +53,7 @@ export class FileDownloadService {
             const subscription = this.http.request(request)
                 .pipe(
                     catchError((err: any) => {
+                        console.log(err)
                         if (err.headers.get("Content-Type") === "application/json"
                             && err.error
                             && err.error.type === "application/json") {
@@ -76,17 +77,25 @@ export class FileDownloadService {
                             break
 
                         case HttpEventType.ResponseHeader:
-                            if (!filename) {
-                                cd = event.headers.get("Content-Disposition")
-                                if (cd) {
-                                    filename = contentDisposition.parse(cd).parameters.filename
-                                }
+                            if (event.status >= 200 && event.status <= 299) {
+                                try {
+                                    if (!filename) {
+                                        cd = event.headers.get("Content-Disposition")
+                                        if (cd) {
+                                            filename = contentDisposition.parse(cd).parameters.filename
+                                        }
 
-                                if (!filename) {
-                                    filename = "file"
+                                        if (!filename) {
+                                            filename = "file"
+                                        }
+                                    }
+                                } catch (e) {
+                                    observer.error(new FileDownloadError(`Invalid Content-Disposition header: ${cd}`, null, e))
                                 }
+                                observer.next({ state: "starting", filename: filename, total: Number(event.headers.get("Content-Length")) || null })
+                            } else {
+                                observer.error(new FileDownloadError(event.statusText, null, event))
                             }
-                            observer.next({ state: "starting", filename: filename, total: Number(event.headers.get("Content-Length")) || null })
                             break
 
                         case HttpEventType.DownloadProgress:
