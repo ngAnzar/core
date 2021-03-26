@@ -31,7 +31,7 @@ export class FileUploadService {
     }
 
     public upload(url: string, name: string, file: File, data?: { [key: string]: any }): Observable<FileUploadEvent> {
-        return Observable.create((observer: Observer<FileUploadEvent>) => {
+        return new Observable((observer: Observer<FileUploadEvent>) => {
             const formData = new FormData()
 
             formData.append(name, file, file.name)
