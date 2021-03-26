@@ -1,8 +1,8 @@
-import { Component, Input, ContentChild, TemplateRef, Inject, Directive } from "@angular/core"
-import { Observable, Subscription, from, of, EMPTY, concat } from "rxjs"
+import { Component, Input, ContentChild, TemplateRef, Inject, Output } from "@angular/core"
+import { Observable, Subscription, from, of, EMPTY } from "rxjs"
 import { startWith, switchMap, mapTo, withLatestFrom, take } from "rxjs/operators"
 
-import { DataSourceDirective, SelectionModel, NoneSelection, SelectOrigin, Model } from "../../data.module"
+import { DataSourceDirective, SelectionModel, SelectOrigin, Model, SingleSelection } from "../../data.module"
 import { LocalStorageService, LocalStorageBucket } from "../../common.module"
 
 import type { TreeItemComponent } from "./tree-item.component"
@@ -15,11 +15,16 @@ export type ExpandedItems = { [key: string]: ExpandedItems }
 @Component({
     selector: ".nz-tree",
     templateUrl: "tree.component.pug",
-    exportAs: "nzTree"
+    exportAs: "nzTree",
+    providers: [
+        { provide: SelectionModel, useClass: SingleSelection }
+    ]
 })
 export class TreeComponent {
     @ContentChild("content", { static: true, read: TemplateRef }) public readonly contentTpl: TemplateRef<TreeItemComponent<Model>>
     @ContentChild("buttons", { static: true, read: TemplateRef }) public readonly buttonsTpl: TemplateRef<TreeItemComponent<Model>>
+
+    @Output("selection") public get changes() { return this.selection.changes }
 
     @Input()
     public set root(val: Model) {
@@ -76,7 +81,7 @@ export class TreeComponent {
         @Inject(DataSourceDirective) private readonly source: DataSourceDirective,
         @Inject(LocalStorageService) private readonly localStorage: LocalStorageService,
         @Inject(SelectionModel) public readonly selection: SelectionModel) {
-        selection.maintainSelection = false
+        this.selection.maintainSelection = false
     }
 
     public reload() {
@@ -261,12 +266,12 @@ export class TreeComponent {
 }
 
 
-@Directive({
-    selector: ".nz-tree:not([selection])",
-    providers: [
-        { provide: SelectionModel, useExisting: TreeDefaultSelecton }
-    ]
-})
-export class TreeDefaultSelecton extends NoneSelection {
+// @Directive({
+//     selector: ".nz-tree:not([selection])",
+//     providers: [
+//         { provide: SelectionModel, useExisting: TreeDefaultSelecton }
+//     ]
+// })
+// export class TreeDefaultSelecton extends NoneSelection {
 
-}
+// }
