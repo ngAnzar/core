@@ -88,6 +88,10 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         this.cdr.markForCheck()
     }
 
+    public reaload() {
+        this.source.reload()
+    }
+
     protected updateGridTemplate() {
         if (!this.columns) {
             return
