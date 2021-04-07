@@ -26,6 +26,18 @@ export class _FastDOM {
         this._schedule()
     }
 
+    public setStyle(el: HTMLElement, style: { [key: string]: any }, chain?: FastDomHandler) {
+        this.mutate(() => {
+            for (const k in style) {
+                if (style.hasOwnProperty(k)) {
+                    el.style[k as any] = style[k]
+                }
+            }
+
+            chain && chain()
+        })
+    }
+
     private _schedule() {
         if (!this._rafId) {
             this._rafId = rawRequestAnimationFrame(this._apply.bind(this))

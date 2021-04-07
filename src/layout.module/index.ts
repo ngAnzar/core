@@ -26,6 +26,9 @@ import { FlexChildDirective } from "./flex/flex-child.directive"
 import { SyncHeightFromDirective, SyncHeightToDirective } from "./sync-height.directive"
 export { SyncHeightFromDirective, SyncHeightToDirective }
 
+import { DynStackDirective } from "./dyn-stack/dyn-stack.directive"
+export { DynStackDirective }
+
 
 @NgModule({
     imports: [
@@ -50,7 +53,9 @@ export { SyncHeightFromDirective, SyncHeightToDirective }
         FlexChildDirective,
 
         SyncHeightFromDirective,
-        SyncHeightToDirective
+        SyncHeightToDirective,
+
+        DynStackDirective,
     ],
     exports: [
         StackComponent,
@@ -66,7 +71,9 @@ export { SyncHeightFromDirective, SyncHeightToDirective }
         FlexChildDirective,
 
         SyncHeightFromDirective,
-        SyncHeightToDirective
+        SyncHeightToDirective,
+
+        DynStackDirective,
     ],
     providers: [
         RectMutationService,
