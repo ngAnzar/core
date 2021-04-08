@@ -120,6 +120,8 @@ export class ToastService {
 
         if (options.beginMsg) {
             progress.next({ message: options.beginMsg })
+        } else if (options.message) {
+            progress.next({ message: options.message })
         }
 
         return ((src: T) => {
