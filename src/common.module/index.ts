@@ -40,6 +40,7 @@ export { CardComponent, CardHeaderComponent, CardActionsComponent }
 import { ChipComponent } from "./chip/chip.component"
 export { ChipComponent }
 
+import { Nl2BrPipe } from "./directives/nl2br.directive"
 
 import { FileDownloadService, FileDownloadEvent } from "./services/file-download.service"
 import { FileUploadService, FileUploadEvent } from "./services/file-upload.service"
@@ -92,6 +93,7 @@ const content = [
     CardActionsComponent,
 
     ChipComponent,
+    Nl2BrPipe,
 
     DragHandleDirective,
 
