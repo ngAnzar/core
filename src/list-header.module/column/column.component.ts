@@ -196,6 +196,8 @@ export class ColumnComponent<T extends Model = Model> implements OnInit, AfterCo
                     s.unsubscribe()
                     this.cdr.markForCheck()
                     this.filter.resetValue()
+                } else if (event.type === "shown") {
+                    this.filter.writeValue(this.filter.name, (this.dataSource.filter as any)[this.filter.name])
                 }
             })
         }

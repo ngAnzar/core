@@ -20,6 +20,7 @@ import { ListFilterService } from "./filter/list-filter.service"
 import { ListFilterText } from "./filter/text.component"
 import { ListFilterNumber } from "./filter/number.component"
 import { ListFilterDate } from "./filter/date.component"
+import { ListFilterCheckbox } from "./filter/checkbox.component"
 export { ListFilter, ColumnFilter, ListFilterChipComponent, ListFilterService, ListFilterText, ListFilterDate }
 
 import { ListHeaderComponent } from "./header/list-header.component"
@@ -45,6 +46,7 @@ export { ListHeaderComponent }
         ListFilterText,
         ListFilterNumber,
         ListFilterDate,
+        ListFilterCheckbox,
 
         ListHeaderComponent,
     ],
@@ -55,6 +57,7 @@ export { ListHeaderComponent }
         ListFilterText,
         ListFilterNumber,
         ListFilterDate,
+        ListFilterCheckbox,
 
         ListHeaderComponent,
     ]

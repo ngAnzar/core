@@ -1,0 +1,24 @@
+:stylus
+  .input-row
+    padding: 0 8px
+
+  .group
+    padding: 8px
+
+ng-template(#layer)
+  form.nz-list-filter-layer(nzLayout="column", nzLayoutAlign="start stretch" style="min-width:200px", on-submit="applyValue();$event.preventDefault()", ngNoForm)
+    .nz-checkbox-group.group([formControl]="value", nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px")
+      ng-template(ngFor, [ngForOf]="values", let-chk)
+        .nz-checkbox([true-value]="chk.value") {{ chk.label }}
+
+
+    div(fxFlex="noshrink", nzLayout="row", nzLayoutGap="8px")
+      button.nz-button(*ngIf="value.value?.length", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés
+      div(fxFlex="grow")
+      button.nz-button(fxFlex="noshrink", color="confirm" type="submit") Szűrés
+
+
+ng-template(#chip)
+  .nz-list-filter-chip([title]="title", on-remove="clearValue()")
+    | {{ chipText }}
+
