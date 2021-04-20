@@ -18,6 +18,7 @@ const enum SelectMode {
 export class SelectionKeyboardHandler<T extends Model = Model> implements IDisposable {
     public instantSelection: boolean = false
     public alwaysAppend: boolean = false
+    public disableMouse: boolean = false
 
     private els: HTMLElement[] = []
     private _keyboardFocused: number = -1
@@ -100,6 +101,10 @@ export class SelectionKeyboardHandler<T extends Model = Model> implements IDispo
     }
 
     public handleMouse = (event: PointerEvent, selectable: ISelectable) => {
+        if (this.disableMouse) {
+            return
+        }
+
         let mode = this.determineMode(event.ctrlKey, event.shiftKey, true)
         this.addToSelection(selectable, mode, true)
     }

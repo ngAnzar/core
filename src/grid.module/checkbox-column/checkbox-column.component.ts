@@ -1,7 +1,9 @@
-import { Component, ViewChild, TemplateRef, OnInit } from "@angular/core"
+import { Component, ViewChild, TemplateRef, OnInit, Inject, ChangeDetectorRef, ElementRef, ViewContainerRef, Optional } from "@angular/core"
 
 import { ColumnComponent } from "../../list-header.module"
-import { PrimaryKey } from "../../data.module"
+import { DataSourceDirective, PrimaryKey, SelectionModel, Model } from "../../data.module"
+import { LayerService } from "../../layer.module"
+import { OnGridTap } from "../grid/on-grid-tap"
 
 
 @Component({
@@ -14,8 +16,19 @@ import { PrimaryKey } from "../../data.module"
         { provide: ColumnComponent, useExisting: CheckboxColumnComponent }
     ]
 })
-export class CheckboxColumnComponent extends ColumnComponent implements OnInit {
+export class CheckboxColumnComponent extends ColumnComponent implements OnInit, OnGridTap<Model> {
     @ViewChild("defaultContent", { static: true }) protected readonly defaultContent: TemplateRef<any>
+
+    public constructor(
+        @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef,
+        @Inject(ElementRef) el: ElementRef<HTMLElement>,
+        @Inject(LayerService) layerSvc: LayerService,
+        @Inject(ViewContainerRef) vcr: ViewContainerRef,
+        @Inject(DataSourceDirective) @Optional() dataSource: DataSourceDirective,
+        @Inject(SelectionModel) private readonly selection: SelectionModel) {
+        super(cdr, el, layerSvc, vcr, dataSource)
+        selection.keyboard.disableMouse = true
+    }
 
     public set content(val: TemplateRef<any>) {
         this._content = val
@@ -31,6 +44,11 @@ export class CheckboxColumnComponent extends ColumnComponent implements OnInit {
     }
 
     public isChecked(pk: PrimaryKey) {
-        // return this.grid.selection.getSelectOrigin(id) !== null
+        return this.selection.getSelectOrigin(pk) !== null
+    }
+
+    public onGridTap(event: Event, model: Model, row: number, col: number) {
+        event.preventDefault()
+        this.selection.setSelected(model.pk, this.isChecked(model.pk) ? null : "mouse")
     }
 }

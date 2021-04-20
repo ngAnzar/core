@@ -69,6 +69,13 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
     public get name(): string { return this._name }
     protected _name: string = null
 
+    @Input("can-deselect")
+    public set canDeselect(val: boolean) {
+        this._canDeselect = coerceBooleanProperty(val)
+    }
+    public get canDeselect(): boolean { return this._canDeselect }
+    private _canDeselect: boolean = false
+
     public get type(): string { return "radio" }
 
     public constructor(
@@ -97,7 +104,11 @@ export class RadioComponent<T = any> extends InputComponent<T> implements OnDest
     }
 
     protected _handleTap(event: Event) {
-        this.checked = !this.checked
+        if (this.canDeselect) {
+            this.checked = !this.checked
+        } else {
+            this.checked = true
+        }
     }
 
     public _handleInputChange(event: Event) {

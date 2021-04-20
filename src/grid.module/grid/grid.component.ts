@@ -1,14 +1,16 @@
 import {
     Component, Inject, Host, Input, DoCheck, OnInit, Attribute,
     ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList,
-    Output, EventEmitter
+    Output, EventEmitter, ElementRef
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
 
 import { Destruct, Margin, MarginParsed, parseMargin } from "../../util"
+import { NzTouchEvent } from "../../common.module"
 import { DataSourceDirective, SelectionModel, Model, PrimaryKey, SelectionEvent } from "../../data.module"
-import { ListFilterService, ColumnsComponent } from "../../list-header.module"
+import { ListFilterService, ColumnsComponent, ColumnComponent } from "../../list-header.module"
+import { OnGridTap } from "./on-grid-tap"
 
 import { GridRowDirective } from "./grid-row.directive"
 
@@ -49,6 +51,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     protected _canDisplayEmptyText: boolean
 
     public constructor(
+        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
         @Inject(DomSanitizer) protected snitizer: DomSanitizer,
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel,
@@ -134,5 +137,60 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
 
     public ngOnDestroy() {
         this.destruct.run()
+    }
+
+    public onTap(event: NzTouchEvent) {
+        if (event.defaultPrevented) {
+            return
+        }
+
+        const gridEl = this.el.nativeElement
+        let el = event.originalEvent.target as HTMLElement
+        let row: number
+        let col: number
+
+        while (el && el !== gridEl) {
+            const data = el.dataset
+            if (data["row"] != null && data["col"] != null) {
+                row = Number(data["row"])
+                col = Number(data["col"])
+            } else if (data["row"] != null) {
+                row = Number(data["row"])
+                break
+            }
+            el = el.parentElement
+        }
+
+        let rowCmp: GridRowDirective<T>
+        for (const r of this.rows) {
+            if (r.row === row) {
+                rowCmp = r
+                break
+            }
+        }
+
+        if (!rowCmp) {
+            return
+        }
+
+        let model = rowCmp.model
+
+        let columnCmp = this.columns.items.get(col) as any as OnGridTap<T>
+        if (columnCmp && columnCmp.onGridTap) {
+            columnCmp.onGridTap(event, model, row, col)
+            if (event.defaultPrevented) {
+                return
+            }
+        }
+
+
+        rowCmp.onGridTap(event, model, row, col)
+        if (event.defaultPrevented) {
+            return
+        }
+        this.rowTap.next(model)
+
+        event.preventDefault()
+        event.stopImmediatePropagation()
     }
 }

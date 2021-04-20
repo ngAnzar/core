@@ -19,7 +19,7 @@
       ng-content(select=".nz-columns", ngProjectAs=".nz-columns")
 
     .nz-scroller.body(orient="vertical", fxFlex="grow")
-      div(scrollable)
+      div(scrollable, (tap)="onTap($event)")
         .nz-list.rows(
             [style.gridTemplate]="gtRows",
             [ngStyle]="{'padding-left.px': _padding.left, 'padding-right.px': _padding.right, 'padding-bottom.px': _padding.bottom}")
@@ -28,8 +28,7 @@
               [style.gridTemplate]="gtRow",
               [row]="row",
               [selectable]="virtual",
-              [selectionIndex]="row",
-              (tap)="!$event.defaultPrevented && rowTap.next(virtual)")
+              [selectionIndex]="row")
 
               ng-template(ngFor, [ngForOf]="columns.items" let-column let-col="index" let-firstCell="first" let-lastCell="last")
                 .nz-data-grid-cell(

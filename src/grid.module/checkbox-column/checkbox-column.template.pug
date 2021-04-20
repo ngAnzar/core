@@ -1,12 +1,4 @@
-//- :stylus
-//-   .checkbox
-//-     padding: 0
-//-     line-height: 0
-
 ng-content(select="label")
 
-ng-template(#defaultContent let-item)
-  .nz-checkbox.checkbox(
-    style="padding:0;line-height:0"
-    bind-checked="isChecked(item.id)"
-    noninteractive)
+ng-template(#defaultContent, let-item)
+  .nz-checkbox([checked]="isChecked(item.pk)", noninteractive)

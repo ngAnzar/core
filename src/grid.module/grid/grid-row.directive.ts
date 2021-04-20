@@ -2,6 +2,7 @@ import { Component, Input, Inject, ContentChildren, QueryList, OnChanges, Change
 
 import { SelectableDirective, Model } from "../../data.module"
 import { GridCellDirective } from "./grid-cell.directive"
+import { OnGridTap } from "./on-grid-tap"
 
 
 @Component({
@@ -11,10 +12,11 @@ import { GridCellDirective } from "./grid-cell.directive"
     host: {
         "[style.grid-row]": "row + 1",
         "[style.grid-column]": "1",
-        "[attr.variant]": "selectable.selected ? null : 'filled'"
+        "[attr.variant]": "selectable.selected ? null : 'filled'",
+        "[attr.data-row]": "row",
     }
 })
-export class GridRowDirective<T extends Model = Model> {
+export class GridRowDirective<T extends Model = Model> implements OnGridTap<T> {
     @ContentChildren(GridCellDirective) public readonly cells: QueryList<GridCellDirective<T>>
     @Input() public row: number
 
@@ -32,7 +34,7 @@ export class GridRowDirective<T extends Model = Model> {
         this.cdr.markForCheck()
     }
 
-    // public ngOnChanges() {
-    //     console.log("row.ngOnChanges", this.row)
-    // }
+    public onGridTap(event: Event, model: T, row: number, col: number) {
+
+    }
 }

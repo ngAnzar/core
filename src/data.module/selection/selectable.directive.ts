@@ -106,8 +106,10 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
     }
 
     @HostListener("tap", ["$event"])
-    public onTap(event: any) {
-        this.selection.keyboard.handleMouse(event, this)
+    public onTap(event: PointerEvent) {
+        if (!event.defaultPrevented) {
+            this.selection.keyboard.handleMouse(event, this)
+        }
     }
 
     public _changeSelected(newValue: SelectOrigin) {

@@ -7,7 +7,11 @@ import { Model } from "../../data.module"
 @Component({
     selector: ".nz-data-grid-cell",
     template: `<ng-container [ngTemplateOutlet]="this.column.content" [ngTemplateOutletContext]="this"></ng-container>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        "[attr.data-row]": "row",
+        "[attr.data-col]": "col",
+    }
 })
 export class GridCellDirective<T extends Model = Model> {
     @Input() public column: ColumnComponent
