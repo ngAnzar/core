@@ -4,7 +4,7 @@ import {
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
-import { Subject, merge } from "rxjs"
+import { Subject, merge, BehaviorSubject } from "rxjs"
 import { debounceTime, map, takeUntil, startWith } from "rxjs/operators"
 
 import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
@@ -97,14 +97,13 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     @Input()
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
-        if (this._checked !== val) {
-            this._checked = val
-            this._checked$.next()
+        if (this._checked$.value !== val) {
+            this._checked$.next(val)
+            console.log({ checked: val })
         }
     }
-    public get checked(): boolean { return this._checked }
-    protected _checked: boolean = false
-    private _checked$ = new Subject()
+    public get checked(): boolean { return this._checked$.value }
+    private _checked$ = new BehaviorSubject<boolean>(false)
 
     @Input()
     public set indeterminate(val: boolean) {
@@ -190,7 +189,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     public ngOnDestroy() {
-        this._checked = false
+        // this.checked = false
         if (this.group) {
             this.group.updateValue(this)
             this.group.delCheckbox(this)
@@ -215,13 +214,13 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     private _getValue(): any {
-        if (this._checked && this._indeterminate) {
+        if (this.checked && this._indeterminate) {
             if (this._indeterminateValue != null) {
                 return this._indeterminateValue
             } else {
                 return { checked: true, indeterminate: true }
             }
-        } else if (this._checked) {
+        } else if (this.checked) {
             return this._trueValue
         } else {
             return this._falseValue

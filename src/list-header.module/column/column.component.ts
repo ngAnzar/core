@@ -204,12 +204,12 @@ export class ColumnComponent<T extends Model = Model> implements OnInit, AfterCo
     }
 
     public ngAfterContentInit() {
-        if (this.filter) {
-            if (!this.filter.title && this.label) {
-                this.filter.title = this.label.nativeElement.innerText
-            }
-
-            this.destruct.subscription(this.filter.valueChanges).subscribe(() => {
+        const filter = this.filter
+        if (filter) {
+            this.destruct.subscription(filter.valueChanges).subscribe(() => {
+                if ((!filter.title || filter.title.length === 0) && this.label) {
+                    filter.title = this.label.nativeElement.innerText
+                }
                 this.cdr.markForCheck()
             })
         }
