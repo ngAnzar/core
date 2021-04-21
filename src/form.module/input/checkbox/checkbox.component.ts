@@ -99,7 +99,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         val = coerceBooleanProperty(val)
         if (this._checked$.value !== val) {
             this._checked$.next(val)
-            console.log({ checked: val })
         }
     }
     public get checked(): boolean { return this._checked$.value }
