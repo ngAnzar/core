@@ -103,7 +103,7 @@ export class ColumnComponent<T extends Model = Model> implements OnInit, AfterCo
                             map(v => this.dataSource.sort)
                         )
                         .subscribe(sort => {
-                            this.sortDirection = sort ? getPath(sort, this._sortable) : null
+                            this.sortDirection = sort ? ((sort as any)[this._sortable] || getPath(sort, this._sortable)) : null
                         })
                 }
             } else if (this._sorterChangeSub) {
