@@ -1,6 +1,6 @@
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
-import { throwError, of, NEVER, Observable, Subject } from "rxjs"
+import { throwError, of, NEVER, Observable, Subject, ObservableInput } from "rxjs"
 import { catchError, tap, shareReplay } from "rxjs/operators"
 
 import { LayerService } from "../layer/layer.service"
@@ -157,14 +157,14 @@ export class ToastService {
         }) as any
     }
 
-    public catchError() {
-        return catchError((err: Error) => {
+    public catchError<T, O extends ObservableInput<T>>() {
+        return catchError<T, O>((err: Error) => {
             if (err.message) {
                 this.error(err.message)
             } else {
                 this.error(String(err))
             }
-            return NEVER
+            return NEVER as any
         })
     }
 
