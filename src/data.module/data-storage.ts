@@ -154,11 +154,11 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             return false
         }
 
-        if (this.endReached <= r.begin) {
+        const request = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
+        if (this.endReached <= request.begin) {
             return false
         }
 
-        const request = this.cachedRanges.merge(r).diff(this.cachedRanges).span()
         const pending = this._getPending(request)
         if (pending) {
             return true

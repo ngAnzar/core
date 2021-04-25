@@ -1,6 +1,6 @@
 import { Observable, EMPTY, of } from "rxjs"
 import { Subject } from "rxjs"
-import { map, finalize, switchMap, take } from "rxjs/operators"
+import { map, finalize, switchMap, take, shareReplay } from "rxjs/operators"
 
 import { NzRange, __zone_symbol__ } from "../../util"
 

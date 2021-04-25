@@ -3,7 +3,7 @@ import {
     OnDestroy, EmbeddedViewRef, ChangeDetectorRef, DoCheck, ViewRef, Output, EventEmitter, NgZone
 } from "@angular/core"
 import { merge, Observable, Subject, Subscription, EMPTY, of, NEVER, Subscriber, timer } from "rxjs"
-import { startWith, tap, map, switchMap, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil, debounce } from "rxjs/operators"
+import { startWith, tap, map, switchMap, shareReplay, filter, debounceTime, finalize, take, share, mapTo, takeUntil, debounce, pairwise } from "rxjs/operators"
 
 import { DataSourceDirective, Model, Items, PrimaryKey } from "../../data.module"
 import { Destruct, NzRange, ListDiffKind, ListDiffItem, __zone_symbol__, RectProps } from "../../util"
@@ -130,23 +130,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         share()
     )
 
-    // private _scroll = new Subject()
-    // private scroll$ = this.destruct.subscription(merge(this._scroll, this.reset$, this.visibleItems.changes)).pipe(
-    //     map(this.visibleItems.getVisibleRange.bind(this.visibleItems, this._scroller.vpImmediate)),
-    //     map((vr: NzRange) => {
-    //         // console.log("visibleRange", vr)
-    //         if (vr.begin === -1) {
-    //             return new NzRange(0, this.itemsPerRequest)
-    //         } else {
-    //             return vr
-    //         }
-    //     }),
-    //     withPrevious(this.reset$),
-    //     switchMap(skipWhenRangeIsEq),
-    //     shareReplay(1)
-    // )
-
-    private visibleRange$ = this.visibleRangeStrategy.visibleRange$.pipe(
+    private visibleRange$ = this.reset$.pipe(
+        switchMap(() => this.visibleRangeStrategy.visibleRange$),
         map(vr => {
             if (vr.begin == null || vr.begin === -1) {
                 return new NzRange(0, this.itemsPerRequest)
@@ -157,24 +142,23 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
         shareReplay(1)
     )
 
-    private renderRange$ = this.destruct.subscription(this.visibleRange$).pipe(
+    private renderRange$ = this.visibleRange$.pipe(
         map(vr => {
             return new NzRange(
                 Math.max(0, vr.begin - this.visibleRangeStrategy.extraCount),
                 vr.end + this.visibleRangeStrategy.extraCount)
         }),
-        withPrevious(this.reset$),
-        switchMap(skipWhenRangeIsEq),
         shareReplay(1)
     )
 
     private requestRange$ = merge(
         this.renderRange$.pipe(
-            withPrevious(this.reset$),
+            startWith(null),
+            pairwise(),
             map(([rrOld, rrNew]) => {
                 let nextPage: number
 
-                if (!rrOld || rrOld.begin <= rrNew.begin) {
+                if (!rrOld || rrOld.end <= rrNew.end) {
                     nextPage = Math.floor((rrOld ? rrOld.end : 0) / this.itemsPerRequest) + 1
                 } else {
                     nextPage = Math.max(1, Math.floor(rrOld.begin / this.itemsPerRequest) - 1)
@@ -184,8 +168,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                     Math.max(0, nextPage - 1) * this.itemsPerRequest,
                     nextPage * this.itemsPerRequest)
             }),
-            withPrevious(this.reset$),
-            switchMap(skipWhenRangeIsEq),
         ),
         this._refresh.pipe(
             switchMap(v => this.renderRange$.pipe(take(1))),
@@ -200,9 +182,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     ).pipe(shareReplay(1))
 
     private items$: Observable<Items<T>> = merge(
-        merge(this.reset$, this.requestRange$).pipe(
-            switchMap(x => this.requestRange$.pipe(take(1))),
-            takeUntil(this.destruct.on),
+        this.requestRange$.pipe(
             switchMap(rr => {
                 if (this._nzVirtualForOf && this._nzVirtualForOf.loadRange(rr)) {
                     return EMPTY
@@ -214,7 +194,6 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
     )
         .pipe(
             switchMap(_ => this.renderRange$),
-            takeUntil(this.destruct.on),
             map(rr => {
                 return this._nzVirtualForOf ? this._nzVirtualForOf.getRange(rr) : EMPTY_ITEMS
             })
