@@ -37,36 +37,6 @@ export const tada: AnimationSet = {
 }
 
 
-// export const slide: AnimationSet = {
-//     show: [
-//         style({
-//             "transform": "scale(0.8, 0.8) translate(0, 50%)",
-//             "opacity": "0.3",
-//             "transform-origin": "center center",
-//             "visibility": "visible"
-//         }),
-//         animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
-//             "opacity": "0.7",
-//             "transform": "scale(0.8, 0.8) translate(0px, 0px)"
-//         })),
-//         animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
-//             "opacity": "1",
-//             "transform": "scale(1, 1)"
-//         }))
-//     ],
-//     hide: [
-//         animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
-//             "opacity": "0.7",
-//             "transform": "scale(0.8, 0.8) translate(0px, 0px)"
-//         })),
-//         animate(`150ms cubic-bezier(0.5, 1, 0.89, 1)`, style({
-//             "transform": "scale(0.8, 0.8) translate(0, 50%)",
-//             "opacity": "0.3",
-//         }))
-//     ]
-// }
-
-
 export const slide: AnimationSet = {
     show: [
         style({
@@ -92,5 +62,16 @@ export const slide: AnimationSet = {
             "transform": "translate(0, 50%)",
             "opacity": "0.3",
         }))
+    ]
+}
+
+
+export const fade: AnimationSet = {
+    show: [
+        style({ opacity: 0 }),
+        animate(`200ms ease-in`, style({ opacity: 1 }))
+    ],
+    hide: [
+        animate(`200ms ease-in`, style({ opacity: 0 }))
     ]
 }

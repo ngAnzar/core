@@ -1,7 +1,7 @@
 import { Injectable, Inject, StaticProvider } from "@angular/core"
 import { ComponentType } from "@angular/cdk/portal"
 import { throwError, of, NEVER, Observable, Subject, ObservableInput } from "rxjs"
-import { catchError, tap, shareReplay } from "rxjs/operators"
+import { catchError, tap, shareReplay, finalize } from "rxjs/operators"
 
 import { LayerService } from "../layer/layer.service"
 import { LayerRef, ComponentLayerRef } from "../layer/layer-ref"
@@ -76,6 +76,24 @@ export class ToastService {
             options,
             ToastProgressComponent
         )
+    }
+
+    public preload<T>(): (src: T) => T {
+        const progress = new Subject<ProgressEvent>()
+        this.progress({
+            align: "center",
+            progress: progress
+        })
+        return (src) => {
+            return (src as any).pipe(
+                tap(() => {
+                    progress.next({})
+                }),
+                finalize(() => {
+                    progress.complete()
+                })
+            )
+        }
     }
 
     public handleSave<T>(options: SaveHandlerOptions): (src: T) => T {
