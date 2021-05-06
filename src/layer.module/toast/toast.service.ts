@@ -32,6 +32,7 @@ function defaultOptions(options: ToastOptions): ToastOptions {
 export interface SaveHandlerOptions extends ToastOptions {
     beginMsg?: string
     successMsg?: string
+    onError?: (error: any) => void
 }
 
 
@@ -112,6 +113,7 @@ export class ToastService {
             return (src as any).pipe(
                 catchError(err => {
                     progress.error({ percent: 1, message: err.message })
+                    options.onError && options.onError(err)
                     return NEVER
                 }),
                 tap(v => {
