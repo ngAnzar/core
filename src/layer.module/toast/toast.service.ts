@@ -177,13 +177,14 @@ export class ToastService {
         }) as any
     }
 
-    public catchError<T, O extends ObservableInput<T>>() {
+    public catchError<T, O extends ObservableInput<T>>(onError?: (err: any) => void) {
         return catchError<T, O>((err: Error) => {
             if (err.message) {
                 this.error(err.message)
             } else {
                 this.error(String(err))
             }
+            onError && onError(err)
             return NEVER as any
         })
     }

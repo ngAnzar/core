@@ -96,6 +96,10 @@ $nz-button-padding-medium ?= 0 nz-local-grid-size(3)
   &[focused="keyboard"], &[focused="program"]
     nz-elevation: 5
 
+  &[busy]
+    cursor: default
+    pointer-events: none
+
 .nz-button-bar
   padding: nz-local-grid-size(2)
   display: flex

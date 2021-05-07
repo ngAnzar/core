@@ -28,3 +28,10 @@ nz-progress
 
       &[type="bar"]
         background-color: alpha(value.normal, 0.3)
+
+    &{'[color="on-' + color + '"]'}
+      circle, line
+        stroke: value.on.normal
+
+      &[type="bar"]
+        background-color: alpha(value.on.normal, 0.3)

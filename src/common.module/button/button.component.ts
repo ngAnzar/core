@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, Input, Output, EventEmitter, OnDestroy, OnInit, HostBinding, HostListener, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core"
+import { Component, ElementRef, Inject, Input, Output, EventEmitter, OnDestroy, OnInit, HostBinding, HostListener, ChangeDetectionStrategy, ChangeDetectorRef, Directive } from "@angular/core"
 import { FocusMonitor } from "@angular/cdk/a11y"
 import { ENTER, SPACE } from "@angular/cdk/keycodes"
 
@@ -7,7 +7,7 @@ import { CUSTOM_EVENT_OPTIONS, NzTouchEvent } from "../services/touch-event.serv
 
 
 @Component({
-    selector: ".nz-button",
+    selector: ".nz-button:not([busy])",
     templateUrl: "./button.pug"
 })
 export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit {
@@ -83,3 +83,4 @@ export class ButtonComponent extends AnzarComponent implements OnDestroy, OnInit
         }
     }
 }
+

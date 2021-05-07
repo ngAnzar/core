@@ -4,7 +4,8 @@ import { CommonModule } from "@angular/common"
 import { NzAnimationModule } from "../animation.module"
 
 import { ButtonComponent } from "./button/button.component"
-export { ButtonComponent }
+import { ButtonProgressComponent } from "./button/button-progress.component"
+export { ButtonComponent, ButtonProgressComponent }
 
 
 import { DragEventService, DragEvent } from "./services/drag-event.service"
@@ -73,6 +74,7 @@ import { ImageComponent } from "./image/image.component"
 
 const content = [
     ButtonComponent,
+    ButtonProgressComponent,
 
     DateDirective,
     DatePipe,

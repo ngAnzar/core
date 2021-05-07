@@ -1,0 +1,46 @@
+:stylus
+  .transition
+    transition: transform 100ms cubic-bezier(0.25, 0.8, 0.25, 1)
+
+  .button-content
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    line-height: 16px
+
+    display: inherit
+    flex-wrap: inherit
+    flex-direction: inherit
+    justify-content: inherit
+    align-items: inherit
+
+    transform: translateY(0)
+
+  .button-content span
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+  .progress
+    transform: translateY(36px)
+    position: absolute
+    left: 50%
+    top: 50%
+    margin: -14px 0 0 -14px
+    width: 28px
+    height: 28px
+
+  .busy-content
+    transform: translateY(-36px) !important
+
+  .busy-progress
+    transform: translateY(0) !important
+
+
+.button-content.transition([ngClass]=`{"${style('busy-content')}": _busy}`)
+  ng-content
+
+.progress.transition([ngClass]=`{"${style('busy-progress')}": _busy}`)
+  nz-progress(type="circle", [color]="progressColor", [radius]=14)
+
+.nz-ripple
