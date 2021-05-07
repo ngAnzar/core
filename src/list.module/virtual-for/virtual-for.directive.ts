@@ -153,8 +153,7 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
 
     private requestRange$ = merge(
         this.renderRange$.pipe(
-            startWith(null),
-            pairwise(),
+            withPrevious(this.reset$),
             map(([rrOld, rrNew]) => {
                 let nextPage: number
 
