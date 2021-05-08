@@ -1,5 +1,6 @@
 import { Component, Inject, Input, OnDestroy } from "@angular/core"
 import { FormControl } from "@angular/forms"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
 
 import { ListFilter, ColumnFilter } from "./abstract"
 import { ListFilterService } from "./list-filter.service"
@@ -18,6 +19,10 @@ export type CheckboxData = { value: any, label: string }
 })
 export class ListFilterCheckbox extends ColumnFilter implements OnDestroy {
     @Input() public values: CheckboxData[]
+    @Input()
+    public set excludeable(val: boolean) { this._excludeable = coerceBooleanProperty(val) }
+    public get excludeable(): boolean { return this._excludeable }
+    private _excludeable: boolean = false
 
     public readonly includes = new FormControl()
     public readonly excludes = new FormControl()
@@ -41,6 +46,7 @@ export class ListFilterCheckbox extends ColumnFilter implements OnDestroy {
         const includes = this.includes.value as any[]
         const excludes = this.excludes.value as any[]
         this._chipText(includes, excludes)
+        console.log(this.includesText, this.excludesText)
 
         if (includes?.length && excludes?.length) {
             this._publishValue({ "and": [{ "in": includes }, { "not in": excludes }] })
