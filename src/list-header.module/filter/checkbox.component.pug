@@ -1,24 +1,54 @@
 :stylus
-  .input-row
-    padding: 0 8px
+  .operator
+    color: $theme.common.light
+    nz-typo: $typo.caption
 
-  .group
-    padding: 8px
+  .paren
+    color: $theme.common.light
+    nz-typo: $typo.caption
+
+  .value
+    color: $theme.base.on.normal
+
 
 ng-template(#layer)
-  form.nz-list-filter-layer(nzLayout="column", nzLayoutAlign="start stretch" style="min-width:200px", on-submit="applyValue();$event.preventDefault()", ngNoForm)
-    .nz-checkbox-group.group([formControl]="value", nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px")
-      ng-template(ngFor, [ngForOf]="values", let-chk)
-        .nz-checkbox([true-value]="chk.value") {{ chk.label }}
+  form.nz-list-filter-layer(nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px", style="min-width:200px", on-submit="applyValue();$event.preventDefault()", ngNoForm)
+    div(nzLayout="row", nzLayoutAlign="start start", nzLayoutGap="16px")
+      .nz-fieldset(nzFlex="none")
+        ng-template(#legend) Tartalmazza
+
+        div(nzFlex="none", nzLayout="column", nzlayoutAlign="start start", nzLayoutGap="8px")
+          .nz-checkbox-group([formControl]="includes", nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px")
+            ng-template(ngFor, [ngForOf]="values", let-chk)
+              .nz-checkbox([true-value]="chk.value") {{ chk.label }}
+
+      .nz-fieldset(nzFlex="none")
+        ng-template(#legend) Nem tartalmazza
+
+        div(nzFlex="none", nzLayout="column", nzlayoutAlign="start start", nzLayoutGap="8px")
+          .nz-checkbox-group([formControl]="excludes", nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px")
+            ng-template(ngFor, [ngForOf]="values", let-chk)
+              .nz-checkbox([true-value]="chk.value") {{ chk.label }}
 
 
     div(fxFlex="noshrink", nzLayout="row", nzLayoutGap="8px")
-      button.nz-button(*ngIf="value.value?.length", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés
+      button.nz-button(*ngIf="includes.value?.length || excludes.value?.length", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés
       div(fxFlex="grow")
       button.nz-button(fxFlex="noshrink", color="confirm" type="submit") Szűrés
 
 
 ng-template(#chip)
   .nz-list-filter-chip([title]="title", on-remove="clearValue()")
-    | {{ chipText }}
+    ng-template([ngIf]="includesText")
+      span.operator IN
+      span.paren (
+      span.value &nbsp;{{ includesText }}&nbsp;
+      span.paren )
+
+    ng-template([ngIf]="excludesText")
+      span.operator(*ngIf="includesText") &nbsp;AND&nbsp;
+      span.operator NOT IN
+      span.paren (
+      span.value &nbsp;{{ excludesText }}&nbsp;
+      span.paren )
 
