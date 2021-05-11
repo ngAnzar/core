@@ -6,7 +6,7 @@ import { LayerService } from "../layer/layer.service"
 import { ComponentLayerRef } from "../layer/layer-ref"
 import { DropdownLayer } from "../layer/layer-behavior"
 import { DialogEvent } from "../dialog/dialog.service"
-import { LAYER_MESSAGE } from "../_shared"
+import { LAYER_MESSAGE, LAYER_BUTTONS } from "../_shared"
 import { DeleteConfirmDialogComponent } from "./delete-confirm-dialog.component"
 
 
@@ -17,6 +17,7 @@ export class DeleteConfirmDirective implements OnDestroy {
     public readonly destruct = new Destruct()
 
     @Input("nzDeleteConfirm") public message: string
+    @Input("nzDeleteConfirmButton") public button: string = "TÖRLÉS"
     @Output("delete") public onDelete: Observable<any> = this.destruct.subject(new Subject())
     @Output("cancel") public onCancel: Observable<any> = this.destruct.subject(new Subject())
 
@@ -46,7 +47,8 @@ export class DeleteConfirmDirective implements OnDestroy {
         })
 
         this.layerRef = this.layerSvc.createFromComponent(DeleteConfirmDialogComponent, behavior, null, [
-            { provide: LAYER_MESSAGE, useValue: this.message }
+            { provide: LAYER_MESSAGE, useValue: this.message },
+            { provide: LAYER_BUTTONS, useValue: this.button },
         ])
         this.layerRef.show()
         this.layerRef.subscribe((event: DialogEvent<string>) => {

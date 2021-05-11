@@ -1,6 +1,6 @@
 import { Component, Inject, HostListener } from "@angular/core"
 
-import { LAYER_MESSAGE } from "../_shared"
+import { LAYER_MESSAGE, LAYER_BUTTONS } from "../_shared"
 import { LayerRef } from "../layer/layer-ref"
 import { DialogEvent } from "../dialog/dialog.service"
 
@@ -14,6 +14,7 @@ export class DeleteConfirmDialogComponent {
 
     public constructor(
         @Inject(LAYER_MESSAGE) public message: string,
+        @Inject(LAYER_BUTTONS) public button: string,
         @Inject(LayerRef) public readonly layerRef: LayerRef<DialogEvent>) {
         this.layerRef.subscribe(event => {
             if (event.type === "hiding") {
