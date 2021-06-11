@@ -5,11 +5,13 @@ import { FastDOM } from "../util"
 import { Dimension, RectMutationService } from "./rect-mutation.service"
 
 
-@Directive({
-    selector: "[nzSyncHeightFrom]",
-    exportAs: "nzSyncHeightFrom"
-})
-export class SyncHeightFromDirective implements OnDestroy {
+type DimProp = "width" | "height"
+
+
+@Directive()
+abstract class SyncDimFromDirective implements OnDestroy {
+    abstract readonly property: DimProp
+
     private _sub: Subscription
     private _elements: Array<HTMLElement> = []
     private _lastDim: Dimension
@@ -23,7 +25,7 @@ export class SyncHeightFromDirective implements OnDestroy {
             // TODO: rxjs way (scheduler)
             FastDOM.mutate(() => {
                 for (const k of this._elements) {
-                    k.style.height = `${dim.height}px`
+                    k.style[this.property] = `${dim[this.property]}px`
                 }
             })
         })
@@ -34,7 +36,7 @@ export class SyncHeightFromDirective implements OnDestroy {
             this._elements.push(el)
             if (this._lastDim) {
                 FastDOM.mutate(() => {
-                    el.style.height = `${this._lastDim.height}px`
+                    el.style[this.property] = `${this._lastDim[this.property]}px`
                 })
             }
         }
@@ -54,11 +56,28 @@ export class SyncHeightFromDirective implements OnDestroy {
 }
 
 
+
 @Directive({
-    selector: "[nzSyncHeightTo]",
+    selector: "[nzSyncHeightFrom]",
+    exportAs: "nzSyncHeightFrom"
 })
-export class SyncHeightToDirective implements OnChanges, OnDestroy {
-    @Input("nzSyncHeightTo") public src: SyncHeightFromDirective
+export class SyncHeightFromDirective extends SyncDimFromDirective {
+    readonly property: DimProp = "height"
+}
+
+
+@Directive({
+    selector: "[nzSyncWidthFrom]",
+    exportAs: "nzSyncWidthFrom"
+})
+export class SyncWidthFromDirective extends SyncDimFromDirective {
+    readonly property: DimProp = "width"
+}
+
+
+@Directive()
+abstract class SyncDomToDirective implements OnChanges, OnDestroy {
+    abstract src: SyncDimFromDirective
 
     public constructor(
         @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>) {
@@ -66,7 +85,6 @@ export class SyncHeightToDirective implements OnChanges, OnDestroy {
 
     public ngOnChanges(changes: SimpleChanges) {
         if ("src" in changes) {
-            console.log("changes.src", changes.src)
             changes.src?.currentValue?.addElement(this.el.nativeElement)
         }
     }
@@ -74,4 +92,20 @@ export class SyncHeightToDirective implements OnChanges, OnDestroy {
     public ngOnDestroy() {
         this.src?.delElement(this.el.nativeElement)
     }
+}
+
+
+@Directive({
+    selector: "[nzSyncHeightTo]",
+})
+export class SyncHeightToDirective extends SyncDomToDirective {
+    @Input("nzSyncHeightTo") public src: SyncDimFromDirective
+}
+
+
+@Directive({
+    selector: "[nzSyncWidthTo]",
+})
+export class SyncWidthToDirective extends SyncDomToDirective {
+    @Input("nzSyncWidthTo") public src: SyncDimFromDirective
 }

@@ -23,8 +23,8 @@ import { HideDirective } from "./hide.directive"
 import { FlexLayoutDirective, FlexParentLayoutDirective } from "./flex/flex-layout.directive"
 import { FlexChildDirective } from "./flex/flex-child.directive"
 
-import { SyncHeightFromDirective, SyncHeightToDirective } from "./sync-height.directive"
-export { SyncHeightFromDirective, SyncHeightToDirective }
+import { SyncHeightFromDirective, SyncHeightToDirective, SyncWidthFromDirective, SyncWidthToDirective } from "./sync-dim.directive"
+export { SyncHeightFromDirective, SyncHeightToDirective, SyncWidthFromDirective, SyncWidthToDirective }
 
 import { DynStackDirective } from "./dyn-stack/dyn-stack.directive"
 export { DynStackDirective }
@@ -54,6 +54,8 @@ export { DynStackDirective }
 
         SyncHeightFromDirective,
         SyncHeightToDirective,
+        SyncWidthFromDirective,
+        SyncWidthToDirective,
 
         DynStackDirective,
     ],
@@ -72,6 +74,8 @@ export { DynStackDirective }
 
         SyncHeightFromDirective,
         SyncHeightToDirective,
+        SyncWidthFromDirective,
+        SyncWidthToDirective,
 
         DynStackDirective,
     ],

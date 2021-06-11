@@ -129,6 +129,10 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     public ngOnInit() {
+        if (this.group) {
+            this.group.addCheckbox(this)
+        }
+
         merge(this._checked$, this._indeterminate$, this._values$)
             .pipe(
                 map(_ => {
@@ -150,10 +154,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         this.destruct.subscription(this.model.valueChanges).subscribe(value => {
             this._renderValue(value)
         })
-
-        if (this.group) {
-            this.group.addCheckbox(this)
-        }
 
         super.ngOnInit()
     }
