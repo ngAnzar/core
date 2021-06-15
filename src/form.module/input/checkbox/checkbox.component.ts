@@ -222,7 +222,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         } else if (this.checked) {
             return this._trueValue
         } else {
-            return this._falseValue
+            return this.model.value
         }
     }
 }

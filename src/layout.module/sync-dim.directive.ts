@@ -25,7 +25,7 @@ abstract class SyncDimFromDirective implements OnDestroy {
             // TODO: rxjs way (scheduler)
             FastDOM.mutate(() => {
                 for (const k of this._elements) {
-                    k.style[this.property] = `${dim[this.property]}px`
+                    k.style[this.property] = `${Math.round(dim[this.property])}px`
                 }
             })
         })
@@ -36,7 +36,7 @@ abstract class SyncDimFromDirective implements OnDestroy {
             this._elements.push(el)
             if (this._lastDim) {
                 FastDOM.mutate(() => {
-                    el.style[this.property] = `${this._lastDim[this.property]}px`
+                    el.style[this.property] = `${Math.round(this._lastDim[this.property])}px`
                 })
             }
         }
