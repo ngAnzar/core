@@ -1,9 +1,12 @@
-import { Component, Input, ContentChild, TemplateRef, Inject, Output } from "@angular/core"
-import { Observable, Subscription, from, of, EMPTY } from "rxjs"
-import { startWith, switchMap, mapTo, withLatestFrom, take } from "rxjs/operators"
+import { Component, Input, ContentChild, TemplateRef, Inject, Output, OnInit, ViewChild } from "@angular/core"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Observable, Subscription, from, of, Subject, forkJoin } from "rxjs"
+import { startWith, switchMap, mapTo, withLatestFrom, take, filter, map } from "rxjs/operators"
 
-import { DataSourceDirective, SelectionModel, SelectOrigin, Model, SingleSelection } from "../../data.module"
-import { LocalStorageService, LocalStorageBucket } from "../../common.module"
+import { DataSourceDirective, SelectionModel, SelectOrigin, Model, SingleSelection, SelectionEvent } from "../data.module"
+import { LocalStorageService, LocalStorageBucket } from "../common.module"
+import { Destructible } from "../util"
+import { ScrollerComponent } from "../list.module"
 
 import type { TreeItemComponent } from "./tree-item.component"
 
@@ -20,11 +23,13 @@ export type ExpandedItems = { [key: string]: ExpandedItems }
         { provide: SelectionModel, useClass: SingleSelection }
     ]
 })
-export class TreeComponent {
+export class TreeComponent extends Destructible implements OnInit {
     @ContentChild("content", { static: true, read: TemplateRef }) public readonly contentTpl: TemplateRef<TreeItemComponent<Model>>
     @ContentChild("buttons", { static: true, read: TemplateRef }) public readonly buttonsTpl: TemplateRef<TreeItemComponent<Model>>
+    @ViewChild("scroller", { static: true, read: ScrollerComponent }) public readonly scroller: ScrollerComponent
 
-    @Output("selection") public get changes() { return this.selection.changes }
+    @Output("selection")
+    public readonly changes: Subject<SelectionEvent<Model>> = new Subject()
 
     @Input()
     public set root(val: Model) {
@@ -68,6 +73,17 @@ export class TreeComponent {
         }
     }
     public get stateId(): string { return this._stateId }
+
+    @Input()
+    public set directSelect(val: boolean) {
+        this._directSelect = coerceBooleanProperty(val)
+    }
+    public get directSelect(): boolean { return this._directSelect }
+    private _directSelect: boolean = false
+
+    // public get checkboxSelection(): boolean { return this.selection.type === "multi" }
+    // public readonly checkboxSelection: boolean
+
     private _stateId: string
     private _stateBucket: LocalStorageBucket
     private _stateChangesSub: Subscription
@@ -81,7 +97,24 @@ export class TreeComponent {
         @Inject(DataSourceDirective) private readonly source: DataSourceDirective,
         @Inject(LocalStorageService) private readonly localStorage: LocalStorageService,
         @Inject(SelectionModel) public readonly selection: SelectionModel) {
-        this.selection.maintainSelection = false
+        super()
+    }
+
+    public ngOnInit() {
+        if (this.selection.type === "multi") {
+            this._directSelect = true
+            this.selection.keyboard.alwaysAppend = true
+        } else {
+            this.selection.keyboard.alwaysAppend = false
+        }
+
+        this.selection.keyboard.disableMouse = this._directSelect
+        this.selection.maintainSelection = this._directSelect
+
+        this.destruct.subscription(this.selection.changes).subscribe(selected => {
+            this._scrollIntoViewport(selected)
+            this.changes.next(selected)
+        })
     }
 
     public reload() {
@@ -122,41 +155,60 @@ export class TreeComponent {
 
     }
 
-    public expandItems(items: ExpandedItems, collapseOther: boolean = false): Observable<any> {
+    public expandItems(items: ExpandedItems, collapseOther: boolean = false): Observable<Array<number>> {
         let collapse: Observable<any>
         if (collapseOther) {
-            collapse = this._collapseOthers(
-                JSON.parse(JSON.stringify(this.expandedItems)),
-                JSON.parse(JSON.stringify(items)))
+            const collapseFilter = JSON.parse(JSON.stringify(items))
+            if (!collapseFilter[this.root.pk]) {
+                collapseFilter[this.root.pk] = {}
+            }
+            collapse = this._collapseOthers(JSON.parse(JSON.stringify(this.expandedItems)), collapseFilter)
         } else {
             collapse = of(null)
         }
 
         return collapse.pipe(switchMap(v => {
-            return from(Object.keys(items)).pipe(
-                switchMap(id => {
+            const queries = Object.keys(items)
+                .map(id => {
                     const cmp = this._itemsById[id]
                     if (cmp) {
-                        if (cmp.isExpanded) {
-                            return of(id)
-                        } else {
-                            return cmp.expand().pipe(mapTo(id))
-                        }
+                        return cmp.expand().pipe(mapTo(id))
                     } else {
                         this._pendingExpand[id] = { [id]: items[id] }
-                        return EMPTY
-                    }
-                }),
-                switchMap(id => {
-                    if (Object.keys(items[id]).length > 0) {
-                        return this.expandItems(items[id])
-                    } else {
                         return of(null)
                     }
-                }),
-                withLatestFrom()
-            )
+                })
+                .map(q => {
+                    return q.pipe(
+                        switchMap(id => {
+                            if (Object.keys(items[id]).length > 0) {
+                                return this.expandItems(items[id]).pipe(map(expanded => {
+                                    return expanded.concat([id])
+                                }))
+                            } else {
+                                return of(null)
+                            }
+                        }),
+                    )
+                })
+
+            if (queries.length === 0) {
+                return of([])
+            } else {
+                return forkJoin(queries).pipe(
+                    take(1),
+                    map(result => {
+                        return result
+                            .filter(v => !!v)
+                            .flat(Infinity)
+                    })
+                )
+            }
         }))
+    }
+
+    public collapseAll(): Observable<any> {
+        return this._collapseOthers(JSON.parse(JSON.stringify(this.expandedItems)), { [this.root.pk]: {} })
     }
 
     private _collapseOthers(collapse: ExpandedItems, filter: ExpandedItems): Observable<any> {
@@ -176,6 +228,7 @@ export class TreeComponent {
             switchMap(id => {
                 if (Object.keys(collapse[id]).length > 0) {
                     const subFilter = filter[id] && Object.keys(filter[id]).length > 0 ? filter[id] : {}
+                    console.log({ subFilter })
                     return this._collapseOthers(collapse[id], subFilter)
                 } else {
                     return of(null)
@@ -262,6 +315,22 @@ export class TreeComponent {
         this.expandItems(expandedItems).subscribe(_ => {
             this._disableStateChange = false
         })
+    }
+
+    private _scrollIntoViewport(selected: SelectionEvent<Model>) {
+        let targets: Node[] = []
+
+        for (let i = 0, l = selected.length; i < l; ++i) {
+            const origin = selected.origin[i]
+            const item = this._itemsById[selected[i].pk]
+            if (origin !== "mouse" && origin !== "touch" && item && item.el.nativeElement) {
+                targets.push(item.el.nativeElement)
+            }
+        }
+
+        if (targets.length) {
+            this.scroller.service.scrollIntoViewport(targets, true)
+        }
     }
 }
 

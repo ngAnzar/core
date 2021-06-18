@@ -2,6 +2,9 @@
   .content-expandable
     cursor: pointer !important
 
+  .chk
+    margin: 0 4px 0 0
+
   .indicator
     text-align: center
 
@@ -24,6 +27,7 @@
     [ngClass]=`{"${style('content-expandable')}": isNode || this.tree.selection.type != 'none'}`,
     [selectable]="$implicit",
     (selected)="onSelectionChange($event)",
+    [attr.directSelect]="tree.directSelect ? '' : null",
     #sel="selectable")
 
   .indicator(nzFlex="none", nzLayout="row", nzLayoutAlign="center center", [style.width.px]="height", [style.height.px]="height")
@@ -37,6 +41,12 @@
           i.nz-icon.icon(class=icon("mdi/folder-outline", 19))
       ng-template(#ifIsLeaf)
         i.nz-icon.icon(class=icon("mdi/circle-medium", 19))
+
+  ng-template([ngIf]="tree.directSelect")
+    ng-template([ngIf]="tree.selection.type === 'multi'", [ngIfElse]="ifSingleSelect")
+      .nz-checkbox.chk([checked]="sel.selected", noninteractive, (tap)="toggleSelected($event)", variant="small")
+    ng-template(#ifSingleSelect)
+      .nz-radio.chk([checked]="sel.selected", noninteractive, (tap)="toggleSelected($event)", variant="small")
 
   .nz-tree-item-content(nzFlex="grow", nzLayout="row", nzLayoutAlign="start center")
     ng-container([ngTemplateOutlet]="tree.contentTpl", [ngTemplateOutletContext]="this")

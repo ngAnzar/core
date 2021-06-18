@@ -1,12 +1,17 @@
 $nz-radio-size ?= nz-local-grid-size(5)
 $nz-radio-padding ?= 0 nz-local-grid-size(4)
 
+$nz-radio-small-size ?= nz-local-grid-size(4)
+$nz-radio-small-padding ?= 0 nz-local-grid-size(4)
+
+$nz-radio-anim-duration ?= 200ms cubic-bezier(0.215, 0.61, 0.355, 1)
+
 
 .nz-radio
   display: inline-block
   user-select: none
   cursor: pointer
-  height: 20px
+  height: $nz-radio-size
 
   &[label-position="before"]
     .nz-radio-label
@@ -33,6 +38,19 @@ $nz-radio-padding ?= 0 nz-local-grid-size(4)
 
       nz-squiggly-underline: $theme.critical.normal
 
+  &[variant="small"]
+    height: $nz-radio-small-size
+
+    .nz-radio-input
+      width: $nz-radio-small-size
+      height: $nz-radio-small-size
+
+    .nz-radio-indicator
+      width: ($nz-radio-small-size - 8)
+      height: ($nz-radio-small-size - 8)
+      left: 2px
+      top: 2px
+
 
 .nz-radio-label
   display: inline-flex
@@ -42,13 +60,15 @@ $nz-radio-padding ?= 0 nz-local-grid-size(4)
 
 .nz-radio-input
   position: relative
-  margin-right: nz-local-grid-size(2)
   pointer-events: none
   width: $nz-radio-size
   height: $nz-radio-size
   border-radius: 50%
   border: 2px solid $theme.base.on.light
-  transition: 200ms border-color
+  transition: border-color $nz-radio-anim-duration
+
+  & + .nz-radio-content:not(:empty)
+    margin-left: nz-local-grid-size(2)
 
 
 .nz-radio-indicator
@@ -60,6 +80,9 @@ $nz-radio-padding ?= 0 nz-local-grid-size(4)
   border-radius: 50%
   opacity: 0
   transform: scale(.001)
-  transition: 250ms transform, 200ms opacity
+  transition: all $nz-radio-anim-duration
+  transition-property: transform, opacity
   background-color: $theme.accent.normal
 
+.nz-radio-content
+  flex-grow: 1

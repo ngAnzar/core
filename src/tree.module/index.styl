@@ -1,0 +1,33 @@
+.nz-tree
+  nz-typo: $typo.body2
+
+
+.nz-tree-item-row
+  padding: 0 8px
+  user-select: none
+  overflow: visible !important
+
+  &[directSelect]
+    &:hover
+      background: $theme.base.dark
+      nz-elevation: 2
+
+  &:not([directSelect])
+    &:hover:not([selected])
+      background: $theme.base.dark
+      nz-elevation: 2
+
+    &[selected]
+      background: $theme.accent.light
+      color: $theme.accent.on.light
+      nz-elevation: 2
+
+
+.nz-tree-item-content
+  position: relative
+  margin: 0
+  padding: 0
+
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis

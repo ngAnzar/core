@@ -56,14 +56,6 @@ import { TabLabelsComponent } from "./tabs/tab-labels.component"
 import { TabLabelDirective } from "./tabs/tab-label.directive"
 export { TabsComponent, TabComponent }
 
-import { TreeComponent } from "./tree/tree.component"
-import { TreeItemComponent } from "./tree/tree-item.component"
-export { TreeComponent, TreeItemComponent }
-
-// import { VirtualForDirective } from "./virtual-for.directive"
-// import { VirtualForFixedItems, VirtualForVaryingItems, VirtualForVaryingItemsIntersection } from "./virtual-for-strategy.directive"
-
-
 import { VirtualForDirective } from "./virtual-for/virtual-for.directive"
 import { VF_FixedItemHeight, VF_VaryingItemHeight, VF_Layout_Column, VF_Layout_Grid } from "./virtual-for/visible-range"
 
@@ -110,9 +102,6 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight, VF_Layout_Column, VF_Layout_G
         TabLabelDirective,
         TabLabelsComponent,
 
-        TreeComponent,
-        TreeItemComponent,
-
         VirtualForDirective,
         VF_FixedItemHeight,
         VF_VaryingItemHeight,
@@ -149,8 +138,6 @@ import { VF_FixedItemHeight, VF_VaryingItemHeight, VF_Layout_Column, VF_Layout_G
         TabsComponent,
         TabComponent,
         TabLabelsComponent,
-
-        TreeComponent,
 
         VirtualForDirective,
         VF_FixedItemHeight,

@@ -1,6 +1,6 @@
 import {
     Component, ViewChild, ElementRef, Inject, Input,
-    Optional, ChangeDetectionStrategy, ChangeDetectorRef, SkipSelf, OnDestroy, OnInit
+    Optional, ChangeDetectionStrategy, ChangeDetectorRef, SkipSelf, OnDestroy, OnInit, Output
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
@@ -53,12 +53,7 @@ function cmpValue(a: any, b: any) {
 export class CheckboxComponent<T = boolean> extends InputComponent<T> implements OnDestroy, OnInit {
     @ViewChild("input", { static: true }) protected readonly input: ElementRef<HTMLInputElement>
     @Input()
-    public set noninteractive(val: boolean) {
-        val = coerceBooleanProperty(val)
-        if (this._noninteractive !== val) {
-            this._noninteractive = val
-        }
-    }
+    public set noninteractive(val: boolean) { this._noninteractive = coerceBooleanProperty(val) }
     public get noninteractive(): boolean { return this._noninteractive }
     private _noninteractive: boolean = false
 
@@ -97,12 +92,14 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     @Input()
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
-        if (this._checked$.value !== val) {
-            this._checked$.next(val)
+        if (this.checkedChange.value !== val) {
+            this.checkedChange.next(val)
         }
     }
-    public get checked(): boolean { return this._checked$.value }
-    private _checked$ = new BehaviorSubject<boolean>(false)
+    public get checked(): boolean { return this.checkedChange.value }
+
+    @Output()
+    public checkedChange = new BehaviorSubject<boolean>(false)
 
     @Input()
     public set indeterminate(val: boolean) {
@@ -139,7 +136,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this.group.addCheckbox(this)
         }
 
-        merge(this._checked$, this._indeterminate$, this._values$)
+        merge(this.checkedChange, this._indeterminate$, this._values$)
             .pipe(
                 map(_ => {
                     const val = this._getValue()

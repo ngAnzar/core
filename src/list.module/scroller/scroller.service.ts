@@ -310,9 +310,9 @@ export class ScrollerService implements OnDestroy {
         }, options)
     }
 
-    public scrollIntoViewport(el: Node | RectProps, center: boolean = false): void {
+    public scrollIntoViewport(input: Node | RectProps | Array<Node | RectProps>, center: boolean = false): void {
         const visibleRect = this.vpImmediate.visible
-        const elRect: RectProps = el instanceof Node ? this.getElementImmediateRect(el) : el
+        const elRect = this.convertToRectProps(input)
         let pos = { ...this.scrollPosition }
 
         if (!elRect) {
@@ -370,7 +370,42 @@ export class ScrollerService implements OnDestroy {
     public ngOnDestroy() {
         this.destruct.run()
     }
+
+    private convertToRectProps(input: Node | RectProps | Array<Node | RectProps>): RectProps {
+        if (Array.isArray(input)) {
+            let converted: RectProps[] = input.map(this.convertToRectProps.bind(this))
+            let rx = converted[0].x
+            let ry = converted[0].y
+            let rw = converted[0].width
+            let rh = converted[0].height
+
+            for (let i = 1; i < converted.length; i++) {
+                const entry = converted[i]
+                rx = Math.min(rx, entry.x)
+                ry = Math.min(ry, entry.y)
+                rw = Math.max(rw, entry.width)
+                rh = Math.max(rh, entry.height)
+            }
+            return {
+                top: ry,
+                left: rx,
+                right: rx + rw,
+                bottom: ry + rh,
+                x: rx,
+                y: ry,
+                width: rw,
+                height: rh
+            }
+        } else if (input instanceof Node) {
+            return this.getElementImmediateRect(input)
+        } else {
+            return input
+        }
+    }
 }
+
+
+
 
 
 interface AnimProps {

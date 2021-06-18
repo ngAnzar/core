@@ -13,6 +13,7 @@ export const SELECTABLE_ITEM = new InjectionToken<ISelectable>("selectable")
 export interface SelectionEvent<T> extends Array<T> {
     selected: T[]
     removed: T[]
+    origin: FocusOrigin[]
 }
 
 
@@ -176,6 +177,7 @@ export class SelectionItems<T extends Model = Model> implements IDisposable {
         if (removed.length || selected.length) {
             let event = this._items.slice(0) as SelectionEvent<T>
             event.selected = selected
+            event.origin = event.map(v => this.origin[v.pk])
             event.removed = removed;
             (this.changes as EventEmitter<SelectionEvent<T>>).emit(event)
         }
@@ -242,8 +244,16 @@ export abstract class SelectionModel<T extends Model = Model> implements OnDestr
         return this.selected.origin[what] || null
     }
 
-    public setSelected(what: PrimaryKey, origin: SelectOrigin) {
-        this.update({ [what]: origin })
+    public setSelected(what: PrimaryKey | PrimaryKey[], origin: SelectOrigin) {
+        let selection: { [key: string]: SelectOrigin } = {}
+        if (Array.isArray(what)) {
+            for (const item of what) {
+                selection[item] = origin
+            }
+        } else {
+            selection[what] = origin
+        }
+        this.update(selection)
     }
 
     public getSelectables(range?: NzRange, onlySelected?: boolean): ISelectable[] {

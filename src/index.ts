@@ -10,6 +10,7 @@ import { NzLayerModule, LayerService } from "./layer.module"
 import { NzLayoutModule } from "./layout.module"
 import { NzListHeaderModule } from "./list-header.module"
 import { NzListModule } from "./list.module"
+import { NzTreeModule } from "./tree.module"
 import { NzViewportModule } from "./viewport.module"
 
 
@@ -22,6 +23,7 @@ export * from "./layer.module"
 export * from "./layout.module"
 export * from "./list-header.module"
 export * from "./list.module"
+export * from "./tree.module"
 export * from "./viewport.module"
 export * from "./util"
 
@@ -36,6 +38,7 @@ const modules: any[] = [
     NzLayoutModule,
     NzListHeaderModule,
     NzListModule,
+    NzTreeModule,
     NzViewportModule
 ]
 

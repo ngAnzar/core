@@ -1,6 +1,9 @@
 $nz-checkbox-size ?= nz-local-grid-size(5)
 $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
 
+$nz-checkbox-small-size ?= nz-local-grid-size(4)
+$nz-checkbox-small-padding ?= 0 nz-local-grid-size(4)
+
 
 .nz-checkbox
   display: inline-flex
@@ -75,6 +78,10 @@ $nz-checkbox-padding ?= 0 nz-local-grid-size(4)
 
     .nz-checkbox-border
       border-color: $theme.common.light
+
+  &[variant=small]
+    transform-origin: center center !important
+    transform: scale(unit($nz-checkbox-small-size / $nz-checkbox-size, '')) !important
 
 
 .nz-checkbox-label

@@ -2,9 +2,8 @@ import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Inject, O
 import { Observable, Subject, of, Observer } from "rxjs"
 import { takeUntil, finalize, take, tap } from "rxjs/operators"
 
-import { SelectOrigin, Model } from "../../data.module"
+import { SelectOrigin, Model } from "../data.module"
 import { TreeComponent } from "./tree.component"
-import { ScrollerService } from "../scroller/scroller.service"
 
 
 @Component({
@@ -64,15 +63,14 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
     public readonly height = 32
 
     public constructor(
-        @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
+        @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
-        @Inject(TreeComponent) public readonly tree: TreeComponent,
-        @Inject(ScrollerService) private readonly scroller: ScrollerService) {
+        @Inject(TreeComponent) public readonly tree: TreeComponent) {
     }
 
     public expand(): Observable<T[]> {
         if (this._isExpanded) {
-            return of([])
+            return of(this._children)
         }
         this._isExpanded = true
         return this._loadChildren()
@@ -80,9 +78,10 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
                 tap(children => {
                     this._children = children
                     this._isExpanded = true
-                    this.tree.onExpandedChange(this)
                     this.cdr.detectChanges()
-                })
+                    this.tree.onExpandedChange(this)
+                }),
+                take(1),
             )
     }
 
@@ -92,8 +91,8 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
             this._isBusy = false
             this._isExpanded = false
             this._loadUntil && this._loadUntil.complete()
+            this.cdr.detectChanges()
             this.tree.onExpandedChange(this)
-            this.cdr.markForCheck()
             observer.next()
             observer.complete()
         })
@@ -102,16 +101,15 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
     private _loadChildren() {
         this._loadUntil = new Subject()
 
-        this._isBusy = true
+        this.isBusy = true
         return this.tree
             .loadChildren(this)
             .pipe(
                 takeUntil(this._loadUntil),
                 take(1),
                 finalize(() => {
-                    this._isBusy = false
+                    this.isBusy = false
                     delete this._loadUntil
-                    this.cdr.detectChanges()
                 })
             )
     }
@@ -135,13 +133,20 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
             this._selected = origin
             this.cdr.detectChanges()
         }
-
-        if (origin === "keyboard" || origin === "program") {
-            this.scrollIntoViewport()
-        }
     }
 
-    public scrollIntoViewport() {
-        this.scroller.scrollIntoViewport(this.el.nativeElement, true)
+    public toggleSelected(event: Event) {
+        if (event.defaultPrevented) {
+            return
+        }
+        event.preventDefault()
+
+        const selection = this.tree.selection
+
+        if (selection.getSelectOrigin(this.model.pk)) {
+            selection.setSelected(this.model.pk, null)
+        } else {
+            selection.setSelected(this.model.pk, "mouse")
+        }
     }
 }
