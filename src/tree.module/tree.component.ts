@@ -181,7 +181,7 @@ export class TreeComponent extends Destructible implements OnInit {
                 .map(q => {
                     return q.pipe(
                         switchMap(id => {
-                            if (Object.keys(items[id]).length > 0) {
+                            if (items[id] && Object.keys(items[id]).length > 0) {
                                 return this.expandItems(items[id]).pipe(map(expanded => {
                                     return expanded.concat([id])
                                 }))
@@ -310,11 +310,14 @@ export class TreeComponent extends Destructible implements OnInit {
         if (!expandedItems || this._disableStateChange) {
             return
         }
-        this._disableStateChange = true
 
-        this.expandItems(expandedItems).subscribe(_ => {
-            this._disableStateChange = false
-        })
+        if (expandedItems) {
+            this._disableStateChange = true
+
+            this.expandItems(expandedItems).subscribe(_ => {
+                this._disableStateChange = false
+            })
+        }
     }
 
     private _scrollIntoViewport(selected: SelectionEvent<Model>) {
