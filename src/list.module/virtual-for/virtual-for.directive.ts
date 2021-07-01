@@ -322,7 +322,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
             if (change.kind === ListDiffKind.CREATE) {
                 // console.log("CREATE", change.index, vcrIdx, change.item, this._vcr)
                 view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
-                view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
+                // view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
+                view.context.prev = change.index > 0 ? this._nzVirtualForOf.storage.data[change.index - 1] : null
                 view.detectChanges()
                 this.visibleRangeStrategy.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.UPDATE) {
@@ -333,7 +334,8 @@ export class VirtualForDirective<T extends Model> implements OnInit, OnDestroy {
                 } else {
                     view = this._getViewForItem(change.index, change.item, currentRange, vcrIdx)
                 }
-                view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
+                // view.context.prev = vcrIdx > 0 ? (this._vcr.get(vcrIdx - 1) as EmbeddedView<T>)?.context.$implicit : null
+                view.context.prev = change.index > 0 ? this._nzVirtualForOf.storage.data[change.index - 1] : null
                 view.detectChanges()
                 this.visibleRangeStrategy.onItemUpdate(change.index, view)
             } else if (change.kind === ListDiffKind.DELETE) {
