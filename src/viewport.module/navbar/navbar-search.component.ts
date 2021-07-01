@@ -1,6 +1,6 @@
 import {
     Component, Inject, ElementRef, Host, ViewChild, Input, Output, ContentChild, ContentChildren, QueryList,
-    TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit, EventEmitter, HostListener
+    TemplateRef, ChangeDetectorRef, Attribute, AfterViewInit, EventEmitter, HostListener, Directive
 } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable } from "rxjs"
@@ -13,10 +13,26 @@ import { AutocompleteComponent, ListActionComponent } from "../../list.module"
 import { ViewportService } from "../viewport.service"
 import { SelectComponent } from "../../form.module"
 import { SelectTemplateRef } from "../../form.module/input/select/select.component"
+import { FormControl } from "@angular/forms"
+
+
+@Directive()
+abstract class SearchBase {
+    @Input() public label: string
+
+    @Input() public icon: string
+
+    public readonly destruct = new Destruct()
+
+    public constructor(@Inject(ViewportService) public readonly vps: ViewportService) {
+
+    }
+}
+
 
 
 @Component({
-    selector: ".nz-navbar-search",
+    selector: ".nz-navbar-search:not([plainSearch])",
     templateUrl: "./navbar-search.template.pug",
     host: {
         "[attr.focused]": "focused ? '' : null",
@@ -24,11 +40,7 @@ import { SelectTemplateRef } from "../../form.module/input/select/select.compone
         "[attr.flat]": "vps.navbarCenterOverlap ? '' : null"
     }
 })
-export class NavbarSearchComponent implements AfterViewInit {
-    public readonly destruct = new Destruct()
-
-    @Input() public label: string
-
+export class NavbarSearchComponent extends SearchBase implements AfterViewInit {
     @ContentChild("selected", { read: TemplateRef, static: true }) public readonly selectedTpl: SelectTemplateRef<any>
     @ContentChild("item", { read: TemplateRef, static: true }) public readonly itemTpl: SelectTemplateRef<any>
     @ContentChildren(ListActionComponent) public readonly actions: QueryList<ListActionComponent>
@@ -69,16 +81,6 @@ export class NavbarSearchComponent implements AfterViewInit {
     private _focused: boolean
 
     @Input()
-    public set icon(val: string) {
-        if (this._icon !== val) {
-            this._icon = val
-            this.cdr.markForCheck()
-        }
-    }
-    public get icon(): string { return this._icon }
-    private _icon: string
-
-    @Input()
     public set autoReset(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this._autoReset !== val) {
@@ -107,7 +109,7 @@ export class NavbarSearchComponent implements AfterViewInit {
     private _useOverlap: boolean = false
 
     public constructor(
-        @Inject(ViewportService) public readonly vps: ViewportService,
+        @Inject(ViewportService) vps: ViewportService,
         @Inject(ElementRef) el: ElementRef<any>,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective<any>,
         @Inject(ShortcutService) private readonly shortcut: ShortcutService,
@@ -117,6 +119,7 @@ export class NavbarSearchComponent implements AfterViewInit {
         @Attribute("displayField") protected readonly displayField: string,
         @Attribute("valueField") protected readonly valueField: string,
         @Attribute("queryField") protected readonly queryField: string) {
+        super(vps)
 
         this.shortcut.create(el.nativeElement, {
             "navbar-search.hide": { shortcut: "escape, back", handler: this.hideSearch.bind(this) }
@@ -178,5 +181,39 @@ export class NavbarSearchComponent implements AfterViewInit {
     public hideSearch() {
         this.select.reset()
         setTimeout(() => this.vps.navbarCenterOverlap = false, 300)
+    }
+}
+
+
+@Component({
+    selector: ".nz-navbar-search[plainSearch]",
+    templateUrl: "./navbar-plain-search.template.pug",
+    host: {
+        "[attr.focused]": "focused ? '' : null",
+        "[attr.opened]": "opened ? '' : null",
+        "[attr.flat]": "vps.navbarCenterOverlap ? '' : null"
+    }
+})
+export class NavbarPlainSearchComponent extends SearchBase {
+    public readonly control = new FormControl()
+
+    public get empty(): boolean {
+        const value = this.control.value
+        return !value || value.length === 0
+    }
+
+    @Output("plainSearch") public readonly valueChange = new EventEmitter()
+
+    public constructor(@Inject(ViewportService) vps: ViewportService,) {
+        super(vps)
+    }
+
+    public doSearch() {
+        this.valueChange.next(this.control.value)
+    }
+
+    public doReset() {
+        this.control.reset()
+        this.valueChange.next(null)
     }
 }

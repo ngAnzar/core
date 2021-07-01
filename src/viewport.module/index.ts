@@ -11,8 +11,8 @@ import { NzLayoutModule } from "../layout.module"
 
 
 import { NavbarComponent } from "./navbar/navbar.component"
-import { NavbarSearchComponent } from "./navbar/navbar-search.component"
-export { NavbarComponent, NavbarSearchComponent }
+import { NavbarSearchComponent, NavbarPlainSearchComponent } from "./navbar/navbar-search.component"
+export { NavbarComponent, NavbarSearchComponent, NavbarPlainSearchComponent }
 
 import { RightpanelComponent } from "./rightpanel/rightpanel.component"
 export { RightpanelComponent }
@@ -46,6 +46,7 @@ export { DoubleBackExitService }
     declarations: [
         NavbarComponent,
         NavbarSearchComponent,
+        NavbarPlainSearchComponent,
         RightpanelComponent,
         SidenavComponent,
         ViewportComponent,
@@ -56,6 +57,7 @@ export { DoubleBackExitService }
     exports: [
         NavbarComponent,
         NavbarSearchComponent,
+        NavbarPlainSearchComponent,
         RightpanelComponent,
         SidenavComponent,
         ViewportComponent,
