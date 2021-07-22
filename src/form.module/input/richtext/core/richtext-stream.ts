@@ -14,7 +14,7 @@ export type CleanupElementFn = (el: HTMLElement) => void
 export class RichtextStream extends Destructible {
     public readonly el: HTMLElement
     public readonly changes: Observable<RichtextStream> = this.destruct.subject(new Subject<RichtextStream>())
-    public readonly cursorMove: Observable<any> = this.destruct.subject(new Subject())
+    public readonly cursorMove: Observable<void> = this.destruct.subject(new Subject<void>())
 
     public set content(val: string) {
         if (this.el.innerHTML !== val) {
@@ -71,7 +71,7 @@ export class RichtextStream extends Destructible {
     }
 
     public updatePosition() {
-        (this.cursorMove as Subject<any>).next()
+        (this.cursorMove as Subject<void>).next()
     }
 
     public emitChanges() {

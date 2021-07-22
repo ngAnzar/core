@@ -172,7 +172,7 @@ export class TreeComponent extends Destructible implements OnInit {
                 .map(id => {
                     const cmp = this._itemsById[id]
                     if (cmp) {
-                        return cmp.expand().pipe(mapTo(id))
+                        return cmp.expand().pipe(mapTo(Number(id)))
                     } else {
                         this._pendingExpand[id] = { [id]: items[id] }
                         return of(null)

@@ -175,7 +175,7 @@ export class RenderedViewport extends Viewport {
     public constructor(public readonly main: ImmediateViewport) {
         super()
 
-        this.vpChange = main.change.pipe(startWith()).subscribe(() => {
+        this.vpChange = main.change.pipe(startWith(null)).subscribe(() => {
             this.visible.width = main.width
             this.visible.height = main.height
         })

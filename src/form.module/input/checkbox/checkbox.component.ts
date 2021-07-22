@@ -86,7 +86,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
     public get indeterminateValue(): T { return this._indeterminateValue }
     protected _indeterminateValue: T
-    private _values$ = new Subject()
+    private _values$ = new Subject<void>()
 
 
     @Input()
@@ -111,7 +111,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
     public get indeterminate(): boolean { return this._indeterminate }
     protected _indeterminate: boolean = false
-    private _indeterminate$ = new Subject()
+    private _indeterminate$ = new Subject<void>()
 
     protected _rawValue: any
 

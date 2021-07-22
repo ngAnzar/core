@@ -34,7 +34,7 @@ export class FormFieldComponent implements AfterContentInit, OnDestroy {
 
     public ngAfterContentInit(): void {
         const q1 = this._inputModel.statusChanges.pipe(debounceTime(100))
-        const q2 = this._inputModel.focusChanges.pipe(startWith())
+        const q2 = this._inputModel.focusChanges.pipe(startWith(null))
 
         this.destruct.subscription(merge(q1, q2))
             .subscribe(this.cdr.markForCheck.bind(this.cdr))

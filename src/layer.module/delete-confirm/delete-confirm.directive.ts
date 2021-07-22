@@ -54,9 +54,9 @@ export class DeleteConfirmDirective implements OnDestroy {
         this.layerRef.subscribe((event: DialogEvent<string>) => {
             if (event.type === "button") {
                 if (event.button === "delete") {
-                    (this.onDelete as Subject<any>).next()
+                    (this.onDelete as Subject<any>).next(undefined)
                 } else {
-                    (this.onCancel as Subject<any>).next()
+                    (this.onCancel as Subject<any>).next(undefined)
                 }
             }
         })

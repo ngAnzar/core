@@ -44,7 +44,7 @@ export abstract class VirtualForVisibleRange extends Destructible {
     }
 
     public update() {
-        this._update.next()
+        this._update.next(undefined)
     }
 
     protected pause() {
@@ -53,7 +53,7 @@ export abstract class VirtualForVisibleRange extends Destructible {
 
     protected resume() {
         this.isPaused = Math.max(0, this.isPaused - 1)
-        this._update.next()
+        this._update.next(undefined)
     }
 
     public abstract getItemRect(idx: number): RectProps
@@ -71,7 +71,7 @@ export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
     public set itemHeight(val: number) {
         if (this._itemHeight !== val) {
             this._itemHeight = val
-            this._update.next()
+            this._update.next(undefined)
         }
     }
     public get itemHeight(): number { return this._itemHeight }
@@ -80,7 +80,7 @@ export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
     public set itemsPerRow(val: number) {
         if (this._itemsPerRow !== val) {
             this._itemsPerRow = val
-            this._update.next()
+            this._update.next(undefined)
         }
     }
     public get itemsPerRow(): number { return this._itemsPerRow }
@@ -111,7 +111,7 @@ export class VisibleRange_FixedHeight extends VirtualForVisibleRange {
     }
 
     public reset(): void {
-        this._reset.next()
+        this._reset.next(undefined)
     }
 }
 
@@ -303,7 +303,7 @@ export class VisibleRange_VaryHeight_Intersection extends VirtualForVisibleRange
         this.isPaused = 0
         this.rendered.reset()
         this._updateVirtualScroll()
-        this._reset.next()
+        this._reset.next(undefined)
     }
 
     protected _onResize(entries: any[]) {

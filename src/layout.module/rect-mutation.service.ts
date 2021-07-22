@@ -1,5 +1,5 @@
 import { Injectable, ElementRef, NgZone, Inject } from "@angular/core"
-import { Observable, Observer, merge, fromEvent } from "rxjs"
+import { Observable, Observer, merge, fromEvent, Subscriber } from "rxjs"
 import { finalize, share, distinctUntilChanged } from "rxjs/operators"
 import * as resizeDetector from "element-resize-detector"
 
@@ -191,7 +191,7 @@ export class RectMutationService {
 
     protected createPositionWatcher(element: HTMLElement): Observable<Position> {
         return this.zone.runOutsideAngular(() => {
-            return new Observable((observer: Observer<Position>) => {
+            return new Observable((observer: Subscriber<Position>) => {
                 let rect = element.getBoundingClientRect()
                 let paused: number = 0
 
