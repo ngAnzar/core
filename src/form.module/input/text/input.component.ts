@@ -1,7 +1,9 @@
 import { Component, ElementRef, Inject, HostListener, Optional, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, Self } from "@angular/core"
 import { merge } from "rxjs"
 import { startWith } from "rxjs/operators"
-import * as autosize from "autosize"
+import autosize from "autosize"
+// const autosize = require("autosize")
+// console.log({ autosize })
 
 import { InputComponent, InputModel, INPUT_MODEL } from "../abstract"
 import { InputMask } from "../input-mask.service"
