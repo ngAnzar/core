@@ -22,6 +22,8 @@ export class ViewportAreaDirective implements OnDestroy {
             this.rendered = this.rendered.filter(v => v.viewRef && !v.viewRef.destroyed)
             let pos = 0
             for (const item of items) {
+                // console.log("nzViewportItem", item.area, item.order)
+
                 if (this.rendered.indexOf(item) === -1) {
                     this.rendered.push(item)
                     item.viewRef = vcr.createEmbeddedView(item.tplRef, null, pos)
@@ -30,6 +32,7 @@ export class ViewportAreaDirective implements OnDestroy {
                 }
                 pos++
             }
+
             cdr.markForCheck()
         })
     }
