@@ -94,6 +94,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         val = coerceBooleanProperty(val)
         if (this.checkedChange.value !== val) {
             this.checkedChange.next(val)
+
         }
     }
     public get checked(): boolean { return this.checkedChange.value }
@@ -127,32 +128,27 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
 
     public ngOnInit() {
         this.destruct.subscription(this.model.valueChanges)
-            .pipe(startWith(this.model.value))
             .subscribe(value => {
                 this._renderValue(value)
+            })
+
+        merge(this.checkedChange, this._indeterminate$, this._values$)
+            .pipe(takeUntil(this.destruct.on))
+            .subscribe(() => {
+                const val = this._getValue()
+                this.model.emitValue(val)
+                if (this.group) {
+                    this.group.updateValue(this)
+                }
             })
 
         if (this.group) {
             this.group.addCheckbox(this)
         }
 
-        merge(this.checkedChange, this._indeterminate$, this._values$)
-            .pipe(
-                map(_ => {
-                    const val = this._getValue()
-                    this.model.emitValue(val)
-                    if (this.group) {
-                        this.group.updateValue(this)
-                    }
-                    return val
-                }),
-                debounceTime(30),
-                takeUntil(this.destruct.on)
-            )
-            .subscribe(val => {
-                this._renderValue(val)
-                this.cdr.markForCheck()
-            })
+        if (this.model.value == null) {
+            this.model.emitValue(this._getValue())
+        }
 
         super.ngOnInit()
     }
@@ -161,6 +157,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         let state = this._determineStateFromValue(obj)
         this.checked = state.checked
         this.indeterminate = state.indeterminate
+        this.cdr.markForCheck()
     }
 
     protected _handleTap(event: Event) {
