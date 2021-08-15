@@ -136,6 +136,10 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this._renderValue(this.model.value)
         }
 
+        if (this.group) {
+            this.group.addCheckbox(this)
+        }
+
         merge(this.checkedChange, this._indeterminate$, this._values$)
             .pipe(takeUntil(this.destruct.on))
             .subscribe(() => {
@@ -145,10 +149,6 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
                     this.group.updateValue(this)
                 }
             })
-
-        if (this.group) {
-            this.group.addCheckbox(this)
-        }
 
         if (this.model.value == null) {
             this.model.emitValue(this._getValue())
