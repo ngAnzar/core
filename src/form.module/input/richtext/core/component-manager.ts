@@ -4,7 +4,7 @@ import { Subject, Observable, of } from "rxjs"
 import { map, filter, tap } from "rxjs/operators"
 
 import { IDisposable } from "../../../../util"
-import { LayerService, DeleteConfirmDialogComponent, DropdownLayer, LAYER_MESSAGE, DialogEvent } from "../../../../layer.module"
+import { LayerService, DeleteConfirmDialogComponent, DropdownLayer, LAYER_MESSAGE, LAYER_BUTTONS, DialogEvent } from "../../../../layer.module"
 import { uuidv4, removeNode } from "../util"
 import { RichtextComponentRef, RichtextComponent, RichtextComponentParams } from "./component-ref"
 import { RichtextElement } from "./richtext-el"
@@ -181,7 +181,8 @@ export class ComponentManager implements IDisposable {
             rounded: 3
         })
         const ref = this.layerSvc.createFromComponent(DeleteConfirmDialogComponent, behavior, null, [
-            { provide: LAYER_MESSAGE, useValue: "Biztosan törlöd?" }
+            { provide: LAYER_MESSAGE, useValue: "Biztosan törlöd?" },
+            { provide: LAYER_BUTTONS, useValue: "TÖRLÉS" },
         ])
         ref.show()
         return ref.output.pipe(
