@@ -3,7 +3,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, Subscription, from, of, Subject, forkJoin } from "rxjs"
 import { startWith, switchMap, mapTo, withLatestFrom, take, filter, map } from "rxjs/operators"
 
-import { DataSourceDirective, SelectionModel, SelectOrigin, Model, SingleSelection, SelectionEvent } from "../data.module"
+import { DataSourceDirective, SelectionModel, SelectOrigin, Model, SingleSelection, SelectionEvent, PrimaryKey } from "../data.module"
 import { LocalStorageService, LocalStorageBucket } from "../common.module"
 import { Destructible } from "../util"
 import { ScrollerComponent } from "../list.module"
@@ -155,7 +155,7 @@ export class TreeComponent extends Destructible implements OnInit {
 
     }
 
-    public expandItems(items: ExpandedItems, collapseOther: boolean = false): Observable<Array<number>> {
+    public expandItems(items: ExpandedItems, collapseOther: boolean = false): Observable<PrimaryKey[]> {
         let collapse: Observable<any>
         if (collapseOther) {
             const collapseFilter = JSON.parse(JSON.stringify(items))
@@ -211,9 +211,9 @@ export class TreeComponent extends Destructible implements OnInit {
         return this._collapseOthers(JSON.parse(JSON.stringify(this.expandedItems)), { [this.root.pk]: {} })
     }
 
-    private _collapseOthers(collapse: ExpandedItems, filter: ExpandedItems): Observable<any> {
-        return from(Object.keys(collapse)).pipe(
-            switchMap(id => {
+    private _collapseOthers(collapse: ExpandedItems, filter: ExpandedItems): Observable<PrimaryKey[]> {
+        const queries = Object.keys(collapse)
+            .map(id => {
                 const cmp = this._itemsById[id]
                 if (cmp) {
                     if (cmp.isExpanded && !filter[id]) {
@@ -224,18 +224,29 @@ export class TreeComponent extends Destructible implements OnInit {
                 } else {
                     return of(id)
                 }
-            }),
-            switchMap(id => {
-                if (Object.keys(collapse[id]).length > 0) {
-                    const subFilter = filter[id] && Object.keys(filter[id]).length > 0 ? filter[id] : {}
-                    console.log({ subFilter })
-                    return this._collapseOthers(collapse[id], subFilter)
-                } else {
-                    return of(null)
-                }
-            }),
-            withLatestFrom()
-        )
+            })
+            .map(src => {
+                return src.pipe(switchMap(id => {
+                    if (Object.keys(collapse[id]).length > 0) {
+                        const subFilter = filter[id] && Object.keys(filter[id]).length > 0 ? filter[id] : {}
+                        console.log({ subFilter })
+                        return this._collapseOthers(collapse[id], subFilter)
+                    } else {
+                        return of(null)
+                    }
+                }))
+            })
+
+        if (queries.length === 0) {
+            return of([])
+        } else {
+            return forkJoin(queries).pipe(
+                take(1),
+                map(res => {
+                    return res.flat(Infinity).filter(v => v != null) as PrimaryKey[]
+                })
+            )
+        }
     }
 
     public registerTreeItem(item: TreeItemComponent<Model>) {
