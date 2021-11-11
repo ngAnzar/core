@@ -49,11 +49,11 @@ export class FileDownloadService {
 
             let total: number
             let downloadUrl: string
+            let errorResponse: boolean = false
 
             const subscription = this.http.request(request)
                 .pipe(
                     catchError((err: any) => {
-                        console.log(err)
                         if (err.headers.get("Content-Type") === "application/json"
                             && err.error
                             && err.error.type === "application/json") {
@@ -94,33 +94,38 @@ export class FileDownloadService {
                                 }
                                 observer.next({ state: "starting", filename: filename, total: Number(event.headers.get("Content-Length")) || null })
                             } else {
-                                observer.error(new FileDownloadError(event.statusText, null, event))
+                                errorResponse = true
+                                // observer.error(new FileDownloadError(event.statusText, null, event))
                             }
                             break
 
                         case HttpEventType.DownloadProgress:
-                            observer.next({
-                                state: "progress",
-                                filename: filename,
-                                current: event.loaded,
-                                total: total = event.total,
-                                percent: event.total ? event.loaded / event.total : null
-                            })
+                            if (!errorResponse) {
+                                observer.next({
+                                    state: "progress",
+                                    filename: filename,
+                                    current: event.loaded,
+                                    total: total = event.total,
+                                    percent: event.total ? event.loaded / event.total : null
+                                })
+                            }
                             break
 
                         case HttpEventType.Response:
-                            downloadUrl = URL.createObjectURL(event.body)
-                            this._save(downloadUrl, filename || "")
+                            if (!errorResponse) {
+                                downloadUrl = URL.createObjectURL(event.body)
+                                this._save(downloadUrl, filename || "")
 
-                            observer.next({
-                                state: "done",
-                                filename: filename,
-                                current: total,
-                                total: total,
-                                percent: 1,
-                                url: downloadUrl
-                            })
-                            observer.complete()
+                                observer.next({
+                                    state: "done",
+                                    filename: filename,
+                                    current: total,
+                                    total: total,
+                                    percent: 1,
+                                    url: downloadUrl
+                                })
+                                observer.complete()
+                            }
                             break
                     }
                 })
