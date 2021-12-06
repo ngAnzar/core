@@ -69,7 +69,14 @@ export { SelectComponent }
 export { IAutocompleteModel, Match } from "./input/select/select.component"
 
 import { TextFieldComponent, NumberFieldComponent, TextareaComponent } from "./input/text/input.component"
+import { AutosizeDirective } from "./input/text/autosize.directive"
 import { InputMaskDirective } from "./input/input-mask.directive"
+
+import { TokenFilterInputComponent } from "./input/token-filter/token-filter-input.component"
+import { TokenFilterComponent } from "./input/token-filter/token-filter.component"
+import { TokenFilterItemComponent } from "./input/token-filter/token-filter-item.component"
+import { TokenFilterComparator, TokenFilterComparatorOptions, TokenFilterComparatorBinary, TokenFilterComparatorBetween } from "./input/token-filter/token-filter-comparator"
+export { TokenFilterComparator, TokenFilterComparatorOptions, TokenFilterComparatorBinary, TokenFilterComparatorBetween }
 
 export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGroupModel, FocusChangeEvent, inputValueComparator } from "./input/abstract"
 
@@ -132,7 +139,12 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         TextFieldComponent,
         NumberFieldComponent,
         TextareaComponent,
-        InputMaskDirective
+        InputMaskDirective,
+        AutosizeDirective,
+
+        TokenFilterInputComponent,
+        TokenFilterComponent,
+        TokenFilterItemComponent,
     ],
     exports: [
         ErrorComponent,
@@ -183,12 +195,56 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         TextFieldComponent,
         NumberFieldComponent,
         TextareaComponent,
-        InputMaskDirective
+        InputMaskDirective,
+        AutosizeDirective,
+
+        TokenFilterInputComponent,
+        TokenFilterComponent
     ],
     providers: [
         DatePickerService,
         TimePickerService,
-        DatetimePickerService
+        DatetimePickerService,
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "eq", label: "=", valueCount: 1, priority: -100, isDefault: true, description: "Egyenlő" }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "neq", label: "≠", valueCount: 1, description: "Nem egyenlő" }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "gt", label: ">", valueCount: 1, description: "Nagyobb" }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "lt", label: "<", valueCount: 1, description: "Kisebb" }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "gte", label: "≧", valueCount: 1, description: "Nagyobb egyenlő" }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "lte", label: "≦", valueCount: 1, description: "Kisebb egyenlő" }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "in", label: "∈", valueCount: Infinity, description: "A halmazban van", delimiter: "," }),
+            multi: true
+        },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBetween({ name: "between", label: "≷", valueCount: 2, description: "Között", delimiter: "—", priority: 50 }),
+            multi: true
+        },
     ],
     entryComponents: [
         RichtextMenuComponent,

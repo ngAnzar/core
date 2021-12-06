@@ -1,0 +1,47 @@
+.nz-token-filter-input
+  background: #fff
+  cursor: default
+
+nz-token-filter
+  display: none
+
+
+nz-token-filter-item
+  nz-typo: $typo.body2
+  height: 26px
+  padding: 0 4px
+  background-color: $theme.base.dark
+  border-radius: 2px
+  border: 1px solid rgba(0, 0, 0, 0)
+  margin: 0 4px 4px 0
+
+  &:hover
+    background-color: $theme.base.light
+    border: 1px solid darken($theme.base.dark, 10)
+
+  &[error]
+    background-color: $theme.critical.light
+
+  &[focus]
+    background-color: $theme.base.light
+    // border: 1px solid darken($theme.base.dark, 10)
+    border: 1px solid $theme.accent.normal
+
+    &[error]
+      background-color: $theme.critical.light
+      border: 1px solid $theme.critical.normal
+
+nz-token-filter-item input
+  nz-typo: $typo.body2
+  height: 22px
+  background: transparent
+  border: none
+  outline: none
+  margin: 0
+  padding: 0
+  transition: all 150ms
+
+  &:focus
+    padding-left: 15px
+    color: $theme.base.on.normal
+

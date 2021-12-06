@@ -1,0 +1,8 @@
+ng-template(ngFor, [ngForOf]="items$ | async", let-item)
+  nz-token-filter-item([model]="item")
+
+button.nz-button(variant="tiny icon", color="common", (tap)="doAddNewItem()")
+  i.nz-icon(class=icon("mdi/plus-box-outline", 20), color="common")
+
+
+ng-template(#filterItemTpl, let-item) {{ item.label }}
