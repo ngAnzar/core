@@ -69,12 +69,13 @@ export { SelectComponent }
 export { IAutocompleteModel, Match } from "./input/select/select.component"
 
 import { TextFieldComponent, NumberFieldComponent, TextareaComponent } from "./input/text/input.component"
-import { AutosizeDirective } from "./input/text/autosize.directive"
+import { AutosizeDirective, AutosizePropertiesDirective } from "./input/text/autosize.directive"
 import { InputMaskDirective } from "./input/input-mask.directive"
 
 import { TokenFilterInputComponent } from "./input/token-filter/token-filter-input.component"
 import { TokenFilterComponent } from "./input/token-filter/token-filter.component"
 import { TokenFilterItemComponent } from "./input/token-filter/token-filter-item.component"
+import { TokenFilterValue, TokenFilterBoolValue, TokenFilterDateValue, TokenFilterNumberValue, TokenFilterSuggestionsValue, TokenFilterTextValue } from "./input/token-filter/value-type"
 import { TokenFilterComparator, TokenFilterComparatorOptions, TokenFilterComparatorBinary, TokenFilterComparatorBetween } from "./input/token-filter/token-filter-comparator"
 export { TokenFilterComparator, TokenFilterComparatorOptions, TokenFilterComparatorBinary, TokenFilterComparatorBetween }
 
@@ -141,10 +142,16 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         TextareaComponent,
         InputMaskDirective,
         AutosizeDirective,
+        AutosizePropertiesDirective,
 
         TokenFilterInputComponent,
         TokenFilterComponent,
         TokenFilterItemComponent,
+        TokenFilterBoolValue,
+        TokenFilterDateValue,
+        TokenFilterNumberValue,
+        TokenFilterSuggestionsValue,
+        TokenFilterTextValue,
     ],
     exports: [
         ErrorComponent,
@@ -197,9 +204,15 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         TextareaComponent,
         InputMaskDirective,
         AutosizeDirective,
+        AutosizePropertiesDirective,
 
         TokenFilterInputComponent,
-        TokenFilterComponent
+        TokenFilterComponent,
+        TokenFilterBoolValue,
+        TokenFilterDateValue,
+        TokenFilterNumberValue,
+        TokenFilterSuggestionsValue,
+        TokenFilterTextValue,
     ],
     providers: [
         DatePickerService,

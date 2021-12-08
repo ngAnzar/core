@@ -2,7 +2,8 @@ import {
     Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
     ViewChild, HostBinding, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
     ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter,
-    OnInit
+    OnInit,
+    Self
 } from "@angular/core"
 
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
@@ -20,7 +21,7 @@ import { ListActionComponent, ListActionModel } from "../../../list.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
 import { parseMargin } from "../../../util"
-
+import { AutosizePropertiesDirective } from "../text/autosize.directive"
 
 const CLEAR_TIMEOUT: "clearTimeout" = __zone_symbol__("clearTimeout")
 const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
@@ -100,6 +101,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     @ViewChild("default_item", { read: TemplateRef, static: true }) protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef, static: true }) protected readonly dropdownTpl: SelectTemplateRef<T>
 
+    @Input() public displayField: string = "label"
+    @Input() public valueField: string
+    @Input() public queryField: string
+
     @Input()
     public set selectedTpl(val: SelectTemplateRef<T>) {
         this._selectedTpl = val
@@ -136,11 +141,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         return this._input
     }
     protected _input: ElementRef<HTMLInputElement>
-
-
-
-    public displayField: string
-    public queryField: string
 
     @Input()
     public set opened(val: boolean) {
@@ -327,23 +327,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(ViewContainerRef) protected vcr: ViewContainerRef,
         @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
         @Inject(ShortcutService) protected readonly shortcutService: ShortcutService,
-        @Attribute("displayField") displayField: string,
-        @Attribute("valueField") public valueField: string,
-        @Attribute("queryField") queryField: string,
+        @Inject(AutosizePropertiesDirective) @Optional() @Self() public readonly autosize: AutosizePropertiesDirective,
         @Attribute("triggerIcon") public readonly triggerIcon: string) {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
-        this.destruct.any(() => {
-            this.cdr.detach()
-            delete (this as any).source
-            delete (this as any).selection
-            delete (this as any).layer
-            delete (this as any).ffc
-            delete (this as any).cdr
-            delete (this as any).vcr
-            delete (this as any)._layerFactory
-        })
+        // this.destruct.any(() => {
+        //     delete (this as any).selection
+        //     delete (this as any).layer
+        //     delete (this as any)._layerFactory
+        // })
 
         if (!selection) {
             this.selection = new SingleSelection()
@@ -385,9 +378,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 distinctUntilChanged((a, b) => a[0] === b[0])
             )
             .subscribe(this._handleFocus.bind(this))
-
-        this.displayField = displayField || "label"
-        this.queryField = queryField || this.displayField
 
         if (!layerFactory) {
             this.layerFactory = layerFactory
@@ -604,7 +594,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 maxHeight: 48 * 7,
                 initialWidth: targetEl.offsetWidth + margin.left + margin.right,
                 initialHeight: this.editable ? 0 : targetEl.offsetHeight,
-                elevation: 6
+                elevation: 10
             }),
             {
                 $implicit: this
@@ -825,11 +815,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     private _updateFilter(qv: string | null, silent?: boolean) {
+        const qf = this.queryField || this.displayField
         let filter = { ...this.source.filter } as any
         if (!qv || qv.length === 0) {
-            delete filter[this.queryField]
+            delete filter[qf]
         } else {
-            filter[this.queryField] = { contains: qv }
+            filter[qf] = { contains: qv }
         }
         if (silent) {
             this.source.setFilterSilent(filter)

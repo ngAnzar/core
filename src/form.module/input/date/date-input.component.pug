@@ -15,10 +15,12 @@ ng-container(nzLayout="row", nzLayoutAlign="start center", nzLayoutGap="4px")
     inputmode="numeric",
     #input,
     [tabindex]="tabIndex",
-    [style.opacity]="(!model.isEmpty || model.focused) ? '1' : '0'",
+    [style.opacity]="(!model.isEmpty || model.focused) ? 1 : emptyOpacity",
     [style.pointer-events]="isButtonVariant ? 'none' : 'auto'",
     [style.cursor]="isButtonVariant ? 'pointer' : 'text'",
-    [readonly]="isButtonVariant || readonly")
+    [readonly]="isButtonVariant || readonly",
+    [autosize]="autosize?.autosize",
+    [autosizeExtra]="autosize?.autosizeExtra")
 
   ng-template([ngIf]="isButtonVariant", [ngIfElse]="ifNotButtonIcon")
     i.nz-icon(class=icon("mdi/calendar-today", 18), color="common")

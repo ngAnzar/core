@@ -80,7 +80,9 @@ div.select-input([style.user-select]="(editable ? 'auto' : 'none')")
     autocomplete="off",
     autocorrect="off",
     autocapitalize="off",
-    spellcheck="false")
+    spellcheck="false",
+    [autosize]="autosize?.autosize",
+    [autosizeExtra]="autosize?.autosizeExtra")
 
 .nz-button.trigger(*ngIf="clearable && selection.items.length > 0", (tap)="_clearValue($event)", (mousedown)="$event.preventDefault()", tabindex="-1", color="common", variant="tiny icon")
   i.nz-icon(class=icon("mdi/close", 18))

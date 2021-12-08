@@ -1,7 +1,7 @@
 import { Inject, InjectFlags, Optional, SkipSelf, Injector, StaticProvider, TemplateRef, ViewContainerRef, Injectable } from "@angular/core"
 import { AnimationBuilder } from "@angular/animations"
 import { ComponentType } from "@angular/cdk/portal"
-import { FocusTrapFactory } from "@angular/cdk/a11y"
+import { ConfigurableFocusTrapFactory } from "@angular/cdk/a11y"
 
 import { ShortcutService } from "../../common.module"
 
@@ -32,7 +32,7 @@ export class LayerService {
         @Inject(LevitateService) protected readonly levitateSvc: LevitateService,
         @Inject(MaskService) protected readonly maskSvc: MaskService,
         @Inject(ShortcutService) protected readonly shortcutSvc: ShortcutService,
-        @Inject(FocusTrapFactory) protected readonly focusTrap: FocusTrapFactory) {
+        @Inject(ConfigurableFocusTrapFactory) protected readonly focusTrap: ConfigurableFocusTrapFactory) {
         // this.parent = injector.get(LayerService, null, InjectFlags.Optional | InjectFlags.SkipSelf)
     }
 

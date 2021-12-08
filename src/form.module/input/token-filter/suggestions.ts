@@ -27,12 +27,12 @@ export class TFSuggestions<T extends Model = Model> {
         }
     }
 
-    public show(target: HTMLElement, crop: HTMLElement) {
+    public show(target: HTMLElement, crop?: HTMLElement, fm?: (el: HTMLElement) => () => void): Observable<T> {
         return new Observable(subscriber => {
             const behavior = new DropdownLayer({
                 backdrop: { type: "empty", crop: crop, hideOnClick: true },
                 rounded: 3,
-                elevation: 13,
+                elevation: 10,
                 minWidth: 100,
                 maxHeight: 48 * 7,
                 trapFocus: false,
@@ -41,7 +41,7 @@ export class TFSuggestions<T extends Model = Model> {
                     anchor: {
                         ref: target,
                         align: "left top",
-                        margin: "16 0"
+                        margin: "6 0"
                     },
                     constraint: {
                         ref: "viewport",
@@ -72,10 +72,13 @@ export class TFSuggestions<T extends Model = Model> {
             })
 
             layerRef.show()
+
+            const fmd = fm ? fm(layerRef.outlet.nativeElement) : null
             return () => {
                 ss?.unsubscribe()
                 this.hide()
                 this.selection.clear()
+                fmd && fmd()
             }
         })
     }

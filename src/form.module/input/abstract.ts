@@ -258,7 +258,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     protected _inited = false
 
-    protected _focus = this.destruct.subject(new Subject<FocusOrigin>())
+    public readonly focusOrigin = this.destruct.subject(new Subject<FocusOrigin>())
     private _pendingDisabled: boolean
     private _pendingReadonly: boolean
 
@@ -269,7 +269,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
             }
         })
 
-        this.destruct.subscription(this._focus)
+        this.destruct.subscription(this.focusOrigin)
             .pipe(debounceTime(50))
             .subscribe(focus => {
                 this.model.focused = focus
@@ -293,7 +293,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     protected abstract _renderValue(value: T): void
 
     protected monitorFocus(el: HTMLElement, checkChildren?: boolean): void {
-        this.destruct.subscription(this.model.focusMonitor.monitor(el, checkChildren)).subscribe(f => this._focus.next(f))
+        this.destruct.subscription(this.model.focusMonitor.monitor(el, checkChildren)).subscribe(f => this.focusOrigin.next(f))
         this.destruct.any(() => this.model.focusMonitor.stopMonitoring(el))
     }
 

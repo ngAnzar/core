@@ -89,6 +89,8 @@ export class MaskRef implements IDisposable {
             this.clearStyle(container)
 
             container.style.pointerEvents = "none"
+            container.style.touchAction = "none"
+            // container.style.background = "rgba(0, 0, 0, 0)"
 
             if (!this.cropMaskEls) {
                 this.cropMaskEls = {}

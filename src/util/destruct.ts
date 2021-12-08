@@ -48,7 +48,8 @@ export class Destruct {
     public run() {
         if (!this.done) {
             (this.on as Subject<void>).next();
-            (this.on as Subject<void>).complete()
+            (this.on as Subject<void>).complete();
+            (this.on as Subject<void>).unsubscribe()
         }
     }
 }

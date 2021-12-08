@@ -1,11 +1,12 @@
 import { Component, Inject, Input, OnChanges, SimpleChanges, ContentChild, ViewChild, TemplateRef, AfterViewInit } from "@angular/core"
+import { FormControl } from "@angular/forms"
 import { Observable, of } from "rxjs"
 
 import { Model, Field, StaticSource } from "../../../data.module"
 import { LayerService } from "../../../layer.module"
+import { TokenFilterValue } from "./value-type"
 import { TokenFilterService } from "./token-filter.service"
 import { TokenFilterComparator } from "./token-filter-comparator"
-import { TokenFilterValue } from "./token-filter-value"
 import { TFSuggestions } from "./suggestions"
 
 
@@ -20,6 +21,11 @@ export class ComparatorModel extends Model {
 export interface ResolvedValue {
     value: any
     label: string
+}
+
+
+export interface CustomInputTplContext {
+    $implicit: FormControl
 }
 
 
@@ -52,22 +58,21 @@ export class TokenFilterComponent implements AfterViewInit {
 
     public readonly comparatorsSrc = new StaticSource(ComparatorModel, [])
 
-    @ContentChild(TokenFilterValue, { static: true }) protected readonly valueProvider: TokenFilterValue
+    @ContentChild(TokenFilterValue, { static: true }) public readonly valueProvider: TokenFilterValue
     @ViewChild("comparatorItemTpl", { read: TemplateRef, static: true }) public readonly comparatorItemTpl: TemplateRef<any>
 
     public readonly comparatorSuggestions: TFSuggestions<ComparatorModel>
-    public readonly valueSuggestions: TFSuggestions
 
     public constructor(
         @Inject(TokenFilterService) private readonly filtererSvc: TokenFilterService,
         @Inject(LayerService) private readonly layerSvc: LayerService) {
     }
 
-    public resolveValues(values: any[]): Observable<ResolvedValue[]> {
-        return of(values.map(v => {
-            return { value: v, label: v }
-        }))
-    }
+    // public resolveValues(values: any[]): Observable<ResolvedValue[]> {
+    //     return of(values.map(v => {
+    //         return { value: v, label: v }
+    //     }))
+    // }
 
     public ngAfterViewInit() {
         this.replaceCompSug()

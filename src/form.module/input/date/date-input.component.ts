@@ -1,4 +1,4 @@
-import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, HostBinding, Directive } from "@angular/core"
+import { Component, Inject, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, HostBinding, Directive, Optional, Self } from "@angular/core"
 import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { map, takeUntil } from "rxjs/operators"
@@ -8,6 +8,7 @@ import { parse, isDate, format, startOfDay, getDaysInMonth, parseISO, isSameDay,
 import { LocaleService } from "../../../common.module"
 import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { InputMask } from "../input-mask.service"
+import { AutosizePropertiesDirective } from "../text/autosize.directive"
 import { DatePickerService } from "./date-picker.service"
 import { MASK_BLOCKS } from "./mask-blocks"
 import { InvalidDateValidator } from "./invalid-date.validator"
@@ -106,6 +107,13 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     @Input() public min: Date
     @Input() public max: Date
+    @Input() public emptyOpacity = 0
+    @Input()
+    public set showPickerOnFocus(val: boolean) {
+        this._showPickerOnFocus = coerceBooleanProperty(val)
+    }
+    public get showPickerOnFocus(): boolean { return this._showPickerOnFocus }
+    private _showPickerOnFocus: boolean
 
     @Input()
     public set withoutPicker(val: boolean) {
@@ -130,7 +138,6 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
 
     public set opened(val: boolean) {
         if (this.datePicker.isVisible !== val) {
-
             if (val && this.input) {
                 this.input.nativeElement.focus()
             }
@@ -158,7 +165,8 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         @Inject(LocaleService) protected readonly locale: LocaleService,
         @Inject(DatePickerService) protected readonly datePicker: DatePickerService,
         @Inject(ChangeDetectorRef) protected readonly cdr: ChangeDetectorRef,
-        @Inject(InvalidDateValidator) private readonly dtValidator: InvalidDateValidator) {
+        @Inject(InvalidDateValidator) private readonly dtValidator: InvalidDateValidator,
+        @Inject(AutosizePropertiesDirective) @Optional() @Self() public readonly autosize: AutosizePropertiesDirective) {
         super(model)
 
         this.monitorFocus(el.nativeElement, true)
@@ -166,11 +174,14 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         this.destruct.subscription(model.focusChanges).subscribe(event => {
             if (!event.current) {
                 this.opened = false
+            } else if (this._showPickerOnFocus) {
+                this.opened = true
             }
             this.cdr.detectChanges()
         })
 
         this.destruct.any(() => {
+            this._showPickerOnFocus = false
             this.opened = false
         })
 
@@ -273,8 +284,10 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     const value = startOfDay(event.value)
                     this._renderValue(value)
                     this.model.emitValue(value)
-                    this.stopFocusMonitor(event.layerRef.container)
-                    sub.unsubscribe()
+                    if (!this._showPickerOnFocus) {
+                        this.stopFocusMonitor(event.layerRef.container)
+                        sub.unsubscribe()
+                    }
                 } else if (event.type === "hide") {
                     this.stopFocusMonitor(event.layerRef.container)
                 }
@@ -291,10 +304,13 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         const today = new Date()
         const year = this._year || today.getFullYear()
         const month = this._month === null ? today.getMonth() : this._month - 1
+
+        let defaultDay = year === today.getFullYear() && month === today.getMonth() ? Math.min(getDaysInMonth(new Date(year, month)), today.getDate()) : 1
+
         return new Date(
             year,
             month,
-            this._day || Math.min(getDaysInMonth(new Date(year, month)), today.getDate()))
+            this._day || defaultDay)
     }
 
     // public _onAccept() {

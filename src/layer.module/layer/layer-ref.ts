@@ -1,6 +1,6 @@
 import { EventEmitter, Injector, ComponentRef, TemplateRef, EmbeddedViewRef, ViewContainerRef } from "@angular/core"
 import { ComponentPortal, TemplatePortal, ComponentType } from "@angular/cdk/portal"
-import { FocusTrap, FocusTrapFactory } from "@angular/cdk/a11y"
+import { FocusTrap, ConfigurableFocusTrapFactory } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
@@ -54,7 +54,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
         public readonly behavior: LayerBehavior,
         public readonly outlet: LayerOutletRef,
         protected readonly shortcutSvc: ShortcutService,
-        protected readonly focusTrapSvc: FocusTrapFactory) {
+        protected readonly focusTrapSvc: ConfigurableFocusTrapFactory) {
         this.destruct.disposable(behavior)
         this.destruct.disposable(outlet)
 
@@ -190,7 +190,7 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
     public readonly component: ComponentRef<C>
     protected portal: ComponentPortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: FocusTrapFactory,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: ConfigurableFocusTrapFactory,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
@@ -222,7 +222,7 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
     public readonly view: EmbeddedViewRef<C>
     protected readonly portal: TemplatePortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: FocusTrapFactory,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: ConfigurableFocusTrapFactory,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         tpl: TemplateRef<C>,

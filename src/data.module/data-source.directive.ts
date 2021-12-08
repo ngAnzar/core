@@ -108,7 +108,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         }
     }
     public get filter(): Filter<T> {
-        return this.storage.filter.get() || {}
+        return this.storage?.filter.get() || {}
     }
     private _filter: Filter<T>
 
@@ -122,10 +122,10 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
 
     public set sort(s: Sorter<T>) {
-        this.storage.sorter.set(s)
+        this.storage?.sorter.set(s)
     }
     public get sort(): Sorter<T> {
-        return this.storage.sorter.get()
+        return this.storage?.sorter.get()
     }
 
     public get async(): boolean {
@@ -159,7 +159,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
 
     public reload() {
-        this.storage.reload()
+        this.storage?.reload()
     }
 
     public loadFields(f: LoadFields<T>) {
@@ -174,12 +174,12 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     protected _updateFilter(silent?: boolean) {
         let f = {}
         if (this._filter) {
-            f = { ...f, ...this._filter as any }
+            f = { ...this._filter as any }
         }
         if (this._baseFilter) {
             f = { ...f, ...this._baseFilter as any }
         }
-        this.storage.filter.set(f, silent)
+        this.storage?.filter.set(f, silent)
     }
 
     protected _onStorageChange() {
@@ -204,6 +204,19 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     public ngOnDestroy() {
         this.dataSource = null
         delete this._dsd
+    }
+
+    public clone() {
+        const result = new DataSourceDirective<T>()
+        result.dataSource = this._source
+        result.baseFilter = this._baseFilter
+        result.filter = this._filter
+        result.sort = this.sort
+        const lf = this.storage.meta.get()?.loadFields
+        if (lf) {
+            result.loadFields(lf)
+        }
+        return result
     }
 }
 

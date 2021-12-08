@@ -70,28 +70,28 @@ export class TokenFilterInputComponent extends InputComponent<TokenFilterValue> 
                 })
                 .filter(v => !!v)
         }),
-        switchMap(items => {
-            if (items.length === 0) {
-                return of([])
-            }
-            const q = items.map(item => {
-                if ("filter" in item) {
-                    return item.filter.resolveValues(item.values).pipe(
-                        take(1),
-                        map(resolved => {
-                            item.resolvedValues = resolved
-                            return item
-                        })
-                    )
-                } else {
-                    item.resolvedValues = item.values.map(v => {
-                        return { value: v, label: v }
-                    })
-                    return of(item)
-                }
-            })
-            return forkJoin(q)
-        }),
+        // switchMap(items => {
+        //     if (items.length === 0) {
+        //         return of([])
+        //     }
+        //     const q = items.map(item => {
+        //         if ("filter" in item) {
+        //             return item.filter.resolveValues(item.values).pipe(
+        //                 take(1),
+        //                 map(resolved => {
+        //                     item.resolvedValues = resolved
+        //                     return item
+        //                 })
+        //             )
+        //         } else {
+        //             item.resolvedValues = item.values.map(v => {
+        //                 return { value: v, label: v }
+        //             })
+        //             return of(item)
+        //         }
+        //     })
+        //     return forkJoin(q)
+        // }),
         shareReplay(1)
     )
 
@@ -123,8 +123,15 @@ export class TokenFilterInputComponent extends InputComponent<TokenFilterValue> 
             = new TFSuggestions(this.filtersSource, this.layerSvc, this.filterItemTpl)
     }
 
-    public doAddNewItem() {
-
+    public doAddNewItem(event: Event) {
+        this.filtererSvc.filterSuggestions.show(event.target as HTMLElement).subscribe(filter => {
+            let value = this.value
+            if (!value) {
+                value = {}
+            }
+            value[filter.name] = null
+            this._renderValue(value)
+        })
     }
 
     protected _renderValue(value: any): void {

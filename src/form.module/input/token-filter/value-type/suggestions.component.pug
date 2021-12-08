@@ -1,0 +1,19 @@
+ng-template(#inputTpl, let-control, let-values="values", let-filter="filter", let-sorter="sorter", let-source="source", let-remove="remove")
+  .nz-select(
+      [formControl]="control",
+      [dataSource]="source",
+      [dsFilter]="filter",
+      [dsSorter]="sorter",
+      [displayField]="displayField",
+      [valueField]="valueField",
+      [queryField]="queryField",
+      [nzLayerFactory]="acComponent",
+      nzTargetAnchor="left bottom",
+      nzTargetMargin="6 0",
+      nzLevitateAnchor="left top",
+      editable,
+      hideTrigger,
+      autoTrigger,
+      autosize,
+      (focused)="removeOnFocusChange($event, control, remove)",
+      (keydown)="removeOnFocusChange($event, control, remove)")

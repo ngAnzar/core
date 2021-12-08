@@ -8,10 +8,30 @@ const COPY_CSS_PROPS: Array<keyof CSSStyleDeclaration> = [
     "paddingLeft", "paddingRight"]
 
 
+export interface AutosizeProperties {
+    autosize: boolean
+    autosizeExtra: number
+}
+
+
+
+@Directive({
+    selector: "[autosize]:not(input)"
+})
+export class AutosizePropertiesDirective implements AutosizeProperties {
+    @Input()
+    public set autosize(val: boolean) { this._autosize = coerceBooleanProperty(val) }
+    public get autosize(): boolean { return this._autosize }
+    private _autosize: boolean
+
+    @Input() public autosizeExtra: number = 0
+}
+
+
 @Directive({
     selector: "input[autosize]"
 })
-export class AutosizeDirective implements OnDestroy, OnChanges {
+export class AutosizeDirective implements OnDestroy, OnChanges, AutosizeProperties {
     @Input()
     public set autosize(val: boolean) {
         val = coerceBooleanProperty(val)
@@ -106,3 +126,5 @@ export class AutosizeDirective implements OnDestroy, OnChanges {
         }
     }
 }
+
+

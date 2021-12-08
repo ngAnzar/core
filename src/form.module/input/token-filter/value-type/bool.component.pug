@@ -1,0 +1,9 @@
+:stylus
+  .container
+    cursor: pointer
+    user-select: none
+
+ng-template(#inputTpl, let-control)
+  .container((tap)="control.setValue(!control.value)")
+    ng-template([ngIf]="control.value") Igen
+    ng-template([ngIf]="!control.value") Nem
