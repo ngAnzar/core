@@ -39,13 +39,15 @@ export class LayerBackdropRef implements IDisposable {
     })
 
     public constructor(
-        public readonly mask: MaskRef,
-        public readonly animationBuilder: AnimationBuilder) {
-        mask.container.skipZIndexManagement = true
-        mask.container.nativeElement.addEventListener("click", this.onClick)
-        this.destruct.any(() => {
-            mask.container.nativeElement.removeEventListener("click", this.onClick)
-        })
+        public readonly mask: MaskRef) {
+        mask.skipZIndexManagement = true
+        mask.on("click").subscribe(this.onClick)
+
+        // TODO
+        // mask.container.nativeElement.addEventListener("click", this.onClick)
+        // this.destruct.any(() => {
+        //     mask.container.nativeElement.removeEventListener("click", this.onClick)
+        // })
 
         this.destruct.disposable(mask)
     }
@@ -77,48 +79,53 @@ export class LayerBackdropRef implements IDisposable {
 
     public show(under: LayerContainerRef): Promise<void> {
         this._updateZIndex(under)
+        // const animation = this.animationBuilder.build()
+        return this.mask.show(fadeAnimation.show)
 
-        if (!this.isVisible) {
-            (this as any).isVisible = true
-            const el = this.mask.container.nativeElement
-            el.style.pointerEvents = "auto"
-            el.style.touchAction = "auto"
-            el.style.display = "block"
+        // if (!this.isVisible) {
+        //     (this as any).isVisible = true
+        //     const el = this.mask.container.nativeElement
+        //     el.style.pointerEvents = "auto"
+        //     el.style.touchAction = "auto"
+        //     el.style.display = "block"
 
-            return new Promise(resolve => {
-                let animationFactory = this.animationBuilder.build(fadeAnimation.show)
-                let player = animationFactory.create(el)
-                player.onDone(() => {
-                    // el.style.opacity = "1"
-                    player.destroy()
-                    resolve()
-                })
-                player.play()
-            })
-        }
+        //     return new Promise(resolve => {
+        //         let animationFactory = this.animationBuilder.build(fadeAnimation.show)
+        //         let player = animationFactory.create(el)
+        //         player.onDone(() => {
+        //             // el.style.opacity = "1"
+        //             player.destroy()
+        //             resolve()
+        //         })
+        //         player.play()
+        //     })
+        // }
 
-        return Promise.resolve()
+        // return Promise.resolve()
     }
 
     public hide(): Promise<void> {
-        if (this.isVisible) {
-            (this as any).isVisible = false
-            const el = this.mask.container.nativeElement
-            el.style.pointerEvents = "none"
-            el.style.touchAction = "none"
+        // const animation = this.animationBuilder.build(fadeAnimation.hide)
+        return this.mask.hide(fadeAnimation.hide)
+        // if (this.isVisible) {
+        //     (this as any).isVisible = false
+        //     // TODO
+        //     // const el = this.mask.container.nativeElement
+        //     // el.style.pointerEvents = "none"
+        //     // el.style.touchAction = "none"
 
-            return new Promise(resolve => {
-                let animationFactory = this.animationBuilder.build(fadeAnimation.hide)
-                let player = animationFactory.create(el)
-                player.onDone(() => {
-                    el.style.display = "none"
-                    player.destroy()
-                    resolve()
-                })
-                player.play()
-            })
-        }
-        return Promise.resolve()
+        //     return new Promise(resolve => {
+        //         let animationFactory = this.animationBuilder.build(fadeAnimation.hide)
+        //         let player = animationFactory.create(el)
+        //         player.onDone(() => {
+        //             el.style.display = "none"
+        //             player.destroy()
+        //             resolve()
+        //         })
+        //         player.play()
+        //     })
+        // }
+        // return Promise.resolve()
     }
 
     public dispose() {
@@ -137,8 +144,11 @@ export class LayerBackdropRef implements IDisposable {
     }
 
     protected _updateZIndex(under: LayerContainerRef) {
-        let parentEl = under.nativeElement.parentElement
-        this.mask.container.zIndex = under.zIndex
-        parentEl.insertBefore(this.mask.container.nativeElement, under.nativeElement)
+        this.mask.zIndex = under.zIndex
+        this.mask.insertBefore(under.firstElement)
+        // TODO
+        // let parentEl = under.nativeElement.parentElement
+        // this.mask.container.zIndex = under.zIndex
+        // parentEl.insertBefore(this.mask.container.nativeElement, under.nativeElement)
     }
 }

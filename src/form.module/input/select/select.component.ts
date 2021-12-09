@@ -611,7 +611,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             ]
         ) as ComponentLayerRef<AutocompleteComponent<T>>
 
-        const outletEl = layerRef.outlet.nativeElement
+        const outletEl = layerRef.outlet.firstElement
         this.monitorFocus(outletEl, true)
         this._closeShortcuts.watch(outletEl)
 

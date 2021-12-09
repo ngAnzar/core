@@ -109,11 +109,10 @@ export class LayerService {
             options.type === "empty" ? { backgroundColor: "rgba(0, 0, 0, 0.0001)" } : { backgroundColor: "rgba(0, 0, 0, 0.3)" },
             options.crop)
 
-        let backdrop = new LayerBackdropRef(mask, this.animation)
+        let backdrop = new LayerBackdropRef(mask)
         if (!options.crop) {
             this.backdrops[options.type] = backdrop
-            let sub = backdrop.mask.container.destruct.on.subscribe(event => {
-                sub.unsubscribe()
+            backdrop.mask.destruct.on.subscribe(event => {
                 delete this.backdrops[options.type]
             })
         }

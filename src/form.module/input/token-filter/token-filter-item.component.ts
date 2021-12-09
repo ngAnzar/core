@@ -133,11 +133,6 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
         })
     }
 
-    public onValueFocus() {
-        this._hideSuggestions()
-        console.log("onValueFocus")
-    }
-
     private _hideSuggestions() {
         this.filterSvc.filterSuggestions.hide()
         this.model.filter.comparatorSuggestions.hide()
@@ -149,6 +144,7 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
         this.displayParens = comp.valueCount > 1 || this.isInfinity
         this.model.comp = comp
         const values = this.updateValues()
+        // todo validate values
         console.log(values)
         for (let i = 0; i < values.length; i++) {
             console.log(values[i], this.valueControls[i].value)
@@ -210,6 +206,11 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
             }
             ctx.values = this.valuesGroup.value
             ctx.remove = this.isInfinity ? this._removeValueAt.bind(this, index) : noop
+            ctx.focused = (fevent) => {
+                console.log("focused", index, fevent)
+                this._hideSuggestions()
+                this.focusOrigin.next(fevent.current)
+            }
             return this.model.filter.valueProvider.updateContext(ctx as TokenFilterValueInputCtx)
         })
     }

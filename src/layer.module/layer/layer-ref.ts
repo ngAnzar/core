@@ -58,7 +58,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
         this.destruct.disposable(behavior)
         this.destruct.disposable(outlet)
 
-        this.shortcuts = this.destruct.disposable(this.shortcutSvc.create(outlet.nativeElement, {
+        this.shortcuts = this.destruct.disposable(this.shortcutSvc.create(outlet.firstElement, {
             "layer.close": {
                 shortcut: "escape, back", handler: () => {
                     this.close()
@@ -73,7 +73,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
     }
 
     public get container(): HTMLElement {
-        return this.outlet.nativeElement
+        return this.outlet.firstElement
     }
 
     public set top(val: number) {
@@ -129,7 +129,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
             return this.behavior.animateShow(this).then(() => {
                 // this.behavior.levitate.resume()
                 if (this.behavior.options.trapFocus && !this.focusTrap) {
-                    this.focusTrap = this.focusTrapSvc.create(this.outlet.nativeElement, false)
+                    this.focusTrap = this.focusTrapSvc.create(this.outlet.firstElement, false)
                     this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
                 }
                 if (this.focusTrap) {
@@ -176,7 +176,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
 
     private restoreFocus() {
         if (this.lastFocused && document.contains(this.lastFocused) && typeof this.lastFocused.focus !== "undefined") {
-            const rootEl = this.outlet.nativeElement
+            const rootEl = this.outlet.firstElement
             const focusedEl = document.activeElement
             if (rootEl === focusedEl || rootEl.contains(focusedEl)) {
                 this.lastFocused.focus()

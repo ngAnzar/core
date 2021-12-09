@@ -43,7 +43,8 @@ export class TokenFilterSuggestionsValue extends TokenFilterValue {
         return ctx
     }
 
-    public removeOnFocusChange(forigin: FocusChangeEvent, control: AbstractControl, remove: () => void) {
+    public removeOnFocusChange(forigin: FocusChangeEvent, control: AbstractControl, remove: () => void, focused: (forigin: FocusChangeEvent) => void) {
+        focused(forigin)
         if (!forigin.current && control.value == null) {
             remove()
         }
@@ -53,6 +54,5 @@ export class TokenFilterSuggestionsValue extends TokenFilterValue {
         if (event.key === "Backspace" && control.value == null) {
             remove()
         }
-        // console.log(event)
     }
 }

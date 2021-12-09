@@ -30,7 +30,7 @@ export class TFSuggestions<T extends Model = Model> {
     public show(target: HTMLElement, crop?: HTMLElement, fm?: (el: HTMLElement) => () => void): Observable<T> {
         return new Observable(subscriber => {
             const behavior = new DropdownLayer({
-                backdrop: { type: "empty", crop: crop, hideOnClick: true },
+                backdrop: { type: "filled", crop: crop, hideOnClick: true },
                 rounded: 3,
                 elevation: 10,
                 minWidth: 100,
@@ -73,7 +73,7 @@ export class TFSuggestions<T extends Model = Model> {
 
             layerRef.show()
 
-            const fmd = fm ? fm(layerRef.outlet.nativeElement) : null
+            const fmd = fm ? fm(layerRef.outlet.firstElement) : null
             return () => {
                 ss?.unsubscribe()
                 this.hide()

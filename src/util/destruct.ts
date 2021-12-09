@@ -23,7 +23,10 @@ export class Destruct {
     }
 
     public subject<T extends Subject<any>>(s: T): T {
-        this.on.subscribe(s.complete.bind(s))
+        this.on.subscribe(() => {
+            s.complete()
+            s.unsubscribe()
+        })
         return s
     }
 

@@ -47,7 +47,7 @@ ng-container(nzLayout="row inline", nzLayoutAlign="start center")
     //- VALUES BEGIN
     .token.token-delimiter(*ngIf="displayParens", nzFlex="none") (
     ng-template(ngFor, [ngForOf]="valueControls", let-valueCtrl, let-index="index", let-isLast="last")
-      .token-value(*ngIf="model.filter.valueProvider as vp", nzFlex="none", #valueEl, (tap)="onValueFocus()")
+      .token-value(*ngIf="model.filter.valueProvider as vp", nzFlex="none", #valueEl)
         ng-template([ngTemplateOutlet]="vp.inputTpl", [ngTemplateOutletContext]="valueContext[index]")
       .token.token-delimiter(*ngIf="model.comp.delimiter && !isLast", nzFlex="none") {{ model.comp.delimiter }}
     button.nz-button(*ngIf="isInfinity", nzFlex="none", variant="very-tiny icon", color="common", tabindex="-1", (tap)="addValue()")

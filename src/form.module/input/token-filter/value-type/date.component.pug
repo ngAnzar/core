@@ -1,2 +1,2 @@
-ng-template(#inputTpl, let-control)
-  .nz-date-input([formControl]="control", [emptyOpacity]="1", showPickerOnFocus, autosize)
+ng-template(#inputTpl, let-control, let-focused="focused")
+  .nz-date-input([formControl]="control", [emptyOpacity]="1", showPickerOnFocus, autosize, (focused)="focused($event)")
