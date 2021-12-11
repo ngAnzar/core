@@ -14,7 +14,7 @@
   "dependencies": {
     "@anzar/build": "^1.0.0",
     "@angularclass/hmr": "^3.0.0",
-    "@mdi/svg": "^5.9.55",
+    "@mdi/svg": "^6.5.95",
     "@types/autosize": "^4.0.0",
     "@types/content-disposition": "^0.5.4",
     "@types/deep-diff": "^1.0.1",
