@@ -33,10 +33,10 @@ ng-container(nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="8px"
       .nz-button(color="dark-common") {{ locale.formatDate(this.displayed, "yyyy MMMM") }}
 
     .nz-button(nzFlex="noshrink", variant="tiny icon", color="dark-common")
-      .nz-icon(class=icon("mdi/chevron-up"), (tap)="decMonth()", (mousedown)="$event.preventDefault()")
+      .nz-icon(class=icon("mdi/chevron-left"), (tap)="decMonth()", (mousedown)="$event.preventDefault()")
 
     .nz-button(nzFlex="noshrink", variant="tiny icon", color="dark-common")
-      .nz-icon(class=icon("mdi/chevron-down"), (tap)="incMonth()", (mousedown)="$event.preventDefault()")
+      .nz-icon(class=icon("mdi/chevron-right"), (tap)="incMonth()", (mousedown)="$event.preventDefault()")
 
   div.days(nzFlex="grow", nzLayout="column", nzLayoutAlign="start stretch", nzLayoutGap="4px")
     div.daynames(nzFlex="none", nzLayout="row", nzLayoutAlign="start start", nzLayoutGap="2px")

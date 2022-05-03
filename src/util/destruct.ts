@@ -23,7 +23,10 @@ export class Destruct {
     }
 
     public subject<T extends Subject<any>>(s: T): T {
-        this.on.subscribe(s.complete.bind(s))
+        this.on.subscribe(() => {
+            s.complete()
+            s.unsubscribe()
+        })
         return s
     }
 
@@ -48,7 +51,8 @@ export class Destruct {
     public run() {
         if (!this.done) {
             (this.on as Subject<void>).next();
-            (this.on as Subject<void>).complete()
+            (this.on as Subject<void>).complete();
+            (this.on as Subject<void>).unsubscribe()
         }
     }
 }

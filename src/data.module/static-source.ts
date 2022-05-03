@@ -158,6 +158,12 @@ export class StaticSource<T extends Model> extends DataSource<T> {
             return typeof value === "string" && value.startsWith(filter.startsWith)
         } else if ("endsWith" in filter) {
             return typeof value === "string" && value.endsWith(filter.endsWith)
+        } else if ("in" in filter) {
+            const fv = filter["in"]
+            return Array.isArray(fv) ? fv.includes(value) : false
+        } else if ("not in" in filter) {
+            const fv = filter["not in"]
+            return Array.isArray(fv) ? !fv.includes(value) : false
         } else {
             throw new Error("Unexpected filter: " + filter)
         }

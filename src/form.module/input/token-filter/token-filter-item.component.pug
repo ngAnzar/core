@@ -1,0 +1,61 @@
+:stylus
+  .token
+    //- background: $theme.base.dark
+    //- color: $theme.base.on.dark
+    nz-typo: $typo.body2
+
+  .token-delimiter
+    opacity: 0.7
+    user-select: none
+
+  .token-comp
+    opacity: 0.7
+    padding: 0 4px
+    cursor: pointer
+    user-select: none
+
+  .token-field
+    font-weight: $typo.button.font-weight !important
+    padding: 0 4px
+    cursor: pointer
+    user-select: none
+
+  .token-value
+    color: $theme.accent.dark
+    padding: 0 4px
+
+  .btn-delete
+    margin-left: 4px
+
+
+
+ng-container(nzLayout="row inline", nzLayoutAlign="start center")
+  ng-template([ngIf]="isUnexpected", [ngIfElse]="ifExpected")
+    .token.token-field {{ model.field }}
+    .token.token-comp {{ model.comp.label }}
+
+    .token.token-delimiter(*ngIf="displayParens") (
+    ng-template(ngFor, [ngForOf]="valueControls", let-valueCtrl, let-index="index", let-isLast="last")
+      .token.token-value {{ valueCtrl.value }}
+      .token.token-delimiter(*ngIf="model.comp.delimiter && !isLast") {{ model.comp.delimiter }}
+    .token.token-delimiter(*ngIf="displayParens") )
+
+  ng-template(#ifExpected)
+    .token.token-field(#fieldEl, nzFlex="none", tabIndex="-1", (tap)="showFilterSuggestions()") {{ model.filter.label }}
+    .token.token-comp(#compEl, nzFlex="none", tabIndex="-1", (tap)="showCompSuggestions()") {{ model.comp?.label }}
+
+    //- VALUES BEGIN
+    .token.token-delimiter(*ngIf="displayParens", nzFlex="none") (
+    ng-template(ngFor, [ngForOf]="valueControls", let-valueCtrl, let-index="index", let-isLast="last")
+      .token-value(*ngIf="model.filter.valueProvider as vp", nzFlex="none", #valueEl)
+        ng-template([ngTemplateOutlet]="vp.inputTpl", [ngTemplateOutletContext]="valueContext[index]")
+      .token.token-delimiter(*ngIf="model.comp.delimiter && !isLast", nzFlex="none") {{ model.comp.delimiter }}
+    button.nz-button(*ngIf="isInfinity", nzFlex="none", variant="very-tiny icon", color="common", tabindex="-1", (tap)="addValue()")
+      i.nz-icon(class=icon("mdi/plus", 17))
+    .token.token-delimiter(*ngIf="displayParens", nzFlex="none") )
+    //- VALUES END
+
+    button.nz-button.btn-delete(variant="very-tiny icon", color="common", tabindex="-1", (tap)="remove.next(model)")
+      i.nz-icon(class=icon("mdi/close", 17))
+
+

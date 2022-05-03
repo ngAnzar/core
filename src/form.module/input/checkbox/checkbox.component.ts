@@ -123,7 +123,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective<any>) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
+        this.monitorFocus(el.nativeElement)
     }
 
     public ngOnInit() {

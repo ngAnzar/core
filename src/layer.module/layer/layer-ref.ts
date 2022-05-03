@@ -1,6 +1,6 @@
 import { EventEmitter, Injector, ComponentRef, TemplateRef, EmbeddedViewRef, ViewContainerRef } from "@angular/core"
 import { ComponentPortal, TemplatePortal, ComponentType } from "@angular/cdk/portal"
-import { FocusTrap, FocusTrapFactory } from "@angular/cdk/a11y"
+import { FocusTrap, ConfigurableFocusTrapFactory } from "@angular/cdk/a11y"
 import { Observable, Subscription } from "rxjs"
 import { filter, mapTo } from "rxjs/operators"
 
@@ -54,11 +54,11 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
         public readonly behavior: LayerBehavior,
         public readonly outlet: LayerOutletRef,
         protected readonly shortcutSvc: ShortcutService,
-        protected readonly focusTrapSvc: FocusTrapFactory) {
+        protected readonly focusTrapSvc: ConfigurableFocusTrapFactory) {
         this.destruct.disposable(behavior)
         this.destruct.disposable(outlet)
 
-        this.shortcuts = this.destruct.disposable(this.shortcutSvc.create(outlet.nativeElement, {
+        this.shortcuts = this.destruct.disposable(this.shortcutSvc.create(outlet.firstElement, {
             "layer.close": {
                 shortcut: "escape, back", handler: () => {
                     this.close()
@@ -73,7 +73,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
     }
 
     public get container(): HTMLElement {
-        return this.outlet.nativeElement
+        return this.outlet.firstElement
     }
 
     public set top(val: number) {
@@ -129,7 +129,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
             return this.behavior.animateShow(this).then(() => {
                 // this.behavior.levitate.resume()
                 if (this.behavior.options.trapFocus && !this.focusTrap) {
-                    this.focusTrap = this.focusTrapSvc.create(this.outlet.nativeElement, false)
+                    this.focusTrap = this.focusTrapSvc.create(this.outlet.firstElement, false)
                     this.destruct.any(this.focusTrap.destroy.bind(this.focusTrap))
                 }
                 if (this.focusTrap) {
@@ -176,7 +176,7 @@ export abstract class LayerRef<E extends LayerEvent<any> = LayerEvent<any>> impl
 
     private restoreFocus() {
         if (this.lastFocused && document.contains(this.lastFocused) && typeof this.lastFocused.focus !== "undefined") {
-            const rootEl = this.outlet.nativeElement
+            const rootEl = this.outlet.firstElement
             const focusedEl = document.activeElement
             if (rootEl === focusedEl || rootEl.contains(focusedEl)) {
                 this.lastFocused.focus()
@@ -190,7 +190,7 @@ export class ComponentLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> e
     public readonly component: ComponentRef<C>
     protected portal: ComponentPortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: FocusTrapFactory,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: ConfigurableFocusTrapFactory,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         protected readonly componentCls: ComponentType<C>) {
@@ -222,7 +222,7 @@ export class TemplateLayerRef<C, E extends LayerEvent<any> = LayerEvent<any>> ex
     public readonly view: EmbeddedViewRef<C>
     protected readonly portal: TemplatePortal<C>
 
-    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: FocusTrapFactory,
+    public constructor(behavior: LayerBehavior, outlet: LayerOutletRef, shortcutSvc: ShortcutService, focusTrap: ConfigurableFocusTrapFactory,
         public readonly opener: LayerRef,
         protected readonly vcr: ViewContainerRef,
         tpl: TemplateRef<C>,

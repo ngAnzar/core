@@ -1,0 +1,15 @@
+:stylus
+  .item
+    width: 100%
+
+  .desc
+    nz-typo: $typo.caption
+    text-align: right
+    opacity: 0.7
+
+
+//- TODO: icons
+ng-template(#comparatorItemTpl, let-item)
+  .item(nzLayout="row", nzLayoutAlign="start center", nzLayoutGap="16px")
+    .label(nzFlex="grow") {{ item.label }}
+    .desc(nzFlex="none") {{ item.description }}

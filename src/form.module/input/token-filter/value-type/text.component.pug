@@ -1,0 +1,2 @@
+ng-template(#inputTpl, let-control, let-focused="focused")
+  input.nz-input(type="text", [formControl]="control", autosize, (focused)="focused($event)")

@@ -89,7 +89,7 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
             return this.visibleObservable
         }
 
-        return this.visibleObservable = Observable.create((observer: Observer<DatePickerEvent<CMP, VALUE>>) => {
+        return this.visibleObservable = new Observable((observer: Observer<DatePickerEvent<CMP, VALUE>>) => {
             const layer = this.visibleRef = this._create(position, provides, injector)
             layer.show()
             const instance = layer.component.instance
@@ -128,7 +128,7 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
     }
 
     public toggle(position: LevitateOptions, value?: VALUE, provides?: StaticProvider[], injector?: Injector): Observable<DatePickerEvent<CMP, VALUE>> {
-        return Observable.create((observer: Observer<DatePickerEvent<CMP, VALUE>>) => {
+        return new Observable((observer: Observer<DatePickerEvent<CMP, VALUE>>) => {
             let s: Subscription
             if (this.isVisible) {
                 s = this.visibleObservable.subscribe(observer)
