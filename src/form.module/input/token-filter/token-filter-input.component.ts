@@ -39,8 +39,12 @@ export class TokenFilterInputComponent extends InputComponent<TokenFilterValue> 
 
     private value$ = new BehaviorSubject<TokenFilterValue>({})
 
-    public readonly items$: Observable<Array<FilterItemModel>> = merge(this.value$, this.filters$).pipe(
+    private valueWithFilters = merge(this.value$, this.filters$).pipe(
         switchMap(() => zip([this.value$.pipe(take(1)), this.filters$.pipe(take(1))])),
+        shareReplay(1)
+    )
+
+    public readonly items$: Observable<Array<FilterItemModel>> = this.valueWithFilters.pipe(
         map(([value, filters]) => {
             if (!value) {
                 return []
@@ -86,6 +90,10 @@ export class TokenFilterInputComponent extends InputComponent<TokenFilterValue> 
         @Inject(LayerService) private readonly layerSvc: LayerService) {
         super(model)
         this.monitorFocus(el.nativeElement)
+
+        this.destruct.subscription(this.valueWithFilters).subscribe(([value, filters]) => {
+            this._excludeFilters(value)
+        })
     }
 
     public ngAfterContentInit() {
@@ -100,6 +108,7 @@ export class TokenFilterInputComponent extends InputComponent<TokenFilterValue> 
     public ngAfterViewInit() {
         (this.filtererSvc as { filterSuggestions: TFSuggestions<TokenFilterModel> }).filterSuggestions
             = new TFSuggestions(this.filtersSource, this.layerSvc, this.filterItemTpl)
+        this._excludeFilters(this.value$.value)
     }
 
     public doAddNewItem(event: Event) {
@@ -121,31 +130,28 @@ export class TokenFilterInputComponent extends InputComponent<TokenFilterValue> 
         } else {
             this.model.emitValue(value)
         }
-        this._excludeFilter()
     }
 
     public onItemChanges(item: FilterItemModel) {
         let value = this.value$.value
         value[item.filter.name] = item.comp.compose(item.values)
         this.model.emitValue(value)
-        this._excludeFilter()
     }
 
     protected _renderValue(value: any): void {
         this.value$.next(value || {})
-        this._excludeFilter()
     }
 
-    protected _excludeFilter() {
-        const usedKeys = Object.keys(this.value$.value)
+    public _trackBy(item: FilterItemModel) {
+        return item.filter ? item.filter.name : item.field
+    }
+
+    private _excludeFilters(value: { [key: string]: any }) {
+        const usedKeys = Object.keys(value)
         let filter = { name: { "not in": usedKeys } }
         if (this.filtererSvc.filterSuggestions) {
             this.filtererSvc.filterSuggestions.ds.filter = filter as any
             this.canAddNewItem = this.filtersSource.data.length > usedKeys.length
         }
-    }
-
-    public _trackBy(item: FilterItemModel) {
-        return item.filter ? item.filter.name : item.field
     }
 }
