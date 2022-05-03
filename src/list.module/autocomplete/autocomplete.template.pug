@@ -36,7 +36,8 @@
               [style.gridRow]="index + 1",
               [selectableAction]="action.model",
               [selectionIndex]="index + 1",
-              color="light-accent")
+              color="light-accent",
+              (mousedown)="$event.preventDefault()")
             ng-container([ngTemplateOutlet]="action.tpl")
 
       ng-template(nzVirtualFor,
@@ -48,7 +49,7 @@
           [fixedItemHeight]="48",
           [itemsPerRequest]="itemsPerRequest",
           (rendered)="onItemsRendered($event)")
-        .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)")
+        .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)", (mousedown)="$event.preventDefault()")
           ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit:virtual}")
 
       ng-template([ngIf]="actionsByPosition.last && !source.isBusy")
@@ -57,11 +58,12 @@
               [style.gridRow]="_offset(index) + source.storage.lastIndex",
               [selectableAction]="action.model",
               [selectionIndex]="_offset(index) + source.storage.lastIndex",
-              color="light-accent")
+              color="light-accent",
+              (mousedown)="$event.preventDefault()")
             ng-container([ngTemplateOutlet]="action.tpl")
 
 
-nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()")
+nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()", (mousedown)="$event.preventDefault()")
   div(fxFlayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
     i.nz-icon(class=icon("mdi/plus-circle-outline"))
     span Új elem létrehozás

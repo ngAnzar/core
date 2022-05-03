@@ -105,6 +105,12 @@ export class SelectableDirective<T extends Model = Model> implements ISelectable
         }
     }
 
+    // @HostListener("mousedown", ["$event"])
+    // public mouseDown(event: Event) {
+    //     event.preventDefault()
+    //     event.stopPropagation()
+    // }
+
     @HostListener("tap", ["$event"])
     public onTap(event: PointerEvent) {
         if (!event.defaultPrevented) {

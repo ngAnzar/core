@@ -85,10 +85,10 @@ export class DatetimeInputComponent extends InputComponent<Date> {
         @Inject(InvalidDateValidator) private readonly dtValidator: InvalidDateValidator) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
+        this.monitorFocus(el.nativeElement)
 
         this.destruct.subscription(model.focusChanges).subscribe(event => {
-            if (!event.current) {
+            if (!event.curr) {
                 this.opened = false
             }
             this.cdr.detectChanges()
@@ -199,7 +199,7 @@ export class DatetimeInputComponent extends InputComponent<Date> {
             .pipe(takeUntil(this.destruct.on))
             .subscribe(event => {
                 if (event.type === "create") {
-                    this.monitorFocus(event.layerRef.container, true)
+                    this.monitorFocus(event.layerRef.container)
                 } else if (event.type === "value") {
                     this._renderValue(event.value)
                     this.model.emitValue(event.value)

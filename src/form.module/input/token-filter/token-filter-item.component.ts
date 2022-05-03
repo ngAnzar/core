@@ -1,12 +1,13 @@
-import { Component, Inject, Input, OnChanges, SimpleChanges, ElementRef, ViewChild, ViewChildren, AfterViewInit, QueryList } from "@angular/core"
+import { Component, Inject, Input, OnChanges, SimpleChanges, ElementRef, ViewChild, ViewChildren, AfterViewInit, QueryList, Output, EventEmitter } from "@angular/core"
 import { FormArray, FormControl } from "@angular/forms"
 import { FocusOrigin, FocusMonitor, InteractivityChecker } from "@angular/cdk/a11y"
 import { debounceTime, Subject, distinctUntilChanged } from "rxjs"
 
 import { Destructible } from "../../../util"
 import { Model } from "../../../data.module"
+import { FocusGroup } from "../../../common.module"
 
-import type { TokenFilterComponent, ResolvedValue } from "./token-filter.component"
+import type { TokenFilterComponent } from "./token-filter.component"
 import type { TokenFilterComparator } from "./token-filter-comparator"
 import { TokenFilterInputComponent } from "./token-filter-input.component"
 import { TokenFilterService } from "./token-filter.service"
@@ -27,19 +28,13 @@ export class FilterItemModel {
     templateUrl: "./token-filter-item.component.pug",
     host: {
         "[attr.tabindex]": "-1",
-        "[attr.focus]": "isFocused ? '' : null",
+        "[attr.focus]": "focusGroup.currentOrigin ? '' : null",
     }
 })
 export class TokenFilterItemComponent extends Destructible implements OnChanges, AfterViewInit {
     @Input() public model: FilterItemModel
-
-    public set isFocused(val: FocusOrigin | null) {
-        if (this._isFocused !== val) {
-            this._isFocused = val
-        }
-    }
-    public get isFocused(): FocusOrigin | null { return this._isFocused }
-    private _isFocused: FocusOrigin | null
+    @Output() public remove = new EventEmitter<FilterItemModel>()
+    @Output() public valueChanges = new EventEmitter<FilterItemModel>()
 
     @ViewChild("fieldEl", { static: false, read: ElementRef }) public readonly fieldEl: ElementRef<HTMLElement>
     @ViewChild("compEl", { static: false, read: ElementRef }) public readonly compEl: ElementRef<HTMLElement>
@@ -53,29 +48,35 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
     public readonly valuesGroup = new FormArray([])
     public get valueControls() { return this.valuesGroup.controls }
 
-    private readonly focusOrigin = new Subject<FocusOrigin>()
     private _pendingValueFocus: number
+    private _pendingCompFocus: boolean
 
     public constructor(
         @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
-        @Inject(FocusMonitor) private readonly focusMonitor: FocusMonitor,
         @Inject(TokenFilterService) private readonly filterSvc: TokenFilterService,
         @Inject(TokenFilterInputComponent) private readonly input: TokenFilterInputComponent,
-        @Inject(InteractivityChecker) private readonly interactivityChecker: InteractivityChecker) {
+        @Inject(InteractivityChecker) private readonly interactivityChecker: InteractivityChecker,
+        @Inject(FocusGroup) private readonly focusGroup: FocusGroup) {
         super()
 
-        this.destruct.subscription(this.focusOrigin).pipe(debounceTime(50)).subscribe(origin => this.isFocused = origin)
-        this.destruct.subscription(focusMonitor.monitor(el.nativeElement, true)).subscribe(this.handleFocusOrign)
-        this.destruct.any(focusMonitor.stopMonitoring.bind(focusMonitor, el.nativeElement))
+        focusGroup.watch(el.nativeElement)
+
         this.destruct.subscription(this.valuesGroup.valueChanges)
             .pipe(distinctUntilChanged(valuesIsEq))
             .subscribe(values => {
                 this.model.values = values
                 this._updateValueContext()
+                this.valueChanges.next(this.model)
             })
     }
 
     public ngAfterViewInit() {
+        if (this._pendingCompFocus) {
+            this.showCompSuggestions()
+        } else if (this._pendingValueFocus != null) {
+            this._focusValueInput(this._pendingValueFocus)
+        }
+
         this.destruct.subscription(this.valueEls.changes).subscribe(valueEls => {
             if (this._pendingValueFocus != null) {
                 this._focusValueInput(this._pendingValueFocus)
@@ -95,7 +96,16 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
             this.isUnexpected = true
         }
 
-        this.setComp(model.comp)
+        if (model.comp) {
+            this.setComp(model.comp)
+        } else {
+            const comparators = this.model.filter.comparatorsSrc.data
+            if (comparators.length === 1) {
+                this.setComp(comparators[0].comp)
+            } else {
+                this.showCompSuggestions()
+            }
+        }
     }
 
     public compIsValid(comp: TokenFilterComparator): boolean {
@@ -126,9 +136,17 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
     }
 
     public showCompSuggestions() {
+        delete this._pendingCompFocus
+        if (!this.compEl) {
+            this._pendingCompFocus = true
+            return
+        }
+
         this.showSugg(this.model.filter.comparatorSuggestions, this.compEl.nativeElement, this.el.nativeElement, (selected) => {
             if (selected) {
                 this.setComp(selected.comp)
+            } else if (!this.model.comp) {
+                this.remove.next(this.model)
             }
         })
     }
@@ -143,11 +161,9 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
         this.isInfinity = comp.valueCount === Infinity
         this.displayParens = comp.valueCount > 1 || this.isInfinity
         this.model.comp = comp
-        const values = this.updateValues()
         // todo validate values
-        console.log(values)
+        const values = this.updateValues()
         for (let i = 0; i < values.length; i++) {
-            console.log(values[i], this.valueControls[i].value)
             if (values[i] == null) {
                 this._focusValueInput(i)
             }
@@ -158,8 +174,11 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
         let newValues: any[]
         if (this.model.comp.valueCount === Infinity) {
             newValues = this.model.values
+            if (!newValues || newValues.length === 0) {
+                newValues = [null]
+            }
         } else {
-            const values = this.model.values
+            const values = this.model.values || []
             newValues = []
             for (let i = 0; i < this.model.comp.valueCount; i++) {
                 if (values[i] != null) {
@@ -170,6 +189,7 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
             }
         }
         this._updateControls(newValues)
+        this.valueChanges.next(this.model)
         return newValues
     }
 
@@ -207,9 +227,7 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
             ctx.values = this.valuesGroup.value
             ctx.remove = this.isInfinity ? this._removeValueAt.bind(this, index) : noop
             ctx.focused = (fevent) => {
-                console.log("focused", index, fevent)
                 this._hideSuggestions()
-                this.focusOrigin.next(fevent.current)
             }
             return this.model.filter.valueProvider.updateContext(ctx as TokenFilterValueInputCtx)
         })
@@ -235,20 +253,8 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
         }
         this.currentSugg = sugg
 
-        const monitorFocus = (el: HTMLElement) => {
-            this.destruct.subscription(this.focusMonitor.monitor(el, true)).subscribe(this.handleFocusOrign)
-            return () => {
-                this.focusMonitor.stopMonitoring(el)
-            }
-        }
-
         this.el.nativeElement.focus()
-        this.destruct.subscription(sugg.show(target, crop, monitorFocus)).subscribe(cb)
-    }
-
-    private handleFocusOrign = (orign: FocusOrigin) => {
-        this.input.focusOrigin.next(orign)
-        this.focusOrigin.next(orign)
+        this.destruct.subscription(sugg.show(target, crop, this.focusGroup)).subscribe(cb)
     }
 
     private _findFocusable(valueEl: HTMLElement): HTMLElement | null {
@@ -267,10 +273,11 @@ export class TokenFilterItemComponent extends Destructible implements OnChanges,
 
     private _focusValueInput(index: number) {
         delete this._pendingValueFocus
-        if (this.valueEls.length <= index) {
+        if (!this.valueEls || this.valueEls.length <= index) {
             this._pendingValueFocus = index
             return
         }
+
         const valueEl = this.valueEls.get(index)
         const focusable = this._findFocusable(valueEl.nativeElement)
         if (focusable) {

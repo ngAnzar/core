@@ -1,8 +1,8 @@
-ng-template(ngFor, [ngForOf]="items$ | async", let-item)
-  nz-token-filter-item([model]="item")
+ng-template(ngFor, [ngForOf]="items$ | async", [ngForTrackBy]="_trackBy", let-item)
+  nz-token-filter-item([model]="item", (remove)="remove($event)", (valueChanges)="onItemChanges($event)")
 
-button.nz-button(variant="tiny icon", color="common", (tap)="doAddNewItem($event)")
-  i.nz-icon(class=icon("mdi/plus-box-outline", 20), color="common")
-
+ng-template([ngIf]="canAddNewItem")
+  button.nz-button(variant="tiny icon", color="common", (tap)="doAddNewItem($event)")
+    i.nz-icon(class=icon("mdi/plus-box-outline", 20), color="common")
 
 ng-template(#filterItemTpl, let-item) {{ item.label }}

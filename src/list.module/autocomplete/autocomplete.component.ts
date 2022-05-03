@@ -1,6 +1,6 @@
 import {
     Component, Inject, InjectionToken, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy,
-    ViewChild, QueryList, OnInit
+    ViewChild, QueryList, OnInit, HostListener
 } from "@angular/core"
 import { SafeStyle, DomSanitizer } from "@angular/platform-browser"
 import { merge } from "rxjs"

@@ -444,7 +444,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
         if (listeners.activeRecognizer?.name === "tap") {
             const focusable = this._findFocusable(event.target as any)
-            focusable && focusable.focus()
+            focusable && document.contains(focusable) && focusable.focus()
         }
 
         this._uninstallPeriodic()

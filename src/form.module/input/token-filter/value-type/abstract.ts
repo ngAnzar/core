@@ -1,7 +1,7 @@
 import { Directive, TemplateRef, ViewChild } from "@angular/core"
 import { AbstractControl } from "@angular/forms"
 
-import { FocusChangeEvent } from "../../abstract"
+import { FocusChangeEvent } from "../../../../common.module"
 
 
 export interface TokenFilterValueInputCtx {

@@ -1,11 +1,9 @@
 import { Component, Inject, ViewChild, ElementRef, HostBinding } from "@angular/core"
 
 
-import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent } from "../abstract"
+import { InputComponent, InputModel, INPUT_MODEL } from "../abstract"
 import { RichtextDirective } from "./richtext.directive"
-import { RichtextMenuDirective } from "./richtext-menu.component"
 import { RichtextStream } from "./core/richtext-stream"
-import { RICHTEXT_AUTO_COMPLETE_EL } from "./core/autocomplete"
 import { SelectionService } from "./core/selection"
 
 
@@ -28,8 +26,7 @@ export class RichtextInputComponent extends InputComponent<string> {
         @Inject(ElementRef) el: ElementRef) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
-        // this.destruct.subscription(model.focusChanges).subscribe(this.handleFocus.bind(this))
+        this.monitorFocus(el.nativeElement)
     }
 
     protected _renderValue(value: any): void {

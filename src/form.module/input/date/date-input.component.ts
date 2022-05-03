@@ -169,10 +169,10 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
         @Inject(AutosizePropertiesDirective) @Optional() @Self() public readonly autosize: AutosizePropertiesDirective) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
+        this.monitorFocus(el.nativeElement)
 
         this.destruct.subscription(model.focusChanges).subscribe(event => {
-            if (!event.current) {
+            if (!event.curr) {
                 this.opened = false
             } else if (this._showPickerOnFocus) {
                 this.opened = true
@@ -279,7 +279,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     if (this.max) {
                         event.instance.max = this.max
                     }
-                    this.monitorFocus(event.layerRef.container, true)
+                    this.monitorFocus(event.layerRef.container)
                 } else if (event.type === "value") {
                     const value = startOfDay(event.value)
                     this._renderValue(value)

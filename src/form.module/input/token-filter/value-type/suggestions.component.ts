@@ -3,7 +3,7 @@ import { AbstractControl } from "@angular/forms"
 
 import { DataSourceDirective } from "../../../../data.module"
 import { AutocompleteComponent } from "../../../../list.module"
-import { FocusChangeEvent } from "../../abstract"
+import { FocusChangeEvent } from "../../../../common.module"
 import { TokenFilterValue, TokenFilterValueInputCtx } from "./abstract"
 
 
@@ -45,7 +45,7 @@ export class TokenFilterSuggestionsValue extends TokenFilterValue {
 
     public removeOnFocusChange(forigin: FocusChangeEvent, control: AbstractControl, remove: () => void, focused: (forigin: FocusChangeEvent) => void) {
         focused(forigin)
-        if (!forigin.current && control.value == null) {
+        if (!forigin.curr && control.value == null) {
             remove()
         }
     }

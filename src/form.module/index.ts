@@ -79,7 +79,7 @@ import { TokenFilterValue, TokenFilterBoolValue, TokenFilterDateValue, TokenFilt
 import { TokenFilterComparator, TokenFilterComparatorOptions, TokenFilterComparatorBinary, TokenFilterComparatorBetween } from "./input/token-filter/token-filter-comparator"
 export { TokenFilterComparator, TokenFilterComparatorOptions, TokenFilterComparatorBinary, TokenFilterComparatorBetween }
 
-export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGroupModel, FocusChangeEvent, inputValueComparator } from "./input/abstract"
+export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGroupModel, inputValueComparator } from "./input/abstract"
 
 
 @NgModule({

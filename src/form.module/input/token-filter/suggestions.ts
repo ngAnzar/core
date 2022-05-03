@@ -4,6 +4,7 @@ import { Observable } from "rxjs"
 import { DataSource, DataSourceDirective, Model, SelectionModel, SingleSelection } from "../../../data.module"
 import { LayerRef, LayerService, DropdownLayer } from "../../../layer.module"
 import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_FACTORY, AUTOCOMPLETE_ITEM_TPL } from "../../../list.module"
+import { FocusGroup } from "../../../common.module"
 
 
 export class TFSuggestions<T extends Model = Model> {
@@ -27,7 +28,7 @@ export class TFSuggestions<T extends Model = Model> {
         }
     }
 
-    public show(target: HTMLElement, crop?: HTMLElement, fm?: (el: HTMLElement) => () => void): Observable<T> {
+    public show(target: HTMLElement, crop?: HTMLElement, focusGroup?: FocusGroup): Observable<T> {
         return new Observable(subscriber => {
             const behavior = new DropdownLayer({
                 backdrop: { type: "filled", crop: crop, hideOnClick: true },
@@ -37,10 +38,11 @@ export class TFSuggestions<T extends Model = Model> {
                 maxHeight: 48 * 7,
                 trapFocus: false,
                 position: {
-                    align: "left bottom",
+                    align: "left top",
+                    margin: "0 0 0 -6",
                     anchor: {
                         ref: target,
-                        align: "left top",
+                        align: "left bottom",
                         margin: "6 0"
                     },
                     constraint: {
@@ -59,8 +61,11 @@ export class TFSuggestions<T extends Model = Model> {
             ])
             this.layerRef = layerRef
 
+            focusGroup && focusGroup.watch(layerRef.outlet.firstElement)
             layerRef.subscribe(event => {
-                if (event.type === "destroy") {
+                if (event.type === "hiding") {
+                    focusGroup && focusGroup.unwatch(layerRef.outlet.firstElement)
+                } else if (event.type === "destroy") {
                     subscriber.next(null)
                     subscriber.complete()
                 }
@@ -72,13 +77,10 @@ export class TFSuggestions<T extends Model = Model> {
             })
 
             layerRef.show()
-
-            const fmd = fm ? fm(layerRef.outlet.firstElement) : null
             return () => {
                 ss?.unsubscribe()
                 this.hide()
                 this.selection.clear()
-                fmd && fmd()
             }
         })
     }

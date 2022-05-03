@@ -2,14 +2,13 @@ import { Component, Input, Inject, ElementRef, Directive, ViewChild, HostBinding
 import { Validator, AbstractControl, ValidationErrors, NG_VALIDATORS } from "@angular/forms"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { map, takeUntil } from "rxjs/operators"
-import { debounceTime } from "rxjs/operators"
 import { setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns"
 
 
 import { Time } from "../../../util"
 import { LocaleService } from "../../../common.module"
 import { ComponentLayerRef } from "../../../layer.module"
-import { InputComponent, INPUT_MODEL, InputModel, FocusChangeEvent, INPUT_MODEL_VALUE_CMP } from "../abstract"
+import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { MASK_BLOCKS } from "./mask-blocks"
 import { TimePickerComponent } from "./time-picker.component"
 import { TimePickerService } from "./time-picker.service"
@@ -166,10 +165,10 @@ export class TimeInputComponent extends InputComponent<Time> {
         @Inject(InvalidDateValidator) private readonly dtValidator: InvalidDateValidator) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
+        this.monitorFocus(el.nativeElement)
 
         this.destruct.subscription(this.focused).subscribe(event => {
-            if (!event.current) {
+            if (!event.curr) {
                 this.opened = false
             }
             this.cdr.detectChanges()
@@ -249,7 +248,7 @@ export class TimeInputComponent extends InputComponent<Time> {
             .pipe(takeUntil(this.destruct.on))
             .subscribe(event => {
                 if (event.type === "create") {
-                    this.monitorFocus(event.layerRef.container, true)
+                    this.monitorFocus(event.layerRef.container)
                 } else if (event.type === "value") {
                     const time = event.value as Time
                     if (time.isValid) {

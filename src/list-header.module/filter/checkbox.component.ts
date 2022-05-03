@@ -46,7 +46,6 @@ export class ListFilterCheckbox extends ColumnFilter implements OnDestroy {
         const includes = this.includes.value as any[]
         const excludes = this.excludes.value as any[]
         this._chipText(includes, excludes)
-        console.log(this.includesText, this.excludesText)
 
         if (includes?.length && excludes?.length) {
             this._publishValue({ "and": [{ "in": includes }, { "not in": excludes }] })

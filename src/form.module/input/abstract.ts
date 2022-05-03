@@ -1,14 +1,15 @@
 import { Directive, Inject, Optional, Self, Input, Output, HostBinding, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter, Injectable, Component } from "@angular/core"
 import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
-import { FocusOrigin, FocusMonitor } from "@angular/cdk/a11y"
+import { FocusOrigin } from "@angular/cdk/a11y"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import { Observable, Subject } from "rxjs"
-import { map, filter, debounceTime, shareReplay } from "rxjs/operators"
+import { map, filter, shareReplay } from "rxjs/operators"
 
 import { isPlainObject } from "is-plain-object"
 
 import { Destruct } from "../../util"
 import { ProgressEvent } from "../../animation.module"
+import { FocusGroup } from "../../common.module"
 
 
 export type ValueComparator<T> = (a: T, b: T) => boolean
@@ -32,19 +33,13 @@ function _suppertedComparable(a: any): boolean {
 }
 
 
-export interface FocusChangeEvent {
-    prev: FocusOrigin | null
-    current: FocusOrigin | null
-}
-
-
 @Injectable()
 export class InputModel<T> extends AbstractControlDirective {
     public readonly inputChanges = new Subject<T>()
     public readonly renderValueChanges = new Subject<T>()
     // public disabledChanges = new Subject<boolean>()
-    public readonly focusChanges = new Subject<FocusChangeEvent>()
-    public readonly touchChanges = this.focusChanges.pipe(map(v => v.prev && !v.current))
+    public readonly focusChanges = this.focusGroup.changes
+    public readonly touchChanges = this.focusChanges.pipe(map(v => v.prev && !v.curr))
     private readonly _progress = new Subject<ProgressEvent>()
     public readonly progress = this._progress.pipe(shareReplay(1))
 
@@ -101,20 +96,12 @@ export class InputModel<T> extends AbstractControlDirective {
     public get readonly(): boolean { return this._readonly }
     private _readonly: boolean
 
-    public set focused(val: FocusOrigin | null) {
-        if (this._focused !== val) {
-            let prev = this._focused
-            this._focused = val
-            this.focusChanges.next({ prev: prev, current: val })
-        }
-    }
-    public get focused(): FocusOrigin | null { return this._focused }
-    private _focused: FocusOrigin | null = null
+    public get focused(): FocusOrigin | null { return this.focusGroup.currentOrigin }
 
     public constructor(
         @Inject(NgControl) @Optional() @Self() private readonly ngControl: NgControl,
         @Inject(NgModel) @Optional() @Self() private readonly ngModel: NgModel,
-        @Inject(FocusMonitor) public readonly focusMonitor: FocusMonitor,
+        @Inject(FocusGroup) public readonly focusGroup: FocusGroup,
         @Inject(INPUT_MODEL_VALUE_CMP) public readonly cmp: ValueComparator<T>) {
         super()
     }
@@ -174,6 +161,10 @@ export class InputModelVA<T> implements ControlValueAccessor {
 
 
 export const INPUT_MODEL: Provider[] = [
+    {
+        provide: FocusGroup,
+        useClass: FocusGroup
+    },
     {
         provide: NG_VALUE_ACCESSOR,
         useClass: InputModelVA,
@@ -258,7 +249,7 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     protected _inited = false
 
-    public readonly focusOrigin = this.destruct.subject(new Subject<FocusOrigin>())
+    public readonly focusOrigin = this.model.focusGroup.changes.pipe(map(evt => evt.curr))
     private _pendingDisabled: boolean
     private _pendingReadonly: boolean
 
@@ -268,12 +259,6 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
                 this._renderValue(value)
             }
         })
-
-        this.destruct.subscription(this.focusOrigin)
-            .pipe(debounceTime(50))
-            .subscribe(focus => {
-                this.model.focused = focus
-            })
     }
 
     public ngOnInit() {
@@ -292,13 +277,12 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
 
     protected abstract _renderValue(value: T): void
 
-    protected monitorFocus(el: HTMLElement, checkChildren?: boolean): void {
-        this.destruct.subscription(this.model.focusMonitor.monitor(el, checkChildren)).subscribe(f => this.focusOrigin.next(f))
-        this.destruct.any(() => this.model.focusMonitor.stopMonitoring(el))
+    protected monitorFocus(el: HTMLElement): void {
+        this.model.focusGroup.watch(el)
     }
 
     protected stopFocusMonitor(el: HTMLElement) {
-        this.model.focusMonitor.stopMonitoring(el)
+        this.model.focusGroup.unwatch(el)
     }
 
     public ngOnDestroy() {
@@ -315,8 +299,8 @@ export class InputGroupModel<T> extends InputModel<T> {
 
     public constructor(
         @Inject(ControlContainer) @Self() private cc: ControlContainer,
-        @Inject(FocusMonitor) focusMonitor: FocusMonitor,
+        @Inject(FocusGroup) focusGroup: FocusGroup,
         @Inject(INPUT_MODEL_VALUE_CMP) @Optional() cmp: ValueComparator<T>) {
-        super(null, null, focusMonitor, cmp || (function () { return false }))
+        super(null, null, focusGroup, cmp || (function () { return false }))
     }
 }

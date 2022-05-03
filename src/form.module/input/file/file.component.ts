@@ -42,7 +42,7 @@ export class FileInputComponent extends InputComponent<File | UploadedFile> {
         @Inject(ToastService) private readonly toast: ToastService) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
+        this.monitorFocus(el.nativeElement)
     }
 
     public ngOnInit() {

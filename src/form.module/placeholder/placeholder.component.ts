@@ -75,7 +75,7 @@ export class PlaceholderComponent implements OnDestroy {
 
             const q1 = merge(this._inputModel.statusChanges, this._inputModel.valueChanges, this._inputModel.inputChanges)
             const q2 = this._inputModel.focusChanges.pipe(tap(v => {
-                if (!this._animate && v.current) {
+                if (!this._animate && v.curr) {
                     this._animate = true
                 }
             }))

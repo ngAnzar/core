@@ -55,7 +55,7 @@ ng-container(nzLayout="row inline", nzLayoutAlign="start center")
     .token.token-delimiter(*ngIf="displayParens", nzFlex="none") )
     //- VALUES END
 
-    button.nz-button.btn-delete(variant="very-tiny icon", color="common", tabindex="-1")
+    button.nz-button.btn-delete(variant="very-tiny icon", color="common", tabindex="-1", (tap)="remove.next(model)")
       i.nz-icon(class=icon("mdi/close", 17))
 
 

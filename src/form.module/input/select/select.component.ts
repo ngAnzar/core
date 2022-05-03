@@ -14,7 +14,7 @@ import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, s
 
 import { NzRange, __zone_symbol__, getPath, setPath } from "../../../util"
 import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
-import { InputComponent, InputModel, INPUT_MODEL, FocusChangeEvent, INPUT_MODEL_VALUE_CMP } from "../abstract"
+import { InputComponent, InputModel, INPUT_MODEL, INPUT_MODEL_VALUE_CMP } from "../abstract"
 import { LayerService, DropdownLayer, LayerFactoryDirective, ComponentLayerRef } from "../../../layer.module"
 import { FormFieldComponent } from "../../field/form-field.component"
 import { ListActionComponent, ListActionModel } from "../../../list.module"
@@ -149,7 +149,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._opened = val
             this._closeShortcuts.enabled = val
             if (val && this.input && this.input.nativeElement) {
-                this.model.focusMonitor.focusVia(this.input.nativeElement, this.model.focused)
+                this.model.focusGroup.focusVia(this.input.nativeElement, this.model.focused)
             }
             this.cdr.markForCheck();
             (this.openedChanges as EventEmitter<boolean>).emit(val)
@@ -331,12 +331,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Attribute("triggerIcon") public readonly triggerIcon: string) {
         super(model)
 
-        this.monitorFocus(el.nativeElement, true)
-        // this.destruct.any(() => {
-        //     delete (this as any).selection
-        //     delete (this as any).layer
-        //     delete (this as any)._layerFactory
-        // })
+        this.monitorFocus(el.nativeElement)
 
         if (!selection) {
             this.selection = new SingleSelection()
@@ -374,7 +369,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.destruct.subscription(this.model.focusChanges)
             .pipe(
                 debounceTime(100),
-                map(v => [v.current !== null, v.current]),
+                map(v => [v.curr !== null, v.curr]),
                 distinctUntilChanged((a, b) => a[0] === b[0])
             )
             .subscribe(this._handleFocus.bind(this))
@@ -612,12 +607,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         ) as ComponentLayerRef<AutocompleteComponent<T>>
 
         const outletEl = layerRef.outlet.firstElement
-        this.monitorFocus(outletEl, true)
+        this.monitorFocus(outletEl)
         this._closeShortcuts.watch(outletEl)
 
         let s = layerRef.subscribe((event) => {
             if (event.type === "hiding") {
-                this.model.focusMonitor.stopMonitoring(outletEl)
+                this.stopFocusMonitor(outletEl)
                 this._closeShortcuts.unwatch(outletEl)
                 if (!this.opened) {
                     this._updateFilter(null, true)
@@ -640,9 +635,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         if (focused) {
             if (this.input) {
-                this.model.focusMonitor.focusVia(this.input.nativeElement, origin)
+                this.model.focusGroup.focusVia(this.input.nativeElement, origin)
             } else {
-                this.model.focusMonitor.focusVia(this.el.nativeElement, origin)
+                this.model.focusGroup.focusVia(this.el.nativeElement, origin)
             }
 
             if (!this.opened && this.autoTrigger && this.input && !this.disabled && !this.readonly && this.model.isEmpty) {

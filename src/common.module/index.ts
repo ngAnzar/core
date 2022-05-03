@@ -58,6 +58,8 @@ export {
     TOUCH_EVENT_PLUGIN, NzTouchEvent,
     CordovaService, CssService, CssProps
 }
+import { FocusService, FocusGroup, FocusChangeEvent } from "./services/focus.service"
+export { FocusService, FocusGroup, FocusChangeEvent }
 
 import { ShortcutService } from "./shortcut/shortcut.service"
 export { ShortcutService }
@@ -128,6 +130,7 @@ const content = [
         LocalStorageService,
         CordovaService,
         CssService,
+        FocusService,
     ]
 })
 export class NzCommonModule { }

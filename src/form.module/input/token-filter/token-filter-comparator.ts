@@ -32,11 +32,16 @@ export abstract class TokenFilterComparator implements TokenFilterComparatorOpti
 
 export class TokenFilterComparatorBinary extends TokenFilterComparator {
     public compose(values: any[]): any {
-        return { [this.name]: values[0] }
+        if (this.valueCount === Infinity) {
+            return { [this.name]: values }
+        } else if (this.valueCount === 1) {
+            return { [this.name]: values[0] }
+        } else {
+            return { [this.name]: values.slice(0, this.valueCount) }
+        }
     }
 
     public parse(value: any): any[] | undefined {
-        console.log("parse", value)
         if (isPlainObject(value)) {
             if (this.name in value) {
                 if (this.valueCount === 1) {
