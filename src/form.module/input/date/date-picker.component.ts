@@ -20,7 +20,7 @@ const SELECTED_DATA: DayData = { color: "accent", variant: "filled icon" }
     selector: "nz-date-picker",
     templateUrl: "./date-picker.component.pug",
     host: {
-        "[attr.tabindex]": "'0'"
+        "[attr.tabindex]": "'-1'"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -195,17 +195,20 @@ export class DatePickerComponent extends Destructible implements OnInit, PickerP
 
     public writeValue(date: Date) {
         if (this._setDateField("_value", date, isSameDay)) {
+            console.log("writeValue", this._value)
             this.displayed = this._value
             this._renderValue.next(this._value)
         }
     }
 
     public _emitValue(date: Date) {
+        console.log("_emitValue", date)
         this.writeValue(date);
         (this.valueChange as Subject<Date>).next(this._value)
     }
 
     public onDayClick(date: Date) {
+        console.log("onDayClick", date)
         if (this.showButtons) {
             this.writeValue(date)
         } else {

@@ -1,6 +1,6 @@
 import { Injectable, Inject, Optional, SkipSelf } from "@angular/core"
 import { FocusMonitor, FocusOrigin } from "@angular/cdk/a11y"
-import { BehaviorSubject, Subject, tap } from "rxjs"
+import { BehaviorSubject, debounceTime, Subject, tap } from "rxjs"
 
 import { Destructible } from "../../util"
 
@@ -47,7 +47,7 @@ export class FocusGroup extends Destructible {
 
         if (!this.watched.has(target)) {
             this.watched.set(target, null)
-            this.destruct.subscription(this.svc.monitor.monitor(target, true)).subscribe(origin => {
+            this.destruct.subscription(this.svc.monitor.monitor(target, true)).pipe(debounceTime(50)).subscribe(origin => {
                 let changed = false
 
                 for (const [key, value] of this.watched) {

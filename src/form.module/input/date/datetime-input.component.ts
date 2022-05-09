@@ -21,7 +21,7 @@ function cmpValue(a: any, b: any) {
 
 @Component({
     selector: ".nz-datetime-input",
-    templateUrl: "./datetime-input.template.pug",
+    templateUrl: "./datetime-input.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
         ...INPUT_MODEL,

@@ -40,7 +40,8 @@ export interface PickerPopup<VALUE> {
 }
 
 
-export type DatePickerEvent<CMP extends PickerPopup<VALUE>, VALUE> = { type: "create", instance: CMP, service: AbstractPickerService<CMP, VALUE>, layerRef: ComponentLayerRef<CMP> }
+export type DatePickerEvent<CMP extends PickerPopup<VALUE>, VALUE> = { type: "create", service: AbstractPickerService<CMP, VALUE>, layerRef: ComponentLayerRef<CMP> }
+    | { type: "show", instance: CMP, service: AbstractPickerService<CMP, VALUE>, layerRef: ComponentLayerRef<CMP> }
     | { type: "value", value: VALUE, layerRef: ComponentLayerRef<CMP> }
     | { type: "hide", layerRef: ComponentLayerRef<CMP> }
 
@@ -91,10 +92,15 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
 
         return this.visibleObservable = new Observable((observer: Observer<DatePickerEvent<CMP, VALUE>>) => {
             const layer = this.visibleRef = this._create(position, provides, injector)
+
+            observer.next({ type: "create", service: this, layerRef: layer })
+
             layer.show()
             const instance = layer.component.instance
             instance.showButtons = this.isDialogMode
-            observer.next({ type: "create", instance, service: this, layerRef: layer })
+
+            observer.next({ type: "show", instance, service: this, layerRef: layer })
+
             if (value != null) {
                 instance.writeValue(value)
             }
@@ -104,7 +110,7 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
             })
 
             layer.subscribe(event => {
-                if (event.type === "hiding") {
+                if (event.type === "destroy") {
                     observer.next({ type: "hide", layerRef: layer })
                     observer.complete()
                     delete this.visibleRef
@@ -157,7 +163,8 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
                 position: position,
                 elevation: 10,
                 closeable: true,
-                rounded: 3
+                rounded: 3,
+                trapFocus: true
             })
         } else {
             return new ModalLayer({

@@ -191,6 +191,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     model.isEmpty = Boolean(!mask.unmaskedValue || mask.unmaskedValue.length === 0)
 
                     const blockVals = mask.blockValues
+                    console.log("blockVals", blockVals)
 
                     this._year = toNumber(blockVals["yyyy"])
                     this._month = toNumber(blockVals["MM"])
@@ -205,6 +206,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                 })
             )
             .subscribe(value => {
+                console.log("XXX", value)
                 let isValid = value === null
                 if (value instanceof Date && !isNaN(value.getTime())) {
                     this.model.emitValue(value = startOfDay(value))
@@ -234,6 +236,7 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
     }
 
     protected _renderValue(obj: Date | string): void {
+        console.log("_renderValue", obj)
         let value = ""
         if (obj instanceof Date) {
             obj = startOfDay(obj)
@@ -268,6 +271,8 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
             .pipe(takeUntil(this.destruct.on))
             .subscribe(event => {
                 if (event.type === "create") {
+                    this.monitorFocus(event.layerRef.container)
+                } else if (event.type === "show") {
                     if (!date) {
                         event.instance.displayed = new Date()
                     }
@@ -279,7 +284,6 @@ export class DateInputComponent extends InputComponent<Date> implements AfterVie
                     if (this.max) {
                         event.instance.max = this.max
                     }
-                    this.monitorFocus(event.layerRef.container)
                 } else if (event.type === "value") {
                     const value = startOfDay(event.value)
                     this._renderValue(value)

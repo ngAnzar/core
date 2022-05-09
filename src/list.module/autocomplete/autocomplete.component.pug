@@ -24,7 +24,7 @@
     padding: 0 12px !important
 
 
-.container(fxFlex="grow", fxLayout="column inline", tabindex="0")
+.container(fxFlex="grow", fxLayout="column inline")
   ng-template([ngIf]="!hasCreateNew && isNotFound")
     .nz-list-empty.notfound(*ngIf="", fxFlex="none") Nem található
 
@@ -36,8 +36,7 @@
               [style.gridRow]="index + 1",
               [selectableAction]="action.model",
               [selectionIndex]="index + 1",
-              color="light-accent",
-              (mousedown)="$event.preventDefault()")
+              color="light-accent")
             ng-container([ngTemplateOutlet]="action.tpl")
 
       ng-template(nzVirtualFor,
@@ -49,7 +48,7 @@
           [fixedItemHeight]="48",
           [itemsPerRequest]="itemsPerRequest",
           (rendered)="onItemsRendered($event)")
-        .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)", (mousedown)="$event.preventDefault()")
+        .nz-list-item.item([style.gridRow]="_offset(index)", [selectable]="virtual", [selectionIndex]="_offset(index)")
           ng-container([ngTemplateOutlet]="itemTpl", [ngTemplateOutletContext]="{$implicit:virtual}")
 
       ng-template([ngIf]="actionsByPosition.last && !source.isBusy")
@@ -58,12 +57,11 @@
               [style.gridRow]="_offset(index) + source.storage.lastIndex",
               [selectableAction]="action.model",
               [selectionIndex]="_offset(index) + source.storage.lastIndex",
-              color="light-accent",
-              (mousedown)="$event.preventDefault()")
+              color="light-accent")
             ng-container([ngTemplateOutlet]="action.tpl")
 
 
-nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()", (mousedown)="$event.preventDefault()")
+nz-list-action(#createNewAction, position="last", text="Új elem létrehozás", (action)="itemFactory()")
   div(fxFlayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
     i.nz-icon(class=icon("mdi/plus-circle-outline"))
     span Új elem létrehozás

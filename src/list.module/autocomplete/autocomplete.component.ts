@@ -31,7 +31,7 @@ export class DDContext<T> {
     // host: {
     //     "[style.visibility]": "firstRender ? 'hidden' : 'visible'"
     // },
-    templateUrl: "./autocomplete.template.pug",
+    templateUrl: "./autocomplete.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AutocompleteComponent<T extends Model> extends Destructible implements OnDestroy, OnInit {
