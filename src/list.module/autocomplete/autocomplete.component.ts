@@ -31,6 +31,9 @@ export class DDContext<T> {
     // host: {
     //     "[style.visibility]": "firstRender ? 'hidden' : 'visible'"
     // },
+    host: {
+        "[attr.tabindex]": "'-1'"
+    },
     templateUrl: "./autocomplete.component.pug",
     changeDetection: ChangeDetectionStrategy.OnPush
 })

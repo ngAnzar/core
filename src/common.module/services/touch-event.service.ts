@@ -406,6 +406,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
         if (listeners) {
             event.stopPropagation()
+            event.preventDefault()
             const state = listeners.state
             state.path = []
             state.maxPointer = 0
@@ -494,7 +495,7 @@ export class TouchEventService extends ɵDomEventsPlugin {
     }
 
     private _isFocusable(el: HTMLElement) {
-        return el.tabIndex >= 0
+        return el.tabIndex >= -1
     }
 
     private _installPeriodic() {
