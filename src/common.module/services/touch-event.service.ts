@@ -406,7 +406,9 @@ export class TouchEventService extends ɵDomEventsPlugin {
 
         if (listeners) {
             event.stopPropagation()
-            event.preventDefault()
+
+            // XXX: jó lenne, de ha ez itt van akkor nem műödnek az input mezők
+            // event.preventDefault()
             const state = listeners.state
             state.path = []
             state.maxPointer = 0

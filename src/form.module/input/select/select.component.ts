@@ -590,6 +590,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 initialWidth: targetEl.offsetWidth + margin.left + margin.right,
                 initialHeight: this.editable ? 0 : targetEl.offsetHeight,
                 elevation: 10,
+                preventFocus: true,
             }),
             {
                 $implicit: this

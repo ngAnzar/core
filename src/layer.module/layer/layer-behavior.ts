@@ -34,6 +34,10 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
         if (this.options.trapFocus) {
             layer.container.setAttribute("tabindex", "-1")
         }
+        if (this.options.preventFocus) {
+            layer.container.addEventListener("mousedown", preventDefault, { capture: true })
+            layer.container.addEventListener("mouseup", preventDefault, { capture: true })
+        }
     }
 
     public animateShow(layer: LayerRef): Promise<void> {
@@ -42,7 +46,10 @@ export abstract class LayerBehavior<O extends LayerOptions = LayerOptions> imple
     }
 
     public initHide(layer: LayerRef): void {
-
+        if (this.options.preventFocus) {
+            layer.container.removeEventListener("mousedown", preventDefault, { capture: true })
+            layer.container.removeEventListener("mouseup", preventDefault, { capture: true })
+        }
     }
 
     public animateHide(layer: LayerRef): Promise<void> {
@@ -202,4 +209,9 @@ export class FullscreenLayer extends LayerBehavior<DropdownLayerOptions> {
         return this.playAnimation(layer, fsAnimation.hide, null, "opacity, transform")
             .then(() => super.animateHide(layer))
     }
+}
+
+
+function preventDefault(event: Event) {
+    event.preventDefault()
 }

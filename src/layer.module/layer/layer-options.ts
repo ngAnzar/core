@@ -35,6 +35,7 @@ export interface LayerOptions {
     // Can close layer with backButton (esc, or back button on mobile device)
     closeable?: boolean
     trapFocus?: boolean
+    preventFocus?: boolean
     alwaysOnTop?: boolean
 }
 

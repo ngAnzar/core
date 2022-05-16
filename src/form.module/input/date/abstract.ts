@@ -164,6 +164,7 @@ export abstract class AbstractPickerService<CMP extends PickerPopup<VALUE>, VALU
                 elevation: 10,
                 closeable: true,
                 rounded: 3,
+                preventFocus: true,
             })
         } else {
             return new ModalLayer({
