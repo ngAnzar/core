@@ -106,21 +106,22 @@ export class FileDownloadService {
                                     filename: filename,
                                     current: event.loaded,
                                     total: total = event.total,
-                                    percent: event.total ? event.loaded / event.total : null
+                                    percent: total ? event.loaded / total : null
                                 })
                             }
                             break
 
                         case HttpEventType.Response:
                             if (!errorResponse) {
-                                downloadUrl = URL.createObjectURL(event.body)
+                                const body = event.body as Blob
+                                downloadUrl = URL.createObjectURL(body)
                                 this._save(downloadUrl, filename || "")
 
                                 observer.next({
                                     state: "done",
                                     filename: filename,
-                                    current: total,
-                                    total: total,
+                                    current: body.size,
+                                    total: body.size,
                                     percent: 1,
                                     url: downloadUrl
                                 })
