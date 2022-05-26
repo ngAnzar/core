@@ -27,10 +27,11 @@ export class TokenFilterSuggestionsValue extends TokenFilterValue {
 
     public createDsFilter(control: AbstractControl, values: any[]) {
         let notIn = values ? values.filter(v => v !== control.value) : null
+        let base = this.dataSource.filter || {}
         if (notIn) {
-            return { [this.valueField]: { "not in": notIn } }
+            return { ...base, [this.valueField]: { "not in": notIn } }
         } else {
-            return null
+            return base
         }
     }
 
