@@ -258,6 +258,11 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
             useValue: new TokenFilterComparatorBetween({ name: "between", label: "≷", valueCount: 2, description: "Között", delimiter: "—", priority: 50 }),
             multi: true
         },
+        {
+            provide: TokenFilterComparator,
+            useValue: new TokenFilterComparatorBinary({ name: "contains", label: "~", valueCount: 1, description: "Tartalmazza" }),
+            multi: true
+        },
     ],
     entryComponents: [
         RichtextMenuComponent,
