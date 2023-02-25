@@ -170,7 +170,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
         this._abortLoad = new Subject()
 
         const src = this.source
-            .search(this.filter.get(), this.sorter.get(), request, this.meta.get())
+            .search(this.filter.get() as any, this.sorter.get(), request, this.meta.get())
             .pipe(takeUntil(this._abortLoad), take(1))
 
         this._setPending(request, src)
@@ -198,7 +198,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
             }
         }
 
-        return this.source.getPosition(id, this.filter.get(), this.sorter.get())
+        return this.source.getPosition(id, this.filter.get() as any, this.sorter.get())
     }
 
     public reload() {
