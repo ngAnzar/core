@@ -61,12 +61,14 @@ export class QtipDirective implements OnDestroy {
         if (!this._layerRef || !this._layerRef.isVisible) {
             let tAlign: Align
             let lAlign: Align
+            let margin = 16
             if (this.align) {
                 tAlign = this.align.targetAlign
                 lAlign = this.align.levitateAlign
             } else {
-                tAlign = { horizontal: "center", vertical: "bottom" }
-                lAlign = { horizontal: "center", vertical: "top" }
+                tAlign = { horizontal: "center", vertical: "top" }
+                lAlign = { horizontal: "center", vertical: "bottom" }
+                margin = 8
             }
 
             let behavior = new QtipBehavior({
@@ -77,7 +79,7 @@ export class QtipDirective implements OnDestroy {
                     anchor: {
                         ref: this.el.nativeElement,
                         align: tAlign,
-                        margin: 16
+                        margin: margin
                     }
                 }
             })
