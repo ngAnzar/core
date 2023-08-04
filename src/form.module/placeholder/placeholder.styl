@@ -3,30 +3,49 @@
 .nz-placeholder
   position: relative
   overflow: visible !important
+  color: $theme.common.dark
+
+  display: flex
+  flex-flow: row nowrap
+  justify-content: start
+  align-items: center
+  align-content: center
 
   > label
     position: absolute
-    top: 0px
-    left: 2px
-    right: 0px
-    bottom: 0px
+    // top: 0px
+    // left: 2px
+    // right: 0px
+    // bottom: 0px
+
+    height: $nz-ff-top-caption-height
+    max-width: 100%
     cursor: text
-    color: $theme.common.dark
     user-select: none
     pointer-events: none
     opacity: 1
     transform-origin: top left
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
+
+    display: inline-flex
+    flex-flow: row nowrap
+    justify-content: start
+    align-items: center
+    align-content: center
+
 
   &[variant="hide"]
     &[animate] > label
-      transition: opacity $nz-form-field-anim-duration
+      transition: opacity $nz-ff-anim-duration
 
     &[ishidden] > label
       opacity: 0
 
   &[variant="translate"]
     &[animate] > label
-      transition: transform $nz-form-field-anim-duration
+      transition: transform $nz-ff-anim-duration
 
     &[ishidden] > label
-      transform: translate(-2px, -($nz-form-field-top-caption-height)) scale(0.8)
+      transform: translate(0px, ($nz-ff-top-caption-height * -1)) scale(0.8)

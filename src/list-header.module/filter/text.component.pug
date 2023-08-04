@@ -1,11 +1,11 @@
 :stylus
   .input-row
-    padding: 0 8px
+    padding: 8px
 
 ng-template(#layer)
   form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch" style="min-width:300px", on-submit="applyValue();$event.preventDefault()", ngNoForm)
     .input-row(fxFlex="grow")
-      .nz-form-field(fxFlex="grow")
+      .nz-form-field(fxFlex="grow", variant="slim outline")
         label {{ title }} tartalmazza
         input.nz-input([formControl]="value", cdkFocusInitial)
 

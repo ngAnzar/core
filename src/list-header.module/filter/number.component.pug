@@ -1,6 +1,6 @@
 :stylus
   .input-row
-    padding: 0 8px
+    padding: 8px
 
   .number-input
     width: 140px
@@ -8,16 +8,16 @@
 ng-template(#layer)
   form.nz-list-filter-layer(fxLayout="column", fxLayoutAlign="start stretch", (submit)="applyValue();$event.preventDefault()", ngNoForm)
     .input-row(fxFlex="grow", fxLayout="row", fxLayoutAlign="start center", fxLayoutGap="8px")
-      .nz-form-field(fxFlex="none")
+      .nz-form-field(fxFlex="none", variant="slim outline")
         label {{ isRange ? "Ettől" : "Érték" }}
         input.nz-input.number-input(type="number", [formControl]="begin", cdkFocusInitial)
 
       ng-template([ngIf]="isRange", [ngIfElse]="ifIsNotRange")
         span(fxFlex="none") —
 
-        .nz-form-field(fxFlex="none")
+        .nz-form-field(fxFlex="none", variant="slim outline")
           label Eddig
-          input.nz-input.number-input(type="number"[formControl]="end")
+          input.nz-input.number-input(type="number", [formControl]="end")
 
         button.nz-button(fxFlex="none", color="common", variant="tiny icon", (tap)="isRange=false")
           i.nz-icon(class=icon("mdi/minus-box-outline", 18))

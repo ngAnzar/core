@@ -1,0 +1,102 @@
+//- :stylus
+//-   @require "./form-field"
+
+//-   .input-container
+//-     padding: $nz-form-field-input-padding 0
+
+//-     display: flex
+//-     flex-direction: row
+//-     flex-wrap: nowrap
+//-     justify-content: flex-start
+//-     align-items: center
+//-     align-content: center
+//-     z-index: 5
+
+
+//-   .before-input, .after-input
+//-     flex: none
+//-     white-space: nowrap
+//-     cursor: default
+
+//-   .placeholder
+//-     flex: 1 1
+
+//-   .caption
+//-     height: $nz-form-field-bottom-caption-height
+//-     nz-typo: $typo.caption
+
+//-     display: flex
+//-     flex-direction: row
+//-     flex-wrap: nowrap
+//-     justify-content: flex-start
+//-     align-items: center
+//-     align-content: center
+
+//-     .nz-error
+//-       margin-right: 4px
+
+//-       &:last-child
+//-         margin-right: 0px
+
+//-   .outline
+//-     position: absolute
+//-     top: ($nz-form-field-top-caption-height - $nz-form-field-top-caption-height / 2)
+//-     right: 0
+//-     bottom: $nz-form-field-bottom-caption-height
+//-     left: 0
+//-     z-index: 1
+
+
+//- .input-container
+//-   .before-input
+//-     ng-content(select="[nzSlot='prefix']")
+
+//-   .nz-placeholder.placeholder([inputModel]="_inputModel", variant="translate")
+//-     ng-content(ngProjectAs="*")
+
+//-   .after-input
+//-     ng-content(select="[nzSlot='postfix']")
+
+//- ng-template([ngIf]="isUnderline")
+//-   .underline
+//-     .nz-form-field-ripple
+
+//- ng-template([ngIf]="isOutline")
+//-   .nz-form-field-outline.outline
+
+//- .caption
+//-   .nz-error(#error="nzError", [inputModel]="_inputModel", [messages]="messages.toArray()")
+
+//-   ng-template([ngIf]="error.isEmpty")
+//-     ng-content(select="caption, .nz-caption")
+
+
+
+
+.content
+  .before-input
+    ng-content(select="[nzSlot='prefix']")
+
+  //- .nz-placeholder.placeholder(#placeholder, [inputModel]="_inputModel", variant="translate")
+  //-   ng-content(ngProjectAs="*")
+
+  .nz-placeholder.placeholder(#placeholder, [inputModel]="_inputModel", variant="translate")
+    ng-content(select="label")
+
+  .input
+    ng-content(ngProjectAs="*")
+
+  .after-input
+    ng-content(select="[nzSlot='postfix']")
+
+  .decor
+    .nz-form-field-ripple(*ngIf="isUnderline")
+    .nz-form-field-outline(*ngIf="isOutline", [notch]="placeholder.labelNotchWidth$")
+
+
+.caption
+  .nz-error(#error="nzError", [inputModel]="_inputModel", [messages]="messages.toArray()")
+
+  ng-template([ngIf]="error.isEmpty")
+    ng-content(select="caption, .nz-caption")
+

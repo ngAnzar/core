@@ -1,0 +1,38 @@
+:stylus
+  @require "./form-field"
+
+  .left
+    flex: none
+
+    border-top-left-radius: $nz-ff-outline-radius
+    border-bottom-left-radius: $nz-ff-outline-radius
+    //- width: ($nz-form-field-outline-radius + 2px)
+    min-width: $nz-ff-outline-inset - 2px
+    max-width: $nz-ff-outline-inset - 2px
+
+    border-top-style: solid
+    border-left-style: solid
+    border-bottom-style: solid
+
+  .notch
+    flex: none
+
+    position: relative
+    border-bottom-style: solid
+
+  .right
+    flex: 1 1 100%
+
+    border-top-right-radius: $nz-ff-outline-radius
+    border-bottom-right-radius: $nz-ff-outline-radius
+    width: $nz-ff-outline-inset - 2px
+    min-width: $nz-ff-outline-inset - 2px
+    border-top-style: solid
+    border-right-style: solid
+    border-bottom-style: solid
+
+
+
+.left
+.notch(#notchEl)
+.right

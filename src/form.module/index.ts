@@ -15,6 +15,7 @@ import { ErrorMessageDirective } from "./error/error-message.directive"
 export { ErrorComponent, ErrorMessageDirective, DEFAULT_ERROR_MESSAGES }
 
 import { FormFieldComponent } from "./field/form-field.component"
+import { FormFieldOutlineComponent } from "./field/outline.component"
 export { FormFieldComponent }
 
 import { PlaceholderComponent } from "./placeholder/placeholder.component"
@@ -98,6 +99,7 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         ErrorMessageDirective,
 
         FormFieldComponent,
+        FormFieldOutlineComponent,
         PlaceholderComponent,
 
         CheckboxComponent,
@@ -160,6 +162,7 @@ export { InputComponent, INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputModel, InputGr
         ReactiveFormsModule,
 
         FormFieldComponent,
+        FormFieldOutlineComponent,
         PlaceholderComponent,
 
         CheckboxComponent,
