@@ -105,6 +105,7 @@ export class TextareaComponent extends InputComponent<string> {
 
     protected _renderValue(value: string) {
         this.el.nativeElement.value = value
+        autosize.update(this.el.nativeElement)
     }
 
     @HostListener("input", ["$event"])
