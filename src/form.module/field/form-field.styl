@@ -255,6 +255,14 @@ $nz-ff-outline-inset ?= 8px
       opacity: 1
       transform: scaleX(1)
 
+    &[variant~="underline"]:not([variant~="transparent"])
+      .decor
+        background: alpha($theme.critical.normal, 0.05)
+
+      // &.nz-focused
+      //   .decor
+      //     background: alpha($theme.critical.normal, 0.1)
+
   &.nz-focused
     .nz-form-field-outline
       & > *
@@ -274,6 +282,11 @@ $nz-ff-outline-inset ?= 8px
       &:not([variant~="transparent"])
         .decor
           background: alpha($theme.base.on.normal, 0.1)
+
+  &[disabled]
+    cursor: default !important
+    opacity: 0.3 !important
+    pointer-events: none
 
 
 .nz-form-field-outline
