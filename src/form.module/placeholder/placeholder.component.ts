@@ -38,7 +38,7 @@ export class PlaceholderComponent extends Destructible implements OnDestroy {
         switchMap(model => {
             return concat(
                 interval(20).pipe(
-                    takeWhile(() => !model.control),
+                    takeWhile(() => !model || !model.control),
                     ignoreElements(),
                 ),
                 of(model)
