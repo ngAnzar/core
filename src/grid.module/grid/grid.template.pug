@@ -1,6 +1,9 @@
 :stylus
   @require "../index.styl"
 
+  .content
+    position: relative
+
   .rows
     display: grid
     justify-content: stretch
@@ -12,6 +15,14 @@
   .body
     flex: 1
 
+  .progress
+    position: absolute
+    top: 50%
+    left: 50%
+
+  .busy-text
+    color: $theme.common.normal
+
 
 .nz-scroller(fxFlex="grow", orient="horizontal")
   div(scrollable, fxLayout="column", fxLayoutAlign="start stretch")
@@ -19,7 +30,7 @@
       ng-content(select=".nz-columns", ngProjectAs=".nz-columns")
 
     .nz-scroller.body(orient="vertical", fxFlex="grow")
-      div(scrollable, (tap)="onTap($event)")
+      .content(scrollable, (tap)="onTap($event)", [style.height]="displayLoading ? '100%' : null")
         .nz-list.rows(
             [style.gridTemplate]="gtRows",
             [ngStyle]="{'padding-left.px': _padding.left, 'padding-right.px': _padding.right, 'padding-bottom.px': _padding.bottom}")
@@ -40,3 +51,13 @@
                   [class.last-cell]="lastCell")
 
           .nz-list-empty.empty(*ngIf="displayEmptyText") {{ emptyText }}
+
+          .progress(
+              *ngIf="displayLoading",
+              #progress,
+              [ngStyle]="{'margin-left.px': -progress.offsetWidth/2, 'margin-top.px': -progress.offsetHeight/2}",
+              nzLayout="column",
+              nzLayoutAlign="start center",
+              nzLayoutGap="8px")
+            nz-progress(type="circle", [strokeWidth]="6", [radius]="40", color="common")
+            .nz-list-empty(*ngIf="busyText") {{ busyText }}

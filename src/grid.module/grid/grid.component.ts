@@ -50,6 +50,8 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     }
     protected _canDisplayEmptyText: boolean
 
+    public displayLoading: boolean = true
+
     public constructor(
         @Inject(ElementRef) private readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
@@ -57,10 +59,14 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         @Inject(SelectionModel) @Host() public readonly selection: SelectionModel,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective,
         @Inject(ListFilterService) public readonly filterSvc: ListFilterService,
-        @Attribute("emptyText") public readonly emptyText: string) {
+        @Attribute("emptyText") public readonly emptyText: string,
+        @Attribute("busyText") public readonly busyText: string) {
         this.padding = 24 as any
         if (!emptyText) {
             this.emptyText = "A lista üres"
+        }
+        if (!busyText) {
+            this.busyText = "elemek betöltése ..."
         }
     }
 
@@ -76,11 +82,8 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         this.destruct.subscription(this.selection.changes).subscribe(this._onSelectionChange)
         this.destruct.subscription(this.source.storage.invalidated).subscribe(this._update)
         this.destruct.subscription(this.source.storage.items).subscribe(this._update)
+        this.destruct.subscription(this.source.storage.busy).subscribe(this._updateLoading)
         this.destruct.subscription(this.filterSvc.changes).subscribe(() => {
-            this._update()
-        })
-        this.destruct.subscription(this.source.storage.busy).subscribe((val) => {
-            this._canDisplayEmptyText = !val
             this._update()
         })
     }
@@ -112,6 +115,15 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
             return
         }
         this.updateGridTemplate()
+        this.cdr.detectChanges()
+    }
+
+    protected _updateLoading = (busy: boolean) => {
+        if (this.destruct.done) {
+            return
+        }
+        this._canDisplayEmptyText = !busy
+        this.displayLoading = busy
         this.cdr.detectChanges()
     }
 
