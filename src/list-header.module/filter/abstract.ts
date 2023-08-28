@@ -63,6 +63,7 @@ export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDes
 export abstract class ColumnFilter extends ListFilter {
     @Input() public title: string
     @Input() public name: string
+    @Input() public hint: string
 
     public readonly isEmpty = true
 

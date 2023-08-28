@@ -8,6 +8,7 @@ ng-template(#layer)
       .nz-form-field(fxFlex="grow", variant="slim outline")
         label {{ title }} tartalmazza
         input.nz-input([formControl]="value", cdkFocusInitial)
+        caption(*ngIf="hint") {{ hint }}
 
     div(fxFlex="noshrink", fxLayout="row", fxLayoutGap="8px")
       button.nz-button(*ngIf="value.value", fxFlex="noshrink", (tap)="clearValue()", color="base", variant="filled") Törlés
