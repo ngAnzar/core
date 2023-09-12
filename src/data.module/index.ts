@@ -8,6 +8,7 @@ export { DataStorage, Diff, DiffKind } from "./data-storage"
 export { Model, ModelFields, ModelProxy, ModelClass, ModelFactory, Field, IDField, MODEL_ID, PrimaryKey, MODEL_EQ, decorateModelClass } from "./model"
 export { StaticSource } from "./static-source"
 export { CombinedSource } from "./combined-source"
+export { ObservableSource } from "./observable-source"
 
 
 import { SingleSelection, MultiSelection, NoneSelection, PropagateSelection } from "./selection/selection.directive"
