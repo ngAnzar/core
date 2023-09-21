@@ -1,5 +1,5 @@
 import { Observable } from "rxjs"
-import { map, shareReplay } from "rxjs/operators"
+import { map, shareReplay, take } from "rxjs/operators"
 
 import { NzRange } from "../util"
 import { DataSource, Filter, Meta, Sorter } from "./data-source"
@@ -31,11 +31,12 @@ export class ObservableSource<T extends Model> extends DataSource<T> {
                 const { values, total } = reduceValues(items, f, s, r)
                 return new Items(values, r || new NzRange(0, total), total)
             }),
-            shareReplay(1)
+            take(1)
         )
     }
 
     protected _get(id: PrimaryKey, m?: Meta<T> | undefined): Observable<T> {
+
         const pkstr = `${id}`
         return this.observable.pipe(
             map(items => {
@@ -46,7 +47,7 @@ export class ObservableSource<T extends Model> extends DataSource<T> {
                 }
                 return null as any
             }),
-            shareReplay(1)
+            take(1)
         )
     }
 
