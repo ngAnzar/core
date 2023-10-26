@@ -4,9 +4,15 @@
   max-width: 100%
   width: 100%
   user-select: none
-
+  min-height: 20px
   overflow: visible !important
 
   &[disabled]
     opacity: 0.3 !important
     pointer-events: none
+
+  &[readonly]
+    label
+      cursor: default
+      pointer-events: none
+

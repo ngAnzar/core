@@ -87,6 +87,10 @@ export class FileInputComponent extends InputComponent<File | UploadedFile> {
     }
 
     public onFileChange(event: Event) {
+        if (this.readonly) {
+            return
+        }
+
         const input = event.target as HTMLInputElement
         this._renderValue(input.files[0])
         this.model.emitValue(this.file)

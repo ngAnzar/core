@@ -4,6 +4,9 @@
     white-space: nowrap
     text-overflow: ellipsis
     overflow: hidden
+    display: flex
+    justify-content: flex-start
+    align-items: center
 
   .fileinput
     width: 0.1px
@@ -25,19 +28,19 @@
 
 
 ng-container(nzLayout="inline row", nzLayoutAlign="start center")
-  label.filename([attr.for]="id + '-file'", nzFlex="1 10 1px") {{ filename.value || '&nbsp;' }}
+  label.filename([attr.for]="readonly || uploadInProgress ? null : id + '-file'", nzFlex="1 10 1px") {{ filename.value || '&nbsp;' }}
 
-  ng-template([ngIf]="this.downloadUrl")
-    .nz-button.btn(nzFlex="none", (tap)="_download($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+  ng-template([ngIf]="downloadUrl")
+    .nz-button.btn(nzFlex="none", (tap)="_download($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="uploadInProgress")
       i.nz-icon(class=icon("mdi/download-outline", 18))
 
-  ng-template([ngIf]="this.file")
-    .nz-button.btn(nzFlex="none", (tap)="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+  ng-template([ngIf]="file && !readonly")
+    .nz-button.btn(nzFlex="none", (tap)="_clearValue($event)", tabindex="-1", color="common", variant="tiny icon", [disabled]="uploadInProgress")
       i.nz-icon(class=icon("mdi/close", 18))
 
-  label.nz-button.btn([attr.for]="id + '-file'", nzFlex="none", [attr.tabindex]="tabIndex", color="common", variant="tiny icon", [disabled]="this.uploadInProgress")
+  label.nz-button.btn(*ngIf="!readonly", [attr.for]="id + '-file'", nzFlex="none", [attr.tabindex]="tabIndex", color="common", variant="tiny icon", [disabled]="uploadInProgress")
     i.nz-icon(class=icon("mdi/file-upload", 18))
 
-input.fileinput([attr.id]="id + '-file'", type="file", (change)="onFileChange($event)", tabindex="-1", [disabled]="this.uploadInProgress")
-ng-template([ngIf]="this.uploadInProgress")
+input.fileinput([attr.id]="id + '-file'", type="file", (change)="onFileChange($event)", tabindex="-1", [disabled]="uploadInProgress")
+ng-template([ngIf]="uploadInProgress")
   nz-progress.progress(type="bar", [source]="model.progress", height="4", color="info")
