@@ -9,14 +9,16 @@ import { Items } from "./collection"
 
 export type CustomFilter<T extends Model = Model> = (record: T, filterValue: any) => boolean
 export type CustomSorter<T extends Model = Model> = (a: T, b: T, dir: "asc" | "desc") => number
+export type CustomFilters<T extends Model = Model> = { [key: string]: CustomFilter<T> }
+export type CustomSorters<T extends Model = Model> = { [key: string]: CustomSorter<T> }
 
 
 export class StaticSource<T extends Model> extends DataSource<T> {
     public readonly async = false
     public readonly data: Readonly<Array<Readonly<T>>>
 
-    protected readonly _customFilter: { [key: string]: CustomFilter<T> } = {}
-    protected readonly _customSorter: { [key: string]: CustomSorter<T> } = {}
+    protected readonly _customFilter: CustomFilters = {}
+    protected readonly _customSorter: CustomSorters = {}
 
     public get total(): number {
         return this.data.length
@@ -58,7 +60,7 @@ export class StaticSource<T extends Model> extends DataSource<T> {
     }
 
     protected _search(filter?: Filter<T>, sorter?: Sorter<T>, range?: NzRange): Observable<any[]> {
-        const { values, total } = reduceValues(this.data, filter, sorter, range)
+        const { values, total } = reduceValues(this.data, filter, this._customFilter, sorter, this._customSorter, range)
         return of(new Items(values, range || new NzRange(0, total), total))
         // let result: any[] = this.data.slice(0)
 
@@ -158,18 +160,18 @@ export class StaticSource<T extends Model> extends DataSource<T> {
 }
 
 
-export function reduceValues<T>(values: Readonly<T[]>, filter?: Filter<T>, sorter?: Sorter<T>, range?: NzRange): { values: T[], total: number } {
+export function reduceValues<T>(values: Readonly<T[]>, filter?: Filter<T>, customFilter?: CustomFilters, sorter?: Sorter<T>, customSorter?: CustomSorters, range?: NzRange): { values: T[], total: number } {
     let result = values.slice(0)
 
     if (filter) {
-        result = result.filter(v => _testFilters(filter, v))
+        result = result.filter(v => _testFilters(filter, customFilter, v))
     }
 
     if (sorter) {
         result.sort((a: any, b: any) => {
             let idx = 0
             for (let field in sorter) {
-                const custom = this._customSorter[field]
+                const custom = customSorter[field]
                 if (custom) {
                     idx = custom(a, b, sorter[field])
                 } else if (typeof a[field] === "string") {
@@ -203,13 +205,13 @@ export function reduceValues<T>(values: Readonly<T[]>, filter?: Filter<T>, sorte
 }
 
 
-function _testFilters<T>(filter: Filter<T>, value: { [key: string]: any }) {
+function _testFilters<T extends Model>(filter: Filter<T>, custom: CustomFilters, value: { [key: string]: any }) {
     for (const k in filter) {
-        if (this._customFilter.hasOwnProperty(k)) {
-            if (!this._customFilter[k](value as T, filter[k])) {
+        if (custom.hasOwnProperty(k)) {
+            if (!custom[k](value as T, filter[k])) {
                 return false
             }
-        } else if (!this._testFilter(filter[k], getPath(value, k))) {
+        } else if (!_testFilter(filter[k], getPath(value, k))) {
             return false
         }
     }

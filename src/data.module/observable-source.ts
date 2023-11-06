@@ -28,7 +28,7 @@ export class ObservableSource<T extends Model> extends DataSource<T> {
                     return new Items([], new NzRange(0, 0), 0)
                 }
 
-                const { values, total } = reduceValues(items, f, s, r)
+                const { values, total } = reduceValues(items, f, {}, s, {}, r)
                 return new Items(values, r || new NzRange(0, total), total)
             }),
             take(1)
