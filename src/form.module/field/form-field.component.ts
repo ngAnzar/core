@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, ContentChildren, QueryList, AfterContentInit, NgZone,
-    ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject, OnDestroy, Input, HostBinding
+    ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject, OnDestroy, Input, HostBinding, InjectionToken, Optional
 } from "@angular/core"
 import { merge } from "rxjs"
 import { startWith, debounceTime } from "rxjs/operators"
@@ -9,6 +9,9 @@ import { Destruct, Destructible } from "../../util"
 import { InputModel } from "../input/abstract"
 import { ErrorMessageDirective } from "../error/error-message.directive"
 import { FocusGroup } from "../../common.module"
+
+
+export const FORM_FIELD_DEFAULT_VARIANT = new InjectionToken<FormFieldVariant>("FORM_FIELD_DEFAULT_VARIANT")
 
 
 export class FormFieldVariant {
@@ -104,8 +107,13 @@ export class FormFieldComponent extends Destructible implements AfterContentInit
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
-        @Inject(FocusGroup) public readonly focusGroup: FocusGroup) {
+        @Inject(FocusGroup) public readonly focusGroup: FocusGroup,
+        @Inject(FORM_FIELD_DEFAULT_VARIANT) @Optional() defaultVariant?: FormFieldVariant) {
         super()
+
+        if (defaultVariant) {
+            this._variantParsed = defaultVariant
+        }
     }
 
     public ngAfterContentInit(): void {

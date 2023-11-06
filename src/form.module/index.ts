@@ -14,9 +14,9 @@ import { ErrorComponent, DEFAULT_ERROR_MESSAGES } from "./error/error.component"
 import { ErrorMessageDirective } from "./error/error-message.directive"
 export { ErrorComponent, ErrorMessageDirective, DEFAULT_ERROR_MESSAGES }
 
-import { FormFieldComponent } from "./field/form-field.component"
+import { FormFieldComponent, FormFieldVariant, FORM_FIELD_DEFAULT_VARIANT } from "./field/form-field.component"
 import { FormFieldOutlineComponent } from "./field/outline.component"
-export { FormFieldComponent }
+export { FormFieldComponent, FormFieldVariant, FORM_FIELD_DEFAULT_VARIANT }
 
 import { PlaceholderComponent } from "./placeholder/placeholder.component"
 export { PlaceholderComponent }
