@@ -8,6 +8,7 @@ ng-container(nzLayout="row", nzLayoutAlign="start stretch")
                 [index]="index",
                 [attr.selected]="_selectedIndex === index ? '' : null",
                 [attr.disabled]="tab.disabled ? '' : null",
+                [attr.color]="tab.color",
                 (tap)="onLabelTap($event, index)")
               div.nz-tab-label-content
                 ng-container([ngTemplateOutlet]="tab.labelTpl")

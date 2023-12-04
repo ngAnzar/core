@@ -48,6 +48,16 @@ export class TabsComponent implements AfterContentInit, OnDestroy {
     public get dynamicHeight(): boolean { return this._dynamicHeight }
     public _dynamicHeight: boolean = false
 
+    @Input()
+    public set showOneTab(val: boolean) {
+        val = coerceBooleanProperty(val)
+        if (this._showOneTab !== val) {
+            this._showOneTab = val
+        }
+    }
+    public get showOneTab(): boolean { return this._showOneTab }
+    private _showOneTab: boolean = false
+
     public set swipeChanging(val: number) {
         if (this._swipeChanging !== val) {
             this._swipeChanging = val

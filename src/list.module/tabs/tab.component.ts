@@ -15,6 +15,7 @@ import { StackItemDirective, StackItemRef } from "../../layout.module"
 })
 export class TabComponent extends StackItemDirective {
     @Input() public label: string
+    @Input() public color: string
 
     @ContentChild("content", { read: TemplateRef, static: true }) public readonly tpl: TemplateRef<any>
     @ContentChild("label", { read: TemplateRef, static: true }) protected readonly cLabelTpl: TemplateRef<any>

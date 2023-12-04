@@ -54,8 +54,21 @@ __nz-tabs-color-theme($color)
   .nz-tab-underline
     background-color: $color.line.default
 
+
+__nz-tab-color-theme($color)
+  color: $color.fg.default
+
+  .nz-ripple-effect
+     background-color: $color.bg.ripple
+
+  &:hover .nz-ripple
+    background-color: $color.bg.hover
+
 .nz-tabs
   nz-theme-component-colors(__nz-tabs-color-theme)
+
+  .nz-tab-label
+    nz-theme-component-colors(__nz-tab-color-theme)
 
   .nz-tab-label[disabled]
     cursor: default !important

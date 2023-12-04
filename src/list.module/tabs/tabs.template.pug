@@ -1,7 +1,7 @@
 ng-container(nzLayout="column", nzLayoutAlign="start stretch")
   div(nzFlex="none", nzLayout="row", nzLayoutAlign="start center")
     .nz-tab-labels(
-        *ngIf="_tabsAsArray && _tabsAsArray.length > 1",
+        *ngIf="_tabsAsArray && (_tabsAsArray.length > 1 || (showOneTab && _tabsAsArray.length === 1))",
         [tabs]="tabs",
         [selectedIndex]="selectedIndex",
         [swipeChanging]="_swipeChanging",

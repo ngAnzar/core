@@ -76,6 +76,7 @@ $nz-form-field-anim-duration ?= 200ms cubic-bezier(0.215, 0.61, 0.355, 1)
 $nz-ff-anim-duration ?= 150ms cubic-bezier(0.215, 0.61, 0.355, 1)
 // $nz-ff-normal-height ?= nz-local-grid-size(9)
 $nz-ff-normal-height ?= nz-local-grid-size(11)
+$nz-ff-small-height ?= nz-local-grid-size(7)
 $nz-ff-top-caption-height ?= 16px
 $nz-ff-bottom-caption-height ?= 20px
 $nz-ff-outline-radius ?= 4px
@@ -241,6 +242,25 @@ $nz-ff-outline-inset ?= 8px
       &[isHidden]
         margin-top: -4px
 
+  &[variant~="small"]
+    .input
+      padding-top: 4px !important
+      padding-bottom: 4px !important
+      min-height: $nz-ff-small-height
+
+    .content
+      padding-left: $nz-ff-outline-inset
+      padding-right: $nz-ff-outline-inset
+
+    .caption
+      padding: 0 $nz-ff-outline-inset
+
+    .nz-placeholder
+      left: $nz-ff-outline-inset
+      right: $nz-ff-outline-inset
+
+      &[isHidden]
+        margin-top: -4px
 
   &.ng-invalid
     .nz-form-field-outline

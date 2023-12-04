@@ -1,6 +1,6 @@
 import {
     Component, ContentChild, ContentChildren, QueryList, AfterContentInit, NgZone,
-    ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject, OnDestroy, Input, HostBinding, InjectionToken, Optional
+    ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject, OnDestroy, Input, HostBinding, InjectionToken, Optional, HostListener
 } from "@angular/core"
 import { merge } from "rxjs"
 import { startWith, debounceTime } from "rxjs/operators"
@@ -21,7 +21,8 @@ export class FormFieldVariant {
         public readonly underline: boolean,
         public readonly outline: boolean,
         public readonly transparent: boolean,
-        public readonly slim: boolean) {
+        public readonly slim: boolean,
+        public readonly small?: boolean) {
         if (this.underline && this.outline) {
             this.underline = false
         }
@@ -35,6 +36,9 @@ export class FormFieldVariant {
         if (this._attrValue == null) {
             let parts = []
 
+            if (this.small) {
+                parts.push("small")
+            }
             if (this.outline) {
                 parts.push("outline")
             }
@@ -87,6 +91,7 @@ export class FormFieldComponent extends Destructible implements AfterContentInit
                 parts.includes("outline"),
                 parts.includes("transparent"),
                 parts.includes("slim"),
+                parts.includes("small"),
             )
         }
     }
@@ -122,4 +127,11 @@ export class FormFieldComponent extends Destructible implements AfterContentInit
         this.destruct.subscription(merge(q1, this.focusGroup.changes))
             .subscribe(this.cdr.detectChanges.bind(this.cdr))
     }
+
+    // @HostListener("tap", ["$event"])
+    // public onClick(event: Event) {
+    //     event.preventDefault()
+    //     event.stopImmediatePropagation()
+    //     console.log(event)
+    // }
 }
