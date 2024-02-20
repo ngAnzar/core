@@ -531,7 +531,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             }
         }
 
-        return forkJoin(...s).pipe(map(result => result.filter((v: T) => !!v)))
+        return forkJoin(s).pipe(map(result => result.filter((v: T) => !!v)))
     }
 
     public ngAfterContentInit() {
@@ -560,7 +560,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 if (!targetAnchor.margin) {
                     if (this.ffc) {
                         targetAnchor.targetEl = this.ffc.el
-                        targetAnchor.margin = { top: 0, bottom: -19, left: 12, right: 12 }
+                        targetAnchor.margin = { top: 0, bottom: this.ffc.isSlim ? 0 : -19, left: 12, right: 12 }
                     } else {
                         targetAnchor.margin = { top: 4, bottom: 4, left: 12, right: 12 }
                     }
