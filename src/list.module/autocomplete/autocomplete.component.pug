@@ -26,7 +26,7 @@
 
 .container(fxFlex="grow", fxLayout="column inline")
   ng-template([ngIf]="!hasCreateNew && isNotFound")
-    .nz-list-empty.notfound(*ngIf="", fxFlex="none") Nem található
+    .nz-list-empty.notfound(fxFlex="none") Nem található
 
   .nz-scroller.scroller(#scroller, fxFlex="grow")
     .nz-list.list(#list, [style.gridTemplateRows]="gridTemplateRows", scrollable)
