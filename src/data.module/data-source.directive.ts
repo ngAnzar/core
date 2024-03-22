@@ -1,5 +1,5 @@
 import { Directive, Input, Inject, OnDestroy, EventEmitter } from "@angular/core"
-import { Observable, Subscription } from "rxjs"
+import { Observable, ReplaySubject, Subscription, distinctUntilChanged, shareReplay,map, switchMap, of, tap, BehaviorSubject, take, combineLatest } from "rxjs"
 
 
 import { NzRange } from "../util"
@@ -8,67 +8,91 @@ import { DataSource, Filter, Sorter, LoadFields } from "./data-source"
 import { DataStorage, MappingChangedEvent } from "./data-storage"
 import { Items } from "./collection"
 
+import { Destructible } from "../util"
+
+type InputSource<T extends Model> = DataSource<T> | DataStorage<T> | DataSourceDirective<T>
 
 @Directive({
     selector: "[dataSource]",
     exportAs: "dataSource"
 })
-export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
+export class DataSourceDirective<T extends Model = Model> extends Destructible {
+    // @Input()
+    // public set dataSource(val: InputSource<T>) {
+    //     if (val instanceof DataSource) {
+    //         if (this._source !== val) {
+    //             this._source = val
+    //             if (this._disposeStroage && this._storage) {
+    //                 this._storage.dispose()
+    //             }
+    //             this._disposeStroage = true
+    //             this._storage = new DataStorage(val)
+    //             this._onStorageChange()
+    //         }
+    //     } else if (val instanceof DataStorage) {
+    //         if (this._storage !== val) {
+    //             if (this._disposeStroage && this._storage) {
+    //                 this._storage.dispose()
+    //             }
+    //             this._storage = val
+    //             this._onStorageChange()
+    //         }
+    //         this._disposeStroage = false
+    //     } else if (val instanceof DataSourceDirective) {
+    //         this._dsd = val
+    //     } else if (val === null) {
+    //         if (this._disposeStroage && this._storage) {
+    //             this._storage.dispose()
+    //         }
+    //         this._disposeStroage = false
+    //         if (this._storage != null) {
+    //             this._storage = null
+    //             this._onStorageChange()
+    //         }
+    //     } else {
+    //         console.log(val)
+    //         throw new Error(`Unexpected value: ${val}`)
+    //     }
+
+    //     if (this._pendingFields) {
+    //         let pf = this._pendingFields
+    //         delete this._pendingFields
+    //         this.storage.loadFields(pf)
+    //     }
+    // }
+
     @Input()
-    public set dataSource(val: DataSource<T> | DataStorage<T> | DataSourceDirective<T>) {
-        if (val instanceof DataSource) {
-            if (this._source !== val) {
-                this._source = val
-                if (this._disposeStroage && this._storage) {
-                    this._storage.dispose()
-                }
-                this._disposeStroage = true
-                this._storage = new DataStorage(val)
-                this._onStorageChange()
-            }
-        } else if (val instanceof DataStorage) {
-            if (this._storage !== val) {
-                if (this._disposeStroage && this._storage) {
-                    this._storage.dispose()
-                }
-                this._storage = val
-                this._onStorageChange()
-            }
-            this._disposeStroage = false
-        } else if (val instanceof DataSourceDirective) {
-            this._dsd = val
-        } else if (val === null) {
-            if (this._disposeStroage && this._storage) {
-                this._storage.dispose()
-            }
-            this._disposeStroage = false
-            if (this._storage != null) {
-                this._storage = null
-                this._onStorageChange()
-            }
-        } else {
-            console.log(val)
-            throw new Error(`Unexpected value: ${val}`)
-        }
-
-        if (this._pendingFields) {
-            let pf = this._pendingFields
-            delete this._pendingFields
-            this.storage.loadFields(pf)
-        }
+    public set dataSource(val: InputSource<T>) {
+        this._source = val
+        this.src$.next(val)
     }
 
-    public get storage(): DataStorage<T> {
-        return this._dsd ? this._dsd.storage : this._storage
-    }
+    public src$ = new ReplaySubject<InputSource<T>>(1)
 
-    public get filterChanges(): Observable<MappingChangedEvent<Filter<T>>> {
-        return this._dsd ? this._dsd.filterChanges : this._filterChanges
-    }
+    public storage$: Observable<DataStorage<T>> = this.src$.pipe(
+        distinctUntilChanged((p, n) => p !== n),
+        switchMap(src => {
+            if (src instanceof DataSource) {
+                return of(new DataStorage(src))
+            } else if (src instanceof DataStorage) {
+                return of(src)
+            } else if (src instanceof DataSourceDirective) {
+                // TODO: try to remove
+                this._dsd = src
+                return src.storage$
+            }
+        }),
+        tap(storage => {
+            (this as {storage: DataStorage<T>}).storage = storage
+        }),
+        shareReplay(1)
+    )
 
-    public get sorterChanges(): Observable<MappingChangedEvent<Sorter<T>>> {
-        return this._dsd ? this._dsd.sorterChanges : this._sorterChanges
-    }
+    public readonly storage?: DataStorage<T>
+    public readonly filterChanges = this.storage$.pipe(switchMap(storage => storage.filter.changed))
+    public readonly sorterChanges = this.storage$.pipe(switchMap(storage => storage.sorter.changed))
+
+    private readonly _loadFields = new BehaviorSubject<LoadFields<T> | null>(null)
 
     public get isEmpty() {
         return this.storage && this.storage.isEmpty
@@ -78,15 +102,8 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage && this.storage.isBusy
     }
 
-    private _storage: DataStorage<T>
-    private _source: DataSource<T>
-    private _disposeStroage: boolean
+    private _source: InputSource<T>
     private _dsd: DataSourceDirective<T>
-    private _filterSubscription: Subscription
-    private _filterChanges: Observable<MappingChangedEvent<Filter<T>>> = new EventEmitter()
-    private _sorterSubscription: Subscription
-    private _sorterChanges: Observable<MappingChangedEvent<Sorter<T>>> = new EventEmitter()
-    private _pendingFields: any
 
     // public baseFilter: Filter<T>
     public set baseFilter(val: Filter<T>) {
@@ -132,6 +149,23 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
         return this.storage.source.async
     }
 
+    public constructor() {
+        super()
+
+        this.destruct.any(() => {
+            delete this._dsd
+        })
+
+        this.destruct.subscription(combineLatest({
+            storage: this.storage$,
+            loadFields: this._loadFields
+        })).subscribe(({ storage, loadFields }) => {
+            if (storage) {
+                storage.loadFields(loadFields)
+            }
+        })
+    }
+
     public getPosition(id: PrimaryKey) {
         return this.storage.getPosition(id)
     }
@@ -163,12 +197,7 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
     }
 
     public loadFields(f: LoadFields<T>) {
-        let s = this.storage
-        if (s) {
-            s.loadFields(f)
-        } else {
-            this._pendingFields = f
-        }
+        this._loadFields.next(f)
     }
 
     protected _updateFilter(silent?: boolean) {
@@ -180,30 +209,6 @@ export class DataSourceDirective<T extends Model = Model> implements OnDestroy {
             f = { ...f, ...this._baseFilter as any }
         }
         this.storage?.filter.set(f, silent)
-    }
-
-    protected _onStorageChange() {
-        if (this._filterSubscription) {
-            this._filterSubscription.unsubscribe()
-            delete this._filterSubscription
-        }
-
-        if (this._sorterSubscription) {
-            this._sorterSubscription.unsubscribe()
-            delete this._sorterSubscription
-        }
-
-        if (this._storage) {
-            this._storage.filter.changed
-                .subscribe((this._filterChanges as EventEmitter<MappingChangedEvent<Filter<T>>>))
-            this.storage.sorter.changed
-                .subscribe((this._sorterChanges as EventEmitter<MappingChangedEvent<Sorter<T>>>))
-        }
-    }
-
-    public ngOnDestroy() {
-        this.dataSource = null
-        delete this._dsd
     }
 
     public clone() {

@@ -22,6 +22,7 @@ export abstract class ListFilter<T = any> implements IListFilterEditor<T>, OnDes
     public layerFilter: LayerFactoryDirective
 
     public abstract readonly isEmpty: boolean
+    public abstract readonly name: string
 
     public readonly destruct = new Destruct(() => {
         this.service.removeEditor(this)
@@ -67,7 +68,9 @@ export abstract class ColumnFilter extends ListFilter {
 
     public readonly isEmpty = true
 
-    public canHandleFilter(name: string): boolean { return this.name === name }
+    public canHandleFilter(name: string): boolean {
+        return this.name === name
+    }
 
     public writeValue(name: string, value: any): void {
         if (this.name === name) {

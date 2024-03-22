@@ -7,6 +7,8 @@
 
 ng-content(select=".nz-columns")
 
-div.filter(*ngIf="filterSvc && filterSvc.filters.length", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
-  ng-template(ngFor, [ngForOf]="filterSvc.filters", let-editor)
-    ng-container([ngTemplateOutlet]="editor.chip", [ngTemplateOutletContext]="{$implicit:editor}")
+ng-template([ngIf]="filterSvc")
+  ng-container(*ngIf="filterSvc.appliedFilters | async as appliedFilters")
+    div.filter(*ngIf="appliedFilters.length > 0", fxLayout="row", fxLayoutGap="8px", fxLayoutAlign="start center")
+      ng-template(ngFor, [ngForOf]="appliedFilters", let-editor)
+        ng-container([ngTemplateOutlet]="editor.chip", [ngTemplateOutletContext]="{$implicit:editor}")

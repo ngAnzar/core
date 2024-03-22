@@ -394,6 +394,7 @@ export interface DiffKindNew {
 export interface DiffKindDelete {
     kind: "D"
     path: string[]
+    lhs: any
 }
 
 
