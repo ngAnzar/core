@@ -92,7 +92,7 @@ export class DataSourceDirective<T extends Model = Model> extends Destructible {
     public readonly filterChanges = this.storage$.pipe(switchMap(storage => storage.filter.changed))
     public readonly sorterChanges = this.storage$.pipe(switchMap(storage => storage.sorter.changed))
 
-    private readonly _loadFields = new BehaviorSubject<LoadFields<T> | null>(null)
+    private readonly _loadFields = new BehaviorSubject<LoadFields<T> | undefined>(undefined)
 
     public get isEmpty() {
         return this.storage && this.storage.isEmpty
@@ -197,7 +197,7 @@ export class DataSourceDirective<T extends Model = Model> extends Destructible {
     }
 
     public loadFields(f: LoadFields<T>) {
-        this._loadFields.next(f)
+        this._loadFields.next(f || undefined)
     }
 
     protected _updateFilter(silent?: boolean) {
