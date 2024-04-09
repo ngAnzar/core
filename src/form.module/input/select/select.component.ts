@@ -518,7 +518,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 ids.push(item.pk)
             }
         }
-
         return { ids, request, models }
     }
 
@@ -529,6 +528,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             for (let i = 0, l = ids.length; i < l; i++) {
                 s.push(this.source.get(ids[i]))
             }
+        }
+
+        if (s.length === 0) {
+            return of([])
         }
 
         return forkJoin(s).pipe(map(result => result.filter((v: T) => !!v)))
