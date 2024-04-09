@@ -226,7 +226,7 @@ export class DataStorage<T extends Model, F = Filter<T>> extends Collection<T> i
     }
 
     public loadFields(loadFields: LoadFields<T>) {
-        if (!this.meta) {
+        if (!this.meta.get()) {
             this.meta.set({ loadFields })
         } else {
             this.meta.update({ loadFields })
