@@ -1,26 +1,70 @@
+import { FocusOrigin } from "@angular/cdk/a11y"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { BACKSPACE, DOWN_ARROW, UP_ARROW } from "@angular/cdk/keycodes"
 import {
-    Component, ContentChild, ContentChildren, TemplateRef, Inject, Optional, ElementRef, Renderer2, Input,
-    ViewChild, HostBinding, AfterContentInit, AfterViewInit, ViewContainerRef, QueryList,
-    ChangeDetectionStrategy, ChangeDetectorRef, Attribute, HostListener, Host, OnDestroy, Output, EventEmitter,
+    AfterContentInit,
+    AfterViewInit,
+    Attribute,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ContentChild,
+    ContentChildren,
+    ElementRef,
+    EventEmitter,
+    Host,
+    HostBinding,
+    HostListener,
+    Inject,
+    Input,
+    OnDestroy,
     OnInit,
-    Self
+    Optional,
+    Output,
+    QueryList,
+    Self,
+    TemplateRef,
+    ViewChild,
+    ViewContainerRef
 } from "@angular/core"
 
-import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { FocusOrigin } from "@angular/cdk/a11y"
-import { ESCAPE, UP_ARROW, DOWN_ARROW, ENTER, BACKSPACE } from "@angular/cdk/keycodes"
-import { Observable, Subject, Subscription, Observer, forkJoin, of, timer, NEVER, EMPTY, merge } from "rxjs"
-import { debounceTime, distinctUntilChanged, filter, take, tap, map, debounce, shareReplay, switchMap, timeoutWith, timeout, catchError, startWith, takeUntil } from "rxjs/operators"
+import { forkJoin, merge, Observable, Observer, of, Subject, Subscription, timer } from "rxjs"
+import {
+    catchError,
+    debounce,
+    debounceTime,
+    distinctUntilChanged,
+    filter,
+    map,
+    shareReplay,
+    startWith,
+    switchMap,
+    take,
+    tap
+} from "rxjs/operators"
 
-import { NzRange, __zone_symbol__, getPath, setPath } from "../../../util"
-import { DataSourceDirective, Model, PrimaryKey, Field, SelectionModel, SingleSelection, StaticSource } from "../../../data.module"
-import { InputComponent, InputModel, INPUT_MODEL, INPUT_MODEL_VALUE_CMP } from "../abstract"
-import { LayerService, DropdownLayer, LayerFactoryDirective, ComponentLayerRef } from "../../../layer.module"
-import { FormFieldComponent } from "../../field/form-field.component"
-import { ListActionComponent, ListActionModel } from "../../../list.module"
-import { AutocompleteComponent, AUTOCOMPLETE_ACTIONS, AUTOCOMPLETE_ITEM_TPL, AUTOCOMPLETE_ITEM_FACTORY } from "../../../list.module"
 import { Shortcuts, ShortcutService } from "../../../common.module"
+import {
+    DataSourceDirective,
+    Field,
+    Model,
+    PrimaryKey,
+    SelectionModel,
+    SingleSelection,
+    StaticSource
+} from "../../../data.module"
+import { ComponentLayerRef, DropdownLayer, LayerFactoryDirective, LayerService } from "../../../layer.module"
+import { ListActionComponent, ListActionModel } from "../../../list.module"
+import {
+    AUTOCOMPLETE_ACTIONS,
+    AUTOCOMPLETE_ITEM_FACTORY,
+    AUTOCOMPLETE_ITEM_TPL,
+    AutocompleteComponent
+} from "../../../list.module"
+import { __zone_symbol__, getPath, NzRange, setPath } from "../../../util"
 import { parseMargin } from "../../../util"
+import { FormFieldComponent } from "../../field/form-field.component"
+import { INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputComponent, InputModel } from "../abstract"
 import { AutosizePropertiesDirective } from "../text/autosize.directive"
 
 const CLEAR_TIMEOUT: "clearTimeout" = __zone_symbol__("clearTimeout")
@@ -28,13 +72,11 @@ const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
 
 // import { ChipComponent } from "./chip.component"
 
-
 export class SelectTplContext<T> {
     $implicit: T
 }
 
 export type SelectTemplateRef<T> = TemplateRef<SelectTplContext<T>>
-
 
 export class Match extends Model {
     @Field() public offset: number
@@ -45,22 +87,18 @@ export class Match extends Model {
     }
 }
 
-
 export interface IAutocompleteModel {
     label: string
     matches: Match[]
 }
 
-
 export class ProvisionalModel extends Model {
     @Field({ primary: true }) public _id: string
 }
 
-
 export type InputState = "typing" | "querying"
 export type SelectValue<T> = T | PrimaryKey | T[] | PrimaryKey[]
 export type AutoTrigger = "all" | "query" | null
-
 
 function cmpValue(a: any, b: any) {
     if (Array.isArray(a) || Array.isArray(b)) {
@@ -76,7 +114,6 @@ function cmpValue(a: any, b: any) {
     }
 }
 
-
 @Component({
     selector: ".nz-select",
     templateUrl: "./select.template.pug",
@@ -86,19 +123,22 @@ function cmpValue(a: any, b: any) {
         "[attr.editable]": "editable ? '' : null"
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        ...INPUT_MODEL,
-        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }
-    ]
+    providers: [...INPUT_MODEL, { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }]
 })
-export class SelectComponent<T extends Model> extends InputComponent<SelectValue<T>> implements AfterContentInit, AfterViewInit, OnDestroy, OnInit {
+export class SelectComponent<T extends Model>
+    extends InputComponent<SelectValue<T>>
+    implements AfterContentInit, AfterViewInit, OnDestroy, OnInit
+{
     @ContentChild("selected", { read: TemplateRef, static: true }) public _selectedTpl: SelectTemplateRef<T>
     @ContentChild("item", { read: TemplateRef, static: true }) public _itemTpl: SelectTemplateRef<T>
     @ContentChildren(ListActionComponent) public _actions: QueryList<ListActionComponent>
 
-    @ViewChild("default_selected_single", { read: TemplateRef, static: true }) protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
-    @ViewChild("default_selected_multi", { read: TemplateRef, static: true }) protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
-    @ViewChild("default_item", { read: TemplateRef, static: true }) protected readonly defaultItemTpl: SelectTemplateRef<T>
+    @ViewChild("default_selected_single", { read: TemplateRef, static: true })
+    protected readonly defaultSelectedSingleTpl: SelectTemplateRef<T>
+    @ViewChild("default_selected_multi", { read: TemplateRef, static: true })
+    protected readonly defaultSelectedMultiTpl: SelectTemplateRef<T>
+    @ViewChild("default_item", { read: TemplateRef, static: true })
+    protected readonly defaultItemTpl: SelectTemplateRef<T>
     @ViewChild("dropdown", { read: TemplateRef, static: true }) protected readonly dropdownTpl: SelectTemplateRef<T>
 
     @Input() public displayField: string = "label"
@@ -123,7 +163,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     public set itemTpl(val: SelectTemplateRef<T>) {
         this._itemTpl = val
     }
-    public get itemTpl() { return this._itemTpl || this.defaultItemTpl }
+    public get itemTpl() {
+        return this._itemTpl || this.defaultItemTpl
+    }
 
     @Input() public actions: QueryList<ListActionComponent>
 
@@ -151,11 +193,13 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             if (val && this.input && this.input.nativeElement) {
                 this.model.focusGroup.focusVia(this.input.nativeElement, this.model.focused)
             }
-            this.cdr.markForCheck();
-            (this.openedChanges as EventEmitter<boolean>).emit(val)
+            this.cdr.markForCheck()
+            ;(this.openedChanges as EventEmitter<boolean>).emit(val)
         }
     }
-    public get opened(): boolean { return !this.disabled && this._opened }
+    public get opened(): boolean {
+        return !this.disabled && this._opened
+    }
     protected _opened: boolean = false
 
     @Output("opened") public readonly openedChanges: Observable<boolean> = new EventEmitter<boolean>()
@@ -169,7 +213,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get editable(): boolean { return this._editable && !this.readonly }
+    public get editable(): boolean {
+        return this._editable && !this.readonly
+    }
     protected _editable: boolean = false
     protected _iss: Subscription
 
@@ -181,14 +227,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get freeSelect(): boolean { return !this.disabled && this._freeSelect }
+    public get freeSelect(): boolean {
+        return !this.disabled && this._freeSelect
+    }
     protected _freeSelect: boolean = false
 
     @Input("disableInput")
     public set disabled(val: boolean) {
         this.model.disabled = coerceBooleanProperty(val)
     }
-    public get disabled(): boolean { return !this.source || !this.source.storage || this.model.disabled }
+    public get disabled(): boolean {
+        return !this.source || !this.source.storage || this.model.disabled
+    }
 
     @Input()
     @HostBinding("attr.tabindex")
@@ -197,7 +247,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this._tabIndex = val
         }
     }
-    public get tabIndex(): number { return this.editable ? -1 : this._tabIndex }
+    public get tabIndex(): number {
+        return this.editable ? -1 : this._tabIndex
+    }
 
     @Input()
     public set hideTrigger(val: boolean) {
@@ -207,7 +259,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get hideTrigger(): boolean { return this.readonly || this._hideTrigger }
+    public get hideTrigger(): boolean {
+        return this.readonly || this._hideTrigger
+    }
     private _hideTrigger: boolean = false
 
     @Input()
@@ -218,7 +272,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get autoTrigger(): boolean { return !this.readonly && this._autoTrigger }
+    public get autoTrigger(): boolean {
+        return !this.readonly && this._autoTrigger
+    }
     private _autoTrigger: boolean = false
 
     public set inputState(val: InputState) {
@@ -227,7 +283,9 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get inputState() { return this._inputState }
+    public get inputState() {
+        return this._inputState
+    }
     protected _inputState: InputState
 
     @Input()
@@ -238,12 +296,18 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             this.cdr.markForCheck()
         }
     }
-    public get clearable(): boolean { return this._clearable && !this.readonly }
+    public get clearable(): boolean {
+        return this._clearable && !this.readonly
+    }
     private _clearable: boolean = false
 
     @Input()
-    public set pinList(val: boolean) { this._pinList = coerceBooleanProperty(val) }
-    public get pinList(): boolean { return this._pinList }
+    public set pinList(val: boolean) {
+        this._pinList = coerceBooleanProperty(val)
+    }
+    public get pinList(): boolean {
+        return this._pinList
+    }
     private _pinList: boolean = false
 
     @Input("min-length") public minLength: number = 2
@@ -258,7 +322,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     protected input$ = this.destruct.subject(new Subject<string>())
 
     protected query$ = this.input$.pipe(
-        filter((v) => this.editable && !this.disabled),
+        filter(v => this.editable && !this.disabled),
         distinctUntilChanged(),
         tap(value => {
             if (this.selection.type === "single" && (!value || !value.length)) {
@@ -285,7 +349,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }),
         map(([value, items]) => {
             const focused = this.selection.focused
-            const start = (focused ? focused.selectionIndex : 0)
+            const start = focused ? focused.selectionIndex : 0
             for (let i = start, l = items.length; i < l; i++) {
                 const item = items[i]
                 const searchIn = this.getDisplayValue(item)
@@ -328,7 +392,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         @Inject(LayerFactoryDirective) @Optional() @Host() public readonly layerFactory: LayerFactoryDirective,
         @Inject(ShortcutService) protected readonly shortcutService: ShortcutService,
         @Inject(AutosizePropertiesDirective) @Optional() @Self() public readonly autosize: AutosizePropertiesDirective,
-        @Attribute("triggerIcon") public readonly triggerIcon: string) {
+        @Attribute("triggerIcon") public readonly triggerIcon: string
+    ) {
         super(model)
 
         this.monitorFocus(el.nativeElement)
@@ -348,9 +413,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 }
             }
 
-            let vals: any = this.valueField
-                ? selected.map(s => getPath(s, this.valueField))
-                : selected
+            const vals: any = this.valueField ? selected.map(s => getPath(s, this.valueField)) : selected
 
             if (this.selection.type === "single") {
                 model.emitValue(vals[0])
@@ -363,10 +426,11 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this._detectChanges()
             }
 
-            (this.selectionChanges as EventEmitter<T[]>).next(selected)
+            ;(this.selectionChanges as EventEmitter<T[]>).next(selected)
         })
 
-        this.destruct.subscription(this.model.focusChanges)
+        this.destruct
+            .subscription(this.model.focusChanges)
             .pipe(
                 debounceTime(100),
                 map(v => [v.curr !== null, v.curr]),
@@ -375,20 +439,23 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             .subscribe(this._handleFocus.bind(this))
 
         if (!layerFactory) {
-            this.layerFactory = layerFactory
-                || LayerFactoryDirective.create("left top", "left bottom", this.layer, this.vcr, el)
+            this.layerFactory =
+                layerFactory || LayerFactoryDirective.create("left top", "left bottom", this.layer, this.vcr, el)
             this.layerFactory.nzLayerFactory = AutocompleteComponent
         }
 
         this.selection.keyboard.connect(el.nativeElement)
 
-        this._closeShortcuts = this.destruct.disposable(this.shortcutService.create(this.el.nativeElement, {
-            "select.close": {
-                shortcut: "escape, back", handler: () => {
-                    this.opened = false
+        this._closeShortcuts = this.destruct.disposable(
+            this.shortcutService.create(this.el.nativeElement, {
+                "select.close": {
+                    shortcut: "escape, back",
+                    handler: () => {
+                        this.opened = false
+                    }
                 }
-            }
-        }))
+            })
+        )
         this._closeShortcuts.enabled = false
 
         this.destruct.subscription(this.query$).subscribe(this._querySuggestions.bind(this))
@@ -416,12 +483,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                                 observer.next(value)
                                 observer.complete()
                             })
-                            const s2 = this.source.storage.invalidated
-                                .pipe(startWith(null))
-                                .subscribe(_ => {
-                                    // console.log("select.loadRange", range)
-                                    this.source.loadRange(range)
-                                })
+                            const s2 = this.source.storage.invalidated.pipe(startWith(null)).subscribe(_ => {
+                                // console.log("select.loadRange", range)
+                                this.source.loadRange(range)
+                            })
                             return () => {
                                 // console.log("UNSUBSCRIBE")
                                 s.unsubscribe()
@@ -473,9 +538,12 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         const { ids, request, models } = this.coerceValue(obj)
 
         if (request.length) {
-            this.destruct.subscription(this.getModels(request)).pipe(take(1)).subscribe(result => {
-                this.selection.items = models.concat(result)
-            })
+            this.destruct
+                .subscription(this.getModels(request))
+                .pipe(take(1))
+                .subscribe(result => {
+                    this.selection.items = models.concat(result)
+                })
         } else {
             this.selection.items = models
         }
@@ -490,7 +558,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
     }
 
-    protected coerceValue(value: SelectValue<T>): { ids: PrimaryKey[], request: PrimaryKey[], models: T[] } {
+    protected coerceValue(value: SelectValue<T>): { ids: PrimaryKey[]; request: PrimaryKey[]; models: T[] } {
         if (typeof value === "string") {
             value = value.split(/\s*,\s*/)
         }
@@ -499,14 +567,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             value = [value] as any
         }
 
-        let ids = []
-        let models = []
-        let request = []
-        let idField = this.valueField || "id"
+        const ids = []
+        const models = []
+        const request = []
+        const idField = this.valueField || "id"
 
-        for (let item of value as Array<T | PrimaryKey>) {
+        for (const item of value as Array<T | PrimaryKey>) {
             if (typeof item === "string" || typeof item === "number") {
-                let existing = this.selection.items.find(selected => getPath(selected, idField) === item)
+                const existing = this.selection.items.find(selected => getPath(selected, idField) === item)
                 if (existing) {
                     models.push(existing)
                 } else {
@@ -522,11 +590,21 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 
     protected getModels(ids: PrimaryKey[]): Observable<T[]> {
-        let s: Array<Observable<T>> = []
+        const s: Array<Observable<T>> = []
 
         if (this.source.storage) {
             for (let i = 0, l = ids.length; i < l; i++) {
-                s.push(this.source.get(ids[i]))
+                s.push(
+                    this.source.get(ids[i]).pipe(
+                        catchError(() => of(null)),
+                        map(result => {
+                            if (result == null && this.freeSelect) {
+                                return this._newProvisionModel(String(ids[i]))
+                            }
+                            return result
+                        })
+                    )
+                )
             }
         }
 
@@ -551,7 +629,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         }
 
         this.selectedBeforeOpen = this.selected.slice(0)
-        let targetAnchor = this.layerFactory.targetAnchor
+        const targetAnchor = this.layerFactory.targetAnchor
 
         if (!targetAnchor.targetEl) {
             targetAnchor.targetEl = this.el
@@ -580,7 +658,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
         const targetEl = targetAnchor.targetEl.nativeElement
         const margin = parseMargin(targetAnchor.margin)
-        let layerRef = this.layerFactory.show(
+        const layerRef = this.layerFactory.show(
             new DropdownLayer({
                 backdrop: {
                     type: "empty",
@@ -593,7 +671,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 initialWidth: targetEl.offsetWidth + margin.left + margin.right,
                 initialHeight: this.editable ? 0 : targetEl.offsetHeight,
                 elevation: 10,
-                preventFocus: true,
+                preventFocus: true
             }),
             {
                 $implicit: this
@@ -606,7 +684,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 {
                     provide: AUTOCOMPLETE_ITEM_FACTORY,
                     useValue: this.freeSelect ? this._createNewValue.bind(this) : null
-                },
+                }
             ]
         ) as ComponentLayerRef<AutocompleteComponent<T>>
 
@@ -614,7 +692,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         this.monitorFocus(outletEl)
         this._closeShortcuts.watch(outletEl)
 
-        let s = layerRef.subscribe((event) => {
+        const s = layerRef.subscribe(event => {
             if (event.type === "hiding") {
                 this.stopFocusMonitor(outletEl)
                 this._closeShortcuts.unwatch(outletEl)
@@ -644,7 +722,14 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 this.model.focusGroup.focusVia(this.el.nativeElement, origin)
             }
 
-            if (!this.opened && this.autoTrigger && this.input && !this.disabled && !this.readonly && this.model.isEmpty) {
+            if (
+                !this.opened &&
+                this.autoTrigger &&
+                this.input &&
+                !this.disabled &&
+                !this.readonly &&
+                this.model.isEmpty
+            ) {
                 this._querySuggestions(this.input.nativeElement.value)
             }
         } else {
@@ -658,8 +743,8 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
             return
         }
 
-        const value = this.input.nativeElement.value;
-        (this.input$ as Subject<string>).next(value)
+        const value = this.input.nativeElement.value
+        ;(this.input$ as Subject<string>).next(value)
         this.inputState = "typing"
     }
 
@@ -774,11 +859,16 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
         const inputValue = this.input.nativeElement.value
 
         if (inputValue && inputValue.length) {
-            let provisionalModel = new ProvisionalModel({ _id: Math.random().toString(36) }) as any
-            setPath(provisionalModel, this.valueField, { $new: inputValue })
-            setPath(provisionalModel, this.displayField, inputValue)
+            const provisionalModel = this._newProvisionModel(inputValue)
             this.selection.items = [provisionalModel]
         }
+    }
+
+    protected _newProvisionModel(value: string) {
+        const provisionalModel = new ProvisionalModel({ _id: Math.random().toString(36) }) as any
+        setPath(provisionalModel, this.valueField, { $new: value })
+        setPath(provisionalModel, this.displayField, value)
+        return provisionalModel
     }
 
     protected _processKeypress(code: number, shift: boolean, ctrl: boolean, alt: boolean): boolean {
@@ -789,10 +879,10 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
                 return false
 
             case BACKSPACE:
-                if (this.lastKeyup === code
-                    && (!this.input
-                        || !this.input.nativeElement.value
-                        || this.input.nativeElement.value.length === 0)) {
+                if (
+                    this.lastKeyup === code &&
+                    (!this.input || !this.input.nativeElement.value || this.input.nativeElement.value.length === 0)
+                ) {
                     if (this.selection.items.length > 0) {
                         this.selection.update({
                             [this.selection.items[this.selection.items.length - 1].pk]: null
@@ -815,7 +905,7 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
 
     private _updateFilter(qv: string | null, silent?: boolean) {
         const qf = this.queryField || this.displayField
-        let filter = { ...this.source.filter } as any
+        const filter = { ...this.source.filter } as any
         if (!qv || qv.length === 0) {
             delete filter[qf]
         } else {
@@ -829,7 +919,6 @@ export class SelectComponent<T extends Model> extends InputComponent<SelectValue
     }
 }
 
-
 function collectTime<T>(t: number): (src: Observable<T>) => Observable<T[]> {
     let value: T[] = []
     let timeout: any
@@ -838,8 +927,8 @@ function collectTime<T>(t: number): (src: Observable<T>) => Observable<T[]> {
         value = []
     }
 
-    return (src: Observable<T>) => {
-        return src.pipe(
+    return (src: Observable<T>) =>
+        src.pipe(
             map((v: T) => {
                 if (timeout) {
                     window[CLEAR_TIMEOUT](timeout)
@@ -851,5 +940,4 @@ function collectTime<T>(t: number): (src: Observable<T>) => Observable<T[]> {
                 return value as T[]
             })
         )
-    }
 }
