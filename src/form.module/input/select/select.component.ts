@@ -58,6 +58,7 @@ import { ListActionComponent, ListActionModel } from "../../../list.module"
 import {
     AUTOCOMPLETE_ACTIONS,
     AUTOCOMPLETE_ITEM_FACTORY,
+    AUTOCOMPLETE_ITEM_FACTORY_ALWAYS_VISIBLE,
     AUTOCOMPLETE_ITEM_TPL,
     AutocompleteComponent
 } from "../../../list.module"
@@ -69,6 +70,8 @@ import { AutosizePropertiesDirective } from "../text/autosize.directive"
 
 const CLEAR_TIMEOUT: "clearTimeout" = __zone_symbol__("clearTimeout")
 const SET_TIMEOUT: "setTimeout" = __zone_symbol__("setTimeout")
+
+export type ShowNewItemOption = "always" | "not-found"
 
 // import { ChipComponent } from "./chip.component"
 
@@ -231,6 +234,9 @@ export class SelectComponent<T extends Model>
         return !this.disabled && this._freeSelect
     }
     protected _freeSelect: boolean = false
+
+    @Input("showNewItemOption")
+    public showNewItemOption: ShowNewItemOption = "not-found"
 
     @Input("disableInput")
     public set disabled(val: boolean) {
@@ -684,6 +690,10 @@ export class SelectComponent<T extends Model>
                 {
                     provide: AUTOCOMPLETE_ITEM_FACTORY,
                     useValue: this.freeSelect ? this._createNewValue.bind(this) : null
+                },
+                {
+                    provide: AUTOCOMPLETE_ITEM_FACTORY_ALWAYS_VISIBLE,
+                    useValue: this.showNewItemOption === "always"
                 }
             ]
         ) as ComponentLayerRef<AutocompleteComponent<T>>
