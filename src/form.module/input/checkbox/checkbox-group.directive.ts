@@ -1,9 +1,8 @@
-import { Directive, Input } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import { Directive, Input } from "@angular/core"
 
-import { InputComponent, INPUT_MODEL } from "../abstract"
+import { INPUT_MODEL, InputComponent } from "../abstract"
 import { CheckboxComponent } from "./checkbox.component"
-
 
 @Directive({
     selector: ".nz-checkbox-group,[nzCheckboxGroup]",
@@ -18,7 +17,9 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
             this._applyProperty("name", val)
         }
     }
-    public get name(): string { return this._name }
+    public get name(): string {
+        return this._name
+    }
     protected _name: string
 
     @Input()
@@ -34,7 +35,9 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
             this._applyProperty("disabled", val)
         }
     }
-    public get disabled(): boolean { return this._disabled }
+    public get disabled(): boolean {
+        return this._disabled
+    }
     protected _disabled: boolean
 
     protected checkboxes: CheckboxComponent<T>[] = []
@@ -44,12 +47,12 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
         if (this.checkboxes.indexOf(checkbox) === -1) {
             this.checkboxes.push(checkbox)
         }
-        const value = this.model.value || []
-        checkbox.checked = value.indexOf(checkbox.trueValue) !== -1
+        const value = this.model.value
+        checkbox.checked = Array.isArray(value) && value.indexOf(checkbox.trueValue) !== -1
     }
 
     public delCheckbox(checkbox: CheckboxComponent<T>) {
-        let idx = this.checkboxes.indexOf(checkbox)
+        const idx = this.checkboxes.indexOf(checkbox)
         if (idx !== -1) {
             this.checkboxes.splice(idx, 1)
         }
@@ -58,7 +61,7 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
     public updateValue(checkbox: CheckboxComponent<T>) {
         const value = this.model.value ? this.model.value.concat() : []
         let changed = false
-        let idx = value.indexOf(checkbox.trueValue)
+        const idx = value.indexOf(checkbox.trueValue)
         if (checkbox.checked) {
             if (idx === -1) {
                 changed = true
@@ -82,7 +85,7 @@ export class CheckboxGroupDirective<T = string> extends InputComponent<T[]> {
 
     protected _applyProperty(name: string, value: any) {
         for (const chkbox of this.checkboxes) {
-            (chkbox as any)[name] = value
+            ;(chkbox as any)[name] = value
         }
     }
 }
