@@ -61,6 +61,7 @@ ng-container(nzLayout="column", nzLayoutAlign="start stretch")
   .nz-navbar.navbar(nzFlex="none")
 
   div.content-wrap(nzFlex="1 1 0", nzLayout="row", nzLayoutAlign="start stretch")
+    //- ng-container(*ngIf="vps.hasSidenav | async")
     .nz-sidenav.sidenav(
         nzFlex="none",
         nzLayout="column",

@@ -1,7 +1,7 @@
 import { Injectable, Inject, EventEmitter, TemplateRef, Injector, EmbeddedViewRef, OnDestroy } from "@angular/core"
 import { Router, NavigationEnd } from "@angular/router"
-import { Observable, of, Subject, merge, BehaviorSubject } from "rxjs"
-import { share, map, startWith, switchMap, debounceTime, shareReplay } from "rxjs/operators"
+import { Observable, of, Subject, merge, BehaviorSubject, combineLatest, timer } from "rxjs"
+import { share, map, startWith, switchMap, debounceTime, shareReplay, tap } from "rxjs/operators"
 
 import { Destruct } from "../util"
 import { ShortcutService, MediaQueryService, Shortcuts } from "../common.module"
@@ -119,26 +119,28 @@ export class ViewportService implements OnDestroy {
 
     public readonly navbarChanges: Observable<boolean> = new EventEmitter<boolean>()
 
-    private _items: VPItem[] = []
-    private _itemsObserver = new Observable<VPItem[]>(subscriber => {
-        this._emitItemChange = (area: string) => {
-            subscriber.next(this._items.filter(item => item.area === area))
-        }
-        return () => {
-            delete this._emitItemChange
-        }
-    }).pipe(share())
+    private items = new BehaviorSubject<VPItem[]>([])
 
-    private _emitItemChange: (area: string) => void
+    // private _items: VPItem[] = []
+    // private _itemsObserver = new Observable<VPItem[]>(subscriber => {
+    //     this._emitItemChange = (area: string) => {
+    //         subscriber.next(this._items.filter(item => item.area === area))
+    //     }
+    //     return () => {
+    //         delete this._emitItemChange
+    //     }
+    // }).pipe(share())
+
+    // private _emitItemChange: (area: string) => void
 
     public query(area: string): Observable<Array<VPItem>> {
-        return this._itemsObserver
+        return this.items
             .pipe(
-                startWith(this._items),
                 map(items => {
                     return items
                         .filter(item => item.area === area)
-                })
+                }),
+                shareReplay(1)
             )
     }
 
@@ -158,6 +160,8 @@ export class ViewportService implements OnDestroy {
         map(_ => this._criticalMessage),
         shareReplay(1)
     )
+
+    public readonly hasSidenav = this.query("sidenav").pipe(map(items => items.length > 0), shareReplay(1))
 
     public constructor(
         @Inject(Router) router: Router,
@@ -213,26 +217,29 @@ export class ViewportService implements OnDestroy {
         })
 
         let first = true
-        this.destruct.subscription(mq.watch("lt-md")).subscribe(event => {
-            if (event.matches) {
-                this.menu.style = VPPanelStyle.OVERLAY
-                this.right.style = VPPanelStyle.OVERLAY
-            } else {
-                this.menu.style = VPPanelStyle.SLIDE
-                this.right.style = VPPanelStyle.SLIDE
-                if (first) {
-                    this.menu.opened = true
+        this.destruct
+            .subscription(combineLatest({ ltMd: mq.watch("lt-md"), hasSidenav: this.hasSidenav }))
+            .pipe(switchMap(value => (first && !value.hasSidenav ? timer(200) : of(null)).pipe(map(() => value))))
+            .subscribe(({ ltMd, hasSidenav }) => {
+                if (ltMd.matches) {
+                    this.menu.style = VPPanelStyle.OVERLAY
+                    this.right.style = VPPanelStyle.OVERLAY
+                } else {
+                    this.menu.style = VPPanelStyle.SLIDE
+                    this.right.style = VPPanelStyle.SLIDE
+                    if (first) {
+                        this.menu.opened = hasSidenav
+                    }
                 }
-            }
-            first = false
-        })
+                first = false
+            })
     }
 
     public addItem(area: string, order: number, tplRef: TemplateRef<any>): Readonly<VPItem> {
         let item: VPItem = { area, order, tplRef, viewRef: null }
-        this._items.push(item)
-        this._items.sort((a, b) => a.order - b.order)
-        this._emitItemChange && this._emitItemChange(area)
+        const items = [...this.items.value, item]
+        items.sort((a, b) => a.order - b.order)
+        this.items.next(items)
         return item
     }
 
@@ -241,10 +248,11 @@ export class ViewportService implements OnDestroy {
             item.viewRef.destroy()
         }
 
-        let idx = this._items.indexOf(item)
+        const items = [...this.items.value]
+        let idx = items.indexOf(item)
         if (idx !== -1) {
-            this._items.splice(idx, 1)
-            this._emitItemChange && this._emitItemChange(item.area)
+            items.splice(idx, 1)
+            this.items.next(items)
         }
     }
 

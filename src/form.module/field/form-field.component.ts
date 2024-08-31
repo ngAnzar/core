@@ -3,7 +3,7 @@ import {
     ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, Inject, OnDestroy, Input, HostBinding, InjectionToken, Optional, HostListener
 } from "@angular/core"
 import { merge } from "rxjs"
-import { startWith, debounceTime } from "rxjs/operators"
+import { startWith, debounceTime, tap } from "rxjs/operators"
 
 import { Destruct, Destructible } from "../../util"
 import { InputModel } from "../input/abstract"
@@ -68,7 +68,7 @@ const DEFAULT_VARIANT = new FormFieldVariant(true, false, false, false)
     templateUrl: "./form-field.component.pug",
     host: {
         "[class.nz-focused]": "!!focusGroup.currentOrigin",
-        "[class.ng-invalid]": "_inputModel.invalid",
+        "[class.ng-invalid]": "_inputModel.invalid && (isTouched || _inputModel.touched || _inputModel.dirty)",
         "[attr.disabled]": "_inputModel.disabled ? '' : null"
     },
     providers: [FocusGroup],
@@ -109,6 +109,8 @@ export class FormFieldComponent extends Destructible implements AfterContentInit
     public get isTransparent(): boolean { return this._variantParsed.transparent || false }
     public get isSlim(): boolean { return this._variantParsed.slim || false }
 
+    isTouched: boolean = false
+
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
@@ -123,15 +125,13 @@ export class FormFieldComponent extends Destructible implements AfterContentInit
 
     public ngAfterContentInit(): void {
         const q1 = this._inputModel.statusChanges.pipe(debounceTime(100))
+        const focus = this.focusGroup.changes.pipe(tap(event => {
+            if (event.curr === null && event.prev !== null) {
+                this.isTouched = true
+            }
+        }))
 
-        this.destruct.subscription(merge(q1, this.focusGroup.changes))
+        this.destruct.subscription(merge(q1, focus))
             .subscribe(this.cdr.detectChanges.bind(this.cdr))
     }
-
-    // @HostListener("tap", ["$event"])
-    // public onClick(event: Event) {
-    //     event.preventDefault()
-    //     event.stopImmediatePropagation()
-    //     console.log(event)
-    // }
 }
