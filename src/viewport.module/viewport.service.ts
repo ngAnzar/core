@@ -1,32 +1,29 @@
-import { Injectable, Inject, EventEmitter, TemplateRef, Injector, EmbeddedViewRef, OnDestroy } from "@angular/core"
-import { Router, NavigationEnd } from "@angular/router"
-import { Observable, of, Subject, merge, BehaviorSubject, combineLatest, timer } from "rxjs"
-import { share, map, startWith, switchMap, debounceTime, shareReplay, tap } from "rxjs/operators"
+import { EmbeddedViewRef, EventEmitter, Inject, Injectable, Injector, OnDestroy, TemplateRef } from "@angular/core"
+import { NavigationEnd, Router } from "@angular/router"
 
+import { BehaviorSubject, combineLatest, merge, Observable, of, Subject, timer } from "rxjs"
+import { debounceTime, distinctUntilChanged, map, share, shareReplay, startWith, switchMap } from "rxjs/operators"
+
+import { MediaQueryService, Shortcuts, ShortcutService } from "../common.module"
 import { Destruct } from "../util"
-import { ShortcutService, MediaQueryService, Shortcuts } from "../common.module"
-
 
 export interface VPItem {
-    area: string,
-    order: number,
-    tplRef: TemplateRef<any>,
+    area: string
+    order: number
+    tplRef: TemplateRef<any>
     viewRef: EmbeddedViewRef<any>
 }
-
 
 export const enum VPPanelStyle {
     SLIDE = 1,
     OVERLAY = 2
 }
 
-
 export interface VPCriticalMessage {
     id: any
     message: string
     expire: Date
 }
-
 
 export class VPPanel {
     public set width(val: number) {
@@ -35,7 +32,9 @@ export class VPPanel {
             this._changes.next()
         }
     }
-    public get width(): number { return this._width }
+    public get width(): number {
+        return this._width
+    }
     private _width: number = 300
 
     public set disabled(val: boolean) {
@@ -44,9 +43,10 @@ export class VPPanel {
             this._changes.next()
         }
     }
-    public get disabled(): boolean { return this._disabled }
+    public get disabled(): boolean {
+        return this._disabled
+    }
     private _disabled: boolean = false
-
 
     public set style(val: VPPanelStyle) {
         if (this._style !== val) {
@@ -55,9 +55,10 @@ export class VPPanel {
             this._changes.next()
         }
     }
-    public get style(): VPPanelStyle { return this._style }
+    public get style(): VPPanelStyle {
+        return this._style
+    }
     private _style: VPPanelStyle = VPPanelStyle.OVERLAY
-
 
     public set opened(val: boolean) {
         if (this._opened !== val) {
@@ -66,7 +67,9 @@ export class VPPanel {
             this._changes.next()
         }
     }
-    public get opened(): boolean { return this._opened }
+    public get opened(): boolean {
+        return this._opened
+    }
     private _opened: boolean = false
 
     public set animate(val: boolean) {
@@ -74,7 +77,9 @@ export class VPPanel {
             this._animate = val
         }
     }
-    public get animate(): boolean { return this._animate }
+    public get animate(): boolean {
+        return this._animate
+    }
     private _animate: boolean
 
     private readonly _changes = new Subject<void>()
@@ -90,7 +95,6 @@ export class VPPanel {
         }
     }
 }
-
 
 @Injectable()
 export class ViewportService implements OnDestroy {
@@ -111,37 +115,35 @@ export class ViewportService implements OnDestroy {
                 }
             }
 
-            (this.navbarChanges as EventEmitter<boolean>).emit(val)
+            ;(this.navbarChanges as EventEmitter<boolean>).emit(val)
         }
     }
-    public get navbarCenterOverlap(): boolean { return this._navbarCenterOverlap }
+    public get navbarCenterOverlap(): boolean {
+        return this._navbarCenterOverlap
+    }
     private _navbarCenterOverlap: boolean = false
 
     public readonly navbarChanges: Observable<boolean> = new EventEmitter<boolean>()
 
     private items = new BehaviorSubject<VPItem[]>([])
 
-    // private _items: VPItem[] = []
-    // private _itemsObserver = new Observable<VPItem[]>(subscriber => {
-    //     this._emitItemChange = (area: string) => {
-    //         subscriber.next(this._items.filter(item => item.area === area))
-    //     }
-    //     return () => {
-    //         delete this._emitItemChange
-    //     }
-    // }).pipe(share())
-
-    // private _emitItemChange: (area: string) => void
-
     public query(area: string): Observable<Array<VPItem>> {
-        return this.items
-            .pipe(
-                map(items => {
-                    return items
-                        .filter(item => item.area === area)
-                }),
-                shareReplay(1)
-            )
+        return this.items.pipe(
+            map(items => items.filter(item => item.area === area)),
+            distinctUntilChanged((prev, curr) => {
+                if (prev.length !== curr.length) {
+                    return false
+                }
+
+                for (let i = 0; i < prev.length; i++) {
+                    if (prev[i].tplRef !== curr[i].tplRef) {
+                        return false
+                    }
+                }
+                return true
+            }),
+            shareReplay(1)
+        )
     }
 
     public set criticalMessage(val: VPCriticalMessage) {
@@ -150,7 +152,9 @@ export class ViewportService implements OnDestroy {
             this._cmMessage.next(val)
         }
     }
-    public get criticalMessage(): VPCriticalMessage { return this._criticalMessage }
+    public get criticalMessage(): VPCriticalMessage {
+        return this._criticalMessage
+    }
     private _criticalMessage: VPCriticalMessage
 
     private readonly _cmMessage = new Subject<VPCriticalMessage>()
@@ -161,26 +165,32 @@ export class ViewportService implements OnDestroy {
         shareReplay(1)
     )
 
-    public readonly hasSidenav = this.query("sidenav").pipe(map(items => items.length > 0), shareReplay(1))
+    public readonly hasSidenav = this.query("sidenav").pipe(
+        map(items => items.length > 0),
+        shareReplay(1)
+    )
 
     public constructor(
         @Inject(Router) router: Router,
         @Inject(Injector) protected readonly injector: Injector,
         @Inject(ShortcutService) protected readonly shortcutSvc: ShortcutService,
-        @Inject(MediaQueryService) protected readonly mq: MediaQueryService) {
-
-        this._backShortcut = this.destruct.disposable(shortcutSvc.create({
-            "sidepanel.close": {
-                shortcut: "escape, back", handler: () => {
-                    this.menu.opened = false
-                    this.right.opened = false
+        @Inject(MediaQueryService) protected readonly mq: MediaQueryService
+    ) {
+        this._backShortcut = this.destruct.disposable(
+            shortcutSvc.create({
+                "sidepanel.close": {
+                    shortcut: "escape, back",
+                    handler: () => {
+                        this.menu.opened = false
+                        this.right.opened = false
+                    }
                 }
-            }
-        }))
+            })
+        )
         this._backShortcut.on()
 
-
-        this.destruct.subscription(merge(this.menu.changes, this.right.changes))
+        this.destruct
+            .subscription(merge(this.menu.changes, this.right.changes))
             .pipe(debounceTime(10))
             .subscribe(_ => {
                 if (this.right.opened && this.right.style === VPPanelStyle.OVERLAY) {
@@ -189,7 +199,6 @@ export class ViewportService implements OnDestroy {
                     }
                     this._backShortcut.off()
                 } else {
-
                     if (this.menu.opened && this.menu.style === VPPanelStyle.OVERLAY) {
                         if (this.right.style === VPPanelStyle.OVERLAY) {
                             this.right.opened = false
@@ -203,12 +212,11 @@ export class ViewportService implements OnDestroy {
 
         this.destruct.subscription(router.events).subscribe(event => {
             if (event instanceof NavigationEnd) {
-                if (!this.menu.disabled && this.menu.style != VPPanelStyle.SLIDE) {
+                if (!this.menu.disabled && this.menu.style !== VPPanelStyle.SLIDE) {
                     this.menu.opened = false
                 }
             }
         })
-
 
         this.destruct.subscription(mq.watch("xs")).subscribe(event => {
             if (!event.matches) {
@@ -236,7 +244,7 @@ export class ViewportService implements OnDestroy {
     }
 
     public addItem(area: string, order: number, tplRef: TemplateRef<any>): Readonly<VPItem> {
-        let item: VPItem = { area, order, tplRef, viewRef: null }
+        const item: VPItem = { area, order, tplRef, viewRef: null }
         const items = [...this.items.value, item]
         items.sort((a, b) => a.order - b.order)
         this.items.next(items)
@@ -249,7 +257,7 @@ export class ViewportService implements OnDestroy {
         }
 
         const items = [...this.items.value]
-        let idx = items.indexOf(item)
+        const idx = items.indexOf(item)
         if (idx !== -1) {
             items.splice(idx, 1)
             this.items.next(items)

@@ -1,8 +1,7 @@
-import { Directive, Attribute, Inject, OnDestroy, ChangeDetectorRef, ViewContainerRef } from "@angular/core"
+import { Attribute, ChangeDetectorRef, Directive, Inject, OnDestroy, ViewContainerRef } from "@angular/core"
 
 import { Destruct } from "../../util"
 import { ViewportService, VPItem } from "../viewport.service"
-
 
 @Directive({
     selector: "ng-template[nzViewportArea]"
@@ -16,10 +15,11 @@ export class ViewportAreaDirective implements OnDestroy {
         @Attribute("nzViewportArea") public readonly area: string,
         @Inject(ViewportService) vps: ViewportService,
         @Inject(ChangeDetectorRef) cdr: ChangeDetectorRef,
-        @Inject(ViewContainerRef) vcr: ViewContainerRef) {
-
+        @Inject(ViewContainerRef) vcr: ViewContainerRef
+    ) {
         this.destruct.subscription(vps.query(area)).subscribe(items => {
             this.rendered = this.rendered.filter(v => v.viewRef && !v.viewRef.destroyed)
+
             let pos = 0
             for (const item of items) {
                 if (this.rendered.indexOf(item) === -1 || (item.viewRef && item.viewRef.destroyed)) {
