@@ -6,4 +6,4 @@
 ng-container(nzLayout="column", nzLayoutAlign="start stretch")
   .nz-scroller(nzFlex="grow", #scroller)
     .scrollable(scrollable)
-      .nz-tree-item(*ngIf="root", [level]="rootVisible ? 0 : -1", [model]="root", [isNode]="true")
+      .nz-tree-item(*ngIf="root", [level]="rootVisible ? 0 : -1", [model]="root")

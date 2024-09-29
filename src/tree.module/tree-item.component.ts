@@ -1,10 +1,18 @@
-import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Inject, OnDestroy, OnInit, ElementRef } from "@angular/core"
-import { Observable, Subject, of, Observer } from "rxjs"
-import { takeUntil, finalize, take, tap } from "rxjs/operators"
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Inject,
+    Input,
+    OnDestroy
+} from "@angular/core"
 
-import { SelectOrigin, Model } from "../data.module"
+import { BehaviorSubject, combineLatest, Observable, of, Subscriber } from "rxjs"
+import { filter, finalize, map, shareReplay, switchMap, take } from "rxjs/operators"
+
+import { Model, SelectOrigin } from "../data.module"
 import { TreeComponent } from "./tree.component"
-
 
 @Component({
     selector: ".nz-tree-item",
@@ -13,7 +21,7 @@ import { TreeComponent } from "./tree.component"
 })
 export class TreeItemComponent<T extends Model> implements OnDestroy {
     @Input() public level: number
-    @Input() public isNode: boolean
+    // @Input() public isNode: boolean
 
     @Input()
     public set model(val: T) {
@@ -23,99 +31,110 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
             }
 
             this.$implicit = val
-            this.isNode = !(val as any)[this.tree.isLeafField]
             this.tree.registerTreeItem(this)
-            this.cdr.markForCheck()
+            this.model$.next(val)
         }
     }
-    public get model(): T { return this.$implicit }
+    public get model(): T {
+        return this.$implicit
+    }
     public $implicit: T
+    private model$ = new BehaviorSubject<T>(null)
+
+    public readonly isNode$: Observable<boolean> = this.model$.pipe(
+        map(model => model && (model === this.tree.root || !(model as any)[this.tree.isLeafField])),
+        shareReplay({ bufferSize: 1, refCount: true })
+    )
 
     public set isBusy(val: boolean) {
-        if (this._isBusy !== val) {
-            this._isBusy = val
-            this.cdr.markForCheck()
+        if (this._isBusy.value !== val) {
+            this._isBusy.next(val)
         }
     }
-    public get isBusy(): boolean { return this._isBusy }
-    public _isBusy: boolean
+    public get isBusy(): boolean {
+        return this._isBusy.value
+    }
+    public readonly _isBusy = new BehaviorSubject<boolean>(false)
 
     public set isExpanded(val: boolean) {
-        if (this._isExpanded !== val) {
+        if (this._isExpanded.value !== val) {
             if (val) {
-                this.expand().subscribe()
-            } else {
-                this.collapse().subscribe()
+                this.isBusy = true
             }
-
-            this._isExpanded = val
+            this._isExpanded.next(val)
+            this.tree.onExpandedChange(this)
         }
     }
-    public get isExpanded(): boolean { return this._isExpanded }
-    public _isExpanded: boolean
+    public get isExpanded(): boolean {
+        return this._isExpanded.value
+    }
+    public readonly _isExpanded = new BehaviorSubject<boolean>(false)
 
-    public get selected(): SelectOrigin { return this._selected }
+    public get selected(): SelectOrigin {
+        return this._selected
+    }
     private _selected: SelectOrigin = null
 
-    private _loadUntil: Subject<void>
-    public _children: T[]
+    readonly children$ = combineLatest({ isNode: this.isNode$, isExpanded: this._isExpanded }).pipe(
+        switchMap(({ isExpanded, isNode }) => {
+            if (!isExpanded || !isNode) {
+                this.isBusy = false
+                return of([])
+            }
+
+            this.isBusy = true
+            return this.tree.loadChildren(this).pipe(
+                take(1),
+                finalize(() => (this.isBusy = false))
+            )
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+    )
 
     public readonly height = 32
 
     public constructor(
         @Inject(ElementRef) public readonly el: ElementRef<HTMLElement>,
         @Inject(ChangeDetectorRef) private readonly cdr: ChangeDetectorRef,
-        @Inject(TreeComponent) public readonly tree: TreeComponent) {
+        @Inject(TreeComponent) public readonly tree: TreeComponent
+    ) {
+        this.children$.subscribe()
     }
 
     public expand(): Observable<T[]> {
-        if (this._isExpanded) {
-            return of(this._children)
-        }
-        this._isExpanded = true
-        return this._loadChildren()
-            .pipe(
-                tap(children => {
-                    this._children = children
-                    this._isExpanded = true
-                    this.cdr.detectChanges()
-                    this.tree.onExpandedChange(this)
-                }),
-                take(1),
+        return new Observable(dst => {
+            this.isBusy = true
+            dst.add(
+                this._isBusy
+                    .pipe(
+                        filter(isBusy => !isBusy),
+                        switchMap(() => this.children$),
+                        take(1)
+                    )
+                    .subscribe(dst)
             )
-    }
-
-    public collapse(): Observable<void> {
-        return new Observable((observer: Observer<void>) => {
-            this._children = null
-            this._isBusy = false
-            this._isExpanded = false
-            this._loadUntil && this._loadUntil.complete()
-            this.cdr.detectChanges()
-            this.tree.onExpandedChange(this)
-            observer.next()
-            observer.complete()
+            this.isExpanded = true
         })
     }
 
-    private _loadChildren() {
-        this._loadUntil = new Subject()
-
-        this.isBusy = true
-        return this.tree
-            .loadChildren(this)
-            .pipe(
-                takeUntil(this._loadUntil),
-                take(1),
-                finalize(() => {
-                    this.isBusy = false
-                    delete this._loadUntil
+    public collapse(): Observable<void> {
+        return new Observable((dst: Subscriber<void>) => {
+            dst.add(
+                this.children$.subscribe(children => {
+                    if (children.length === 0) {
+                        setTimeout(() => {
+                            dst.next()
+                            dst.complete()
+                        }, 200)
+                    }
                 })
             )
+            this.isExpanded = false
+            this.isBusy = false
+        })
     }
 
     public ngOnDestroy() {
-        this._loadUntil && this._loadUntil.complete()
         this.$implicit && this.tree.unregisterTreeItem(this)
     }
 
@@ -123,9 +142,7 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
         if (event.defaultPrevented) {
             return
         }
-        if (this.isNode) {
-            this.isExpanded = !this._isExpanded
-        }
+        this.isExpanded = !this.isExpanded
     }
 
     public onSelectionChange(origin: SelectOrigin) {

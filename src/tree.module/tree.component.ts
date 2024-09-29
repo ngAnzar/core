@@ -1,6 +1,6 @@
 import { Component, Input, ContentChild, TemplateRef, Inject, Output, OnInit, ViewChild } from "@angular/core"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
-import { Observable, Subscription, from, of, Subject, forkJoin } from "rxjs"
+import { Observable, Subscription, from, of, Subject, forkJoin, timer } from "rxjs"
 import { startWith, switchMap, mapTo, withLatestFrom, take, filter, map } from "rxjs/operators"
 
 import { DataSourceDirective, SelectionModel, SelectOrigin, Model, SingleSelection, SelectionEvent, PrimaryKey } from "../data.module"
@@ -91,7 +91,7 @@ export class TreeComponent extends Destructible implements OnInit {
     public readonly expandedItems: ExpandedItems = {}
 
     private _itemsById: { [key: string]: TreeItemComponent<Model> } = {}
-    private _pendingExpand: { [key: string]: ExpandedItems } = {}
+    private _pendingExpand: { [key: string]: Subject<TreeItemComponent<Model>> } = {}
 
     public constructor(
         @Inject(DataSourceDirective) private readonly source: DataSourceDirective,
@@ -127,13 +127,10 @@ export class TreeComponent extends Destructible implements OnInit {
 
         this._itemsById[this.root.pk]
             .collapse()
-            .pipe(switchMap(v => this.expandItems(expanded)), take(1))
-            .subscribe(() => {
-                const x: { [key: string]: SelectOrigin } = {}
-                for (const pk of selected) {
-                    x[pk] = "program"
-                }
-                this.selection.selected.update(x)
+            .pipe(switchMap(() => this.expandItems(expanded)), take(1))
+            .subscribe((values) => {
+                const newModels = selected.map(pk => values[pk] || this._itemsById[pk]?.model).filter(val => !!val)
+                this.selection.selected.set(newModels, "program")
             })
     }
 
@@ -155,7 +152,7 @@ export class TreeComponent extends Destructible implements OnInit {
 
     }
 
-    public expandItems(items: ExpandedItems, collapseOther: boolean = false): Observable<PrimaryKey[]> {
+    public expandItems(items: ExpandedItems, collapseOther: boolean = false): Observable<{[key: string]: Model}> {
         let collapse: Observable<any>
         if (collapseOther) {
             const collapseFilter = JSON.parse(JSON.stringify(items))
@@ -172,35 +169,53 @@ export class TreeComponent extends Destructible implements OnInit {
                 .map(id => {
                     const cmp = this._itemsById[id]
                     if (cmp) {
-                        return cmp.expand().pipe(mapTo(Number(id)))
+                        return cmp.expand().pipe(map(children => {
+                            return {
+                                self: id,
+                                children
+                            }
+                         }))
                     } else {
-                        this._pendingExpand[id] = { [id]: items[id] }
-                        return of(null)
+                        const trigger = new Subject<TreeItemComponent<Model>>()
+                        this._pendingExpand[id] = trigger
+                        return trigger.pipe(switchMap((cmp) => {
+                            return cmp.expand().pipe(
+                                map(children => {
+                                    return {
+                                        self: id,
+                                        children
+                                    }
+                                })
+                            )
+                        }))
                     }
                 })
                 .map(q => {
                     return q.pipe(
-                        switchMap(id => {
-                            if (items[id] && Object.keys(items[id]).length > 0) {
-                                return this.expandItems(items[id]).pipe(map(expanded => {
-                                    return expanded.concat([id])
+                        switchMap(({ self, children }) => {
+                            const result: {[key: string]: Model} = {}
+                            for (const child of children) {
+                                result[child.pk] = child
+                            }
+
+                            if (items[self] && Object.keys(items[self]).length > 0) {
+                                return this.expandItems(items[self]).pipe(map(expanded => {
+                                    return {...result, ...expanded}
                                 }))
                             } else {
-                                return of(null)
+                                return of(result)
                             }
                         }),
                     )
                 })
 
             if (queries.length === 0) {
-                return of([])
+                return of({})
             } else {
                 return forkJoin(queries).pipe(
                     take(1),
                     map(result => {
-                        return result
-                            .filter(v => !!v)
-                            .flat(Infinity)
+                        return Object.assign({}, ...result)
                     })
                 )
             }
@@ -229,7 +244,6 @@ export class TreeComponent extends Destructible implements OnInit {
                 return src.pipe(switchMap(id => {
                     if (Object.keys(collapse[id]).length > 0) {
                         const subFilter = filter[id] && Object.keys(filter[id]).length > 0 ? filter[id] : {}
-                        console.log({ subFilter })
                         return this._collapseOthers(collapse[id], subFilter)
                     } else {
                         return of(null)
@@ -257,11 +271,13 @@ export class TreeComponent extends Destructible implements OnInit {
         } else if (this._pendingExpand[item.model.pk]) {
             const pending = this._pendingExpand[item.model.pk]
             delete this._pendingExpand[item.model.pk]
-            this.expandItems(pending).subscribe()
+            pending.next(item)
+            pending.complete()
         }
     }
 
     public unregisterTreeItem(item: TreeItemComponent<Model>) {
+        this._delExpandedEntry(item.model.pk, this.expandedItems)
         delete this._itemsById[item.model.pk]
         delete this._pendingExpand[item.model.pk]
     }
