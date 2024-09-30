@@ -103,6 +103,10 @@ export class TreeItemComponent<T extends Model> implements OnDestroy {
 
     public expand(): Observable<T[]> {
         return new Observable(dst => {
+            if (this.isExpanded) {
+                return this.children$.pipe(take(1)).subscribe(dst)
+            }
+
             this.isBusy = true
             dst.add(
                 this._isBusy
