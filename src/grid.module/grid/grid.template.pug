@@ -25,7 +25,7 @@
 
 
 .nz-scroller(fxFlex="grow", orient="horizontal")
-  div(scrollable, fxLayout="column", fxLayoutAlign="start stretch")
+  div(scrollable, fxLayout="column", fxLayoutAlign="start stretch", [updateMinWidth]="updateMinWidth")
     .nz-list-header([ngStyle]="{'padding-left.px': _padding.left, 'padding-right.px': _padding.right}", fxFlex="none")
       ng-content(select=".nz-columns", ngProjectAs=".nz-columns")
 

@@ -1,19 +1,29 @@
 import {
-    Component, Inject, Host, Input, DoCheck, OnInit, Attribute,
-    ContentChild, AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList,
-    Output, EventEmitter, ElementRef
+    AfterContentInit,
+    Attribute,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ContentChild,
+    ElementRef,
+    EventEmitter,
+    Host,
+    Inject,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    QueryList,
+    ViewChildren
 } from "@angular/core"
 import { DomSanitizer, SafeStyle } from "@angular/platform-browser"
 
-
-import { Destruct, Margin, MarginParsed, parseMargin } from "../../util"
 import { NzTouchEvent } from "../../common.module"
-import { DataSourceDirective, SelectionModel, Model, PrimaryKey, SelectionEvent } from "../../data.module"
-import { ListFilterService, ColumnsComponent, ColumnComponent } from "../../list-header.module"
-import { OnGridTap } from "./on-grid-tap"
-
+import { DataSourceDirective, Model, PrimaryKey, SelectionEvent, SelectionModel } from "../../data.module"
+import { ColumnsComponent, ListFilterService } from "../../list-header.module"
+import { Destruct, MarginParsed, parseMargin } from "../../util"
 import { GridRowDirective } from "./grid-row.directive"
-
+import { OnGridTap } from "./on-grid-tap"
 
 @Component({
     selector: ".nz-grid",
@@ -29,15 +39,23 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     public set padding(val: MarginParsed) {
         this._padding = parseMargin(val as any)
     }
-    public get padding(): MarginParsed { return this._padding }
+    public get padding(): MarginParsed {
+        return this._padding
+    }
     public _padding: MarginParsed
+
+    @Input() public updateMinWidth: boolean = true
 
     @Output() public rowTap = new EventEmitter<T>()
 
-    public get gtRows(): SafeStyle { return this._gtRows }
+    public get gtRows(): SafeStyle {
+        return this._gtRows
+    }
     protected _gtRows: SafeStyle = ""
 
-    public get gtRow(): SafeStyle { return this._gtRow }
+    public get gtRow(): SafeStyle {
+        return this._gtRow
+    }
     protected _gtRow: SafeStyle = ""
 
     public readonly destruct = new Destruct(() => {
@@ -60,7 +78,8 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         @Inject(DataSourceDirective) @Host() public readonly source: DataSourceDirective,
         @Inject(ListFilterService) public readonly filterSvc: ListFilterService,
         @Attribute("emptyText") public readonly emptyText: string,
-        @Attribute("busyText") public readonly busyText: string) {
+        @Attribute("busyText") public readonly busyText: string
+    ) {
         this.padding = 24 as any
         if (!emptyText) {
             this.emptyText = "A lista üres"
@@ -71,7 +90,7 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
     }
 
     public getRow(pk: PrimaryKey): GridRowDirective<T> {
-        for (let row of this.rows.toArray()) {
+        for (const row of this.rows.toArray()) {
             if (row.model.pk === pk) {
                 return row
             }
@@ -104,7 +123,9 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
         }
 
         if (this.source.storage) {
-            this._gtRows = this.snitizer.bypassSecurityTrustStyle(`repeat(${this.source.storage.lastIndex || 1}, ${this._rowHeight}px) / 1fr`)
+            this._gtRows = this.snitizer.bypassSecurityTrustStyle(
+                `repeat(${this.source.storage.lastIndex || 1}, ${this._rowHeight}px) / 1fr`
+            )
         }
 
         this._gtRow = this.snitizer.bypassSecurityTrustStyle(`${this._rowHeight}px / ${this.columns.gridColTemplate}`)
@@ -185,16 +206,15 @@ export class GridComponent<T extends Model = Model> implements AfterContentInit,
             return
         }
 
-        let model = rowCmp.model
+        const model = rowCmp.model
 
-        let columnCmp = this.columns.items.get(col) as any as OnGridTap<T>
+        const columnCmp = this.columns.items.get(col) as any as OnGridTap<T>
         if (columnCmp && columnCmp.onGridTap) {
             columnCmp.onGridTap(event, model, row, col)
             if (event.defaultPrevented) {
                 return
             }
         }
-
 
         rowCmp.onGridTap(event, model, row, col)
         if (event.defaultPrevented) {
