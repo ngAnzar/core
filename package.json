@@ -27,7 +27,7 @@
     "deep-diff": "^1.0.2",
     "element-resize-detector": "^1.2.3",
     "imask": "^6.1.0",
-    "is-plain-object": "^5.0.0",
+    "is-plain-object": "^4.0.0",
     "log4javascript": "^1.4.16",
     "tslint": "^6.1.3"
   },

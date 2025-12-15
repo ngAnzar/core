@@ -1,4 +1,4 @@
-import { isPlainObject } from "is-plain-object"
+import isPlainObject from "is-plain-object"
 
 export interface TokenFilterComparatorOptions {
     readonly name: string
@@ -9,7 +9,6 @@ export interface TokenFilterComparatorOptions {
     readonly priority?: number
     readonly isDefault?: boolean
 }
-
 
 export abstract class TokenFilterComparator implements TokenFilterComparatorOptions {
     readonly name: string
@@ -28,7 +27,6 @@ export abstract class TokenFilterComparator implements TokenFilterComparatorOpti
     public abstract parse(value: any): any[] | undefined
     public abstract canHandle(value: any): boolean
 }
-
 
 export class TokenFilterComparatorBinary extends TokenFilterComparator {
     public compose(values: any[]): any {
@@ -64,10 +62,9 @@ export class TokenFilterComparatorBinary extends TokenFilterComparator {
     }
 }
 
-
 export class TokenFilterComparatorBetween extends TokenFilterComparator {
     public compose(values: any[]): any {
-        return { "gte": values[0], "lte": values[1] }
+        return { gte: values[0], lte: values[1] }
     }
 
     public parse(value: any): any[] | undefined {

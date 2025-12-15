@@ -1,31 +1,40 @@
-import {
-    Component, ViewChild, ElementRef, Inject, Input,
-    Optional, ChangeDetectionStrategy, ChangeDetectorRef, SkipSelf, OnDestroy, OnInit, Output
-} from "@angular/core"
-import { coerceBooleanProperty } from "@angular/cdk/coercion"
 import "@angular/cdk/a11y-prebuilt.css"
-import { Subject, merge, BehaviorSubject } from "rxjs"
-import { debounceTime, map, takeUntil, startWith } from "rxjs/operators"
+import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Inject,
+    Input,
+    OnDestroy,
+    OnInit,
+    Optional,
+    Output,
+    SkipSelf,
+    ViewChild
+} from "@angular/core"
 
-import { InputComponent, INPUT_MODEL, InputModel, INPUT_MODEL_VALUE_CMP } from "../abstract"
+import { BehaviorSubject, merge, Subject } from "rxjs"
+import { takeUntil } from "rxjs/operators"
+
+import isPlainObject from "is-plain-object"
+
+import { INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputComponent, InputModel } from "../abstract"
 import { CheckboxGroupDirective } from "./checkbox-group.directive"
-import { isPlainObject } from "is-plain-object"
-// import { LabelDirective } from "../../directives/label.directive"
 
+// import { LabelDirective } from "../../directives/label.directive"
 
 export type LabelPosition = "before" | "after"
 
-
 export interface CheckboxState {
-    checked: boolean,
+    checked: boolean
     indeterminate: boolean
 }
-
 
 export interface CheckboxChangeEvent<T> extends CheckboxState {
     source: CheckboxComponent<T>
 }
-
 
 function cmpValue(a: any, b: any) {
     if (isPlainObject(a)) {
@@ -35,7 +44,6 @@ function cmpValue(a: any, b: any) {
     }
 }
 
-
 @Component({
     selector: ".nz-checkbox",
     templateUrl: "./checkbox.template.pug",
@@ -44,17 +52,18 @@ function cmpValue(a: any, b: any) {
         "[class.nz-checkbox-indeterminate]": "indeterminate",
         "(tap)": "_handleTap($event)"
     },
-    providers: [
-        ...INPUT_MODEL,
-        { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }
-    ],
+    providers: [...INPUT_MODEL, { provide: INPUT_MODEL_VALUE_CMP, useValue: cmpValue }],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckboxComponent<T = boolean> extends InputComponent<T> implements OnDestroy, OnInit {
     @ViewChild("input", { static: true }) protected readonly input: ElementRef<HTMLInputElement>
     @Input()
-    public set noninteractive(val: boolean) { this._noninteractive = coerceBooleanProperty(val) }
-    public get noninteractive(): boolean { return this._noninteractive }
+    public set noninteractive(val: boolean) {
+        this._noninteractive = coerceBooleanProperty(val)
+    }
+    public get noninteractive(): boolean {
+        return this._noninteractive
+    }
     private _noninteractive: boolean = false
 
     @Input("true-value")
@@ -64,7 +73,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this._values$.next()
         }
     }
-    public get trueValue(): T { return this._trueValue }
+    public get trueValue(): T {
+        return this._trueValue
+    }
     protected _trueValue: T = true as any
 
     @Input("false-value")
@@ -74,7 +85,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this._values$.next()
         }
     }
-    public get falseValue(): T { return this._falseValue }
+    public get falseValue(): T {
+        return this._falseValue
+    }
     protected _falseValue: T = false as any
 
     @Input("indeterminate-value")
@@ -84,20 +97,22 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this._values$.next()
         }
     }
-    public get indeterminateValue(): T { return this._indeterminateValue }
+    public get indeterminateValue(): T {
+        return this._indeterminateValue
+    }
     protected _indeterminateValue: T
     private _values$ = new Subject<void>()
-
 
     @Input()
     public set checked(val: boolean) {
         val = coerceBooleanProperty(val)
         if (this.checkedChange.value !== val) {
             this.checkedChange.next(val)
-
         }
     }
-    public get checked(): boolean { return this.checkedChange.value }
+    public get checked(): boolean {
+        return this.checkedChange.value
+    }
 
     @Output()
     public checkedChange = new BehaviorSubject<boolean>(false)
@@ -110,7 +125,9 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
             this._indeterminate$.next()
         }
     }
-    public get indeterminate(): boolean { return this._indeterminate }
+    public get indeterminate(): boolean {
+        return this._indeterminate
+    }
     protected _indeterminate: boolean = false
     private _indeterminate$ = new Subject<void>()
 
@@ -120,17 +137,17 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
         @Inject(InputModel) model: InputModel<T>,
         @Inject(ElementRef) protected readonly el: ElementRef,
         @Inject(ChangeDetectorRef) protected cdr: ChangeDetectorRef,
-        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective<any>) {
+        @Inject(CheckboxGroupDirective) @Optional() @SkipSelf() public readonly group: CheckboxGroupDirective<any>
+    ) {
         super(model)
 
         this.monitorFocus(el.nativeElement)
     }
 
     public ngOnInit() {
-        this.destruct.subscription(this.model.valueChanges)
-            .subscribe(value => {
-                this._renderValue(value)
-            })
+        this.destruct.subscription(this.model.valueChanges).subscribe(value => {
+            this._renderValue(value)
+        })
 
         if (this.model.value != null) {
             this._renderValue(this.model.value)
@@ -158,7 +175,7 @@ export class CheckboxComponent<T = boolean> extends InputComponent<T> implements
     }
 
     protected _renderValue(obj: any): void {
-        let state = this._determineStateFromValue(obj)
+        const state = this._determineStateFromValue(obj)
         this.checked = state.checked
         this.indeterminate = state.indeterminate
         this.cdr.markForCheck()

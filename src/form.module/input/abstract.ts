@@ -1,16 +1,40 @@
-import { Directive, Inject, Optional, Self, Input, Output, HostBinding, Injector, Provider, OnDestroy, InjectionToken, OnInit, EventEmitter, Injectable, Component } from "@angular/core"
-import { AbstractControl, ControlValueAccessor, NgControl, NgModel, FormControl, AbstractControlDirective, NG_VALUE_ACCESSOR, ControlContainer, FormGroupName, FormGroup } from "@angular/forms"
 import { FocusOrigin } from "@angular/cdk/a11y"
 import { coerceBooleanProperty } from "@angular/cdk/coercion"
+import {
+    Directive,
+    EventEmitter,
+    HostBinding,
+    Inject,
+    Injectable,
+    InjectionToken,
+    Injector,
+    Input,
+    OnDestroy,
+    OnInit,
+    Optional,
+    Output,
+    Provider,
+    Self
+} from "@angular/core"
+import {
+    AbstractControl,
+    AbstractControlDirective,
+    ControlContainer,
+    ControlValueAccessor,
+    FormControl,
+    NG_VALUE_ACCESSOR,
+    NgControl,
+    NgModel
+} from "@angular/forms"
+
 import { Observable, Subject } from "rxjs"
-import { map, filter, shareReplay } from "rxjs/operators"
+import { filter, map, shareReplay } from "rxjs/operators"
 
-import { isPlainObject } from "is-plain-object"
+import isPlainObject from "is-plain-object"
 
-import { Destruct } from "../../util"
 import { ProgressEvent } from "../../animation.module"
 import { FocusGroup } from "../../common.module"
-
+import { Destruct } from "../../util"
 
 export type ValueComparator<T> = (a: T, b: T) => boolean
 export const INPUT_MODEL_VALUE_CMP = new InjectionToken<ValueComparator<any>>("INPUT_MODEL_VALUE_CMP")
@@ -31,7 +55,6 @@ function _suppertedComparable(a: any): boolean {
             return a == null || a instanceof Date
     }
 }
-
 
 @Injectable()
 export class InputModel<T> extends AbstractControlDirective {
@@ -55,13 +78,17 @@ export class InputModel<T> extends AbstractControlDirective {
         } else if (this._control) {
             return this._control
         } else {
-            return this._control = new FormControl()
+            return (this._control = new FormControl())
         }
     }
     private _control: FormControl
 
-    public set value(value: T) { this.control.setValue(value) }
-    public get value(): T { return this.control.value }
+    public set value(value: T) {
+        this.control.setValue(value)
+    }
+    public get value(): T {
+        return this.control.value
+    }
     public get isEmpty(): boolean {
         if (this._isEmpty != null) {
             return this._isEmpty
@@ -83,32 +110,39 @@ export class InputModel<T> extends AbstractControlDirective {
             }
         }
     }
-    public get disabled(): boolean { return this.control.disabled }
+    public get disabled(): boolean {
+        return this.control.disabled
+    }
 
     public set readonly(val: boolean) {
         if (this._readonly !== val) {
             this._readonly = val
             if (this.control) {
-                (this.control.statusChanges as EventEmitter<string>).next("readonly")
+                ;(this.control.statusChanges as EventEmitter<string>).next("readonly")
             }
         }
     }
-    public get readonly(): boolean { return this._readonly }
+    public get readonly(): boolean {
+        return this._readonly
+    }
     private _readonly: boolean
 
-    public get focused(): FocusOrigin | null { return this.focusGroup.currentOrigin }
+    public get focused(): FocusOrigin | null {
+        return this.focusGroup.currentOrigin
+    }
 
     public constructor(
         @Inject(NgControl) @Optional() @Self() private readonly ngControl: NgControl,
         @Inject(NgModel) @Optional() @Self() private readonly ngModel: NgModel,
         @Inject(FocusGroup) public readonly focusGroup: FocusGroup,
-        @Inject(INPUT_MODEL_VALUE_CMP) public readonly cmp: ValueComparator<T>) {
+        @Inject(INPUT_MODEL_VALUE_CMP) public readonly cmp: ValueComparator<T>
+    ) {
         super()
     }
 
     public emitValue(value: T, pristine?: boolean): void {
         if (this.control && !this.control.disabled) {
-            let oldValue = this.value
+            const oldValue = this.value
 
             if (!this.cmp(oldValue, value)) {
                 this.control.setValue(value, { emitModelToViewChange: false })
@@ -130,10 +164,9 @@ export class InputModel<T> extends AbstractControlDirective {
     }
 }
 
-
 @Injectable()
 export class InputModelVA<T> implements ControlValueAccessor {
-    constructor(@Inject(Injector) private _injector: Injector) { }
+    constructor(@Inject(Injector) private _injector: Injector) {}
     private _model?: InputModel<T>
     protected get model(): InputModel<T> {
         if (!this._model) {
@@ -159,7 +192,6 @@ export class InputModelVA<T> implements ControlValueAccessor {
     }
 }
 
-
 export const INPUT_MODEL: Provider[] = [
     {
         provide: FocusGroup,
@@ -180,9 +212,7 @@ export const INPUT_MODEL: Provider[] = [
     }
 ]
 
-
 let UID_COUNTER = 0
-
 
 @Directive()
 export abstract class InputComponent<T> implements OnDestroy, OnInit {
@@ -191,14 +221,23 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     // public abstract readonly isTextlike: boolean
 
     @Input("value")
-    public set value(val: T) { this.model.value = val; this.model.renderValueChanges.next(val) }
-    public get value(): T { return this.model.value }
+    public set value(val: T) {
+        this.model.value = val
+        this.model.renderValueChanges.next(val)
+    }
+    public get value(): T {
+        return this.model.value
+    }
 
     @Output("value")
-    public get valueChanges(): Observable<T> { return this.model.valueChanges }
+    public get valueChanges(): Observable<T> {
+        return this.model.valueChanges
+    }
 
     @HostBinding("class.nz-has-value")
-    public get hasValue(): boolean { return !this.model.isEmpty }
+    public get hasValue(): boolean {
+        return !this.model.isEmpty
+    }
 
     @Input()
     @HostBinding("attr.tabindex")
@@ -207,7 +246,9 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
             this._tabIndex = val
         }
     }
-    public get tabIndex(): number { return this._tabIndex }
+    public get tabIndex(): number {
+        return this._tabIndex
+    }
     protected _tabIndex: number = 0
 
     @Input("disableInput")
@@ -218,15 +259,23 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
             this._pendingDisabled = val
         }
     }
-    public get disabled(): boolean { return this.model.disabled }
+    public get disabled(): boolean {
+        return this.model.disabled
+    }
 
     @HostBinding("attr.disabled")
-    public get disabledAttr(): string { return this.disabled ? "" : null }
+    public get disabledAttr(): string {
+        return this.disabled ? "" : null
+    }
 
     @Input()
     @HostBinding("attr.id")
-    public set id(val: string) { this._id = val }
-    public get id(): string { return this._id || (this._uid ? this._uid : (this._uid = `nz-input-${++UID_COUNTER}`)) }
+    public set id(val: string) {
+        this._id = val
+    }
+    public get id(): string {
+        return this._id || (this._uid ? this._uid : (this._uid = `nz-input-${++UID_COUNTER}`))
+    }
     private _id: string
     private _uid: string
 
@@ -239,10 +288,14 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
             this._pendingReadonly = val
         }
     }
-    public get readonly(): boolean { return this.model.disabled || this.model.readonly }
+    public get readonly(): boolean {
+        return this.model.disabled || this.model.readonly
+    }
 
     @HostBinding("attr.readonly")
-    public get readonlyAttr(): string { return this.model.readonly ? "" : null }
+    public get readonlyAttr(): string {
+        return this.model.readonly ? "" : null
+    }
 
     @Output() public readonly changes = this.model.valueChanges
     @Output() public readonly focused = this.model.focusChanges
@@ -290,7 +343,6 @@ export abstract class InputComponent<T> implements OnDestroy, OnInit {
     }
 }
 
-
 @Injectable()
 export class InputGroupModel<T> extends InputModel<T> {
     public get control(): AbstractControl {
@@ -300,7 +352,8 @@ export class InputGroupModel<T> extends InputModel<T> {
     public constructor(
         @Inject(ControlContainer) @Self() private cc: ControlContainer,
         @Inject(FocusGroup) focusGroup: FocusGroup,
-        @Inject(INPUT_MODEL_VALUE_CMP) @Optional() cmp: ValueComparator<T>) {
-        super(null, null, focusGroup, cmp || (function () { return false }))
+        @Inject(INPUT_MODEL_VALUE_CMP) @Optional() cmp: ValueComparator<T>
+    ) {
+        super(null, null, focusGroup, cmp || (() => false))
     }
 }
