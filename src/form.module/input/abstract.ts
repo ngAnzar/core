@@ -30,11 +30,9 @@ import {
 import { Observable, Subject } from "rxjs"
 import { filter, map, shareReplay } from "rxjs/operators"
 
-import isPlainObject from "is-plain-object"
-
 import { ProgressEvent } from "../../animation.module"
 import { FocusGroup } from "../../common.module"
-import { Destruct } from "../../util"
+import { Destruct, isPlainObject } from "../../util"
 
 export type ValueComparator<T> = (a: T, b: T) => boolean
 export const INPUT_MODEL_VALUE_CMP = new InjectionToken<ValueComparator<any>>("INPUT_MODEL_VALUE_CMP")

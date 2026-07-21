@@ -1,4 +1,4 @@
-import isPlainObject from "is-plain-object"
+import { isPlainObject } from "../../../util"
 
 export interface TokenFilterComparatorOptions {
     readonly name: string

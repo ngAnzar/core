@@ -18,8 +18,7 @@ import {
 import { BehaviorSubject, merge, Subject } from "rxjs"
 import { takeUntil } from "rxjs/operators"
 
-import isPlainObject from "is-plain-object"
-
+import { isPlainObject } from "../../../util"
 import { INPUT_MODEL, INPUT_MODEL_VALUE_CMP, InputComponent, InputModel } from "../abstract"
 import { CheckboxGroupDirective } from "./checkbox-group.directive"
 
